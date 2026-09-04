@@ -1,7 +1,22 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.12/schema.json",
   "files": {
-    "includes": ["**", "!**/node_modules", "!**/.next", "!contracts/out", "!contracts/cache"]
+    "includes": [
+      "**",
+      "!!**/node_modules",
+      "!!.turbo",
+      "!!**/.turbo",
+      "!!**/.next",
+      "!!**/dist",
+      "!!**/build",
+      "!!**/coverage",
+      "!!**/*.tsbuildinfo",
+      "!!contracts/out",
+      "!!contracts/cache",
+      "!!contracts/broadcast",
+      "!!playwright-report",
+      "!!test-results"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -12,7 +27,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "preset": "recommended"
     }
   },
   "javascript": {

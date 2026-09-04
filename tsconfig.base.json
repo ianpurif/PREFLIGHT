@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "strict": true,
@@ -20,18 +16,10 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@preflight/domain": [
-        "packages/domain/src/index.ts"
-      ],
-      "@preflight/simulation-core": [
-        "packages/simulation-core/src/index.ts"
-      ],
-      "@preflight/ledger-gate": [
-        "packages/ledger-gate/src/index.ts"
-      ],
-      "@preflight/chain-client": [
-        "packages/chain-client/src/index.ts"
-      ]
+      "@preflight/domain": ["packages/domain/src/index.ts"],
+      "@preflight/simulation-core": ["packages/simulation-core/src/index.ts"],
+      "@preflight/ledger-gate": ["packages/ledger-gate/src/index.ts"],
+      "@preflight/chain-client": ["packages/chain-client/src/index.ts"]
     }
   }
 }

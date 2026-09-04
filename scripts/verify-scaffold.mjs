@@ -27,23 +27,32 @@ for (const path of required) {
   if (!existsSync(resolve(root, path))) throw new Error(`Missing required scaffold file: ${path}`);
 }
 
-for (const path of ["package.json", "apps/web/package.json", "apps/api/package.json", "integrations/chainlink-cre/package.json"]) {
+for (const path of [
+  "package.json",
+  "apps/web/package.json",
+  "apps/api/package.json",
+  "integrations/chainlink-cre/package.json",
+]) {
   JSON.parse(readFileSync(resolve(root, path), "utf8"));
 }
 
 const chainlink = readFileSync(resolve(root, "integrations/chainlink-cre/src/main.ts"), "utf8");
-if (!chainlink.includes("NOT_IMPLEMENTED")) throw new Error("CRE scaffold accidentally lost its boilerplate boundary");
+if (!chainlink.includes("NOT_IMPLEMENTED"))
+  throw new Error("CRE scaffold accidentally lost its boilerplate boundary");
 const contract = readFileSync(resolve(root, "contracts/src/PreflightRegistry.sol"), "utf8");
-if (!contract.includes("Boilerplate shell only")) throw new Error("Contract scaffold accidentally became product logic");
+if (!contract.includes("Boilerplate shell only"))
+  throw new Error("Contract scaffold accidentally became product logic");
 
 const env = readFileSync(resolve(root, ".env.example"), "utf8");
 const obviousSecretPatterns = [/0x[a-fA-F0-9]{64}/, /sk-[A-Za-z0-9_-]{20,}/, /BEGIN PRIVATE KEY/];
 for (const pattern of obviousSecretPatterns) {
-  if (pattern.test(env)) throw new Error(`Potential secret-like value found in .env.example: ${pattern}`);
+  if (pattern.test(env))
+    throw new Error(`Potential secret-like value found in .env.example: ${pattern}`);
 }
 
 const rootAgentsBytes = Buffer.byteLength(readFileSync(resolve(root, "AGENTS.md"), "utf8"));
-if (rootAgentsBytes > 16 * 1024) throw new Error("Root AGENTS.md is too large for efficient context loading");
+if (rootAgentsBytes > 16 * 1024)
+  throw new Error("Root AGENTS.md is too large for efficient context loading");
 
 console.log("✓ scaffold structure present");
 console.log("✓ JSON manifests parse");
@@ -64,6 +73,7 @@ for (const chain of instructionChains) {
     (sum, path) => sum + Buffer.byteLength(readFileSync(resolve(root, path), "utf8")),
     0,
   );
-  if (total > 32 * 1024) throw new Error(`Codex instruction chain exceeds 32 KiB: ${chain.join(" -> ")}`);
+  if (total > 32 * 1024)
+    throw new Error(`Codex instruction chain exceeds 32 KiB: ${chain.join(" -> ")}`);
 }
 console.log("✓ scoped AGENTS instruction chains stay below 32 KiB");
