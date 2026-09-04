@@ -1,24 +1,23 @@
 # Current State
 
 ## Phase
-**Boilerplate complete; product implementation intentionally not started.**
+**P1 complete; P2–P8 intentionally not started.**
 
 ## What exists
-- monorepo/tooling manifests
-- root + scoped Codex instructions
-- project-local Codex skills
-- read-only specialist subagents
-- product/architecture/trust-boundary docs
-- Chainlink + Ledger integration contracts and package scaffolds
-- Next.js/Fastify/simulation/domain/contract shells
-- CI + dependency-free scaffold verification
-- worktree helper and agentic operating docs
-- hackathon/partner evidence + AI-use bookkeeping
+- all B0 boilerplate/tooling and specialized agentic harness
+- canonical prefixed/branded site, robot, build, envelope, evaluator, evaluation, and clearance identifiers
+- strict versioned schemas for build, envelope metadata, evaluation inputs/request/result, clearance, and deployment intent
+- Preflight Canonical JSON v1 + deterministic UTF-8/SHA-256 domain-separated digests
+- secret-blinded safety-envelope commitment semantics
+- pure evaluation/clearance/deployment binding assertions and negative/golden-vector tests
+- type-only scaffold consumers aligned to the canonical domain protocol
+
+Detailed decisions and evidence: `docs/architecture/adr/0003-canonical-protocol.md` and `docs/planning/exec-plans/P1-domain-protocol-foundation.md`.
 
 ## Next exact task
-Wait for the user's next implementation prompt. Do not autonomously choose a product feature.
+Wait for explicit authorization to implement **P2 — Deterministic simulator/evaluator**. Do not begin P2 autonomously.
 
-When implementation starts, prefer the first vertical slice that proves one end-to-end invariant rather than building all layers independently.
+P2 should consume the P1 `EvaluationInputs`/request/result types and must not change canonical digest semantics without a deliberate new protocol version.
 
-## Known environment limitation at boilerplate creation
-The artifact-generation container did not have Bun or Foundry installed and could not download packages, so dependency-backed builds could not be executed here. `scripts/verify-scaffold.mjs`, Node tests, JSON/TOML parsing, and dependency-free TypeScript checks are the baseline verification path. Run `bun install`, commit the generated `bun.lock`, then run `bun run verify` in the real development environment before implementation. After the lockfile is committed, switch CI installs to `bun install --frozen-lockfile`.
+## Environment status
+Bun 1.4.1 and Foundry 1.8.1 are available. The complete `bun run verify` gate passes. The Foundry scaffold currently reports no contract tests, as expected before P4; P1 adds no contract logic.

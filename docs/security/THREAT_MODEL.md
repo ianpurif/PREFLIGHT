@@ -26,4 +26,13 @@
 - contract fuzz/invariant tests
 - frontend intent-display vs signed-payload consistency
 
-This document is a seed, not a completed security review.
+## P1 controls established
+
+- exact, type-prefixed identifier parsing
+- strict schema versions and rejection of unknown/unhashed fields
+- canonical serialization negative tests and SHA-256 golden vectors
+- secret-blinded private-envelope commitments
+- exact result/request, clearance/result, and deployment-intent/clearance binding checks
+- nonce and bounded intent expiry fields for later replay enforcement
+
+Current-time validity, revocation, nonce consumption, authorized-signer checks, and EIP-712 domain separation remain P4/P5 controls. This document is still a seed, not a completed security review.

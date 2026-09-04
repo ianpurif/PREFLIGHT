@@ -23,7 +23,7 @@ flowchart LR
 ## Layering
 
 ### `packages/domain`
-Stable domain language and interfaces. No web, server, Chainlink, Ledger, or rendering dependencies.
+Stable, versioned domain language and interfaces: canonical identifiers, exact protocol schemas, runtime validation, deterministic serialization/digests, and cross-object binding checks. No web, server, Chainlink, Ledger, or rendering dependencies. See ADR-0003.
 
 ### `packages/simulation-core`
 Deterministic scenario/simulation interfaces and later implementation. No React. No network calls in deterministic verdict code.
@@ -52,4 +52,4 @@ A release must eventually prove all of:
 - clearance has not expired/revoked
 - Ledger-approved deployment intent binds the same identifiers
 
-Implementation details remain intentionally open until their tasks are approved.
+P1 defines the canonical representation and binding vocabulary only. Evaluation, confidential execution, registry validity, signing, release authorization, and UI behavior remain open until their tasks are approved.

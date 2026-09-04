@@ -1,15 +1,17 @@
-# Boilerplate Verification Report
+# P1 Verification Report
 
 **Date:** 2026-09-05
-**Scope:** boilerplate/harness only; product behavior intentionally absent.
+**Scope:** P1 domain + protocol foundation only; P2–P8 behavior intentionally absent.
 
 ## Passed in the development environment
 
-- `bun run lint` — Biome 2.5.12 checked 42 source/config files with no diagnostics.
+- package `bun test` — **30 passed, 0 failed, 676 assertions** in `@preflight/domain`.
+- package `bun run typecheck` and `bun run build` — pass in `@preflight/domain`.
+- `bun run lint` — Biome 2.5.12 checked 50 source/config files with no diagnostics.
 - `bun run typecheck` — **7/7 workspace tasks pass**.
-- `bun run test` — **9/9 Turbo tasks pass**; all seven intentionally empty workspace test packages exit successfully with `--pass-with-no-tests`.
+- `bun run test` — **9/9 Turbo tasks pass**; the domain tests run normally and legitimately empty packages use `--pass-with-no-tests`.
 - `bun run build` — **7/7 workspace tasks pass**, including the Next.js production build.
-- A second `bun run lint` after Turbo typecheck/test/build commands still checks only 42 source/config files and does not inspect generated `.turbo` cache files.
+- `bun run contracts:test` — passes with Foundry 1.8.1; the pre-P4 contract scaffold contains no tests.
 - `bun run verify:scaffold`
   - required structure present
   - JSON manifests parse
@@ -21,21 +23,16 @@
   - safety-language invariants preserved
   - legacy LedgerJS packages absent
 
-## Environment blocker
+- `bun run verify` — passes end to end, including contracts and scaffold gates.
 
-Foundry is not installed in this environment (`forge` is not available). Therefore:
+## Adversarial review
 
-- `bun run contracts:test` is blocked and is not reported as passed.
-- `bun run verify` passes lint, typecheck, tests, and build, then correctly exits nonzero when its unchanged `contracts:test` gate cannot find `forge`.
-- `bun run verify:scaffold` was run separately and passed because the aggregate command cannot advance beyond its Foundry gate.
+The independent review tested nondeterminism, hash framing, required bindings, identifier confusion, versioning, and replay-related P1 semantics. Four valid findings were fixed before the final run: runtime-mutable protocol constants, forged shared evaluation-input digests, a public generic digest rebranding helper, and missing Unicode byte/order golden vectors. A separate partner audit found no P1-blocking issue or premature Chainlink/Ledger claim.
 
-Install Foundry, then rerun:
+## Environment blockers
 
-```sh
-bun run contracts:test
-bun run verify
-```
+None for P1 verification.
 
-## Boilerplate boundary
+## Phase boundary
 
-No P1 behavior, simulator/evaluator logic, Chainlink workflow, contract product logic, Ledger integration, or frontend feature was added. Real CRE and Ledger evidence remains deferred to approved implementation tasks and was not simulated or faked.
+No simulator/evaluator logic, Chainlink workflow, contract product logic, Ledger integration/EIP-712 signing, frontend feature, AI agent, or additional partner was added. Real CRE and Ledger evidence remains deferred to their approved implementation tasks and was not simulated or faked.

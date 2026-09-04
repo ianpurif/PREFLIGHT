@@ -21,3 +21,13 @@ Add future material AI-assisted changes as dated entries. Do not claim fully hum
 **AI-assisted output:** Biome configuration and generated-output hygiene, package test-script maintenance, mechanical formatting, execution-plan/verification evidence, and command-based validation.
 
 **Not implemented:** P1 or later product behavior, simulator/evaluator logic, Chainlink workflow logic, contract product logic, Ledger behavior, frontend features, or architecture changes.
+
+## 2026-09-05 — P1 domain and protocol foundation
+
+**Tool:** OpenAI Codex with read-only Preflight architecture, exploration, verification, and review specialists.
+
+**Human direction:** Implement only P1: canonical identifiers, minimum protocol schemas, deterministic canonical serialization and digests, runtime validation/failures, exact clearance/deployment bindings, tests, and protocol documentation.
+
+**AI-assisted output:** `@preflight/domain` implementation and tests, type-only consumer alignment, ADR-0003, planning/security/evidence updates, adversarial review, and command-based verification.
+
+**Not implemented:** P2 evaluation logic, P3 CRE/TEE behavior, P4 contract state, P5 Ledger/EIP-712 behavior, P6 UI, AI agents, or additional partners.

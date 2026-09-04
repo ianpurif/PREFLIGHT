@@ -1,4 +1,4 @@
-import type { ClearanceVerdict, PreflightIdentifiers } from "@preflight/domain";
+import type { EvaluationRequest, EvaluationResult } from "@preflight/domain";
 
 /** Ports only. The deterministic evaluator is intentionally not implemented in the boilerplate. */
 export interface ScenarioDescriptor {
@@ -6,16 +6,11 @@ export interface ScenarioDescriptor {
   seed: number;
 }
 
-export interface EvaluationRequest extends PreflightIdentifiers {
+export interface SimulationEvaluationRequest {
+  request: EvaluationRequest;
   scenario: ScenarioDescriptor;
 }
 
-export interface EvaluationObservation {
-  scenarioId: string;
-  verdict: ClearanceVerdict;
-  publicReasonCode?: string;
-}
-
 export interface SimulationEngine {
-  evaluate(request: EvaluationRequest): Promise<EvaluationObservation>;
+  evaluate(request: SimulationEvaluationRequest): Promise<EvaluationResult>;
 }

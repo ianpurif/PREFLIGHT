@@ -18,6 +18,8 @@ Simulation is evidence about a defined evaluation envelope, not a guarantee abou
 ## Boundary F — Exact-build binding
 Any relevant robot build mutation changes its digest. Reusing clearance for a mismatched digest must fail closed.
 
+P1 establishes the canonical identifiers, versioned schemas, deterministic digests, and pure binding assertions for this boundary. Runtime clearance validity, revocation, signer authorization, and nonce consumption remain later-phase responsibilities.
+
 ## Threats to design for later
 - hidden-rule exfiltration via logs/errors
 - model endpoint equivocation

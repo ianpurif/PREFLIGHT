@@ -10,10 +10,10 @@
 - [x] Worktree workflow
 
 ## P1 — Domain + protocol foundation
-- [ ] Canonical identifiers and digest strategy
-- [ ] Clearance/evaluation schemas
-- [ ] Failure semantics and validation
-- [ ] Serialization/canonicalization tests
+- [x] Canonical identifiers and digest strategy
+- [x] Clearance/evaluation schemas
+- [x] Failure semantics and validation
+- [x] Serialization/canonicalization tests
 
 ## P2 — Deterministic simulator/evaluator
 - [ ] Seeded warehouse scenario model
@@ -35,8 +35,10 @@
 - [ ] fuzz + invariant tests
 
 ## P5 — Ledger release gate
+- [ ] align DMK and signer-kit peer versions before implementation
 - [ ] DMK/WebHID browser adapter
 - [ ] EIP-712 deployment intent
+- [ ] Clear Signing descriptor/origin token; reject blind-signing fallback
 - [ ] device signing path
 - [ ] replay/mismatch tests
 - [ ] physical hardware evidence
