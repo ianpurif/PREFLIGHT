@@ -1,0 +1,46 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  ts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.1
+      - run: |
+          if [ -f bun.lock ]; then bun install --frozen-lockfile; else bun install; fi
+      - run: bun run lint
+      - run: bun run typecheck
+      - run: bun run test
+      - run: bun run build
+      - run: bun run verify:scaffold
+
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+      - working-directory: contracts
+        run: forge fmt --check && forge build && forge test
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: ts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.1
+      - run: |
+          if [ -f bun.lock ]; then bun install --frozen-lockfile; else bun install; fi
+      - run: bunx playwright install --with-deps chromium
+      - run: bun run test:e2e

@@ -1,0 +1,5 @@
+# Project-local Codex configuration.
+# Keep model selection unpinned so the user's chosen/current Codex model is inherited.
+
+[agents]
+max_concurrent_threads_per_session = 6
