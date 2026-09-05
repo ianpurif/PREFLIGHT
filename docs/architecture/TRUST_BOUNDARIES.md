@@ -6,6 +6,8 @@ Private envelope values, hidden scenario parameters, restricted geometry, and co
 ## Boundary B — Deterministic evaluator
 The clearance decision must be reproducible from declared evaluator version + allowed inputs. An LLM may orchestrate/explain but cannot decide `CLEAR`, `HOLD`, or `ESCALATE`.
 
+P2 implements `warehouse-rules-v1` with bounded integer units, committed scenario configuration, exact closed-segment geometry, normalized ordering, explicit timestamps, and no external runtime inputs. `CLEAR` means zero violations only for that exact simulated suite/envelope. Materialized trace metadata is a declaration, not proof that a real artifact or physical robot produced it. P3 must authenticate trace provenance and reject arbitrary caller-supplied trace JSON before treating evaluator output as clearance-authoritative.
+
 ## Boundary C — Public chain
 Only minimum public artifacts belong onchain: commitments/digests, evaluator/version metadata, verdict metadata, timestamps/expiry, issuer/revocation state as designed later. Never raw site rules or proprietary model data.
 

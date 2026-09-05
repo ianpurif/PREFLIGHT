@@ -3,9 +3,10 @@
 | Requirement | Future implementation evidence | Status |
 |---|---|---|
 | Canonical domain protocol | `packages/domain/src/**`, golden/negative tests, ADR-0003 | P1 complete |
+| Deterministic simulated evaluation | `packages/simulation-core/src/**`, 60 boundary/property/fixture tests, ADR-0004 | P2 complete locally; CRE execution not claimed |
 | Chainlink CRE workflow exists | source path + workflow config | Not started |
 | Confidential TEE handler is load-bearing | source lines + architecture diagram | Not started |
-| Sensitive input processed in TEE | redacted test fixture + simulation log | Not started |
+| Sensitive input processed in TEE | redacted test fixture + simulation log | P2 internal data boundary defined; TEE not started |
 | Successful CRE simulation/deploy | CLI output + demo capture | Not started |
 | Ledger DMK central to product | source path + hardware demo | Not started |
 | Human approves high-risk action | physical device capture | Not started |

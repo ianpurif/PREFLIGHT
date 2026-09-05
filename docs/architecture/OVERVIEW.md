@@ -26,7 +26,7 @@ flowchart LR
 Stable, versioned domain language and interfaces: canonical identifiers, exact protocol schemas, runtime validation, deterministic serialization/digests, and cross-object binding checks. No web, server, Chainlink, Ledger, or rendering dependencies. See ADR-0003.
 
 ### `packages/simulation-core`
-Deterministic scenario/simulation interfaces and later implementation. No React. No network calls in deterministic verdict code.
+Pure P2 fixed-unit warehouse model, committed seeded scenario generation, materialized-trace validation, and deterministic restricted-zone/speed/payload evaluation. The internal report wraps an unchanged P1 result. No React, partner, network, filesystem, clock, or environment dependency. See ADR-0004.
 
 ### `integrations/chainlink-cre`
 CRE-specific entrypoint and adapters. Must respect the CRE TypeScript WASM/QuickJS environment. Confidential inputs stay here.
@@ -52,4 +52,4 @@ A release must eventually prove all of:
 - clearance has not expired/revoked
 - Ledger-approved deployment intent binds the same identifiers
 
-P1 defines the canonical representation and binding vocabulary only. Evaluation, confidential execution, registry validity, signing, release authorization, and UI behavior remain open until their tasks are approved.
+P1 defines the canonical representation and binding vocabulary. P2 defines deterministic simulated evaluation only. Confidential execution, registry validity, signing, release authorization, and UI behavior remain open until their tasks are approved.

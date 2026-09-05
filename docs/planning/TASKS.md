@@ -16,10 +16,10 @@
 - [x] Serialization/canonicalization tests
 
 ## P2 — Deterministic simulator/evaluator
-- [ ] Seeded warehouse scenario model
-- [ ] Restricted-zone/speed/payload rules
-- [ ] Deterministic verdict engine
-- [ ] Negative/property tests
+- [x] Seeded warehouse scenario model
+- [x] Restricted-zone/speed/payload rules
+- [x] Deterministic verdict engine
+- [x] Negative/property tests
 
 ## P3 — Chainlink CRE confidential evaluation
 - [ ] CRE workflow entrypoint

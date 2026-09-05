@@ -11,3 +11,6 @@
 | 2026-09-05 | Prefixed/branded protocol identifiers | Runtime prefixes and compile-time brands prevent identifier-type confusion without adding a schema dependency. | Active |
 | 2026-09-05 | Secret-blinded envelope commitments | A 32-byte secret blind prevents low-entropy private safety rules from being exposed to offline dictionary attacks through their public commitment. | Active |
 | 2026-09-05 | Decimal Unix-second protocol time | Canonical strings avoid timezone, floating-point, and runtime date-parser differences; wall-clock validity remains a later execution check. | Active |
+| 2026-09-05 | Fixed-unit closed-segment evaluator | Bounded integer millimetres, millimetres/second, and grams plus closed point/segment geometry remove floating tolerances and waypoint tunneling from P2 rule decisions. | Active |
+| 2026-09-05 | Committed xorshift32 scenario suite | Seed, normalized templates, generator version, rules, and geometry are all inside the blinded envelope commitment; golden vectors lock deterministic generation. | Active |
+| 2026-09-05 | P2 `CLEAR`/`HOLD` mapping | Zero violations yields `CLEAR`; any violation yields P1 `HOLD`; P2 never emits `ESCALATE` and never creates clearance. | Active |
