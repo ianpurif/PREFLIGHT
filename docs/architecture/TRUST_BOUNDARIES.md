@@ -3,10 +3,14 @@
 ## Boundary A — Facility secrets → Chainlink CRE TEE
 Private envelope values, hidden scenario parameters, restricted geometry, and confidential intermediate evaluation state must not be logged or returned to the public workflow.
 
+P3 implements this boundary with an SDK 1.19.1 `handlerInTee` callback restricted to Nitro in `us-west-2`. The callback fetches one atomic, versioned secret from the `main` namespace using a compile-time fixed ID. The handler makes no ordinary capability calls, does not log or call `usingTheDons`/`reportFromDon`, and constructs its public response field by field. CRE CLI v1.32.0 authenticated simulations exercise this path; the CLI explicitly states that simulation is not a real TEE.
+
 ## Boundary B — Deterministic evaluator
 The clearance decision must be reproducible from declared evaluator version + allowed inputs. An LLM may orchestrate/explain but cannot decide `CLEAR`, `HOLD`, or `ESCALATE`.
 
-P2 implements `warehouse-rules-v1` with bounded integer units, committed scenario configuration, exact closed-segment geometry, normalized ordering, explicit timestamps, and no external runtime inputs. `CLEAR` means zero violations only for that exact simulated suite/envelope. Materialized trace metadata is a declaration, not proof that a real artifact or physical robot produced it. P3 must authenticate trace provenance and reject arbitrary caller-supplied trace JSON before treating evaluator output as clearance-authoritative.
+P2 implements `warehouse-rules-v1` with bounded integer units, committed scenario configuration, exact closed-segment geometry, normalized ordering, explicit timestamps, and no external runtime inputs. `CLEAR` means zero violations only for that exact simulated suite/envelope. P3 reuses this implementation inside the TEE and binds the public response to the exact normalized supplied behavior.
+
+Materialized trace metadata and the P3 behavior digest are declarations/integrity bindings, not proof that a real artifact or physical robot produced the traces. P3 authenticates a configured HTTP submitter, not robot execution. Remote hardware/model attestation remains outside scope.
 
 ## Boundary C — Public chain
 Only minimum public artifacts belong onchain: commitments/digests, evaluator/version metadata, verdict metadata, timestamps/expiry, issuer/revocation state as designed later. Never raw site rules or proprietary model data.
@@ -32,3 +36,5 @@ P1 establishes the canonical identifiers, versioned schemas, deterministic diges
 - compromised orchestrator attempting bypass
 - nondeterministic simulation results
 - TEE output over-disclosure
+- authorized chosen-input queries inferring private rules from repeated verdicts
+- synthetic trace fabrication by an otherwise authorized submitter

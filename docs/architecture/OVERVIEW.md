@@ -11,8 +11,8 @@ flowchart LR
   RELEASE[Deployment Release Gate]
 
   UI --> API
-  API --> SIM
   API --> CRE
+  CRE --> SIM
   CRE --> REG
   UI --> LEDGER
   LEDGER --> RELEASE
@@ -29,7 +29,7 @@ Stable, versioned domain language and interfaces: canonical identifiers, exact p
 Pure P2 fixed-unit warehouse model, committed seeded scenario generation, materialized-trace validation, and deterministic restricted-zone/speed/payload evaluation. The internal report wraps an unchanged P1 result. No React, partner, network, filesystem, clock, or environment dependency. See ADR-0004.
 
 ### `integrations/chainlink-cre`
-CRE-specific entrypoint and adapters. Must respect the CRE TypeScript WASM/QuickJS environment. Confidential inputs stay here.
+P3 CRE-specific HTTP entrypoint and adapters. The real `handlerInTee` callback reads the private envelope/blind through one fixed CRE secret selector, invokes `@preflight/simulation-core`, and releases only an allowlisted P1 result plus the exact supplied-behavior binding. Authenticated evidence currently uses the local simulator's ignored environment mapping; production Vault DON custody remains unproven. The workflow compiles to the CRE WASM/QuickJS target without Node, filesystem, environment, dynamic-import, browser, or native runtime dependencies.
 
 ### `contracts`
 Minimal public attestation/release verification surface. No private safety envelope storage.
@@ -52,4 +52,4 @@ A release must eventually prove all of:
 - clearance has not expired/revoked
 - Ledger-approved deployment intent binds the same identifiers
 
-P1 defines the canonical representation and binding vocabulary. P2 defines deterministic simulated evaluation only. Confidential execution, registry validity, signing, release authorization, and UI behavior remain open until their tasks are approved.
+P1 defines canonical representation and binding vocabulary. P2 defines deterministic simulated evaluation. P3 places that evaluation behind the confidential TEE boundary but neither authenticates robot trace origin nor issues clearance. Registry validity, signing, release authorization, and UI behavior remain open until their tasks are approved.

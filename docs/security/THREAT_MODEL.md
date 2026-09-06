@@ -46,4 +46,19 @@ Current-time validity, revocation, nonce consumption, authorized-signer checks, 
 - deterministic generation/order and explicit time remove clock, locale, entropy, filesystem, and network influence
 - the strict P1 result remains minimal while detailed evidence is named and typed as an internal report
 
-P2 cannot prove that a materialized trace was authentically produced by the declared proprietary artifact, and its point-robot simulation is not physical validation. Trusted provenance and confidential execution/output filtering remain P3/later controls.
+P2 cannot prove that a materialized trace was authentically produced by the declared proprietary artifact, and its point-robot simulation is not physical validation.
+
+## P3 controls established
+
+- real SDK `handlerInTee` registration constrained to Nitro/us-west-2
+- authenticated HTTP-trigger configuration, one compile-time fixed secret selector, and zero ordinary capability calls from the handler
+- one atomic versioned secret containing the full private envelope and commitment blind
+- strict, bounded public/confidential parsing and exact P1/P2 binding validation
+- unchanged P2 evaluator execution, including commitment reconstruction before rule evaluation
+- domain-separated canonical behavior-input digest binding the response to the exact supplied public request/traces
+- field-by-field public result allowlist and fixed redacted failure schemas
+- no TEE logging, no private error messages/paths, and no DON crossover calls
+- adversarial tests for private-value leakage, tampering, substitution, deterministic output, and unavailable secrets
+- actual SDK and CRE CLI compilation plus authenticated simulation of the transitive P1/P2 source
+
+Residual risks: an authorized caller can make chosen-input queries and may infer information from verdicts; rate/access policy is outside this stateless workflow. The behavior digest does not prove trace origin. Authenticated CLI simulation is not deployed Nitro, hardware-enclave execution, production Vault custody, DON consensus, or remote attestation.

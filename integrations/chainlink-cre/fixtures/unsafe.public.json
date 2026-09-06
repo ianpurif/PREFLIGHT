@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "preflight.cre-public-evaluation-request/v1",
+  "protocolVersion": "preflight.protocol/v1",
+  "request": {
+    "schemaVersion": "preflight.evaluation-request/v1",
+    "evaluationId": "evaluation:unsafe-demo",
+    "inputs": {
+      "schemaVersion": "preflight.evaluation-inputs/v1",
+      "siteId": "site:demo-warehouse",
+      "robotId": "robot:demo-amr-01",
+      "robotBuildId": "robot-build:unsafe-v1",
+      "robotBuildDigest": "sha256:dfa8a366ab9980769d7e91ea03fa346e2d816c98bd613bc9a6c58bc0d2d39ba8",
+      "safetyEnvelopeId": "safety-envelope:demo-v1",
+      "safetyEnvelopeCommitment": "sha256:c0711ab58a51ae8e332a71d9abcb553a7b1345bfca180d7e9fba9d0187f7f51a",
+      "evaluatorVersion": "evaluator-version:warehouse-rules-v1"
+    },
+    "requestedAt": "1788547200"
+  },
+  "robotBuild": {
+    "schemaVersion": "preflight.robot-build/v1",
+    "robotId": "robot:demo-amr-01",
+    "robotBuildId": "robot-build:unsafe-v1",
+    "artifactDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "behaviorTraces": {
+    "schemaVersion": "preflight.robot-trace-suite/v1",
+    "robotId": "robot:demo-amr-01",
+    "robotBuildId": "robot-build:unsafe-v1",
+    "robotBuildDigest": "sha256:dfa8a366ab9980769d7e91ea03fa346e2d816c98bd613bc9a6c58bc0d2d39ba8",
+    "traces": [
+      {
+        "scenarioId": "scenario:heavy-payload-route",
+        "steps": [
+          {
+            "stepIndex": 0,
+            "position": {
+              "xMm": 5000,
+              "yMm": 1800
+            },
+            "speedMmPerSecond": 0
+          },
+          {
+            "stepIndex": 1,
+            "position": {
+              "xMm": 9000,
+              "yMm": 1800
+            },
+            "speedMmPerSecond": 500
+          }
+        ]
+      },
+      {
+        "scenarioId": "scenario:human-zone-speed",
+        "steps": [
+          {
+            "stepIndex": 0,
+            "position": {
+              "xMm": 2000,
+              "yMm": 4000
+            },
+            "speedMmPerSecond": 0
+          },
+          {
+            "stepIndex": 1,
+            "position": {
+              "xMm": 6000,
+              "yMm": 4000
+            },
+            "speedMmPerSecond": 820
+          }
+        ]
+      },
+      {
+        "scenarioId": "scenario:restricted-route",
+        "steps": [
+          {
+            "stepIndex": 0,
+            "position": {
+              "xMm": 1000,
+              "yMm": 8000
+            },
+            "speedMmPerSecond": 0
+          },
+          {
+            "stepIndex": 1,
+            "position": {
+              "xMm": 9500,
+              "yMm": 8000
+            },
+            "speedMmPerSecond": 500
+          }
+        ]
+      }
+    ]
+  },
+  "traceProvenance": "SYNTHETIC_CALLER_SUPPLIED",
+  "evaluatedAt": "1788547210",
+  "behaviorInputDigest": "sha256:36aa34b60babba8ea22e4f2803639ffb51c15005a10b345a37c49b79e6238bd0"
+}

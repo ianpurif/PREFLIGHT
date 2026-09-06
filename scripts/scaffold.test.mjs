@@ -23,3 +23,24 @@ test("legacy LedgerJS dependencies are not introduced", async () => {
   assert.match(pkg, /device-management-kit/);
   assert.match(pkg, /device-signer-kit-ethereum/);
 });
+
+test("P3 uses the real confidential path while P4 and P5 remain deferred", async () => {
+  const workflow = await readFile(
+    new URL("integrations/chainlink-cre/src/workflow.ts", root),
+    "utf8",
+  );
+  const confidential = await readFile(
+    new URL("integrations/chainlink-cre/src/confidential-evaluation.ts", root),
+    "utf8",
+  );
+  const contract = await readFile(new URL("contracts/src/PreflightRegistry.sol", root), "utf8");
+  const ledger = await readFile(new URL("packages/ledger-gate/src/index.ts", root), "utf8");
+
+  assert.match(workflow, /handlerInTee/);
+  assert.match(confidential, /getSecret/);
+  assert.match(confidential, /CONFIDENTIAL_INPUT_SECRET_ID/);
+  assert.match(confidential, /evaluateSimulation/);
+  assert.doesNotMatch(confidential, /runtime\.log/);
+  assert.match(contract, /Boilerplate shell only/);
+  assert.match(ledger, /intentionally deferred/);
+});

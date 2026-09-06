@@ -20,6 +20,7 @@ contracts/broadcast/
 # Local CRE / partner artifacts that may contain sensitive data
 integrations/chainlink-cre/.cre/
 integrations/chainlink-cre/secrets*.json
+**/.cre_build_tmp.js
 
 # Local worktrees if created inside the repo
 .worktrees/

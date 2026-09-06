@@ -5,11 +5,16 @@
   "type": "module",
   "scripts": {
     "build": "bun run typecheck",
-    "typecheck": "tsc --noEmit",
-    "test": "bun test --pass-with-no-tests"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
+    "test": "bun test",
+    "cre:compile": "cre-compile src/main.ts dist/workflow.wasm",
+    "cre:fixtures": "bun scripts/generate-simulation-fixtures.ts"
   },
   "dependencies": {
     "@chainlink/cre-sdk": "1.19.1",
+    "@noble/hashes": "2.2.0",
+    "@preflight/domain": "workspace:*",
+    "@preflight/simulation-core": "workspace:*",
     "viem": "2.56.3",
     "zod": "4.5.4"
   },
