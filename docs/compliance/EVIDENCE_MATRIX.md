@@ -8,10 +8,14 @@
 | Confidential TEE handler is load-bearing | `confidential-evaluation.ts`: fixed secret fetch + direct P2 call; workflow tests and authenticated simulation evidence | CRE authenticated simulation complete; live Nitro execution not claimed |
 | Sensitive input processed by confidential callback | versioned atomic envelope/blind secret; tampered blind changes Case A from evaluated output to redacted rejection | CRE authenticated simulation complete; raw output leakage checks pass |
 | Successful CRE simulation/deploy | [`chainlink-cre-p3-authenticated-simulation-2026-09-06.md`](evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md) | Unsafe `HOLD`, corrected `CLEAR`, tampered `REJECT`; simulation only, no deployment claimed |
+| Exact-build attestation registry | `contracts/src/PreflightRegistry.sol`, ADR-0006, [`p4-attestation-registry-local-2026-09-06.md`](evidence/p4-attestation-registry-local-2026-09-06.md) | P4 complete locally; authorized `CLEAR` registration, exact reads, expiry, and revocation verified |
+| P1/EVM binding compatibility | P1 golden values + `PreflightRegistry.t.sol` identifier/digest transport tests | Direct SHA-256 digest decoding and exact-prefixed identifier hashing pass; registrar mapping trust is explicit |
+| Contract adversarial coverage | Foundry unit/fuzz/stateful invariant suite and gas report | 24 unit/fuzz tests + 5 invariants pass locally; independent review recorded in P4 plan/report |
+| Sepolia registry deployment | chain-guarded deployment script + `contracts/README.md` | Pending: no deployer key/account or explorer credential available; no address claimed |
 | Ledger DMK central to product | source path + hardware demo | Not started |
 | Human approves high-risk action | physical device capture | Not started |
 | Exact build bound to approval | P1 canonical intent/binding tests + future P5 EIP-712/hardware evidence | P1 foundation complete; P5 not started |
-| Public repo + clear README | repository + `README.md` | README current through P3; public remote visibility not verified in this environment |
+| Public repo + clear README | repository + `README.md` | README current through P4; public remote visibility not verified in this environment |
 | Chronological Git history | `git log` | B0, P1, P2, and P3 recorded as thematic chronological commits |
 | AI use attribution | `docs/ai/**` | Active |
 | 2–4 minute demo | video | Not started |

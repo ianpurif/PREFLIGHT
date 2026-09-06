@@ -8,7 +8,10 @@
 | WebHID browser friction | Medium | Chromium + localhost/HTTPS + explicit user-gesture connection UX |
 | Ledger signer-kit/DMK peer mismatch | Medium | P5 must align and runtime-test the SDK versions before implementing the hardware path |
 | Ledger typed-data call falls back to blind signing | High | P5 must configure Clear Signing metadata/origin token and fail closed for the judged release path |
-| Digest canonicalization mismatch | Critical | P1 canonical serialization + golden vectors complete; P4 must reproduce the agreed bytes/values in contract tests |
+| Digest canonicalization mismatch | Critical | P1 canonical serialization + golden vectors and P4 Solidity transport vectors are complete; registrar tooling must strip `sha256:` only for object digests and hash exact prefixed identifiers for `*IdHash` fields |
+| Authorized registrar attests false bindings | Critical | P4 makes the trust explicit, records `msg.sender`, and prevents overwrite; P5/orchestration must verify validated P1/P3 evidence before submitting and minimize registrar-key access |
+| Clearance replayed across chains/registries | High | P4 records evidence only; P5 must domain-separate deployment authorization by chain ID, verifying contract, signer, and nonce |
+| Sepolia deployment credential unavailable | Medium | chain-guarded script and instructions are ready; do not claim deployment until a funded deployer and explorer credential produce verifiable evidence |
 | Envelope commitment dictionary attack | Critical | P1 requires a secret 32-byte blind; P3 simulation generates it only into ignored local input, while deployment must generate and custody it through the CRE confidential-secret workflow. |
 | Synthetic trace claimed as real build execution | High | P3 labels traces `SYNTHETIC_CALLER_SUPPLIED` and binds the response to their canonical digest; remote attestation remains out of scope, so stronger provenance claims are prohibited. |
 | Internal P2 evidence escapes confidential boundary | Critical | P3 keeps `InternalEvaluationReport` TEE-local and returns a field-by-field allowlist; leakage tests scan known private values. |

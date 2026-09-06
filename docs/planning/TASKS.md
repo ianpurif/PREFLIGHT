@@ -29,10 +29,10 @@
 - [x] authenticated CRE simulation evidence — unsafe `HOLD`, corrected `CLEAR`, tampered commitment `REJECT`
 
 ## P4 — Attestation registry
-- [ ] minimal clearance registry interface
-- [ ] exact-build/site/evaluator/expiry binding
-- [ ] revocation/expiry semantics
-- [ ] fuzz + invariant tests
+- [x] minimal clearance registry interface
+- [x] exact-build/site/evaluator/expiry binding
+- [x] revocation/expiry semantics
+- [x] fuzz + invariant tests
 
 ## P5 — Ledger release gate
 - [ ] align DMK and signer-kit peer versions before implementation

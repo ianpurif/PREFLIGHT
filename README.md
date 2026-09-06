@@ -1,6 +1,6 @@
 # Preflight — Confidential Robot Deployment Gate
 
-> **P1–P3 implemented and locally verified. P4–P8 remain intentionally unimplemented.**
+> **P1–P4 implemented and locally verified. P5–P8 remain intentionally unimplemented.**
 
 Preflight is a confidential deployment gate for autonomous warehouse robots: an exact robot software build must pass a site's private evaluation envelope, then a human must authorize that exact build on Ledger hardware before deployment.
 
@@ -29,7 +29,11 @@ This repository is specialized for an ETHGlobal **From Scratch** build using **C
 
 ## Repository status
 
-The repository now contains the canonical domain protocol, deterministic simulator/evaluator, and Chainlink CRE confidential-evaluation workflow with authenticated local simulation evidence. The attestation registry, Ledger release gate, demo UI, and later phases remain scoped placeholders.
+The repository now contains the canonical domain protocol, deterministic simulator/evaluator,
+Chainlink CRE confidential-evaluation workflow with authenticated local simulation evidence, and a
+minimal exact-binding attestation registry with Foundry unit/fuzz/invariant coverage. The registry
+is deployment-ready for Sepolia but is not deployed from this environment. The Ledger release gate,
+demo UI, and later phases remain scoped placeholders.
 
 ## Prerequisites
 
@@ -98,4 +102,5 @@ See `docs/codex/OPERATING_MODEL.md`.
 
 ## Next task
 
-P3 is complete. Start from `docs/planning/CURRENT.md`; do not begin P4 without an explicit implementation prompt.
+P4 is complete locally. Start from `docs/planning/CURRENT.md`; do not begin P5 without an explicit
+implementation prompt and the required Ledger hardware/SDK readiness.

@@ -24,7 +24,7 @@ test("legacy LedgerJS dependencies are not introduced", async () => {
   assert.match(pkg, /device-signer-kit-ethereum/);
 });
 
-test("P3 uses the real confidential path while P4 and P5 remain deferred", async () => {
+test("P3 confidential evaluation and P4 registry are real while P5-P6 remain deferred", async () => {
   const workflow = await readFile(
     new URL("integrations/chainlink-cre/src/workflow.ts", root),
     "utf8",
@@ -35,12 +35,17 @@ test("P3 uses the real confidential path while P4 and P5 remain deferred", async
   );
   const contract = await readFile(new URL("contracts/src/PreflightRegistry.sol", root), "utf8");
   const ledger = await readFile(new URL("packages/ledger-gate/src/index.ts", root), "utf8");
+  const web = await readFile(new URL("apps/web/src/app/page.tsx", root), "utf8");
 
   assert.match(workflow, /handlerInTee/);
   assert.match(confidential, /getSecret/);
   assert.match(confidential, /CONFIDENTIAL_INPUT_SECRET_ID/);
   assert.match(confidential, /evaluateSimulation/);
   assert.doesNotMatch(confidential, /runtime\.log/);
-  assert.match(contract, /Boilerplate shell only/);
+  assert.match(contract, /recordClearance/);
+  assert.match(contract, /isClearanceValidFor/);
+  assert.match(contract, /revokeClearance/);
+  assert.doesNotMatch(contract, /restrictedZones|commitmentBlind/);
   assert.match(ledger, /intentionally deferred/);
+  assert.match(web, /Product behavior is intentionally not implemented/);
 });

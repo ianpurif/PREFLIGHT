@@ -35,7 +35,9 @@
 - exact result/request, clearance/result, and deployment-intent/clearance binding checks
 - nonce and bounded intent expiry fields for later replay enforcement
 
-Current-time validity, revocation, nonce consumption, authorized-signer checks, and EIP-712 domain separation remain P4/P5 controls. This document is still a seed, not a completed security review.
+Current-time validity and revocation are P4 controls. Nonce consumption, authorized-signer checks,
+and EIP-712 domain separation remain P5 controls. This document is still a seed, not a completed
+security review.
 
 ## P2 controls established
 
@@ -62,3 +64,25 @@ P2 cannot prove that a materialized trace was authentically produced by the decl
 - actual SDK and CRE CLI compilation plus authenticated simulation of the transitive P1/P2 source
 
 Residual risks: an authorized caller can make chosen-input queries and may infer information from verdicts; rate/access policy is outside this stateless workflow. The behavior digest does not prove trace origin. Authenticated CLI simulation is not deployed Nitro, hardware-enclave execution, production Vault custody, DON consensus, or remote attestation.
+
+## P4 controls established
+
+- immutable owner and explicit owner-managed registrar set; `issuer` always derives from `msg.sender`
+- only `CLEAR` may be persisted; `HOLD`, P3 `REJECT`, and unknown values revert
+- nonzero fixed-size storage for every P1 public clearance binding, including both build ID/digest
+  and envelope ID/commitment
+- P1 clearance digest and clearance-ID hash are permanently single-use, preventing overwrite or
+  revocation revival
+- validity requires existence, `CLEAR`, non-revocation, and strict `block.timestamp < expiresAt`
+- exact verification compares every stored identifier, digest, issuance, and expiry field
+- owner/original-issuer revocation is explicit and monotonic; unrelated parties fail
+- P1 year-9999 timestamp maximum and golden SHA-256 transport vectors are enforced in Foundry tests
+- production storage has no dynamic strings/bytes, arrays, confidential envelope fields, loops,
+  external calls, or enumerable state
+
+Residual risks: an authorized registrar can attest false scalar-to-digest mappings because Solidity
+does not parse P1 canonical JSON; registrar key custody and evidence inspection are operational trust
+requirements. The P1 clearance digest is not chain- or contract-domain-separated, so it may be
+recorded in another registry; P5 must bind deployment intent to chain ID, verifying contract,
+authorized signer, and nonce. Block timestamp has normal validator skew and must not be treated as a
+precision clock. No live CRE-to-contract provenance is claimed.

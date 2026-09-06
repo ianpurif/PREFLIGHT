@@ -18,6 +18,10 @@ const required = [
   "packages/ledger-gate/AGENTS.md",
   "integrations/chainlink-cre/AGENTS.md",
   "contracts/AGENTS.md",
+  "contracts/README.md",
+  "contracts/script/DeployPreflightRegistry.s.sol",
+  "contracts/test/PreflightRegistry.t.sol",
+  "contracts/test/PreflightRegistryInvariant.t.sol",
   ".github/workflows/ci.yml",
   "docs/codex/TOOLS.md",
   ".worktreeinclude",
@@ -79,11 +83,39 @@ for (const path of [
   if (!existsSync(resolve(root, path))) throw new Error(`Missing P3 CRE artifact: ${path}`);
 }
 const contract = readFileSync(resolve(root, "contracts/src/PreflightRegistry.sol"), "utf8");
-if (!contract.includes("Boilerplate shell only"))
-  throw new Error("Contract scaffold accidentally became product logic");
+for (const requiredSurface of [
+  "struct ClearanceBindings",
+  "recordClearance",
+  "revokeClearance",
+  "getClearance",
+  "isClearanceValid",
+  "isClearanceValidFor",
+  "RegistrarAuthorizationUpdated",
+  "ClearanceRecorded",
+  "ClearanceBindingsRecorded",
+  "ClearanceRevoked",
+  "block.timestamp < clearance.bindings.expiresAt",
+]) {
+  if (!contract.includes(requiredSurface))
+    throw new Error(`P4 registry is missing required structural surface: ${requiredSurface}`);
+}
+for (const confidentialField of [
+  "restrictedZones",
+  "maxPayloadKg",
+  "speedLimitMmPerSecond",
+  "commitmentBlind",
+]) {
+  if (contract.includes(confidentialField))
+    throw new Error(`P4 registry must not contain confidential field: ${confidentialField}`);
+}
+if (/\bstring\b|\bbytes\s+(?:public|private|internal)\b|\[\]/.test(contract))
+  throw new Error("P4 production registry must use bounded fixed-size storage only");
 const ledgerGate = readFileSync(resolve(root, "packages/ledger-gate/src/index.ts"), "utf8");
 if (!ledgerGate.includes("intentionally deferred"))
   throw new Error("Ledger P5 guard was removed before its authorized phase");
+const webPage = readFileSync(resolve(root, "apps/web/src/app/page.tsx"), "utf8");
+if (!webPage.includes("Product behavior is intentionally not implemented"))
+  throw new Error("P6 UI guard was removed before its authorized phase");
 
 const env = readFileSync(resolve(root, ".env.example"), "utf8");
 const obviousSecretPatterns = [/0x[a-fA-F0-9]{64}/, /sk-[A-Za-z0-9_-]{20,}/, /BEGIN PRIVATE KEY/];
@@ -98,7 +130,7 @@ if (rootAgentsBytes > 16 * 1024)
 
 console.log("✓ scaffold structure present");
 console.log("✓ JSON manifests parse");
-console.log("✓ P1-P3 implementation and P4-P5 phase guardrails present");
+console.log("✓ P1-P4 implementation and P5-P6 phase guardrails present");
 console.log("✓ .env.example has no obvious secret material");
 console.log("✓ root AGENTS.md remains context-efficient");
 

@@ -13,7 +13,15 @@ P2 implements `warehouse-rules-v1` with bounded integer units, committed scenari
 Materialized trace metadata and the P3 behavior digest are declarations/integrity bindings, not proof that a real artifact or physical robot produced the traces. P3 authenticates a configured HTTP submitter, not robot execution. Remote hardware/model attestation remains outside scope.
 
 ## Boundary C — Public chain
-Only minimum public artifacts belong onchain: commitments/digests, evaluator/version metadata, verdict metadata, timestamps/expiry, issuer/revocation state as designed later. Never raw site rules or proprietary model data.
+Only minimum public artifacts belong onchain: identifier hashes, commitments/digests,
+evaluator/version metadata, `CLEAR`, timestamps/expiry, issuer, and revocation state. Never raw site
+rules, proprietary model data, private geometry/thresholds, the commitment blind, or internal
+findings.
+
+P4 implements this boundary with fixed-size storage and bounded reads. An immutable owner manages
+registrars; a registrar is trusted to attest that a validated P1 clearance digest corresponds to the
+submitted scalar fields. The contract does not recompute canonical JSON or prove P3 execution. A
+removed registrar loses record authority but retains revoke-only power for its existing records.
 
 ## Boundary D — Ledger hardware
 The deployment key remains hardware-backed. The browser can prepare an EIP-712 deployment intent and request a signature; it cannot bypass physical confirmation. Backend-held keys are not a valid replacement in the judged path.
@@ -24,7 +32,11 @@ Simulation is evidence about a defined evaluation envelope, not a guarantee abou
 ## Boundary F — Exact-build binding
 Any relevant robot build mutation changes its digest. Reusing clearance for a mismatched digest must fail closed.
 
-P1 establishes the canonical identifiers, versioned schemas, deterministic digests, and pure binding assertions for this boundary. Runtime clearance validity, revocation, signer authorization, and nonce consumption remain later-phase responsibilities.
+P1 establishes the canonical identifiers, versioned schemas, deterministic digests, and pure
+binding assertions for this boundary. P4 stores every public exact binding, prevents digest/ID
+overwrite, permits only `CLEAR`, and enforces expiry and monotonic revocation. Signer authorization,
+chain/verifying-contract binding, and nonce consumption remain P5 responsibilities; a P4 clearance
+alone is not deployment authorization.
 
 ## Threats to design for later
 - hidden-rule exfiltration via logs/errors

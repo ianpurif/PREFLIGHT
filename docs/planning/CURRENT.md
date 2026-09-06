@@ -1,7 +1,7 @@
 # Current State
 
 ## Phase
-**P1–P3 complete. P3 has official authenticated CRE simulation evidence; P4–P8 intentionally not started.**
+**P1–P4 complete locally. P3 has official authenticated CRE simulation evidence; P4 is Sepolia-ready but not deployed. P5–P8 intentionally not started.**
 
 ## What exists
 - all B0 boilerplate/tooling and specialized agentic harness
@@ -23,14 +23,35 @@
 - successful SDK and CRE CLI WASM compilation of the actual transitive P1/P2 workflow
 - official authenticated CRE simulations: unsafe `HOLD`, corrected `CLEAR`, tampered commitment `REJECT`
 - redacted execution evidence with binary/config hashes, execution IDs, public results, and zero confidential-marker leakage
+- minimal Solidity attestation registry keyed by the exact P1 clearance digest
+- owner-managed registrars, immutable issuer attribution, single-use clearance digest/ID, and monotonic revocation
+- fixed-size public binding storage for site, robot, build ID/digest, envelope ID/commitment, evaluator version, evaluation ID/input digest, verdict, issuance, and expiry
+- exact-context validity reads with `block.timestamp < expiresAt` and Foundry unit/fuzz/stateful-invariant coverage
+- P1 golden digest and `sha256(UTF8(exact prefixed identifier))` transport vectors in Solidity tests
+- Sepolia chain-guarded deployment script and non-secret environment/verification instructions
 - type-only scaffold consumers aligned to the canonical domain protocol
 
-Detailed decisions and evidence: ADR-0003, ADR-0004, ADR-0005, the P1/P2/P3 execution plans, and `docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md`.
+Detailed decisions and evidence: ADR-0003 through ADR-0006, the P1–P4 execution plans,
+`docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md`, and
+`docs/compliance/evidence/p4-attestation-registry-local-2026-09-06.md`.
 
 ## Next exact task
-P4 — implement only the minimal public attestation registry when explicitly authorized. Preserve the exact P1 result bindings and keep all private envelope data offchain.
+P5 — implement only the Ledger-backed release gate when explicitly authorized. It must consume the
+P4 exact-clearance read interface, bind the P1 deployment intent with EIP-712, enforce replay
+protection, and keep signing authority on Ledger hardware.
 
 ## Environment status
-Bun 1.4.1 and Foundry 1.8.1 are available. `@chainlink/cre-sdk` 1.19.1 and checksum-verified CRE CLI v1.32.0 compile and simulate the real workflow. The three authenticated simulations pass with CLI-reported simulation binary hash `8d8bff9fdfaf67a8db7b2fa81ea46fa351b5e8f6914b2b6ebe21e2ad4310c315`. The runtime commitment blind was freshly generated into ignored local files; the envelope is source-visible synthetic test data. This is simulation only; live deployment/private-beta access, hardware TEE execution, production Vault custody, and DON consensus are not claimed. P3 adds no contract, Ledger, API, UI, or P4+ implementation.
+Bun 1.4.1 and Foundry 1.8.1 are available. `@chainlink/cre-sdk` 1.19.1 and
+checksum-verified CRE CLI v1.32.0 compile and simulate the real workflow. The three authenticated
+simulations pass with CLI-reported simulation binary hash
+`8d8bff9fdfaf67a8db7b2fa81ea46fa351b5e8f6914b2b6ebe21e2ad4310c315`. The runtime commitment
+blind was freshly generated into ignored local files; the envelope is source-visible synthetic test
+data. This is simulation only; live deployment/private-beta access, hardware TEE execution,
+production Vault custody, and DON consensus are not claimed.
+
+P4 passes local Foundry unit, fuzz, and invariant verification. No
+`SEPOLIA_DEPLOYER_PRIVATE_KEY`, Foundry keystore account, or explorer credential is available, so no
+funded deployer address can be derived or checked and no Sepolia deployment is claimed. P4 adds no
+Ledger, EIP-712, release-agent, API, UI, or P5+ implementation.
 
 The P3 behavior digest binds the public result to the exact supplied synthetic behavior/request but does not authenticate its physical or software origin. Preflight currently proves only that supplied behavior for an exact declared build was evaluated against the committed private envelope.

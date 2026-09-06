@@ -61,3 +61,21 @@ Add future material AI-assisted changes as dated entries. Do not claim fully hum
 **AI-assisted output:** Checksum-verified CRE CLI v1.32.0 execution, authenticated simulation orchestration, a fresh ignored runtime blind distinct from the public unit-test vector, non-secret result/execution-identity capture, raw-output leakage checks, exact Nitro/auth regression assertions, minimal simulator-compatibility corrections, and evidence/planning/verification updates.
 
 **Evidence boundary:** Unsafe returned `HOLD`, corrected returned `CLEAR`, and a tampered confidential blind returned `REJECT`. These are official authenticated local simulations, not a live DON deployment or hardware TEE execution.
+
+## 2026-09-06 — P4 attestation registry
+
+**Tool:** OpenAI Codex with read-only Preflight architecture, contract-surface, test-gap, verification,
+and adversarial-review specialists.
+
+**Human direction:** Implement only P4: a minimal public Solidity registry for exact P1 clearance
+bindings, authorized registration, strict expiry, monotonic revocation, stable reads, extensive
+Foundry coverage, Sepolia deployment readiness, and truthful separation from P3 simulation.
+
+**AI-assisted output:** `PreflightRegistry`, dependency-free Foundry test harness, unit/fuzz/stateful
+invariant tests, P1-to-EVM golden vectors, Sepolia chain-guarded deployment script, scaffold-phase
+transition, ADR-0006, planning/security/evidence updates, and command-based verification.
+
+**Evidence boundary:** P4 locally records registrar-attested public clearance evidence. It does not
+prove live CRE delivery, TEE hardware attestation, authentic robot trace origin, deployment
+authorization, Ledger approval, or physical robot safety. Sepolia deployment remains pending because
+no funded deployer credential or explorer key was available.

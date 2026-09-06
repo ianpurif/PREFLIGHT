@@ -6,6 +6,7 @@ flowchart LR
   API[Fastify Orchestrator]
   SIM[Deterministic Simulation Core]
   CRE[Chainlink CRE Confidential Workflow]
+  REGISTRAR[Authorized P4 Registrar]
   REG[PreflightRegistry on Sepolia]
   LEDGER[Ledger DMK + Ethereum Signer]
   RELEASE[Deployment Release Gate]
@@ -13,7 +14,8 @@ flowchart LR
   UI --> API
   API --> CRE
   CRE --> SIM
-  CRE --> REG
+  CRE -. inspected simulation evidence .-> REGISTRAR
+  REGISTRAR --> REG
   UI --> LEDGER
   LEDGER --> RELEASE
   REG --> RELEASE
@@ -32,7 +34,10 @@ Pure P2 fixed-unit warehouse model, committed seeded scenario generation, materi
 P3 CRE-specific HTTP entrypoint and adapters. The real `handlerInTee` callback reads the private envelope/blind through one fixed CRE secret selector, invokes `@preflight/simulation-core`, and releases only an allowlisted P1 result plus the exact supplied-behavior binding. Authenticated evidence currently uses the local simulator's ignored environment mapping; production Vault DON custody remains unproven. The workflow compiles to the CRE WASM/QuickJS target without Node, filesystem, environment, dynamic-import, browser, or native runtime dependencies.
 
 ### `contracts`
-Minimal public attestation/release verification surface. No private safety envelope storage.
+P4 public attestation registry keyed by the P1 clearance digest. It stores only fixed-size exact
+bindings, timestamps, issuer, and revocation state; owner-managed registrars attest the offchain P1
+digest-to-field mapping. It has no private envelope data, canonical JSON parser, automatic CRE
+delivery, signing, deployment authorization, enumeration, or upgradeability. See ADR-0006.
 
 ### `packages/ledger-gate`
 Browser-only hardware approval boundary. Backend never holds a substitute release key.
@@ -52,4 +57,8 @@ A release must eventually prove all of:
 - clearance has not expired/revoked
 - Ledger-approved deployment intent binds the same identifiers
 
-P1 defines canonical representation and binding vocabulary. P2 defines deterministic simulated evaluation. P3 places that evaluation behind the confidential TEE boundary but neither authenticates robot trace origin nor issues clearance. Registry validity, signing, release authorization, and UI behavior remain open until their tasks are approved.
+P1 defines canonical representation and binding vocabulary. P2 defines deterministic simulated
+evaluation. P3 places that evaluation behind the confidential TEE boundary but neither authenticates
+robot trace origin nor writes onchain. P4 records an authorized registrar's immutable public
+clearance attestation and enforces exact binding, expiry, and revocation. Ledger signing, replay-safe
+release authorization, and UI behavior remain open until their tasks are approved.

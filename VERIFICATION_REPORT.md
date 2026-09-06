@@ -1,58 +1,90 @@
-# P3 Authenticated Simulation Verification Report
+# P4 Attestation Registry Verification Report
 
 **Date:** 2026-09-06
-**Scope:** P3 Chainlink CRE confidential-evaluation evidence closure only; P4–P8 remain unimplemented.
+**Scope:** P4 only; P5–P8 remain unimplemented
+**Status:** Locally complete and verified; Sepolia deployment pending credentials
 
-## Official CRE authenticated simulations
+## Implemented contract surface
 
-The checksum-verified official CRE CLI v1.32.0 authenticated successfully, compiled the actual `preflight-confidential-evaluation-staging` workflow with SDK 1.19.1, and executed each case separately in the local single-node simulator.
+`PreflightRegistry` stores one immutable public record per P1 clearance digest. Every record binds
+clearance/evaluation/site/robot/build/envelope/evaluator identities, build/envelope/evaluation
+digests or commitments, `CLEAR`, issuance, expiry, `msg.sender` issuer, existence, and revocation.
+It exposes bounded getters for raw record retrieval, current validity, clearance-ID lookup, and exact
+binding verification.
 
-Common workflow identity:
+The immutable owner is the initial registrar and manages a registrar mapping. Only registrars may
+record. The owner or original issuer may permanently revoke. Both clearance digest and clearance-ID
+hash are permanently single-use, including after revocation.
 
-- CLI-reported simulation binary hash: `8d8bff9fdfaf67a8db7b2fa81ea46fa351b5e8f6914b2b6ebe21e2ad4310c315`
-- CLI-reported workflow config hash: `4cda450a9d236d49ccd0e3f01285ba26b15c16b0202d35c091c076b6095a3e12`
-- requested runtime: AWS Nitro, `us-west-2`
-- evidence class: **CRE authenticated simulation**; not a live DON deployment or hardware TEE execution
+Validity is exactly: record exists, verdict is `CLEAR`, record is not revoked, and
+`block.timestamp < expiresAt`. Exact validation additionally compares all stored P1 transport
+fields. Registration rejects every zero critical binding, `HOLD`, `REJECT`, unknown verdicts,
+future issuance, `issuedAt >= expiresAt`, already-expired input, duplicate keys, and timestamps over
+P1's `253402300799` maximum.
 
-| Case | Captured (UTC) | Execution ID | Public outcome | Engine/process |
-|---|---|---|---|---|
-| Unsafe fixture | 2026-09-06T08:27:22Z | `060441b006d255fb46dc35619a8ac30f919b769902a0515e74a32d76f105e6fb` | `EVALUATED` / `HOLD` | `SUCCESS` / 0 |
-| Corrected fixture | 2026-09-06T08:28:29Z | `f4ecd7cdcc3d34f084417dbec1e42c5b32e530e6aeab4a70768c21e2f1efb583` | `EVALUATED` / `CLEAR` | `SUCCESS` / 0 |
-| Tampered confidential blind | 2026-09-06T08:29:19Z | `5ea39cec749810a316d75eee77b0fb84249276e8fce776b893b284858ca0c887` | `REJECT`; no verdict | `SUCCESS` / 0 |
+## Trust and privacy boundary
 
-The tampered case used the same unsafe public request and declared commitment as the evaluated unsafe case. Changing only the ignored local confidential input produced a redacted rejection before normal evaluation, demonstrating that commitment reconstruction is load-bearing.
+P4 uses fixed-size EVM transport values and intentionally does not parse P1 canonical JSON. An
+authorized registrar vouches that the decoded P1 clearance digest matches the submitted scalar
+fields. P3 authenticated simulation does not automatically write onchain. P4 is not live DON
+delivery, TEE attestation, deployment authorization, Ledger approval, or a physical-safety claim.
 
-The runtime commitment blind was freshly generated into ignored local files and is distinct from the public P2 unit-test blind. The envelope remains an intentionally source-visible synthetic demo fixture, so this evidence proves confidential-path use and output non-disclosure rather than secrecy from repository readers.
+No private envelope geometry, threshold, rule, blind, confidential response, or internal violation
+report is stored. The production contract has no dynamic strings/bytes, arrays, enumeration,
+external calls, token/governance logic, or upgradeability.
 
-Full redacted commands, results, and execution metadata are recorded in [`docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md`](docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md).
+## P1 compatibility
 
-## Simulator compatibility repair
+- P1 SHA-256 digests: remove `sha256:` and hex-decode directly into `bytes32`.
+- P1 identifiers: `sha256(UTF8(exact validated prefixed identifier))`, explicitly named as hashes.
+- Golden Solidity tests cover the exact P1 clearance/build/envelope/evaluation values.
+- Evaluation identity plus P1 evaluation-inputs digest are stored. No unsupported evaluation-result
+  digest or relabeled P3 behavior digest was introduced.
 
-- Added the required Sepolia RPC target used by CRE CLI v1.32.0 project loading.
-- Passed public fixture paths directly to `--http-payload`, matching the current CLI contract.
-- Removed the optional confidential pre-hook because CLI v1.32.0 supplied empty configuration to that phase and failed before handler execution. The current official confidential TypeScript template also registers `handlerInTee` without that optional hook.
-- Preserved the actual confidential handler, fixed compile-time secret selector, Nitro request, absence of ordinary handler capability calls, P1/P2 validation and evaluation, and redacted public projection.
+## Foundry verification
 
-## Leakage and negative evidence
+- `forge fmt --check` — pass.
+- `forge build` — pass with Solidity 0.8.30, Prague, optimizer 200; Foundry 1.8.1. Advisory lint
+  diagnostics were reviewed and do not represent test/compile failures.
+- `forge test -vvv` — 24 unit/fuzz functions pass and five stateful invariants pass.
+- Fuzz — four security properties at 512 runs each.
+- Invariants — 128 runs, depth 64, 8,192 handler calls; seeded nonvacuous revoked, expired, and
+  long-lived states.
+- `forge test --gas-report` — pass; production bytecode 4,561 bytes. Observed maxima:
+  `recordClearance` 371,757 gas, `revokeClearance` 29,265 gas, `isClearanceValidFor` 29,284 gas.
 
-All three cases were rerun through a raw-output checker. Each expected result was present; the exact confidential secret was absent; and zero markers matched private envelope fields, blind fields/values, warehouse bounds, rule thresholds/IDs, or private zone IDs.
+Coverage includes authorization, every zero field, non-`CLEAR`, P1 timestamp range, exact binding
+mutation/type confusion, expiry before/equal/after, revocation authority/permanence, duplicate
+digest/ID overwrite, P1 transport vectors, unauthorized fuzzing, and stateful invalidity properties.
 
-The stored evidence contains no API key, authentication token, private envelope, commitment blind, private rule value, restricted geometry, internal violation details, or confidential runtime payload. Public commitments, identifiers, digests, and the redacted error code are intentionally retained as protocol evidence.
+## Repository verification
 
-## Verification results
+- `bun run lint` — pass; Biome checked 72 files.
+- `bun run typecheck` — pass; 7/7 tasks.
+- `bun run test` — pass; 10/10 Turbo tasks, preserving 115 P1–P3 tests/2,404 assertions.
+- `bun run build` — pass; 7/7 tasks, including Next.js production build.
+- `bun run contracts:test` — pass; 24 unit/fuzz tests + five invariants.
+- `bun run verify:scaffold` — pass; 4/4 tests with positive P4 and deferred P5/P6 guards.
+- `bun run verify` — pass end to end.
+- `git diff --check` — pass, including an explicit tracked/untracked trailing-whitespace scan.
 
-- `@preflight/chainlink-cre` tests — **25 passed, 0 failed, 343 assertions**.
-- `@preflight/domain` tests — **30 passed, 0 failed, 676 assertions**.
-- `@preflight/simulation-core` tests — **60 passed, 0 failed, 1,385 assertions**.
-- `bun run lint` — pass; Biome 2.5.12 checked **72 files**.
-- `bun run typecheck` — **7/7 workspace tasks pass**.
-- `bun run test` — **10/10 Turbo tasks pass**; 115 substantive tests and 2,404 assertions across P1–P3.
-- `bun run build` — **7/7 workspace tasks pass**, including the Next.js production build.
-- `bun run contracts:test` — pass with Foundry 1.8.1; the pre-P4 contract scaffold correctly reports no tests.
-- `bun run verify:scaffold` — **4/4 scaffold tests pass**.
-- `bun run verify` — pass end to end after the evidence updates.
-- `git diff --check` — pass, including an explicit trailing-whitespace scan over tracked and untracked text files.
+## Independent adversarial review
 
-## Remaining evidence boundary
+The required read-only reviewer focused on authorization, replay/overwrite, hash/type confusion,
+expiry, revocation, zero values, storage/privacy, gas, Chainlink claims, and P5 scope. Three findings
+were fixed: the architecture diagram now routes evidence through the authorized registrar, the two
+registration events collectively carry all public exact bindings, and invariant invalid-action
+checks are seeded/count attempts and verify expected revert selectors. Re-review found no remaining
+security defect. Gas evidence was refreshed after the event change.
 
-There is no remaining blocker for the requested P3 authenticated-simulation evidence. Live deployment/private-beta access, production Vault custody, hardware TEE execution, DON consensus, remote attestation, and authentic robot trace provenance remain unproven and are not implied by this simulation. No P4 contract product logic was added.
+## Sepolia status and remaining P5 risks
+
+The deployment script rejects non-Sepolia chain IDs and reads the deployer key only from
+`SEPOLIA_DEPLOYER_PRIVATE_KEY`. The environment has no Sepolia deployer key/account, RPC variable,
+or Etherscan key; no funded address can be checked. No deployment was attempted and no address is
+claimed.
+
+P5 must not treat P4 evidence as authorization. It must verify the exact P1 clearance/build, bind
+chain ID and verifying contract, require an authorized Ledger-backed signer, consume a nonce, enforce
+intent expiry, and reject blind-signing/different-display paths. Registrar compromise and
+cross-registry recording remain explicit P4 trust/replay risks.
