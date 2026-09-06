@@ -1,111 +1,133 @@
-# P4 Attestation Registry Verification Report
+# P5 Ledger Release Gate Verification Report
 
-**Date:** 2026-09-06
-**Scope:** P4 only; P5–P8 remain unimplemented
-**Status:** Complete, locally verified, and source-verified on Ethereum Sepolia
+**Date:** 2026-09-07 (implementation and live read began 2026-09-06)
 
-## Implemented contract surface
+**Scope:** P5 only; P1–P4 regression-checked; P6–P8 not implemented
 
-`PreflightRegistry` stores one immutable public record per P1 clearance digest. Every record binds
-clearance/evaluation/site/robot/build/envelope/evaluator identities, build/envelope/evaluation
-digests or commitments, `CLEAR`, issuance, expiry, `msg.sender` issuer, existence, and revocation.
-It exposes bounded getters for raw record retrieval, current validity, clearance-ID lookup, and exact
-binding verification.
+**Status:** Software implementation passes; P5 remains incomplete because physical Ledger evidence is blocked
 
-The immutable owner is the initial registrar and manages a registrar mapping. Only registrars may
-record. The owner or original issuer may permanently revoke. Both clearance digest and clearance-ID
-hash are permanently single-use, including after revocation.
+## Implemented authorization boundary
 
-Validity is exactly: record exists, verdict is `CLEAR`, record is not revoked, and
-`block.timestamp < expiresAt`. Exact validation additionally compares all stored P1 transport
-fields. Registration rejects every zero critical binding, `HOLD`, `REJECT`, unknown verdicts,
-future issuance, `issuedAt >= expiresAt`, already-expired input, duplicate keys, and timestamps over
-P1's `253402300799` maximum.
+The existing P1 deployment intent is versioned to `preflight.deployment-intent/v2` with one fixed
+`ACTIVATE_DEPLOYMENT` action. P5 builds full EIP-712 typed data under domain `Preflight`, version
+`1`, Sepolia `11155111`, and the deployed P4 registry
+`0xFB270cc222efa8B5005AA097dD512Be2558dde65`. The deployment artifact is the single address/chain
+source.
 
-## Trust and privacy boundary
+The message binds protocol/schema, exact site, robot, build ID/digest, clearance ID/digest,
+environment, authorized signer, server nonce, integer issuance/expiry, and the canonical P1 intent
+digest. Tests lock field order and a golden typed-data digest, and mutate every security field and
+domain component.
 
-P4 uses fixed-size EVM transport values and intentionally does not parse P1 canonical JSON. An
-authorized registrar vouches that the decoded P1 clearance digest matches the submitted scalar
-fields. P3 authenticated simulation does not automatically write onchain. P4 is not live DON
-delivery, TEE attestation, deployment authorization, Ledger approval, or a physical-safety claim.
+Before a device request, deterministic API policy validates proposal/clearance identity, the public
+signer allowlist, live chain/contract code, and every P4 binding at one explicit block. After
+signature recovery it reauthorizes the signer and repeats the exact P4 read. Missing, non-`CLEAR`,
+revoked, expired, inexact, wrong-chain/registry, RPC, persistence, malformed, substitution, and
+TOCTOU states fail closed.
 
-No private envelope geometry, threshold, rule, blind, confidential response, or internal violation
-report is stored. The production contract has no dynamic strings/bytes, arrays, enumeration,
-external calls, token/governance logic, or upgradeability.
+SQLite is the honest single-node offchain nonce authority. A 128-bit random nonce, canonical intent,
+clearance, signer, typed-data digest, and precheck block are persisted under WAL + synchronous
+`FULL`; one conditional update atomically consumes `ISSUED` exactly once. Concurrent consumers yield
+one authorization. No browser-local or onchain replay claim is made.
 
-## P1 compatibility
+## Ledger implementation
 
-- P1 SHA-256 digests: remove `sha256:` and hex-decode directly into `bytes32`.
-- P1 identifiers: `sha256(UTF8(exact validated prefixed identifier))`, explicitly named as hashes.
-- Golden Solidity tests cover the exact P1 clearance/build/envelope/evaluation values.
-- Evaluation identity plus P1 evaluation-inputs digest are stored. No unsupported evaluation-result
-  digest or relabeled P3 behavior digest was introduced.
+Pinned packages:
 
-## Foundry verification
+- `@ledgerhq/context-module` `2.5.0`
+- `@ledgerhq/device-management-kit` `1.9.0`
+- `@ledgerhq/device-transport-kit-web-hid` `1.2.4`
+- `@ledgerhq/device-signer-kit-ethereum` `1.18.0`
+- `rxjs` `7.8.2`
 
-- `forge fmt --check` — pass.
-- `forge build` — pass with Solidity 0.8.30, Prague, optimizer 200; Foundry 1.8.1. Advisory lint
-  diagnostics were reviewed and do not represent test/compile failures.
-- `forge test -vvv` — 24 unit/fuzz functions pass and five stateful invariants pass.
-- Fuzz — four security properties at 512 runs each.
-- Invariants — 128 runs, depth 64, 8,192 handler calls; seeded nonvacuous revoked, expired, and
-  long-lived states.
-- `forge test --gas-report` — pass; deployment-size metric 4,561 bytes. Live Sepolia runtime
-  bytecode is 4,263 bytes. Observed maxima:
-  `recordClearance` 371,757 gas, `revokeClearance` 29,265 gas, `isClearanceValidFor` 29,284 gas.
+The client-only adapter performs explicit WebHID discovery/connect, checks environment support,
+confirms the Ethereum address on-device for chain `11155111`, verifies the active Ethereum app,
+reconstructs the server-prepared full typed data, and submits only `signTypedData`. The official
+Ethereum Context Module must return the exact chain, registry, 15-field schema, declared filter
+count, and every exact display-filter path before the signing command may proceed. Disconnect,
+wrong app/browser, missing origin token, signer mismatch, refusal, generic failure, partial/mismatched
+context, malformed output, and stale/tampered prepared requests are explicit failures. Physical
+refusal maps to `HUMAN_REJECTED` with no retry.
 
-Coverage includes authorization, every zero field, non-`CLEAR`, P1 timestamp range, exact binding
-mutation/type confusion, expiry before/equal/after, revocation authority/permanence, duplicate
-digest/ID overwrite, P1 transport vectors, unauthorized fuzzing, and stateful invalidity properties.
+Signer Kit 1.18.0 exposes a legacy typed-data fallback step when Clear Signing context is
+unavailable. P5 observes `SIGN_TYPED_DATA_LEGACY`, cancels immediately, and returns
+`CLEAR_SIGNING_UNAVAILABLE`; output from that path is never accepted. The exported strict action
+requires the context-resolution guard and a build-context → provide-context → sign-typed-data path,
+so callers cannot omit the guard. Source/scaffold/dependency audits find no legacy LedgerJS,
+hashed-EIP-712, personal-sign, raw-transaction, private-key, or frontend-boolean fallback.
 
-## Repository verification
+`POST /release/prepare` is the intentionally small agent-facing/orchestration boundary. The current
+browser route is a manual operator evidence harness; no autonomous or LLM agent runtime was
+implemented or demonstrated, so the agent half of the intended partner story is not claimed.
 
-- `bun run lint` — pass; Biome checked 73 files after adding the public deployment artifact.
-- `bun run typecheck` — pass; 7/7 tasks.
-- `bun run test` — pass; 10/10 Turbo tasks, preserving 115 P1–P3 tests/2,404 assertions.
-- `bun run build` — pass; 7/7 tasks, including Next.js production build.
-- `bun run contracts:test` — pass; 24 unit/fuzz tests + five invariants.
-- `bun run verify:scaffold` — pass; 4/4 tests with positive P4 and deferred P5/P6 guards.
-- `bun run verify` — pass end to end.
-- `git diff --check` — pass, including an explicit tracked/untracked trailing-whitespace scan.
+## Verification results
 
-All commands above were rerun after the Sepolia deployment evidence and documentation were added.
+- Ledger gate: 15/15 tests, including adapter lifecycle, missing origin token, signer mismatch,
+  refusal, failure, malformed output, exact/partial runtime descriptor resolution, required context
+  steps, and legacy-fallback cancellation.
+- Chain client: 11/11 tests for deployed-domain EIP-712, all field/domain mutations, signature
+  recovery, exact P4 transport, positive pinned-block reader/ABI behavior, chain/registry, verdict,
+  revocation, and expiry boundaries.
+- API: 12/12 tests for pre-sign mismatch/allowlist, signature tampering, Build A/Build B rejection,
+  durable reopen, concurrent one-time consumption, replay, TOCTOU, strict request shape, CORS, and
+  fail-closed HTTP error mapping.
+- Domain: 30/30; simulation core: 60/60; Chainlink CRE: 25/25.
+- Full TypeScript total: 153 tests, 2,686 assertions, zero failures.
+- `bun run lint`: pass; Biome checks 98 files.
+- `bun run typecheck`: pass; 7/7 Turbo tasks.
+- `bun run test`: pass; 11/11 Turbo tasks.
+- `bun run build`: pass; 7/7 tasks; Next.js production build includes static `/p5-ledger`.
+- `bun run contracts:test`: pass; 24 Foundry unit/fuzz tests plus five invariants (128 runs,
+  8,192 calls).
+- `bun run verify:scaffold`: pass; 4/4 tests with positive P5 assertions and P6 guard intact.
+- `bun audit`: pass after top-level compatible `uuid` `11.1.1` and `ws` `8.21.0` overrides; 210
+  packages checked, no known vulnerabilities.
+- `git diff --check`: pass.
+- `bun run verify`: pass after the last implementation, documentation, and review corrections.
 
-## Independent adversarial review
+The read-only live Sepolia P5 client confirmed chain, registry code, and exact-reader behavior at
+block `11645707`; a deliberately unregistered local fixture returned `exists=false` and
+`exactMatch=false`. No demo clearance transaction was created. See
+`docs/compliance/evidence/p5-ledger-release-gate-software-2026-09-06.md`.
 
-The required read-only reviewer focused on authorization, replay/overwrite, hash/type confusion,
-expiry, revocation, zero values, storage/privacy, gas, Chainlink claims, and P5 scope. Three findings
-were fixed: the architecture diagram now routes evidence through the authorized registrar, the two
-registration events collectively carry all public exact bindings, and invariant invalid-action
-checks are seeded/count attempts and verify expected revert selectors. Re-review found no remaining
-security defect. Gas evidence was refreshed after the event change.
+## Physical Ledger results
 
-The P4.1 deployment-evidence reviewer independently confirmed the Sepolia receipt/block/time,
-deployer-owner-registrar state, constants, runtime hash/size, Etherscan compiler/constructor source
-metadata, Sourcify exact match, unchanged `1929651` source, public artifact binding, and absence of
-credential leakage, clearance writes, or P5 code. Initial findings were documentation consistency
-only: hard-break whitespace, stale predeployment status/risk/history text, and incomplete sanitized
-command capture. All were corrected; re-review found no remaining correctness, security, leakage,
-or scope issue.
+- A — valid exact clearance + physical approval: **not run**
+- B — physical rejection: **not run**
+- C — mutated build blocked before Ledger: local deterministic test passes; physical/demo capture pending
+- D — invalid/revoked/expired blocked before Ledger: local deterministic tests pass; physical/demo capture pending
+- E — consumed physical signature replay: local durable replay test passes; physical artifact pending
+- F — physical signed-intent tampering: local signature/binding tests pass; physical artifact pending
 
-## Ethereum Sepolia deployment
+No Ledger device model, firmware, Ethereum app version, derived public signer, physical signature,
+or signature hash is claimed. `NEXT_PUBLIC_LEDGER_ORIGIN_TOKEN` is unset, and the committed ERC-7730
+v1 file is only a candidate—not evidence of Ledger acceptance/serving for this origin. P5 fails
+closed without both prerequisites and a real authorized device. Blind signing was not enabled.
 
-The unchanged chain-guarded script deployed `PreflightRegistry` from source commit `1929651` to
-`0xFB270cc222efa8B5005AA097dD512Be2558dde65` on chain ID `11155111`. Transaction
-`0x9dce1c53715d1a0f7b39e469d3ec350ffec2726cbb1e396432dd545f6c16d497` succeeded in block
-`11644462` at `2026-09-06T02:48:00Z`. The deployer, immutable owner, and initial registrar are all
-`0xaA5768d0f2157F8781efb975CDd9aec99e7879E3`. Etherscan and Sourcify report the source verified.
+## Dependency and secret review
 
-Live RPC readback confirmed nonempty runtime bytecode, owner and registrar state, `bytes32("CLEAR")`,
-P1's maximum protocol timestamp, and false/zero results for a nonexistent clearance. No clearance
-was created for evidence. The public machine-readable identity is
-`contracts/deployments/sepolia.json`; the curated command/result record is
-`docs/compliance/evidence/p4-sepolia-deployment-2026-09-06.md`. Ignored credentials and raw Foundry
-broadcast/cache output are not committed.
+The final dependency graph contains no `@ledgerhq/hw-app-*` or `@ledgerhq/hw-transport-*` package.
+`bun audit fix` could not update SDK-pinned vulnerable transitive versions within their declared
+ranges, so compatible top-level Bun overrides were applied and the Ledger tests/browser build were
+rerun; `bun audit` then reported zero vulnerabilities.
 
-## Remaining P5 risks
+The tracked/untracked working tree and Git history were scanned without printing candidate values
+for seed/recovery phrases, private keys, PIN/credential assignments, Ledger origin tokens, RPC or
+Etherscan credentials, CRE secrets, and envelope blinds. No leak was found. `gitleaks` was not
+installed, so this result uses filename/history checks, assignment/high-entropy regex checks, Git
+ignore verification, and targeted source/dependency scans. `.env`, SQLite data, Foundry output, and
+CRE local secrets remain ignored.
 
-P5 must not treat P4 evidence as authorization. It must verify the exact P1 clearance/build, bind
-chain ID and verifying contract, require an authorized Ledger-backed signer, consume a nonce, enforce
-intent expiry, and reject blind-signing/different-display paths. Registrar compromise and
-cross-registry recording remain explicit P4 trust/replay risks.
+## Scope and unresolved risk
+
+No P6 robot activation, digital twin, autonomous execution, Key Ring, new contract, automatic
+CRE-to-EVM delivery, or private-key custody was added. The `/p5-ledger` page is only an explicit
+WebHID evidence harness.
+
+P5 cannot be called complete until the origin/descriptor/device prerequisites exist and physical
+cases A–F pass. The intended autonomous-agent story also needs truthful execution evidence; P5
+currently provides the proposal API but no agent runtime. Even after hardware closure, SQLite
+protects one coordinated API database only. Database loss/split replicas, Sepolia reorgs, and
+clearance revocation after authorization but before a future P6 action require operational/finality
+policy. P5 does not prove physical robot safety, trace provenance, registrar honesty, or live CRE
+delivery.

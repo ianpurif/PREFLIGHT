@@ -98,3 +98,26 @@ and command-based verification.
 no live CRE-to-EVM delivery or TEE attestation is claimed, and no Ledger, EIP-712, signer, nonce,
 release, API, UI, or P5 behavior was implemented. Credentials and confidential P3 values remain
 ignored and uncommitted.
+
+## 2026-09-06 — P5 Ledger release-gate software
+
+**Tool:** OpenAI Codex using project execution-plan, vertical-slice, Ledger partner-compliance,
+verification-loop, and handoff skills plus read-only domain, architecture, Ledger API, test-gap,
+partner, and adversarial-review specialists.
+
+**Human direction:** Implement only P5: an exact one-time Ledger-backed release authorization over
+the deployed P4 registry, using current DMK/WebHID/Ethereum Device Signer Kit, full EIP-712, strict
+pre/post deterministic policy, physical human approval, replay prevention, and no P6 work.
+
+**AI-assisted output:** Minimal DeploymentIntent v2 action correction; exact P1-to-P4 chain reader;
+full deployed-domain EIP-712 construction/recovery; authorized-signer policy; durable SQLite nonce
+and TOCTOU checks; browser-only Ledger adapter; exact runtime Clear Signing filter guard; explicit
+legacy typed-data fallback cancellation; minimal WebHID evidence harness; deterministic/device and
+API-boundary tests; scaffold transition; ADR-0007; and
+planning, security, partner, compliance, and verification documentation.
+
+**Evidence boundary:** Software/mock verification and a read-only live Sepolia missing-fixture check
+are recorded. Physical Ledger cases A–F were not run because no Ledger-issued origin token or
+accepted/served ERC-7730 descriptor was available. No device model/app/signer, physical approval,
+autonomous/LLM agent execution, robot activation, backend key, blind-signing result, or P6
+functionality is claimed.

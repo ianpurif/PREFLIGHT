@@ -1,6 +1,6 @@
 # Preflight — Confidential Robot Deployment Gate
 
-> **P1–P4 implemented and verified; the P4 registry is live on Ethereum Sepolia. P5–P8 remain intentionally unimplemented.**
+> **P1–P4 are complete and the P4 registry is live on Sepolia. P5 software is locally verified but remains incomplete until physical Ledger Clear Signing evidence is captured; P6–P8 are not started.**
 
 Preflight is a confidential deployment gate for autonomous warehouse robots: an exact robot software build must pass a site's private evaluation envelope, then a human must authorize that exact build on Ledger hardware before deployment.
 
@@ -15,7 +15,7 @@ This repository is specialized for an ETHGlobal **From Scratch** build using **C
 - **Confidential evaluation:** Chainlink CRE TypeScript SDK (`@chainlink/cre-sdk`), WASM/QuickJS constraints respected
 - **Attestation registry:** Solidity + Foundry, Sepolia-first
 - **Hardware approval:** Ledger Device Management Kit + WebHID + Ethereum Signer Kit; EIP-712 deployment intents
-- **EVM client:** viem (implementation phase)
+- **EVM client:** viem exact-binding registry reads + EIP-712 verification
 - **Quality:** Biome, Bun test, Playwright, Foundry, GitHub Actions
 - **Agentic harness:** root/scoped `AGENTS.md`, project-local Codex skills, custom subagents, worktree tooling, review + verification loops
 
@@ -34,8 +34,13 @@ Chainlink CRE confidential-evaluation workflow with authenticated local simulati
 minimal exact-binding attestation registry with Foundry unit/fuzz/invariant coverage. The registry
 is [deployed and source-verified on Sepolia](https://sepolia.etherscan.io/address/0xFB270cc222efa8B5005AA097dD512Be2558dde65),
 with its public chain/contract identity recorded in
-[`contracts/deployments/sepolia.json`](contracts/deployments/sepolia.json). The Ledger release gate,
-demo UI, and later phases remain scoped placeholders.
+[`contracts/deployments/sepolia.json`](contracts/deployments/sepolia.json). P5 now implements the
+full exact EIP-712 request, current Ledger DMK/WebHID/Ethereum signer adapter, authorized-signer
+policy, pre/post registry checks, signature recovery, and durable one-time authorization. It fails
+closed without a Ledger-issued origin token and an exact accepted Clear Signing descriptor response.
+The current browser route is a manual hardware-evidence harness; no autonomous-agent execution is
+claimed. Physical cases A–F are not yet captured, so P5 is not complete and no P6 robot
+activation/digital twin exists.
 
 ## Prerequisites
 
@@ -43,7 +48,7 @@ demo UI, and later phases remain scoped placeholders.
 - Bun 1.4.x (CRE minimum: 1.2.21)
 - Foundry (`forge`, `anvil`, `cast`) for contract work
 - Chromium/Chrome for WebHID Ledger integration
-- A Ledger device is optional until the hardware integration task
+- A supported Ledger device, current Ethereum app, issued origin token, and accepted ERC-7730 descriptor are required to close P5 hardware evidence
 
 ## Start
 
@@ -104,5 +109,6 @@ See `docs/codex/OPERATING_MODEL.md`.
 
 ## Next task
 
-P4 is complete and deployed on Sepolia. Start from `docs/planning/CURRENT.md`; do not begin P5
-without an explicit implementation prompt and the required Ledger hardware/SDK readiness.
+Close only the P5 physical hardware evidence described in `docs/planning/CURRENT.md`. Do not begin
+P6 until full Clear Signing approval/refusal, pre-Ledger denials, replay, and tampering are captured
+on a real authorized device.

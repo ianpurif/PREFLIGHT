@@ -36,12 +36,13 @@
 - [x] Sepolia deployment, source verification, public RPC readback, and non-secret P5 registry identity
 
 ## P5 — Ledger release gate
-- [ ] align DMK and signer-kit peer versions before implementation
-- [ ] DMK/WebHID browser adapter
-- [ ] EIP-712 deployment intent
-- [ ] Clear Signing descriptor/origin token; reject blind-signing fallback
-- [ ] device signing path
-- [ ] replay/mismatch tests
+- [x] align and pin compatible DMK, WebHID transport, context, signer-kit, and RxJS versions
+- [x] DMK/WebHID browser adapter with explicit device/app/address lifecycle
+- [x] full EIP-712 deployment intent bound to the deployed Sepolia registry
+- [x] local ERC-7730 descriptor candidate plus exact runtime filter-resolution guard and fail-closed legacy/blind-fallback rejection
+- [ ] Ledger-issued origin token and accepted/served Clear Signing descriptor
+- [x] device signing path implemented and mock-verified (physical execution pending)
+- [x] deterministic pre/post clearance policy, authorized signer, durable nonce, replay/TOCTOU/mismatch tests
 - [ ] physical hardware evidence
 
 ## P6 — Demo UI / digital twin

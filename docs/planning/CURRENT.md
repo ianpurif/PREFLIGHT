@@ -1,63 +1,44 @@
 # Current State
 
 ## Phase
-**P1–P4 complete. P3 has official authenticated CRE simulation evidence; P4 is deployed and source-verified on Ethereum Sepolia. P5–P8 intentionally not started.**
 
-## What exists
-- all B0 boilerplate/tooling and specialized agentic harness
-- canonical prefixed/branded site, robot, build, envelope, evaluator, evaluation, and clearance identifiers
-- strict versioned schemas for build, envelope metadata, evaluation inputs/request/result, clearance, and deployment intent
-- Preflight Canonical JSON v1 + deterministic UTF-8/SHA-256 domain-separated digests
-- secret-blinded safety-envelope commitment semantics
-- pure evaluation/clearance/deployment binding assertions and negative/golden-vector tests
-- pure fixed-unit warehouse model with closed point/segment geometry
-- committed xorshift32 scenario generation with stable ordering
-- validated restricted-zone, site/zone speed, and payload-zone rules
-- deterministic `CLEAR`/`HOLD` evaluator with structured internal evidence
-- synthetic unsafe/corrected build fixtures and boundary/property/golden tests
-- CRE SDK 1.19.1 HTTP workflow registered through the real `handlerInTee` path
-- Nitro/us-west-2 requirement, one compile-time fixed confidential secret selector, and no ordinary handler capability calls
-- versioned public/confidential P3 schemas, canonical behavior-input binding, and redacted failures
-- private envelope/blind decoding, commitment verification, and unchanged P2 evaluation inside the TEE callback
-- allowlisted public P1 result with no private envelope, internal findings, counts, thresholds, blind, or logs
-- successful SDK and CRE CLI WASM compilation of the actual transitive P1/P2 workflow
-- official authenticated CRE simulations: unsafe `HOLD`, corrected `CLEAR`, tampered commitment `REJECT`
-- redacted execution evidence with binary/config hashes, execution IDs, public results, and zero confidential-marker leakage
-- minimal Solidity attestation registry keyed by the exact P1 clearance digest
-- owner-managed registrars, immutable issuer attribution, single-use clearance digest/ID, and monotonic revocation
-- fixed-size public binding storage for site, robot, build ID/digest, envelope ID/commitment, evaluator version, evaluation ID/input digest, verdict, issuance, and expiry
-- exact-context validity reads with `block.timestamp < expiresAt` and Foundry unit/fuzz/stateful-invariant coverage
-- P1 golden digest and `sha256(UTF8(exact prefixed identifier))` transport vectors in Solidity tests
-- Sepolia chain-guarded deployment script and non-secret environment/verification instructions
-- source-verified Sepolia `PreflightRegistry` at `0xFB270cc222efa8B5005AA097dD512Be2558dde65`
-- public P5 registry-domain artifact binding chain ID `11155111` to that exact verifying contract
-- type-only scaffold consumers aligned to the canonical domain protocol
+**P1–P4.1 are complete. P5 software is implemented and locally verified, but P5 remains open because the required physical Ledger evidence cannot yet be produced. P6–P8 are intentionally not started.**
 
-Detailed decisions and evidence: ADR-0003 through ADR-0006, the P1–P4 execution plans,
-`docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md`, and
-`docs/compliance/evidence/p4-attestation-registry-local-2026-09-06.md`, and
-`docs/compliance/evidence/p4-sepolia-deployment-2026-09-06.md`.
+## P5 implementation now present
+
+- `DeploymentIntent` v2 adds the fixed `ACTIVATE_DEPLOYMENT` action without creating a second intent model.
+- EIP-712 signs the full exact intent under `Preflight` v1, Sepolia `11155111`, and the deployed registry from `contracts/deployments/sepolia.json`.
+- The signed message binds protocol/schema, site, robot, build ID/digest, clearance ID/digest, environment, authorized signer, nonce, issuance, expiry, and the P1 intent digest.
+- The API reads the real P4 interface at one explicit block and rejects missing, non-`CLEAR`, revoked, expired, inexact, wrong-chain, or wrong-registry clearance state.
+- The signer address must be in the operator-controlled `PREFLIGHT_AUTHORIZED_SIGNERS` allowlist before a Ledger request is prepared and again after recovery.
+- Nonces are generated server-side, persisted in SQLite, and atomically consumed once. Invalid signatures and failed post-sign checks do not consume them.
+- Clearance is checked before signing and again before nonce consumption. Revocation or expiry between checks denies authorization.
+- The browser adapter uses pinned Ledger DMK, WebHID Device Transport Kit, Context Module, and Ethereum Device Signer Kit packages. It requires explicit connection, on-device address confirmation, the Ethereum app, and full typed-data signing.
+- The runtime Clear Signing guard requires successful resolution for the exact chain, registry, 15-field schema, filter count, and every display path before signing may proceed. Partial/mismatched context and the signer kit's legacy typed-data fallback state are cancelled and rejected. There is no personal-sign, raw-transaction, hashed-EIP-712, backend-key, or frontend-boolean fallback.
+- A minimal `/p5-ledger` operator harness exists only for WebHID/hardware evidence capture. It does not activate a robot or implement the P6 digital twin.
+- `/release/prepare` is the smallest agent-facing proposal interface, but no autonomous/LLM agent runtime or agent execution evidence is implemented in P5. The current browser flow is manual and must not be presented otherwise.
+- Mock tests cover deterministic EIP-712 mutation, the positive exact registry-reader path, API request/error boundaries, authorized signatures, durable/concurrent replay rejection, TOCTOU, build mutation, device lifecycle, refusal, exact/partial descriptor resolution, malformed output, and legacy-fallback cancellation.
+
+## Current blocker
+
+Physical cases A–F have **not** been run. The local environment has no configured Ledger-issued origin token, and the repository's ERC-7730 file is only a candidate descriptor—not evidence that Ledger has accepted/served it for this origin. No physical Ledger model, firmware, Ethereum app, signer address, approval, or rejection result was captured.
+
+P5 therefore does not yet prove a hardware-backed human approval. Full Clear Signing must be enabled with a matching Ledger origin token and accepted descriptor, then a real device and a deliberate demo `CLEAR` record must exercise approval, refusal, build mismatch, invalid clearance, replay, and tampering. Blind signing must remain disabled; if the SDK attempts its legacy fallback, the adapter fails closed.
 
 ## Next exact task
-P5 — implement only the Ledger-backed release gate when explicitly authorized. It must consume the
-P4 exact-clearance read interface, bind the P1 deployment intent with EIP-712, enforce replay
-protection, and keep signing authority on Ledger hardware.
+
+Close P5 hardware evidence only:
+
+1. obtain/configure the Ledger-issued origin token and accepted ERC-7730 descriptor;
+2. connect an authorized Ledger in Chromium over localhost/HTTPS;
+3. create an honestly labeled demo/test P4 `CLEAR` record only if required;
+4. run and capture physical cases A–F without secrets;
+5. rerun the full verification loop and independent review.
+
+Do not begin P6 until that evidence closes P5.
 
 ## Environment status
-Bun 1.4.1 and Foundry 1.8.1 are available. `@chainlink/cre-sdk` 1.19.1 and
-checksum-verified CRE CLI v1.32.0 compile and simulate the real workflow. The three authenticated
-simulations pass with CLI-reported simulation binary hash
-`8d8bff9fdfaf67a8db7b2fa81ea46fa351b5e8f6914b2b6ebe21e2ad4310c315`. The runtime commitment
-blind was freshly generated into ignored local files; the envelope is source-visible synthetic test
-data. This is simulation only; live deployment/private-beta access, hardware TEE execution,
-production Vault custody, and DON consensus are not claimed.
 
-P4 passes local Foundry unit, fuzz, and invariant verification. The unchanged registry from source
-commit `1929651` was mined on Sepolia in transaction
-`0x9dce1c53715d1a0f7b39e469d3ec350ffec2726cbb1e396432dd545f6c16d497`, block `11644462`, and is
-verified on Etherscan and Sourcify. Live RPC reads confirm the expected immutable owner, initial
-registrar, constants, deployed code, and nonexistent-clearance invalidity. The ignored deployment
-credentials and generated Foundry broadcast/cache files remain uncommitted. P4 adds no Ledger,
-EIP-712, release-agent, API, UI, or P5+ implementation.
+Bun 1.4.1 and Foundry 1.8.1 are available. P1–P4 regressions remain in scope. A read-only Sepolia P5 client run on 2026-09-06 confirmed chain `11155111`, registry `0xFB270cc222efa8B5005AA097dD512Be2558dde65`, and live contract access at block `11645707`; the deliberately unregistered local fixture returned `exists=false` and `exactMatch=false`, as expected. This is reader/policy evidence, not a successful release or proof that the registry contains no other clearances.
 
-The P3 behavior digest binds the public result to the exact supplied synthetic behavior/request but does not authenticate its physical or software origin. Preflight currently proves only that supplied behavior for an exact declared build was evaluated against the committed private envelope.
+P3's authenticated CRE runs remain simulation evidence only. P4 remains an authorized registrar attestation, not automatic CRE delivery. Neither Ledger nor Preflight proves physical robot safety.

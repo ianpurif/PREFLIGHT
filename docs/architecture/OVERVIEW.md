@@ -44,13 +44,30 @@ versioned in `contracts/deployments/sepolia.json` for later P5 domain binding. I
 does not authorize a deployment.
 
 ### `packages/ledger-gate`
-Browser-only hardware approval boundary. Backend never holds a substitute release key.
+P5 browser-only DMK/WebHID/Ethereum Signer Kit adapter. It confirms the Ethereum address on-device,
+requests only the exact full EIP-712 `DeploymentIntent`, requires the Context Module to resolve all
+15 exact display filters, normalizes physical refusal, and cancels partial context or the signer
+kit's legacy typed-data fallback. The backend never holds a substitute release key. Physical Clear
+Signing evidence remains pending. See ADR-0007.
+
+### `packages/chain-client`
+
+P5 read-only Sepolia adapter and authorization protocol. It consumes the authoritative P4 deployment
+artifact, maps exact P1 bindings to the deployed ABI, reads one consistent block, constructs the
+fixed EIP-712 domain/message, and verifies recovered signatures.
 
 ### `apps/api`
-Orchestration, public/non-confidential persistence, partner calls, demo coordination. Never becomes the safety authority.
+P5 deterministic prepare/consume authority. It enforces the signer allowlist, checks exact live P4
+state before and after signing, persists public request data and atomic one-time nonces in SQLite,
+and emits a `ReleaseAuthorization` only after verification. This is an offchain single-node replay
+boundary, not an onchain authorization claim. It is the minimal agent-facing proposal API, but P5
+does not implement or demonstrate an autonomous/LLM agent runtime. It never signs or receives
+private keys.
 
 ### `apps/web`
-Operator UI and digital-twin rendering. Rendering is a view of simulation state, not the source of truth.
+The `/p5-ledger` route is a minimal WebHID operator/evidence harness for explicit device connection,
+approval, and public results. It is manual, not an autonomous-agent demo, and does not activate a
+robot or implement the P6 digital twin.
 
 ## Intended release check
 A release must eventually prove all of:
@@ -64,5 +81,7 @@ A release must eventually prove all of:
 P1 defines canonical representation and binding vocabulary. P2 defines deterministic simulated
 evaluation. P3 places that evaluation behind the confidential TEE boundary but neither authenticates
 robot trace origin nor writes onchain. P4 records an authorized registrar's immutable public
-clearance attestation and enforces exact binding, expiry, and revocation. Ledger signing, replay-safe
-release authorization, and UI behavior remain open until their tasks are approved.
+clearance attestation and enforces exact binding, expiry, and revocation. P5 software adds an exact
+full EIP-712 request, Ledger-only signing adapter, deterministic pre/post policy, signature recovery,
+and durable one-time authorization. P5 remains open until physical Clear Signing cases A–F are
+evidenced. No P6 activation or digital twin exists.

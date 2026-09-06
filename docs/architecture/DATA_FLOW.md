@@ -10,17 +10,25 @@ This is an architectural contract, not implementation.
 6. **Deterministic evaluator** runs unchanged inside the confidential callback. It reconstructs the P1 commitment before rule evaluation, validates exact site/envelope/robot/build/evaluator/scenario/trace bindings, and emits the detailed internal report only in TEE-local memory.
 7. **Minimal evaluation result** contains the unchanged P1 `EvaluationResult`, public behavior-input digest, and synthetic-provenance marker. Private envelope values, blind, scenario findings, violations, counts, and caught diagnostics do not leave confidential execution. Rejections expose only a fixed schema/status/code.
 8. **Registry transaction** is submitted by an owner-authorized registrar after inspecting a valid
-   `CLEAR` result. It records the P1 clearance digest and fixed-size exact bindings. The implemented
-   P4 path is manual/authorized registration; it is not automatic CRE delivery and is not yet
-   deployed to Sepolia.
-9. **Web app** reads clearance and constructs a human-readable EIP-712 deployment intent in later phases.
-10. **Ledger** displays/signs the exact deployment intent after user action in P5.
-11. **Release gate** checks clearance + intent bindings before enabling the simulated deployment.
-12. **Digital twin** renders the resulting state.
+   `CLEAR` result. It records the P1 clearance digest and fixed-size exact bindings. The verified P4
+   registry is deployed on Sepolia; registration remains manual/authorized, not automatic CRE delivery.
+9. **Release prepare API** validates exact proposal/clearance bindings and the signer allowlist, then
+   reads the deployed registry at one explicit block. Only an existing exact `CLEAR`, unrevoked,
+   unexpired record can produce a server-nonced full EIP-712 request.
+10. **WebHID operator harness** connects a Ledger on an explicit human gesture, confirms its address
+    on-device, reconstructs the exact request, and requests full typed-data signing. The runtime
+    descriptor must resolve every exact display path; partial context or legacy/blind fallback fails
+    closed. This is a manual evidence harness, not an autonomous-agent runtime.
+11. **Human + Ledger** review/approve or reject. The private key never enters browser, API, or agent.
+12. **Release consume API** reconstructs the request, recovers an authorized signer, repeats the exact
+    P4 check for TOCTOU, enforces `now < expiresAt`, atomically consumes the durable nonce once, and
+    emits a public `ReleaseAuthorization`.
+13. **P6 later** may consume that authorization only after defining activation-time validity/finality.
+    No robot activation or digital-twin behavior is implemented by P5.
 
 Canonical schema/digest rules are defined in ADR-0003, deterministic evaluation semantics in
-ADR-0004, the confidential/public boundary in ADR-0005, and registry transport/authority semantics
-in ADR-0006. No step may silently downgrade to trusting a frontend boolean or an uncommitted
+ADR-0004, the confidential/public boundary in ADR-0005, registry transport/authority semantics
+in ADR-0006, and Ledger/replay authority in ADR-0007. No step may silently downgrade to trusting a frontend boolean or an uncommitted
 rule/scenario set.
 
 The behavior-input digest protects result-to-request integrity, not origin. An authenticated HTTP submitter can still fabricate well-formed synthetic traces; remote robot/model attestation is outside P3.

@@ -12,9 +12,12 @@
 | P1/EVM binding compatibility | P1 golden values + `PreflightRegistry.t.sol` identifier/digest transport tests | Direct SHA-256 digest decoding and exact-prefixed identifier hashing pass; registrar mapping trust is explicit |
 | Contract adversarial coverage | Foundry unit/fuzz/stateful invariant suite and gas report | 24 unit/fuzz tests + 5 invariants pass locally; independent review recorded in P4 plan/report |
 | Sepolia registry deployment | [`p4-sepolia-deployment-2026-09-06.md`](evidence/p4-sepolia-deployment-2026-09-06.md) + [`contracts/deployments/sepolia.json`](../../contracts/deployments/sepolia.json) | Deployed at `0xFB270cc222efa8B5005AA097dD512Be2558dde65`; successful tx/block and live RPC reads captured; Etherscan + Sourcify verified |
-| Ledger DMK central to product | source path + hardware demo | Not started |
-| Human approves high-risk action | physical device capture | Not started |
-| Exact build bound to approval | P1 canonical intent/binding tests + future P5 EIP-712/hardware evidence | P1 foundation complete; P5 not started |
+| Ledger DMK central to product | `packages/ledger-gate`, ADR-0007, [`p5-ledger-release-gate-software-2026-09-06.md`](evidence/p5-ledger-release-gate-software-2026-09-06.md) | Current DMK/WebHID/Ethereum Signer Kit path implemented and mock/browser-build verified; physical evidence blocked |
+| Agent-facing proposal boundary | `POST /release/prepare`, deterministic release service, manual `/p5-ledger` harness | API boundary exists; no autonomous/LLM agent runtime or agent-execution evidence is claimed in P5 |
+| Human approves high-risk action | physical device capture | Not proven; origin token, accepted descriptor, and physical cases A–F pending |
+| Exact build bound to approval | P1 intent v2, P5 EIP-712 golden/mutation tests, API build-mismatch tests | Software complete: exact site/robot/build/clearance/domain/signer/nonce/time bindings; physical signature evidence pending |
+| Replay-safe release authorization | SQLite persistence/concurrency/reopen tests and pre/post registry policy | Single-node offchain atomic consumption passes locally; no onchain nonce claim |
+| No blind/legacy signing fallback | exact runtime descriptor/filter guard + partial/mismatch tests + `SIGN_TYPED_DATA_LEGACY` cancellation | Software gate passes; real device Clear Signing display remains unverified |
 | Public repo + clear README | repository + `README.md` | README current through P4; public remote visibility not verified in this environment |
 | Chronological Git history | `git log` | B0, P1, P2, P3, P4, and the P4 deployment-evidence closure are recorded as thematic chronological commits |
 | AI use attribution | `docs/ai/**` | Active |

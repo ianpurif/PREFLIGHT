@@ -24,7 +24,28 @@ submitted scalar fields. The contract does not recompute canonical JSON or prove
 removed registrar loses record authority but retains revoke-only power for its existing records.
 
 ## Boundary D — Ledger hardware
-The deployment key remains hardware-backed. The browser can prepare an EIP-712 deployment intent and request a signature; it cannot bypass physical confirmation. Backend-held keys are not a valid replacement in the judged path.
+
+P5 keeps the deployment key on Ledger hardware. An operator/orchestration client can propose through
+the agent-facing API, deterministic API policy can prepare, and the browser can request a signature
+only after explicit WebHID connection and on-device address confirmation. No autonomous/LLM agent
+runtime is implemented in P5. The fixed full EIP-712 message binds every exact release field,
+authorized signer, one-time nonce, expiry, chain, and deployed registry. Backend-held keys and
+frontend approval booleans are not valid replacements.
+
+The adapter requires a Ledger origin token and accepts context only when the official Context Module
+returns the exact chain, registry, schema, filter count, and every display path. It rejects partial
+context and the Signer Kit `SIGN_TYPED_DATA_LEGACY` fallback before output. Physical refusal is
+`HUMAN_REJECTED` and is not retried. These controls are implemented and mock-verified, but hardware
+enforcement/Clear Signing is not yet evidenced because the origin/descriptor/device prerequisites
+are unavailable.
+
+## Boundary D2 — Offchain release and replay authority
+
+The API—not the browser or agent—owns an explicit authorized-signer allowlist and durable SQLite
+nonce state. It queries the exact P4 record at one block before signing and again before consumption,
+recovers the signer from the reconstructed payload, and performs one atomic nonce state transition.
+This protects a single coordinated API instance. It is not onchain replay protection and cannot
+safely span independent databases.
 
 ## Boundary E — Simulation vs physical reality
 Simulation is evidence about a defined evaluation envelope, not a guarantee about the physical robot. Product copy, logs, API names, and demo narration must preserve this distinction.
@@ -34,18 +55,21 @@ Any relevant robot build mutation changes its digest. Reusing clearance for a mi
 
 P1 establishes the canonical identifiers, versioned schemas, deterministic digests, and pure
 binding assertions for this boundary. P4 stores every public exact binding, prevents digest/ID
-overwrite, permits only `CLEAR`, and enforces expiry and monotonic revocation. Signer authorization,
-chain/verifying-contract binding, and nonce consumption remain P5 responsibilities; a P4 clearance
-alone is not deployment authorization.
+overwrite, permits only `CLEAR`, and enforces expiry and monotonic revocation. P5 checks every P4
+binding, signs exact site/robot/build/clearance values under a chain/contract domain, enforces signer
+authorization, and consumes a one-time nonce. A P4 clearance or Ledger signature alone is not a
+release authorization.
 
 ## Threats to design for later
 - hidden-rule exfiltration via logs/errors
 - model endpoint equivocation
 - digest canonicalization bugs
 - replayed/expired clearances
-- replayed Ledger approvals
+- replayed Ledger approvals across lost/split nonce databases
 - UI showing a different build than the signed intent
 - compromised orchestrator attempting bypass
+- accepted-descriptor/origin mismatch causing clear-signing fallback
+- post-authorization revocation or Sepolia reorg before a later P6 action
 - nondeterministic simulation results
 - TEE output over-disclosure
 - authorized chosen-input queries inferring private rules from repeated verdicts
