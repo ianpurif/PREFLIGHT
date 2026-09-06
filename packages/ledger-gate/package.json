@@ -6,15 +6,17 @@
   "exports": "./src/index.ts",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc --noEmit",
-    "test": "bun test --pass-with-no-tests"
+    "typecheck": "tsc --noEmit -p tsconfig.test.json",
+    "test": "bun test"
   },
   "dependencies": {
-    "@ledgerhq/device-management-kit": "1.8.0",
+    "@ledgerhq/context-module": "2.5.0",
+    "@ledgerhq/device-management-kit": "1.9.0",
     "@ledgerhq/device-signer-kit-ethereum": "1.18.0",
-    "@ledgerhq/device-transport-kit-web-hid": "^1.1.0",
+    "@ledgerhq/device-transport-kit-web-hid": "1.2.4",
+    "@preflight/chain-client": "workspace:*",
     "@preflight/domain": "workspace:*",
-    "rxjs": "^7.8.2"
+    "rxjs": "7.8.2"
   },
   "devDependencies": {
     "typescript": "5.9.2"

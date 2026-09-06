@@ -11,6 +11,10 @@
     "packages/*",
     "integrations/*"
   ],
+  "overrides": {
+    "uuid": "11.1.1",
+    "ws": "8.21.0"
+  },
   "scripts": {
     "dev": "turbo dev --parallel",
     "build": "turbo build",

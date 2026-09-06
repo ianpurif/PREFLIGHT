@@ -11,6 +11,10 @@ test-results/
 .DS_Store
 *.log
 *.tsbuildinfo
+.data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
 
 # Foundry
 contracts/cache/

@@ -22,6 +22,19 @@ const required = [
   "contracts/script/DeployPreflightRegistry.s.sol",
   "contracts/test/PreflightRegistry.t.sol",
   "contracts/test/PreflightRegistryInvariant.t.sol",
+  "packages/chain-client/src/eip712.ts",
+  "packages/chain-client/src/registry.ts",
+  "packages/chain-client/test/eip712.test.ts",
+  "packages/ledger-gate/src/browser-adapter.ts",
+  "packages/ledger-gate/src/clear-signing-context.ts",
+  "packages/ledger-gate/src/strict-action.ts",
+  "packages/ledger-gate/test/strict-action.test.ts",
+  "packages/ledger-gate/clear-signing/eip712-preflight-deployment-intent.json",
+  "apps/api/src/release/release-service.ts",
+  "apps/api/src/release/nonce-store.ts",
+  "apps/api/test/release-service.test.ts",
+  "apps/api/test/server.test.ts",
+  "apps/web/src/app/p5-ledger/page.tsx",
   ".github/workflows/ci.yml",
   "docs/codex/TOOLS.md",
   ".worktreeinclude",
@@ -110,9 +123,114 @@ for (const confidentialField of [
 }
 if (/\bstring\b|\bbytes\s+(?:public|private|internal)\b|\[\]/.test(contract))
   throw new Error("P4 production registry must use bounded fixed-size storage only");
-const ledgerGate = readFileSync(resolve(root, "packages/ledger-gate/src/index.ts"), "utf8");
-if (!ledgerGate.includes("intentionally deferred"))
-  throw new Error("Ledger P5 guard was removed before its authorized phase");
+const ledgerPackage = JSON.parse(
+  readFileSync(resolve(root, "packages/ledger-gate/package.json"), "utf8"),
+);
+const expectedLedgerDependencies = {
+  "@ledgerhq/context-module": "2.5.0",
+  "@ledgerhq/device-management-kit": "1.9.0",
+  "@ledgerhq/device-signer-kit-ethereum": "1.18.0",
+  "@ledgerhq/device-transport-kit-web-hid": "1.2.4",
+  rxjs: "7.8.2",
+};
+for (const [name, version] of Object.entries(expectedLedgerDependencies)) {
+  if (ledgerPackage.dependencies?.[name] !== version)
+    throw new Error(`P5 Ledger dependency ${name} must be pinned to ${version}`);
+}
+if (ledgerPackage.scripts?.test?.includes("pass-with-no-tests"))
+  throw new Error("P5 Ledger tests must not permit an empty test suite");
+const ledgerAdapter = readFileSync(
+  resolve(root, "packages/ledger-gate/src/browser-adapter.ts"),
+  "utf8",
+);
+const strictLedgerAction = readFileSync(
+  resolve(root, "packages/ledger-gate/src/strict-action.ts"),
+  "utf8",
+);
+const clearSigningContext = readFileSync(
+  resolve(root, "packages/ledger-gate/src/clear-signing-context.ts"),
+  "utf8",
+);
+const chainDeployment = readFileSync(
+  resolve(root, "packages/chain-client/src/deployment.ts"),
+  "utf8",
+);
+const eip712 = readFileSync(resolve(root, "packages/chain-client/src/eip712.ts"), "utf8");
+const releaseService = readFileSync(
+  resolve(root, "apps/api/src/release/release-service.ts"),
+  "utf8",
+);
+const nonceStore = readFileSync(resolve(root, "apps/api/src/release/nonce-store.ts"), "utf8");
+for (const requiredSurface of [
+  "DeviceManagementKitBuilder",
+  "webHidTransportFactory",
+  "SignerEthBuilder",
+  "signTypedData",
+]) {
+  if (!ledgerAdapter.includes(requiredSurface))
+    throw new Error(`P5 browser adapter is missing current Ledger surface: ${requiredSurface}`);
+}
+if (
+  !strictLedgerAction.includes("SIGN_TYPED_DATA_LEGACY") ||
+  !strictLedgerAction.includes("CLEAR_SIGNING_UNAVAILABLE") ||
+  !strictLedgerAction.includes("action.cancel()") ||
+  !strictLedgerAction.includes("clearSigningAttempt: ClearSigningAttempt")
+)
+  throw new Error("P5 must cancel and reject the signer kit's legacy typed-data fallback state");
+for (const requiredSurface of [
+  "GuardedClearSigningContext",
+  "getTypedDataFilters",
+  "hasExactDisplayFilters",
+  "messageInfo.filtersCount",
+  "assertResolved",
+  "setChain(ContextModuleChainID.Ethereum)",
+  "PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract",
+]) {
+  if (!clearSigningContext.includes(requiredSurface))
+    throw new Error(`P5 exact Clear Signing context guard is missing: ${requiredSurface}`);
+}
+if (!chainDeployment.includes("contracts/deployments/sepolia.json"))
+  throw new Error("P5 must consume the authoritative Sepolia deployment artifact");
+for (const requiredSurface of [
+  "PREFLIGHT_DEPLOYMENT_INTENT_TYPES",
+  "hashTypedData",
+  "recoverTypedDataAddress",
+  "authorizedSigner",
+]) {
+  if (!eip712.includes(requiredSurface))
+    throw new Error(`P5 EIP-712 implementation is missing: ${requiredSurface}`);
+}
+for (const requiredSurface of [
+  "assertClearanceSnapshotEligible",
+  "assertDeploymentIntentSignature",
+  "readExactClearance",
+  "CLEARANCE_INVALIDATED",
+]) {
+  if (!releaseService.includes(requiredSurface))
+    throw new Error(`P5 deterministic release policy is missing: ${requiredSurface}`);
+}
+if (!nonceStore.includes("WHERE nonce = ? AND state = 'ISSUED'"))
+  throw new Error("P5 nonce consumption must be an atomic one-way transition");
+const turbo = JSON.parse(readFileSync(resolve(root, "turbo.json"), "utf8"));
+for (const requiredEnvironment of [
+  "PREFLIGHT_AUTHORIZED_SIGNERS",
+  "PREFLIGHT_RELEASE_DB_PATH",
+  "NEXT_PUBLIC_LEDGER_ORIGIN_TOKEN",
+]) {
+  if (!turbo.tasks?.dev?.env?.includes(requiredEnvironment))
+    throw new Error(`P5 Turbo dev environment is missing: ${requiredEnvironment}`);
+}
+const p5Source = [ledgerAdapter, strictLedgerAction, eip712, releaseService].join("\n");
+for (const forbidden of [
+  /@ledgerhq\/hw-/,
+  /signEIP712HashedMessage/,
+  /\.signMessage\(/,
+  /personal_sign/,
+  /\.signTransaction\(/,
+  /ledgerApproved/,
+]) {
+  if (forbidden.test(p5Source)) throw new Error(`Forbidden P5 signing path found: ${forbidden}`);
+}
 const webPage = readFileSync(resolve(root, "apps/web/src/app/page.tsx"), "utf8");
 if (!webPage.includes("Product behavior is intentionally not implemented"))
   throw new Error("P6 UI guard was removed before its authorized phase");
@@ -130,7 +248,7 @@ if (rootAgentsBytes > 16 * 1024)
 
 console.log("✓ scaffold structure present");
 console.log("✓ JSON manifests parse");
-console.log("✓ P1-P4 implementation and P5-P6 phase guardrails present");
+console.log("✓ P1-P5 implementation and P6 phase guardrail present");
 console.log("✓ .env.example has no obvious secret material");
 console.log("✓ root AGENTS.md remains context-efficient");
 

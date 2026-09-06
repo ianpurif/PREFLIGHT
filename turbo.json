@@ -3,11 +3,27 @@
   "tasks": {
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": [
+        "EVM_RPC_URL",
+        "SEPOLIA_RPC_URL",
+        "PREFLIGHT_AUTHORIZED_SIGNERS",
+        "PREFLIGHT_RELEASE_DB_PATH",
+        "PREFLIGHT_INTENT_TTL_SECONDS",
+        "NEXT_PUBLIC_API_ORIGIN",
+        "NEXT_PUBLIC_LEDGER_ORIGIN_TOKEN",
+        "NEXT_PUBLIC_LEDGER_DERIVATION_PATH",
+        "PORT"
+      ]
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "env": [
+        "NEXT_PUBLIC_API_ORIGIN",
+        "NEXT_PUBLIC_LEDGER_ORIGIN_TOKEN",
+        "NEXT_PUBLIC_LEDGER_DERIVATION_PATH"
+      ]
     },
     "typecheck": {
       "dependsOn": ["^typecheck"],

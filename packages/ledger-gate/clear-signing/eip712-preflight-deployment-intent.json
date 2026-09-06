@@ -1,0 +1,105 @@
+{
+  "$schema": "https://eips.ethereum.org/assets/eip-7730/erc7730-v1.schema.json",
+  "context": {
+    "$id": "Preflight Deployment Authorization",
+    "eip712": {
+      "schemas": [
+        {
+          "types": {
+            "EIP712Domain": [
+              { "name": "name", "type": "string" },
+              { "name": "version", "type": "string" },
+              { "name": "chainId", "type": "uint256" },
+              { "name": "verifyingContract", "type": "address" }
+            ],
+            "DeploymentIntent": [
+              { "name": "protocolVersion", "type": "string" },
+              { "name": "schemaVersion", "type": "string" },
+              { "name": "action", "type": "string" },
+              { "name": "siteId", "type": "string" },
+              { "name": "robotId", "type": "string" },
+              { "name": "robotBuildId", "type": "string" },
+              { "name": "robotBuildDigest", "type": "bytes32" },
+              { "name": "clearanceId", "type": "string" },
+              { "name": "clearanceDigest", "type": "bytes32" },
+              { "name": "targetEnvironment", "type": "string" },
+              { "name": "authorizedSigner", "type": "address" },
+              { "name": "nonce", "type": "string" },
+              { "name": "issuedAt", "type": "uint64" },
+              { "name": "expiresAt", "type": "uint64" },
+              { "name": "protocolIntentDigest", "type": "bytes32" }
+            ]
+          },
+          "primaryType": "DeploymentIntent"
+        }
+      ],
+      "domain": {
+        "name": "Preflight",
+        "version": "1",
+        "chainId": 11155111,
+        "verifyingContract": "0xFB270cc222efa8B5005AA097dD512Be2558dde65"
+      },
+      "deployments": [
+        {
+          "chainId": 11155111,
+          "address": "0xFB270cc222efa8B5005AA097dD512Be2558dde65"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "owner": "Preflight"
+  },
+  "display": {
+    "formats": {
+      "DeploymentIntent": {
+        "$id": "Activate exact cleared robot deployment",
+        "intent": "Authorize exact robot deployment",
+        "fields": [
+          { "path": "protocolVersion", "label": "Protocol", "format": "raw" },
+          { "path": "schemaVersion", "label": "Intent schema", "format": "raw" },
+          { "path": "action", "label": "Action", "format": "raw" },
+          { "path": "siteId", "label": "Site", "format": "raw" },
+          { "path": "robotId", "label": "Robot", "format": "raw" },
+          { "path": "robotBuildId", "label": "Build", "format": "raw" },
+          { "path": "robotBuildDigest", "label": "Build digest", "format": "raw" },
+          { "path": "clearanceId", "label": "Clearance", "format": "raw" },
+          { "path": "clearanceDigest", "label": "Clearance digest", "format": "raw" },
+          { "path": "targetEnvironment", "label": "Environment", "format": "raw" },
+          { "path": "authorizedSigner", "label": "Authorized signer", "format": "addressName" },
+          { "path": "nonce", "label": "One-time nonce", "format": "raw" },
+          {
+            "path": "issuedAt",
+            "label": "Issued at",
+            "format": "date",
+            "params": { "encoding": "timestamp" }
+          },
+          {
+            "path": "expiresAt",
+            "label": "Expires at",
+            "format": "date",
+            "params": { "encoding": "timestamp" }
+          },
+          { "path": "protocolIntentDigest", "label": "Intent digest", "format": "raw" }
+        ],
+        "required": [
+          "protocolVersion",
+          "schemaVersion",
+          "action",
+          "siteId",
+          "robotId",
+          "robotBuildId",
+          "robotBuildDigest",
+          "clearanceId",
+          "clearanceDigest",
+          "targetEnvironment",
+          "authorizedSigner",
+          "nonce",
+          "issuedAt",
+          "expiresAt",
+          "protocolIntentDigest"
+        ]
+      }
+    }
+  }
+}

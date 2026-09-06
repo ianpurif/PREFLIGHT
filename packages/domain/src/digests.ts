@@ -1,5 +1,5 @@
 import { sha256 } from "@noble/hashes/sha2.js";
-import { canonicalBytes } from "./canonical.js";
+import { canonicalBytes } from "./canonical";
 import {
   type ClearanceDigest,
   type DeploymentIntentDigest,
@@ -8,9 +8,9 @@ import {
   type RobotBuildDigest,
   type SafetyEnvelopeCommitment,
   type Sha256Digest,
-} from "./digest-values.js";
-import { failProtocol } from "./errors.js";
-import { parseSafetyEnvelopeId, parseSiteId } from "./identifiers.js";
+} from "./digest-values";
+import { failProtocol } from "./errors";
+import { parseSafetyEnvelopeId, parseSiteId } from "./identifiers";
 import {
   PROTOCOL_VERSION,
   parseClearanceRecord,
@@ -18,7 +18,7 @@ import {
   parseEvaluationInputs,
   parseRobotBuildDescriptor,
   SAFETY_ENVELOPE_COMMITMENT_SCHEMA_VERSION,
-} from "./schemas.js";
+} from "./schemas";
 
 export const DIGEST_DOMAINS = Object.freeze({
   robotBuild: "preflight.digest.robot-build/v1",

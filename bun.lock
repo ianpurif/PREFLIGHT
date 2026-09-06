@@ -16,8 +16,10 @@
       "name": "@preflight/api",
       "version": "0.0.0",
       "dependencies": {
+        "@preflight/chain-client": "workspace:*",
         "@preflight/domain": "workspace:*",
         "fastify": "5.12.1",
+        "viem": "2.56.3",
       },
       "devDependencies": {
         "@types/bun": "1.4.0",
@@ -48,6 +50,9 @@
       "version": "0.0.0",
       "dependencies": {
         "@chainlink/cre-sdk": "1.19.1",
+        "@noble/hashes": "2.2.0",
+        "@preflight/domain": "workspace:*",
+        "@preflight/simulation-core": "workspace:*",
         "viem": "2.56.3",
         "zod": "4.5.4",
       },
@@ -80,11 +85,13 @@
       "name": "@preflight/ledger-gate",
       "version": "0.0.0",
       "dependencies": {
-        "@ledgerhq/device-management-kit": "1.8.0",
+        "@ledgerhq/context-module": "2.5.0",
+        "@ledgerhq/device-management-kit": "1.9.0",
         "@ledgerhq/device-signer-kit-ethereum": "1.18.0",
-        "@ledgerhq/device-transport-kit-web-hid": "^1.1.0",
+        "@ledgerhq/device-transport-kit-web-hid": "1.2.4",
+        "@preflight/chain-client": "workspace:*",
         "@preflight/domain": "workspace:*",
-        "rxjs": "^7.8.2",
+        "rxjs": "7.8.2",
       },
       "devDependencies": {
         "typescript": "5.9.2",
@@ -100,6 +107,10 @@
         "typescript": "5.9.2",
       },
     },
+  },
+  "overrides": {
+    "uuid": "11.1.1",
+    "ws": "8.21.0",
   },
   "packages": {
     "@adraffy/ens-normalize": ["@adraffy/ens-normalize@1.11.1", "", {}, "sha512-nhCBV3quEgesuf7c7KYfperqSS14T8bYuvJ8PcLJp6znkZpFc0AuW4qBtr8eKVyPPe/8RSr7sglCWPU5eaxwKQ=="],
@@ -218,7 +229,7 @@
 
     "@ledgerhq/device-contacts-kit": ["@ledgerhq/device-contacts-kit@0.4.0", "", { "dependencies": { "@ledgerhq/signer-utils": "^1.3.0", "inversify": "7.5.1", "purify-ts": "2.1.0", "reflect-metadata": "0.2.2", "semver": "7.7.2", "xstate": "5.19.2" }, "peerDependencies": { "@ledgerhq/device-management-kit": "^1.9.0" } }, "sha512-Mq6HaXlPi5d08s2RRmCABkIfLT7uoxc/JdoIo3e9IWayimoMfQb7UhgiTL5Dwck//oXrV+66ID6nkjiSu4Auzg=="],
 
-    "@ledgerhq/device-management-kit": ["@ledgerhq/device-management-kit@1.8.0", "", { "dependencies": { "@noble/hashes": "^1.8.0", "@sentry/minimal": "6.19.7", "inversify": "7.5.1", "isomorphic-ws": "^5.0.0", "purify-ts": "2.1.0", "reflect-metadata": "0.2.2", "semver": "7.7.2", "uuid": "11.0.3", "ws": "^8.18.0", "xstate": "5.19.2" }, "peerDependencies": { "rxjs": "7.8.2" } }, "sha512-yRYt4a0/tuYjoYDePBMlhCm3Bej0F/TiVu09Hl5fjO4f64Q6jbI2/YthzRWrgP7CEs93EgN7hxJ0WSErtzvEwA=="],
+    "@ledgerhq/device-management-kit": ["@ledgerhq/device-management-kit@1.9.0", "", { "dependencies": { "@noble/hashes": "^1.8.0", "@sentry/minimal": "6.19.7", "inversify": "7.5.1", "isomorphic-ws": "^5.0.0", "purify-ts": "2.1.0", "reflect-metadata": "0.2.2", "semver": "7.7.2", "uuid": "11.0.3", "ws": "^8.18.0", "xstate": "5.19.2" }, "peerDependencies": { "rxjs": "7.8.2" } }, "sha512-M9M8Uy8c6diJ0pdK/85oP1u2+S6iO8WQcQ8V5FCWu/LyjXKrmTakQ9GRwWYNOp79nbcO+oXcLxJpvZtvpgquIg=="],
 
     "@ledgerhq/device-signer-kit-ethereum": ["@ledgerhq/device-signer-kit-ethereum@1.18.0", "", { "dependencies": { "@ledgerhq/device-contacts-kit": "^0.4.0", "@ledgerhq/signer-utils": "^1.3.0", "ethers": "6.14.1", "inversify": "7.5.1", "purify-ts": "2.1.0", "reflect-metadata": "0.2.2", "semver": "7.7.2", "xstate": "5.19.2" }, "peerDependencies": { "@ledgerhq/context-module": "^2.5.0", "@ledgerhq/device-management-kit": "^1.9.0" } }, "sha512-qMfQF9+idZ8bjWF2GmKZh9TkmT5viAZnL91/837qZq5QAdGn/4DmROvxUnM6mzuwcB5pg5C/QBGj4dF+EGj+bQ=="],
 
@@ -524,7 +535,7 @@
 
     "use-sync-external-store": ["use-sync-external-store@1.6.0", "", { "peerDependencies": { "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w=="],
 
-    "uuid": ["uuid@11.0.3", "", { "bin": { "uuid": "dist/esm/bin/uuid" } }, "sha512-d0z310fCWv5dJwnX1Y/MncBAqGMKEzlBb1AOf7z9K8ALnd0utBX/msg/fA0+sbyN1ihbMsLhrBlnl1ak7Wa0rg=="],
+    "uuid": ["uuid@11.1.1", "", { "bin": { "uuid": "dist/esm/bin/uuid" } }, "sha512-vIYxrBCC/N/K+Js3qSN88go7kIfNPssr/hHCesKCQNAjmgvYS2oqr69kIufEG+O4+PfezOH4EbIeHCfFov8ZgQ=="],
 
     "viem": ["viem@2.56.3", "", { "dependencies": { "@noble/curves": "1.9.1", "@noble/hashes": "1.8.0", "@scure/bip32": "1.7.0", "@scure/bip39": "1.6.0", "abitype": "1.2.3", "isows": "1.0.7", "ox": "0.14.44", "ws": "8.21.0" }, "peerDependencies": { "typescript": ">=5.0.4" }, "optionalPeers": ["typescript"] }, "sha512-vUObq3GO7D3lz9gPNEE/xd5jIUnMbeVDWewh252o54pDEDlW4pDe6FEd/qTGL5RyK52cGHMM7kQ3wjxhilEvkQ=="],
 
@@ -545,8 +556,6 @@
     "@ledgerhq/device-management-kit/@noble/hashes": ["@noble/hashes@1.8.0", "", {}, "sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A=="],
 
     "@ledgerhq/device-management-kit/semver": ["semver@7.7.2", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA=="],
-
-    "@ledgerhq/device-management-kit/ws": ["ws@8.21.3", "", { "peerDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": ">=5.0.2" }, "optionalPeers": ["bufferutil", "utf-8-validate"] }, "sha512-201TZ/kPWxoPr/OKWjquZR1SWKXcvxdH+e1xrx89b3YbmzLMFCLfnaG1HFIgWzJOEWZ7MvpK++odZufgYR50Rw=="],
 
     "@ledgerhq/device-signer-kit-ethereum/semver": ["semver@7.7.2", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA=="],
 
@@ -575,8 +584,6 @@
     "ethers/@types/node": ["@types/node@22.7.5", "", { "dependencies": { "undici-types": "~6.19.2" } }, "sha512-jML7s2NAzMWc//QSJ1a3prpk78cOPchGvXJsC3C6R6PSMoooztvRVQEz89gmBTBY1SPMaqo5teB4uNHPdetShQ=="],
 
     "ethers/tslib": ["tslib@2.7.0", "", {}, "sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA=="],
-
-    "ethers/ws": ["ws@8.17.1", "", { "peerDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": ">=5.0.2" }, "optionalPeers": ["bufferutil", "utf-8-validate"] }, "sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ=="],
 
     "light-my-request/process-warning": ["process-warning@4.0.1", "", {}, "sha512-3c2LzQ3rY9d0hc1emcsHhfT9Jwz0cChib/QN89oME2R451w5fy3f0afAhERFZAwrbDU43wk12d0ORBpDVME50Q=="],
 

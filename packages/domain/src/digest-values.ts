@@ -1,4 +1,4 @@
-import { failProtocol } from "./errors.js";
+import { failProtocol } from "./errors";
 
 declare const sha256DigestBrand: unique symbol;
 declare const protocolDigestBrand: unique symbol;

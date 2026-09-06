@@ -1,7 +1,94 @@
-import Fastify from "fastify";
+import { ReleaseGateError } from "@preflight/chain-client";
+import Fastify, { type FastifyReply } from "fastify";
+import type { ReleaseService } from "./release/index.js";
 
-export function buildServer() {
-  const app = Fastify({ logger: true });
-  app.get("/health", async () => ({ status: "ok", phase: "boilerplate" }));
+function rejectMalformed(reply: FastifyReply) {
+  return reply.code(400).send({ error: "MALFORMED_REQUEST", message: "Request body is malformed" });
+}
+
+function expectBody(input: unknown, keys: readonly string[]): Record<string, unknown> | null {
+  if (input === null || typeof input !== "object" || Array.isArray(input)) return null;
+  const record = input as Record<string, unknown>;
+  const allowed = new Set(keys);
+  if (Object.keys(record).some((key) => !allowed.has(key))) return null;
+  if (keys.some((key) => !Object.hasOwn(record, key))) return null;
+  return record;
+}
+
+export function buildServer(options: { releaseService?: ReleaseService } = {}) {
+  const app = Fastify({
+    logger: {
+      redact: ["req.headers.authorization", "req.headers.cookie"],
+    },
+  });
+  const releaseService = options.releaseService;
+  app.addHook("onSend", async (request, reply, payload) => {
+    const origin = request.headers.origin;
+    if (origin === "http://localhost:3000") {
+      reply.header("Access-Control-Allow-Origin", origin);
+      reply.header("Vary", "Origin");
+    }
+    return payload;
+  });
+  app.options("/*", async (request, reply) => {
+    if (request.headers.origin === "http://localhost:3000") {
+      reply.header("Access-Control-Allow-Origin", request.headers.origin);
+      reply.header("Access-Control-Allow-Headers", "content-type");
+      reply.header("Access-Control-Allow-Methods", "POST, OPTIONS");
+    }
+    return reply.code(204).send();
+  });
+  app.setErrorHandler((error, _request, reply) => {
+    if (error instanceof ReleaseGateError) {
+      const status =
+        error.code === "REPLAY_REJECTED"
+          ? 409
+          : error.code === "MALFORMED_REQUEST"
+            ? 400
+            : error.code === "REGISTRY_UNAVAILABLE" || error.code === "PERSISTENCE_UNAVAILABLE"
+              ? 503
+              : 403;
+      return reply.code(status).send({ error: error.code, message: error.message });
+    }
+    return reply.code(400).send({ error: "MALFORMED_REQUEST", message: "Request failed closed" });
+  });
+  app.get("/health", async () => ({
+    status: "ok",
+    phase: "p5-ledger-release-gate",
+    releaseGateConfigured: releaseService !== undefined,
+  }));
+  app.post("/release/prepare", async (request, reply) => {
+    if (releaseService === undefined) {
+      throw new ReleaseGateError("PERSISTENCE_UNAVAILABLE", "Release gate is not configured");
+    }
+    const body = expectBody(request.body, [
+      "siteId",
+      "robotId",
+      "robotBuildId",
+      "robotBuildDigest",
+      "clearance",
+      "signerAddress",
+    ]);
+    if (body === null || typeof body.signerAddress !== "string") return rejectMalformed(reply);
+    return releaseService.prepare({
+      siteId: body.siteId,
+      robotId: body.robotId,
+      robotBuildId: body.robotBuildId,
+      robotBuildDigest: body.robotBuildDigest,
+      clearance: body.clearance,
+      signerAddress: body.signerAddress,
+    });
+  });
+  app.post("/release/consume", async (request, reply) => {
+    if (releaseService === undefined) {
+      throw new ReleaseGateError("PERSISTENCE_UNAVAILABLE", "Release gate is not configured");
+    }
+    const body = expectBody(request.body, ["intent", "signature"]);
+    if (body === null) return rejectMalformed(reply);
+    return releaseService.consume({ intent: body.intent, signature: body.signature });
+  });
+  if (releaseService !== undefined) {
+    app.addHook("onClose", async () => releaseService.close());
+  }
   return app;
 }

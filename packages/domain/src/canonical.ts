@@ -1,4 +1,4 @@
-import { failProtocol, ProtocolError } from "./errors.js";
+import { failProtocol, ProtocolError } from "./errors";
 
 declare const canonicalJsonBrand: unique symbol;
 

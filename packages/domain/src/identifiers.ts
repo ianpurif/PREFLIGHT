@@ -1,4 +1,4 @@
-import { failProtocol } from "./errors.js";
+import { failProtocol } from "./errors";
 
 declare const identifierBrand: unique symbol;
 

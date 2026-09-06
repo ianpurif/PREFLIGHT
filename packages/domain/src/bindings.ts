@@ -1,9 +1,10 @@
-import type { ClearanceDigest } from "./digest-values.js";
-import { digestClearance, digestEvaluationInputs, digestRobotBuild } from "./digests.js";
-import { failProtocol } from "./errors.js";
+import type { ClearanceDigest } from "./digest-values";
+import { digestClearance, digestEvaluationInputs, digestRobotBuild } from "./digests";
+import { failProtocol } from "./errors";
 import {
   type ClearanceRecord,
   compareUnixTimestamps,
+  DEPLOYMENT_ACTION,
   DEPLOYMENT_INTENT_SCHEMA_VERSION,
   type DeploymentIntent,
   type DeploymentNonce,
@@ -18,7 +19,7 @@ import {
   parseRobotBuildDescriptor,
   parseSafetyEnvelopeMetadata,
   type UnixTimestamp,
-} from "./schemas.js";
+} from "./schemas";
 
 function assertBinding(actual: string, expected: string, path: string): void {
   if (actual !== expected) {
@@ -132,6 +133,7 @@ export function createDeploymentIntent(
   const clearanceDigest: ClearanceDigest = digestClearance(clearance);
   const intent = parseDeploymentIntent({
     schemaVersion: DEPLOYMENT_INTENT_SCHEMA_VERSION,
+    action: DEPLOYMENT_ACTION,
     siteId: clearance.inputs.siteId,
     robotId: clearance.inputs.robotId,
     robotBuildId: clearance.inputs.robotBuildId,

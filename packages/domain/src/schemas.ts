@@ -9,8 +9,8 @@ import {
   type RobotBuildDigest,
   type SafetyEnvelopeCommitment,
   type Sha256Digest,
-} from "./digest-values.js";
-import { failProtocol } from "./errors.js";
+} from "./digest-values";
+import { failProtocol } from "./errors";
 import {
   type ClearanceId,
   type EvaluationId,
@@ -26,7 +26,7 @@ import {
   type RobotId,
   type SafetyEnvelopeId,
   type SiteId,
-} from "./identifiers.js";
+} from "./identifiers";
 
 declare const unixTimestampBrand: unique symbol;
 declare const deploymentNonceBrand: unique symbol;
@@ -47,12 +47,15 @@ export const EVALUATION_INPUTS_SCHEMA_VERSION = "preflight.evaluation-inputs/v1"
 export const EVALUATION_REQUEST_SCHEMA_VERSION = "preflight.evaluation-request/v1" as const;
 export const EVALUATION_RESULT_SCHEMA_VERSION = "preflight.evaluation-result/v1" as const;
 export const CLEARANCE_RECORD_SCHEMA_VERSION = "preflight.clearance-record/v1" as const;
-export const DEPLOYMENT_INTENT_SCHEMA_VERSION = "preflight.deployment-intent/v1" as const;
+export const DEPLOYMENT_INTENT_SCHEMA_VERSION = "preflight.deployment-intent/v2" as const;
 export const SAFETY_ENVELOPE_COMMITMENT_SCHEMA_VERSION =
   "preflight.safety-envelope-commitment/v1" as const;
 
 export const DEPLOYMENT_TARGETS = Object.freeze(["sepolia"] as const);
 export type DeploymentTarget = (typeof DEPLOYMENT_TARGETS)[number];
+
+export const DEPLOYMENT_ACTION = "ACTIVATE_DEPLOYMENT" as const;
+export type DeploymentAction = typeof DEPLOYMENT_ACTION;
 
 export const EVALUATION_VERDICTS = Object.freeze(["CLEAR", "HOLD", "ESCALATE"] as const);
 export type EvaluationVerdict = (typeof EVALUATION_VERDICTS)[number];
@@ -113,6 +116,7 @@ export interface ClearanceRecord {
 
 export interface DeploymentIntent {
   readonly schemaVersion: typeof DEPLOYMENT_INTENT_SCHEMA_VERSION;
+  readonly action: DeploymentAction;
   readonly siteId: SiteId;
   readonly robotId: RobotId;
   readonly robotBuildId: RobotBuildId;
@@ -384,6 +388,7 @@ export function parseClearanceRecord(input: unknown): ClearanceRecord {
 
 export function parseDeploymentIntent(input: unknown): DeploymentIntent {
   const bindingKeys = [
+    "action",
     "siteId",
     "robotId",
     "robotBuildId",
@@ -398,6 +403,13 @@ export function parseDeploymentIntent(input: unknown): DeploymentIntent {
     [...bindingKeys, "targetEnvironment", "nonce", "issuedAt", "expiresAt"],
     new Set(bindingKeys),
   );
+  if (record.action !== DEPLOYMENT_ACTION) {
+    return failProtocol(
+      "MALFORMED_OBJECT",
+      "DeploymentIntent action must be ACTIVATE_DEPLOYMENT",
+      "action",
+    );
+  }
   if (record.targetEnvironment !== "sepolia") {
     return failProtocol(
       "MALFORMED_OBJECT",
@@ -408,6 +420,7 @@ export function parseDeploymentIntent(input: unknown): DeploymentIntent {
   const issuedAt = parseUnixTimestamp(record.issuedAt, "issuedAt");
   return Object.freeze({
     schemaVersion: DEPLOYMENT_INTENT_SCHEMA_VERSION,
+    action: DEPLOYMENT_ACTION,
     siteId: parseSiteId(record.siteId),
     robotId: parseRobotId(record.robotId),
     robotBuildId: parseRobotBuildId(record.robotBuildId),

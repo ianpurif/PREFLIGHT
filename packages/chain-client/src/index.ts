@@ -1,6 +1,5 @@
-import type { ClearanceId, ClearanceReference } from "@preflight/domain";
-
-/** Port only. viem-backed registry calls are intentionally deferred. */
-export interface ClearanceRegistryClient {
-  getClearance(clearanceId: ClearanceId): Promise<ClearanceReference | null>;
-}
+export * from "./deployment";
+export * from "./eip712";
+export * from "./errors";
+export * from "./registry";
+export * from "./transport";

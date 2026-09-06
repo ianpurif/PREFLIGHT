@@ -8,6 +8,7 @@ import {
   canonicalBytes,
   canonicalSerialize,
   createDeploymentIntent,
+  DEPLOYMENT_ACTION,
   DEPLOYMENT_TARGETS,
   DIGEST_DOMAINS,
   digestClearance,
@@ -155,7 +156,7 @@ const GOLDEN_DIGESTS = {
     "sha256:f5b77c919b320d9cb16f834208b1842f493672010b5fbb59f72fa865c9edbdf8",
   evaluationInputs: "sha256:38954b9164868b33c7afa9277410520fcdead18db6b1e1b93c45f366ef5fd0d8",
   clearance: "sha256:eae057bcdb07ac12c2b110a5bdb13ebbc30c0c0b25efc56379da2198fbce20e9",
-  deploymentIntent: "sha256:6275a960dcb9056a59d674bed23bc620549cd79d8aff976005839eecbd405bf5",
+  deploymentIntent: "sha256:96e2cce551f25a54a15cd0a94dbab054627ff9eb57981e9bd240cf15533098e0",
 } as const;
 
 describe("canonical identifiers", () => {
@@ -353,6 +354,10 @@ describe("strict protocol schemas", () => {
       () => parseDeploymentIntent({ ...intent, targetEnvironment: "mainnet" }),
       "MALFORMED_OBJECT",
     );
+    expectProtocolCode(
+      () => parseDeploymentIntent({ ...intent, action: "DELETE_DEPLOYMENT" }),
+      "MALFORMED_OBJECT",
+    );
   });
 
   test("timestamps and expiry are canonical and deterministic", () => {
@@ -536,6 +541,7 @@ describe("versioned domain-separated digests", () => {
     for (const mutated of intentMutations) {
       expect(digestDeploymentIntent(mutated)).not.toBe(digestDeploymentIntent(intent));
     }
+    expect(intent.action).toBe(DEPLOYMENT_ACTION);
   });
 });
 
