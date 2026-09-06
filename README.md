@@ -1,6 +1,6 @@
-# Preflight — Codex Development Boilerplate
+# Preflight — Confidential Robot Deployment Gate
 
-> **Boilerplate only. No product functionality is implemented yet.**
+> **P1–P3 implemented and locally verified. P4–P8 remain intentionally unimplemented.**
 
 Preflight is a confidential deployment gate for autonomous warehouse robots: an exact robot software build must pass a site's private evaluation envelope, then a human must authorize that exact build on Ledger hardware before deployment.
 
@@ -22,14 +22,14 @@ This repository is specialized for an ETHGlobal **From Scratch** build using **C
 ## Why this stack
 
 1. Chainlink's TypeScript CRE tooling runs naturally with Bun and has WASM constraints that are easier to honor in an isolated integration package.
-2. The simulation/evaluator core stays deterministic and dependency-light so it can be tested aggressively and later adapted to a TEE boundary without dragging web/server assumptions into CRE.
+2. The simulation/evaluator core stays deterministic and dependency-light so it can be tested aggressively and run inside the P3 TEE callback without dragging web/server assumptions into CRE.
 3. Ledger DMK is isolated to the browser-facing hardware boundary; the backend never receives the device key.
 4. Solidity stays in a Foundry workspace so onchain attestations can be fuzzed/invariant-tested independently of the TypeScript monorepo.
 5. React Three Fiber gives the hackathon demo a fast path to a memorable warehouse simulation without coupling simulation truth to rendering.
 
 ## Repository status
 
-The repository intentionally contains **ports, contracts, placeholders, docs, and verification harnesses only**. Product behavior starts only after the next implementation prompt.
+The repository now contains the canonical domain protocol, deterministic simulator/evaluator, and Chainlink CRE confidential-evaluation workflow with authenticated local simulation evidence. The attestation registry, Ledger release gate, demo UI, and later phases remain scoped placeholders.
 
 ## Prerequisites
 
@@ -58,7 +58,7 @@ Then install the official partner-facing Codex skills when you are ready to impl
 bash scripts/install-partner-skills.sh
 ```
 
-Do **not** put keys in repository files. Chainlink CRE secrets must use the CRE-supported secret path in the implementation phase.
+Do **not** put keys or confidential envelope inputs in repository files. P3 local simulation uses ignored environment files; later deployment must use the CRE-supported secret path.
 
 ## Main commands
 
@@ -98,4 +98,4 @@ See `docs/codex/OPERATING_MODEL.md`.
 
 ## Next task
 
-The repository is ready for the next implementation prompt. Start from `docs/planning/CURRENT.md`.
+P3 is complete. Start from `docs/planning/CURRENT.md`; do not begin P4 without an explicit implementation prompt.

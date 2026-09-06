@@ -41,3 +41,23 @@ Add future material AI-assisted changes as dated entries. Do not claim fully hum
 **AI-assisted output:** `@preflight/simulation-core` implementation and tests, ADR-0004, execution plan, security/risk/evidence updates, adversarial review, and command-based verification.
 
 **Not implemented:** Chainlink CRE/TEE behavior or filtering, contract logic, Ledger/EIP-712 behavior, API/UI/digital twin, robotics middleware/hardware, AI models, or additional partners.
+
+## 2026-09-05 — P3 Chainlink CRE confidential evaluation
+
+**Tool:** OpenAI Codex with read-only CRE SDK, trust-boundary, test-gap, partner-compliance, and adversarial-review specialists.
+
+**Human direction:** Implement only P3: prove the public-request/private-envelope to Chainlink Confidential Workflow/TEE to existing P2 evaluator to minimal-result path; preserve privacy, evidence, phase boundaries, and truthful provenance claims.
+
+**AI-assisted output:** CRE SDK 1.19.1 `handlerInTee` workflow, Nitro/fixed-secret handling, versioned boundary schemas, canonical supplied-behavior digest, private envelope/blind processing, P2 adapter, redacted result/error projection, tests/fixtures/configuration, scaffold transition, security/planning/evidence documentation, and command-based compilation/verification.
+
+**External limitation at that checkpoint:** The checksum-verified CRE CLI v1.32.0 compiled the workflow, but the three simulations could not start because no CRE login or `CRE_API_KEY` was present. The 2026-09-06 entry records the later authenticated simulation closure. No deployment, live TEE/Vault/DON execution, remote attestation, clearance, contract, Ledger, API, or UI behavior was claimed at this checkpoint.
+
+## 2026-09-06 — P3 authenticated simulation evidence closure
+
+**Tool:** OpenAI Codex using the project partner-compliance, verification-loop, and handoff skills plus an independent read-only reviewer.
+
+**Human direction:** Close only the P3 evidence gap by running the existing unsafe, corrected, and tampered cases through the official authenticated CRE simulator; capture redacted evidence and keep P4 untouched.
+
+**AI-assisted output:** Checksum-verified CRE CLI v1.32.0 execution, authenticated simulation orchestration, a fresh ignored runtime blind distinct from the public unit-test vector, non-secret result/execution-identity capture, raw-output leakage checks, exact Nitro/auth regression assertions, minimal simulator-compatibility corrections, and evidence/planning/verification updates.
+
+**Evidence boundary:** Unsafe returned `HOLD`, corrected returned `CLEAR`, and a tampered confidential blind returned `REJECT`. These are official authenticated local simulations, not a live DON deployment or hardware TEE execution.

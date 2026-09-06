@@ -22,11 +22,11 @@
 - [x] Negative/property tests
 
 ## P3 — Chainlink CRE confidential evaluation
-- [ ] CRE workflow entrypoint
-- [ ] `handlerInTee` confidential path
-- [ ] private envelope handling
-- [ ] minimal public result
-- [ ] CRE simulation evidence
+- [x] CRE workflow entrypoint
+- [x] `handlerInTee` confidential path
+- [x] private envelope handling
+- [x] minimal public result
+- [x] authenticated CRE simulation evidence — unsafe `HOLD`, corrected `CLEAR`, tampered commitment `REJECT`
 
 ## P4 — Attestation registry
 - [ ] minimal clearance registry interface
