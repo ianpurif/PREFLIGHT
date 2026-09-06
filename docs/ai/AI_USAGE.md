@@ -79,3 +79,22 @@ transition, ADR-0006, planning/security/evidence updates, and command-based veri
 prove live CRE delivery, TEE hardware attestation, authentic robot trace origin, deployment
 authorization, Ledger approval, or physical robot safety. Sepolia deployment remains pending because
 no funded deployer credential or explorer key was available.
+
+## 2026-09-06 — P4 Sepolia deployment evidence closure
+
+**Tool:** OpenAI Codex using the project execution-plan, verification-loop, and handoff skills plus
+an independent read-only reviewer.
+
+**Human direction:** Deploy the completed unchanged P4 registry to Ethereum Sepolia, verify the
+source and public state, capture non-secret evidence and P5 registry-domain configuration, and stop
+without beginning P5.
+
+**AI-assisted output:** Pre-broadcast environment/chain/balance checks, one chain-guarded Foundry
+broadcast, idempotent Etherscan/Sourcify verification confirmation, public receipt/code/state reads,
+machine-readable deployment metadata, compliance/planning/report documentation, secret-leak review,
+and command-based verification.
+
+**Evidence boundary:** This is a public Sepolia contract deployment. No clearance was registered,
+no live CRE-to-EVM delivery or TEE attestation is claimed, and no Ledger, EIP-712, signer, nonce,
+release, API, UI, or P5 behavior was implemented. Credentials and confidential P3 values remain
+ignored and uncommitted.

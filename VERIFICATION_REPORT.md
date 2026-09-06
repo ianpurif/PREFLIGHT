@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-06
 **Scope:** P4 only; P5–P8 remain unimplemented
-**Status:** Locally complete and verified; Sepolia deployment pending credentials
+**Status:** Complete, locally verified, and source-verified on Ethereum Sepolia
 
 ## Implemented contract surface
 
@@ -50,7 +50,8 @@ external calls, token/governance logic, or upgradeability.
 - Fuzz — four security properties at 512 runs each.
 - Invariants — 128 runs, depth 64, 8,192 handler calls; seeded nonvacuous revoked, expired, and
   long-lived states.
-- `forge test --gas-report` — pass; production bytecode 4,561 bytes. Observed maxima:
+- `forge test --gas-report` — pass; deployment-size metric 4,561 bytes. Live Sepolia runtime
+  bytecode is 4,263 bytes. Observed maxima:
   `recordClearance` 371,757 gas, `revokeClearance` 29,265 gas, `isClearanceValidFor` 29,284 gas.
 
 Coverage includes authorization, every zero field, non-`CLEAR`, P1 timestamp range, exact binding
@@ -59,7 +60,7 @@ digest/ID overwrite, P1 transport vectors, unauthorized fuzzing, and stateful in
 
 ## Repository verification
 
-- `bun run lint` — pass; Biome checked 72 files.
+- `bun run lint` — pass; Biome checked 73 files after adding the public deployment artifact.
 - `bun run typecheck` — pass; 7/7 tasks.
 - `bun run test` — pass; 10/10 Turbo tasks, preserving 115 P1–P3 tests/2,404 assertions.
 - `bun run build` — pass; 7/7 tasks, including Next.js production build.
@@ -67,6 +68,8 @@ digest/ID overwrite, P1 transport vectors, unauthorized fuzzing, and stateful in
 - `bun run verify:scaffold` — pass; 4/4 tests with positive P4 and deferred P5/P6 guards.
 - `bun run verify` — pass end to end.
 - `git diff --check` — pass, including an explicit tracked/untracked trailing-whitespace scan.
+
+All commands above were rerun after the Sepolia deployment evidence and documentation were added.
 
 ## Independent adversarial review
 
@@ -77,12 +80,30 @@ registration events collectively carry all public exact bindings, and invariant 
 checks are seeded/count attempts and verify expected revert selectors. Re-review found no remaining
 security defect. Gas evidence was refreshed after the event change.
 
-## Sepolia status and remaining P5 risks
+The P4.1 deployment-evidence reviewer independently confirmed the Sepolia receipt/block/time,
+deployer-owner-registrar state, constants, runtime hash/size, Etherscan compiler/constructor source
+metadata, Sourcify exact match, unchanged `1929651` source, public artifact binding, and absence of
+credential leakage, clearance writes, or P5 code. Initial findings were documentation consistency
+only: hard-break whitespace, stale predeployment status/risk/history text, and incomplete sanitized
+command capture. All were corrected; re-review found no remaining correctness, security, leakage,
+or scope issue.
 
-The deployment script rejects non-Sepolia chain IDs and reads the deployer key only from
-`SEPOLIA_DEPLOYER_PRIVATE_KEY`. The environment has no Sepolia deployer key/account, RPC variable,
-or Etherscan key; no funded address can be checked. No deployment was attempted and no address is
-claimed.
+## Ethereum Sepolia deployment
+
+The unchanged chain-guarded script deployed `PreflightRegistry` from source commit `1929651` to
+`0xFB270cc222efa8B5005AA097dD512Be2558dde65` on chain ID `11155111`. Transaction
+`0x9dce1c53715d1a0f7b39e469d3ec350ffec2726cbb1e396432dd545f6c16d497` succeeded in block
+`11644462` at `2026-09-06T02:48:00Z`. The deployer, immutable owner, and initial registrar are all
+`0xaA5768d0f2157F8781efb975CDd9aec99e7879E3`. Etherscan and Sourcify report the source verified.
+
+Live RPC readback confirmed nonempty runtime bytecode, owner and registrar state, `bytes32("CLEAR")`,
+P1's maximum protocol timestamp, and false/zero results for a nonexistent clearance. No clearance
+was created for evidence. The public machine-readable identity is
+`contracts/deployments/sepolia.json`; the curated command/result record is
+`docs/compliance/evidence/p4-sepolia-deployment-2026-09-06.md`. Ignored credentials and raw Foundry
+broadcast/cache output are not committed.
+
+## Remaining P5 risks
 
 P5 must not treat P4 evidence as authorization. It must verify the exact P1 clearance/build, bind
 chain ID and verifying contract, require an authorized Ledger-backed signer, consume a nonce, enforce

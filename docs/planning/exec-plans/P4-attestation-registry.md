@@ -87,16 +87,17 @@ Rollback is confined to P4 contract source/tests/script, P4-positive scaffold ch
   revocation path.
 - No `forge-std` dependency was added. A small local cheatcode/assertion surface keeps the contract
   workspace dependency-free while exercising Foundry's configured fuzz and invariant runner.
-- Deployment is prepared but not attempted: no Sepolia deployer key/account, RPC environment value,
-  or explorer credential exists on this host.
+- The later P4.1 evidence closure deployed this unchanged source to Sepolia; public deployment
+  identity and verification evidence are recorded below without altering P4 semantics.
 
 ## Verification evidence
 
 - `forge fmt --check` and `forge build` pass with Solidity 0.8.30/Foundry 1.8.1.
 - `forge test -vvv`: 24 unit/fuzz tests pass (four fuzz properties at 512 runs each) and five
   stateful invariants pass across 128 runs/8,192 handler calls with zero unhandled handler reverts.
-- `forge test --gas-report`: production bytecode 4,561 bytes; successful registration max observed
-  371,757 gas, revocation max 29,265 gas, exact read max 29,284 gas.
+- `forge test --gas-report`: deployment-size metric 4,561 bytes; successful registration max
+  observed 371,757 gas, revocation max 29,265 gas, exact read max 29,284 gas. The later live Sepolia
+  readback reports 4,263 bytes of runtime code.
 - P1 golden clearance/build/envelope/evaluation digests and exact identifier-hash vectors pass.
 - `bun run verify` passes end to end: Biome, 7/7 typechecks, 10/10 Turbo test tasks,
   7/7 builds, all Foundry tests/invariants, and 4/4 scaffold tests.
@@ -104,3 +105,48 @@ Rollback is confined to P4 contract source/tests/script, P4-positive scaffold ch
   incomplete exact-binding event evidence, and potentially vacuous invalid-action invariants. The
   re-review found no remaining security defect; gas evidence was refreshed after the event change.
 - `git diff --check` and an explicit trailing-whitespace scan pass before handoff.
+
+## P4.1 — Sepolia deployment evidence closure
+
+### Outcome and non-goals
+
+Deploy the unchanged `PreflightRegistry` bytecode from commit `1929651` to Ethereum Sepolia, verify
+its public owner/registrar/read state through RPC, publish only non-secret deployment metadata, and
+make the resulting `chainId + verifyingContract` available to later P5 work. This does not register
+a clearance, automate CRE delivery, add EIP-712, implement Ledger signing, or begin P5.
+
+### Deployment invariants
+
+- Refuse to broadcast unless the RPC reports chain ID `11155111`, the derived deployer is funded,
+  and every pre-deployment verification gate passes.
+- The deployer address is the constructor's immutable owner and initial registrar; no proxy,
+  upgradeability, governance, token, or semantic contract change is introduced.
+- Never print, copy, commit, or preserve the private key, RPC credential, explorer token, `.env`
+  contents, CRE secret, or confidential envelope blind.
+- Treat source verification failure as an external evidence blocker, not a reason to redeploy a
+  correctly mined contract.
+- Do not write a demo clearance solely for deployment closure; public view calls are sufficient.
+
+### Acceptance and steps
+
+- [x] Preflight: clean P4 commit, ignored `.env`, Sepolia chain ID, derived address/balance, Foundry
+  identity, `forge fmt --check`, build/tests, and full repository verification
+- [x] Broadcast unchanged deployment script exactly once and capture public receipt metadata
+- [x] Verify source when explorer credentials/API permit; do not redeploy on verifier failure
+- [x] RPC-check owner, initial registrar, constants, and nonexistent-clearance invalidity
+- [x] Create machine-readable public deployment artifact and curated compliance evidence
+- [x] Run post-deployment verification, secret-leak audit, Git diff check, and independent review
+- [x] Update planning/evidence/handoff records and commit the P4.1 evidence closure
+
+### Deployment result
+
+- Ethereum Sepolia chain ID `11155111`, contract
+  `0xFB270cc222efa8B5005AA097dD512Be2558dde65`
+- successful transaction `0x9dce1c53715d1a0f7b39e469d3ec350ffec2726cbb1e396432dd545f6c16d497`,
+  block `11644462`, timestamp `2026-09-06T02:48:00Z`
+- immutable owner and initial registrar `0xaA5768d0f2157F8781efb975CDd9aec99e7879E3`
+- Solidity `0.8.30+commit.73712a01`, Prague, optimizer 200; Foundry `1.8.1`
+- source verified on Etherscan and Sourcify; live public readback matches constructor/interface
+- no clearance write, contract semantic change, confidential-data publication, or P5 implementation
+- independent re-review confirmed chain/source/artifact consistency and found no remaining
+  correctness, security, leakage, or scope issue after stale-status and evidence-detail fixes

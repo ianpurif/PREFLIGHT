@@ -33,6 +33,7 @@
 - [x] exact-build/site/evaluator/expiry binding
 - [x] revocation/expiry semantics
 - [x] fuzz + invariant tests
+- [x] Sepolia deployment, source verification, public RPC readback, and non-secret P5 registry identity
 
 ## P5 — Ledger release gate
 - [ ] align DMK and signer-kit peer versions before implementation

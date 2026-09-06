@@ -38,6 +38,10 @@ P4 public attestation registry keyed by the P1 clearance digest. It stores only 
 bindings, timestamps, issuer, and revocation state; owner-managed registrars attest the offchain P1
 digest-to-field mapping. It has no private envelope data, canonical JSON parser, automatic CRE
 delivery, signing, deployment authorization, enumeration, or upgradeability. See ADR-0006.
+The unchanged P4 contract is source-verified on Ethereum Sepolia at
+`0xFB270cc222efa8B5005AA097dD512Be2558dde65`; the public `chainId + verifyingContract` identity is
+versioned in `contracts/deployments/sepolia.json` for later P5 domain binding. Its existence alone
+does not authorize a deployment.
 
 ### `packages/ledger-gate`
 Browser-only hardware approval boundary. Backend never holds a substitute release key.

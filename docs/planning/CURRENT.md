@@ -1,7 +1,7 @@
 # Current State
 
 ## Phase
-**P1–P4 complete locally. P3 has official authenticated CRE simulation evidence; P4 is Sepolia-ready but not deployed. P5–P8 intentionally not started.**
+**P1–P4 complete. P3 has official authenticated CRE simulation evidence; P4 is deployed and source-verified on Ethereum Sepolia. P5–P8 intentionally not started.**
 
 ## What exists
 - all B0 boilerplate/tooling and specialized agentic harness
@@ -29,11 +29,14 @@
 - exact-context validity reads with `block.timestamp < expiresAt` and Foundry unit/fuzz/stateful-invariant coverage
 - P1 golden digest and `sha256(UTF8(exact prefixed identifier))` transport vectors in Solidity tests
 - Sepolia chain-guarded deployment script and non-secret environment/verification instructions
+- source-verified Sepolia `PreflightRegistry` at `0xFB270cc222efa8B5005AA097dD512Be2558dde65`
+- public P5 registry-domain artifact binding chain ID `11155111` to that exact verifying contract
 - type-only scaffold consumers aligned to the canonical domain protocol
 
 Detailed decisions and evidence: ADR-0003 through ADR-0006, the P1–P4 execution plans,
 `docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md`, and
-`docs/compliance/evidence/p4-attestation-registry-local-2026-09-06.md`.
+`docs/compliance/evidence/p4-attestation-registry-local-2026-09-06.md`, and
+`docs/compliance/evidence/p4-sepolia-deployment-2026-09-06.md`.
 
 ## Next exact task
 P5 — implement only the Ledger-backed release gate when explicitly authorized. It must consume the
@@ -49,9 +52,12 @@ blind was freshly generated into ignored local files; the envelope is source-vis
 data. This is simulation only; live deployment/private-beta access, hardware TEE execution,
 production Vault custody, and DON consensus are not claimed.
 
-P4 passes local Foundry unit, fuzz, and invariant verification. No
-`SEPOLIA_DEPLOYER_PRIVATE_KEY`, Foundry keystore account, or explorer credential is available, so no
-funded deployer address can be derived or checked and no Sepolia deployment is claimed. P4 adds no
-Ledger, EIP-712, release-agent, API, UI, or P5+ implementation.
+P4 passes local Foundry unit, fuzz, and invariant verification. The unchanged registry from source
+commit `1929651` was mined on Sepolia in transaction
+`0x9dce1c53715d1a0f7b39e469d3ec350ffec2726cbb1e396432dd545f6c16d497`, block `11644462`, and is
+verified on Etherscan and Sourcify. Live RPC reads confirm the expected immutable owner, initial
+registrar, constants, deployed code, and nonexistent-clearance invalidity. The ignored deployment
+credentials and generated Foundry broadcast/cache files remain uncommitted. P4 adds no Ledger,
+EIP-712, release-agent, API, UI, or P5+ implementation.
 
 The P3 behavior digest binds the public result to the exact supplied synthetic behavior/request but does not authenticate its physical or software origin. Preflight currently proves only that supplied behavior for an exact declared build was evaluated against the committed private envelope.

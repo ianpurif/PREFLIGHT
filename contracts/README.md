@@ -50,6 +50,17 @@ forge test --gas-report
 
 ## Sepolia deployment
 
+The unchanged P4 registry is deployed and source-verified on Ethereum Sepolia:
+
+- contract: [`0xFB270cc222efa8B5005AA097dD512Be2558dde65`](https://sepolia.etherscan.io/address/0xFB270cc222efa8B5005AA097dD512Be2558dde65)
+- deployment transaction: [`0x9dce1c53715d1a0f7b39e469d3ec350ffec2726cbb1e396432dd545f6c16d497`](https://sepolia.etherscan.io/tx/0x9dce1c53715d1a0f7b39e469d3ec350ffec2726cbb1e396432dd545f6c16d497)
+- block: `11644462`; chain ID: `11155111`
+- public configuration: [`deployments/sepolia.json`](deployments/sepolia.json)
+- curated evidence: [`docs/compliance/evidence/p4-sepolia-deployment-2026-09-06.md`](../docs/compliance/evidence/p4-sepolia-deployment-2026-09-06.md)
+
+The deployer is the immutable owner and initial registrar. This deployment records no clearance by
+itself and does not begin P5 or authorize robot deployment.
+
 Copy the root `.env.example` to an ignored local environment file and provide
 `SEPOLIA_RPC_URL`, `SEPOLIA_DEPLOYER_PRIVATE_KEY`, and (for explorer verification)
 `ETHERSCAN_API_KEY`. Never commit those values.
@@ -63,5 +74,4 @@ forge script script/DeployPreflightRegistry.s.sol:DeployPreflightRegistry `
 ```
 
 The script rejects any chain other than Ethereum Sepolia (`11155111`) and makes the deployer the
-immutable owner. Record the real address, transaction, block, and compiler only after a successful
-broadcast; never substitute a generated address for deployment evidence.
+immutable owner. Never substitute a generated address for deployment evidence.

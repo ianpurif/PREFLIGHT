@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "network": "ethereum-sepolia",
+  "chainId": 11155111,
+  "contractName": "PreflightRegistry",
+  "verifyingContract": "0xFB270cc222efa8B5005AA097dD512Be2558dde65",
+  "deploymentTransaction": "0x9dce1c53715d1a0f7b39e469d3ec350ffec2726cbb1e396432dd545f6c16d497",
+  "deploymentBlock": 11644462,
+  "deployedAt": "2026-09-06T02:48:00Z",
+  "deployer": "0xaA5768d0f2157F8781efb975CDd9aec99e7879E3",
+  "constructorArguments": {
+    "initialOwner": "0xaA5768d0f2157F8781efb975CDd9aec99e7879E3"
+  },
+  "solidityCompiler": "0.8.30+commit.73712a01",
+  "evmVersion": "prague",
+  "optimizerRuns": 200,
+  "foundryVersion": "1.8.1",
+  "sourceCommit": "19296513554c48929de83087409c6ecf5cb0c3a3",
+  "sourceVerification": {
+    "etherscan": "verified",
+    "sourcify": "verified"
+  }
+}

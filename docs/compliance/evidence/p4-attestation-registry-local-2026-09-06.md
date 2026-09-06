@@ -2,7 +2,8 @@
 
 **Date:** 2026-09-06
 **Evidence class:** Local Foundry implementation and verification
-**Network status:** Sepolia-ready; not deployed
+**Network status at this local-verification checkpoint:** Sepolia-ready; not yet deployed. The later
+[Sepolia deployment evidence](p4-sepolia-deployment-2026-09-06.md) supersedes only this status.
 
 ## Scope and evidence boundary
 
@@ -66,7 +67,8 @@ Results:
   reverts.
 - Seeded invariant state ensures successful, revoked, expired, and long-lived records exist before
   fuzz actions; non-`CLEAR` acceptance and overwrite counters remain zero.
-- Production deployed bytecode reported at 4,561 bytes.
+- Foundry's deployment-size metric reported 4,561 bytes. The later live Sepolia readback records
+  4,263 bytes of runtime code in the deployment evidence.
 - Maximum observed production calls in the gas report: registration 371,757 gas, revocation 29,265
   gas, exact-binding read 29,284 gas. Failed fuzz calls make aggregate averages unsuitable as a
   successful-registration estimate.
@@ -103,10 +105,12 @@ Results:
   defect; the final invariant run had zero unhandled handler reverts.
 - `git diff --check` and an explicit tracked/untracked trailing-whitespace scan passed.
 
-## Sepolia deployment status
+## Sepolia deployment status at this checkpoint
 
-The chain-guarded deployment script and verification command are ready. Environment inspection found
+This paragraph records the initial local-only capture and is not current deployment status; see the
+later [Sepolia deployment evidence](p4-sepolia-deployment-2026-09-06.md). At this checkpoint, the
+chain-guarded deployment script and verification command were ready. Environment inspection found
 no `SEPOLIA_DEPLOYER_PRIVATE_KEY`, `SEPOLIA_RPC_URL`, `EVM_RPC_URL`, or `ETHERSCAN_API_KEY`, and
 `cast wallet list` returned no configured account. No deployer address exists to check for funding.
-Therefore no broadcast or explorer verification was attempted, and no contract address,
-transaction, or block is claimed.
+Therefore no broadcast or explorer verification was attempted during this earlier capture, and it
+made no contract-address, transaction, or block claim.
