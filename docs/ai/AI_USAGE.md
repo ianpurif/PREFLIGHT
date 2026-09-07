@@ -121,3 +121,29 @@ are recorded. Physical Ledger cases A–F were not run because no Ledger-issued 
 accepted/served ERC-7730 descriptor was available. No device model/app/signer, physical approval,
 autonomous/LLM agent execution, robot activation, backend key, blind-signing result, or P6
 functionality is claimed.
+
+## 2026-09-07 — P5.1 Ledger Speculos evidence attempt
+
+**Tool:** OpenAI Codex using project execution-plan, Ledger partner-compliance, verification-loop,
+and handoff skills plus read-only repository and partner auditors.
+
+**Human direction:** Close P5 as far as legitimate without physical hardware by adding the official
+DMK Speculos transport, running the actual Ethereum app and emulator UI, validating/previewing the
+ERC-7730 display, exercising A–F without mocks, preserving WebHID, documenting Ledger DX feedback,
+and stopping before P6.
+
+**AI-assisted output:** Narrow `webhid | speculos` transport selection with production rejection;
+loopback development/test Speculos configuration; shared adapter/context/signature path; ERC-7730 v2 descriptor migration and official
+validator run; explicit Tester display fixture; native WSL2 Speculos setup with checksum-verified
+public Ethereum app ELF; actual DMK discovery and emulator address-review/confirmation capture;
+reproducible official-controller smoke harness; real pre-sign C and invalid/unregistered D API
+denials; scaffold regressions;
+Ledger DX feedback; and planning/compliance/evidence updates.
+
+**Evidence boundary:** The official Tester wrapper failed closed because `GATING_TOKEN` was absent,
+and its display harness cannot supply Preflight's separate application origin/accepted-descriptor
+context or preserve the signature. The implicit direct-tester token and blind signing were not used.
+Case C and invalid/unregistered D passed before signer invocation; revoked/expired D remain
+test-only. No deployment-intent signature, `ReleaseAuthorization`,
+Speculos A/B/E/F result, physical Ledger/Secure Element claim, live contract write, autonomous
+agent, or P6 behavior is claimed.

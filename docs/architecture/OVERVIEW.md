@@ -44,11 +44,14 @@ versioned in `contracts/deployments/sepolia.json` for later P5 domain binding. I
 does not authorize a deployment.
 
 ### `packages/ledger-gate`
-P5 browser-only DMK/WebHID/Ethereum Signer Kit adapter. It confirms the Ethereum address on-device,
+P5 browser-only DMK/Ethereum Signer Kit adapter with production WebHID and development/test-only
+loopback official Speculos transport. It confirms the Ethereum address on-device/emulator,
 requests only the exact full EIP-712 `DeploymentIntent`, requires the Context Module to resolve all
-15 exact display filters, normalizes physical refusal, and cancels partial context or the signer
-kit's legacy typed-data fallback. The backend never holds a substitute release key. Physical Clear
-Signing evidence remains pending. See ADR-0007.
+15 exact display filters, normalizes device refusal, and cancels partial context or the signer kit's
+legacy typed-data fallback. The backend never holds a substitute release key. Actual Speculos
+transport/app/address UI smoke, actual pre-sign C, and invalid/unregistered D denial are evidenced;
+authenticated Clear Signing A/B/E/F, revoked/expired D captures, and physical evidence remain
+pending. See ADR-0007.
 
 ### `packages/chain-client`
 
@@ -65,9 +68,10 @@ does not implement or demonstrate an autonomous/LLM agent runtime. It never sign
 private keys.
 
 ### `apps/web`
-The `/p5-ledger` route is a minimal WebHID operator/evidence harness for explicit device connection,
-approval, and public results. It is manual, not an autonomous-agent demo, and does not activate a
-robot or implement the P6 digital twin.
+The `/p5-ledger` route is a minimal operator/evidence harness. It defaults to WebHID and can select
+the loopback Ledger Speculos official device simulator only in development/test without changing authorization semantics. It
+is manual, not an autonomous-agent demo, and does not activate a robot or implement the P6 digital
+twin.
 
 ## Intended release check
 A release must eventually prove all of:

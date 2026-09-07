@@ -102,3 +102,11 @@ used only the manual operator harness. No autonomous/LLM agent execution is clai
 This artifact contains only public chain data, public protocol fields, package versions, and test
 outcomes. It contains no PIN, recovery phrase, private key, origin token, RPC credential, signature,
 credential, confidential envelope, or commitment blind.
+
+## 2026-09-07 addendum
+
+The descriptor referenced above was subsequently migrated from ERC-7730 v1 to active v2 and passes
+official `erc7730 1.0.7` lint with no issues. Actual Speculos transport/app/address UI smoke and the
+remaining official Tester access blocker are recorded separately in
+`p5-ledger-speculos-partial-2026-09-07.md`. This historical software evidence remains accurate for
+its original run; it must not be read as Speculos A–F or physical-device evidence.

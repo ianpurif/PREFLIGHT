@@ -15,10 +15,12 @@ This is an architectural contract, not implementation.
 9. **Release prepare API** validates exact proposal/clearance bindings and the signer allowlist, then
    reads the deployed registry at one explicit block. Only an existing exact `CLEAR`, unrevoked,
    unexpired record can produce a server-nonced full EIP-712 request.
-10. **WebHID operator harness** connects a Ledger on an explicit human gesture, confirms its address
-    on-device, reconstructs the exact request, and requests full typed-data signing. The runtime
-    descriptor must resolve every exact display path; partial context or legacy/blind fallback fails
-    closed. This is a manual evidence harness, not an autonomous-agent runtime.
+10. **Ledger operator harness** defaults to WebHID and connects a physical Ledger on an explicit
+    human gesture. Development/test may select only a loopback Ledger Speculos official device
+    simulator; production configuration rejects it.
+    Both confirm the address, reconstruct the exact request, and share full typed-data signing. The
+    runtime descriptor must resolve every exact display path; partial context or legacy/blind
+    fallback fails closed. This is a manual evidence harness, not an autonomous-agent runtime.
 11. **Human + Ledger** review/approve or reject. The private key never enters browser, API, or agent.
 12. **Release consume API** reconstructs the request, recovers an authorized signer, repeats the exact
     P4 check for TOCTOU, enforces `now < expiresAt`, atomically consumes the durable nonce once, and

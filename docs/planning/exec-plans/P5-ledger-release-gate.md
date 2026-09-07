@@ -125,7 +125,7 @@ separate read-only reviewer will inspect the final diff after implementation.
 
 ## Verification evidence
 
-Targeted local verification passes for domain (30), chain-client (11), Ledger gate (15), and API
+Targeted local verification passes for domain (30), chain-client (11), Ledger gate (18), and API
 (12) tests. Mock coverage includes exact field/domain mutation, build substitution, positive
 pinned-block registry-reader/ABI behavior, strict API requests/error mapping, authorized and
 unauthorized signatures, durable/concurrent replay, TOCTOU revocation/expiry, adapter lifecycle,
@@ -134,8 +134,12 @@ legacy-fallback cancellation. A live read-only Sepolia call at block `11645707` 
 expected chain/registry and rejected an unregistered fixture.
 
 Physical A–F evidence remains blocked: `NEXT_PUBLIC_LEDGER_ORIGIN_TOKEN` is unset, the committed
-ERC-7730 file is only a candidate rather than an accepted/served descriptor, and no real device is
-available to identify or exercise. The final full verification, secret audit, reviewer result, and
+ERC-7730 v2 file is only a validated candidate rather than an accepted/served descriptor, and no
+physical device is available to identify or exercise. P5.1 additionally proved official Speculos
+transport/app/address UI smoke plus actual pre-sign C and invalid/unregistered D. The official
+Tester exited on missing `GATING_TOKEN` before Clear Signing display, and the separate application
+origin/accepted-descriptor path is also unavailable for A/B/E/F. The final full verification,
+secret audit, reviewer result, and
 hardware blocker are recorded in `VERIFICATION_REPORT.md` and
 `docs/compliance/evidence/p5-ledger-release-gate-software-2026-09-06.md`.
 

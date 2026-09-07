@@ -36,8 +36,18 @@ The adapter requires a Ledger origin token and accepts context only when the off
 returns the exact chain, registry, schema, filter count, and every display path. It rejects partial
 context and the Signer Kit `SIGN_TYPED_DATA_LEGACY` fallback before output. Physical refusal is
 `HUMAN_REJECTED` and is not retried. These controls are implemented and mock-verified, but hardware
-enforcement/Clear Signing is not yet evidenced because the origin/descriptor/device prerequisites
-are unavailable.
+enforcement/Clear Signing is not yet evidenced because the production origin/accepted-descriptor/
+physical-device prerequisites are unavailable.
+
+P5.1 adds a separate test transport only: Ledger's official Speculos transport is rejected outside
+development/test, accepts only a directly configured loopback HTTP endpoint, and uses the same
+adapter/context/signature path. Speculos `0.27.0` plus the
+actual Ethereum `1.22.3` application proves emulator discovery and address-review UI behavior, but
+not Secure Element custody, physical interaction, WebHID behavior, or firmware compatibility.
+Authenticated Clear Signing A/B/E/F remain blocked on both the official Tester's missing
+`GATING_TOKEN` and the separate application origin/accepted-descriptor path; they must not be
+inferred from the address smoke. Actual C and invalid/unregistered D requests fail before signer
+invocation; revoked/expired D variants remain test-only evidence.
 
 ## Boundary D2 — Offchain release and replay authority
 

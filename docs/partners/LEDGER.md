@@ -25,7 +25,7 @@ API verifies, rechecks clearance, consumes nonce once
 - The proposal API accepts exact public fields and returns deterministic denials. A future agent may call it, but no agent runtime is claimed in P5; any such client has no key or approval authority.
 - Deterministic policy queries the deployed P4 registry and decides whether Ledger may be prompted.
 - The software requires Ledger's returned descriptor to cover every signed field before the signing command may proceed. Physical display/review remains unverified until hardware evidence is captured.
-- Ledger keeps the private key on hardware and produces the only acceptable signature.
+- In production, Ledger hardware keeps the private key on-device and produces the only acceptable signature. Speculos is a test emulator and provides no Secure Element claim.
 - The API reconstructs the message, recovers the signer, repeats the P4 check, and atomically consumes the nonce.
 
 ## Current packages
@@ -37,7 +37,9 @@ Exact versions are pinned for demo stability:
 | `@ledgerhq/context-module` | `2.5.0` | Clear Signing context dependency |
 | `@ledgerhq/device-management-kit` | `1.9.0` | device discovery/session management |
 | `@ledgerhq/device-transport-kit-web-hid` | `1.2.4` | browser WebHID transport |
+| `@ledgerhq/device-transport-kit-speculos` | `1.2.1` | official local simulator transport |
 | `@ledgerhq/device-signer-kit-ethereum` | `1.18.0` | Ethereum address and full EIP-712 signing |
+| `@ledgerhq/speculos-device-controller` | `0.3.0` | test-only actual emulator UI control |
 | `rxjs` | `7.8.2` | device-action observables |
 
 Deprecated `@ledgerhq/hw-app-*` and `@ledgerhq/hw-transport-*` packages are prohibited and absent. P5 does not use Key Ring because it needs physical human approval, not agent/VPS secret brokerage.
@@ -58,15 +60,38 @@ The same exact P4 clearance is read at one explicit Sepolia block before prepara
 
 ## Clear Signing and refusal
 
-The browser route uses an explicit user gesture, WebHID, on-device address confirmation, and an active Ethereum app. A Ledger-issued origin token is mandatory for signing. The local ERC-7730 v1 file is a **candidate descriptor only** until Ledger accepts and serves it for the application origin.
+The browser route defaults to an explicit user gesture, WebHID, on-device address confirmation, and an active Ethereum app. Development/test configuration may select only a loopback Speculos endpoint; production runtime configuration rejects Speculos. Both modes use the same adapter, Context Module, exact typed data, and strict action. A Ledger-issued origin token remains mandatory for signing. The local ERC-7730 v2 file passes the official validator but is still a **candidate descriptor only** until Ledger accepts and serves it for the application origin.
 
 The official Context Module is fixed to Ethereum. Before `SIGN_TYPED_DATA` may continue, the runtime guard requires a successful descriptor response for the exact chain, registry, 15-field `DeploymentIntent` schema, declared filter count, and exact display-filter paths. Missing, partial, extra, or mismatched filters fail closed. Signer Kit 1.18.0 can also enter its public `SIGN_TYPED_DATA_LEGACY` action step when full context cannot be built; the adapter cancels that action immediately and returns `CLEAR_SIGNING_UNAVAILABLE`. It never accepts hashed EIP-712, blind signing, personal signing, raw transaction signing, or a backend/frontend fallback. A device refusal maps to `HUMAN_REJECTED` and is not retried.
 
-## Hardware evidence status
+## Speculos and hardware evidence status
 
-Not captured. This environment lacks a configured Ledger-issued origin token and has no evidence of an accepted descriptor or connected physical device. Device model, firmware, Ethereum app version, derived signer, physical approval/refusal, replay, and tampering results must not be inferred from mocks.
+The Ledger Speculos official device simulator ran Speculos `0.27.0` with the checksum-verified public Ethereum `1.22.3` Nano S Plus ELF. DMK `1.9.0` discovered it and actual emulator address review/confirmation returned the public signer `0xDad77910DbDFdE764fC21FCD4E74D71bBACA6D8D`. This is transport/app/UI smoke evidence only.
 
-Required closure cases are: valid approval; physical refusal; Build B blocked before Ledger; missing/revoked/expired clearance blocked before Ledger; consumed-signature replay rejected; and post-sign field tampering rejected. Evidence may include only public fields/signature hash and must never expose PIN, recovery phrase, private key, origin token, or credentials.
+That signer comes from Speculos's deterministic test seed. It is public test identity, must never be retained in a production `PREFLIGHT_AUTHORIZED_SIGNERS` allowlist, and any clearance/nonce database created for it must be test-only.
+
+The official ERC-7730 Tester wrapper exited `1` because `GATING_TOKEN` was not set. The direct implicit test token was not used. The Tester also discards its signature, so completing Preflight A/B/E/F separately requires an application origin token plus an accepted/served descriptor or another official descriptor-resolution path that returns the real signature. Real `/release/prepare` runs already prove C (`CLEARANCE_BINDING_MISMATCH`) and invalid/unregistered D (`CLEARANCE_NOT_FOUND`) before signer invocation. Physical evidence is not captured; there is no connected physical-device model, firmware, approval, or rejection evidence.
+
+Remaining Speculos closure cases are valid approval, emulator refusal, consumed-signature replay rejection, and post-sign field tampering rejection. Physical A–F remain separate. Evidence may include only public fields/signature hash and must never expose PIN, recovery phrase, private key, origin token, or credentials.
+
+## Switching between Speculos and WebHID
+
+The application defaults to `webhid`. A Ledger mentor with a physical device sets
+`NEXT_PUBLIC_LEDGER_TRANSPORT=webhid`, configures the issued
+`NEXT_PUBLIC_LEDGER_ORIGIN_TOKEN`, opens the Ethereum app, and uses `/p5-ledger` from Chromium on
+localhost/HTTPS. No architecture or EIP-712 change is required.
+
+For test-only Speculos, set `NEXT_PUBLIC_LEDGER_TRANSPORT=speculos` and
+`NEXT_PUBLIC_LEDGER_SPECULOS_URL=http://127.0.0.1:5000`, then start the exact supported Ethereum app
+under Speculos while `NODE_ENV` is `development` or `test`. The runtime rejects Speculos in
+production. Loopback filtering blocks direct non-loopback configuration only; it does not attest the
+emulator or prevent a local proxy from forwarding APDUs.
+Clear Signing still requires legitimate context resolution; an empty token, partial descriptor, or
+legacy/blind path fails closed.
+
+Detailed partial evidence is in
+[`p5-ledger-speculos-partial-2026-09-07.md`](../compliance/evidence/p5-ledger-speculos-partial-2026-09-07.md).
+Specific tooling feedback is in [`LEDGER_DX_FEEDBACK.md`](LEDGER_DX_FEEDBACK.md).
 
 ## Official resources used
 
@@ -76,3 +101,6 @@ Required closure cases are: valid approval; physical refusal; Build B blocked be
 - https://developers.ledger.com/docs/clear-signing/for-wallets
 - https://developers.ledger.com/docs/clear-signing/reference/erc7730-reference
 - https://github.com/LedgerHQ/agent-skills
+- https://github.com/LedgerHQ/speculos
+- https://github.com/LedgerHQ/app-ethereum/releases/tag/1.22.3
+- https://github.com/ethereum/clear-signing-erc7730-registry

@@ -38,8 +38,12 @@
 ## P5 — Ledger release gate
 - [x] align and pin compatible DMK, WebHID transport, context, signer-kit, and RxJS versions
 - [x] DMK/WebHID browser adapter with explicit device/app/address lifecycle
+- [x] narrow WebHID/Speculos transport selection with shared signer lifecycle and production rejection
 - [x] full EIP-712 deployment intent bound to the deployed Sepolia registry
-- [x] local ERC-7730 descriptor candidate plus exact runtime filter-resolution guard and fail-closed legacy/blind-fallback rejection
+- [x] ERC-7730 v2 candidate validated by official linter plus exact runtime filter-resolution guard and fail-closed legacy/blind-fallback rejection
+- [x] actual Ethereum 1.22.3 app under Speculos 0.27.0 with DMK discovery and emulator address UI confirmation
+- [ ] authenticated official Clear Signing Tester structured-display evidence — blocked on missing `GATING_TOKEN`
+- [ ] Speculos A–F end-to-end evidence — real C and invalid/unregistered D pass; A/B/E/F plus revoked/expired D captures blocked/open
 - [ ] Ledger-issued origin token and accepted/served Clear Signing descriptor
 - [x] device signing path implemented and mock-verified (physical execution pending)
 - [x] deterministic pre/post clearance policy, authorized signer, durable nonce, replay/TOCTOU/mismatch tests
