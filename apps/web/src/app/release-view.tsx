@@ -24,14 +24,15 @@ export function ReleaseView({ demo }: { readonly demo: DemoPublicData }) {
           2
         </div>
         <div>
-          <span className="view-eyebrow">Current release state</span>
+          <span className="view-eyebrow">Next safe stop after preparation</span>
           <h2 id="release-status-title">LEDGER_APPROVAL_REQUIRED</h2>
           <p>
-            This is the safe stopping point after preparation. No signature has been requested in
-            this view, and no robot activation is available.
+            A clear build can enter this state after the existing agent prepares an exact request.
+            No request is prepared in this view, no signature has been requested, and no robot
+            activation is available.
           </p>
         </div>
-        <span className="release-status-label">AWAITING HUMAN</span>
+        <span className="release-status-label">AFTER PREPARE</span>
       </section>
 
       <section className="release-steps" aria-labelledby="release-steps-title">
