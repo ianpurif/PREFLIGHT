@@ -60,6 +60,13 @@ test("P3-P7 are load-bearing and the judge boundary remains non-authoritative", 
   );
   const tools = await readFile(new URL("apps/api/src/agent/tools.ts", root), "utf8");
   const web = await readFile(new URL("apps/web/src/app/page.tsx", root), "utf8");
+  const landing = await readFile(new URL("apps/web/src/app/landing-page.tsx", root), "utf8");
+  const onboarding = await readFile(new URL("apps/web/src/app/onboarding-flow.tsx", root), "utf8");
+  const productApp = await readFile(new URL("apps/web/src/app/product-app.tsx", root), "utf8");
+  const evaluatePage = await readFile(
+    new URL("apps/web/src/app/app/evaluate/page.tsx", root),
+    "utf8",
+  );
   const judge = await readFile(new URL("apps/web/src/app/judge-dashboard.tsx", root), "utf8");
   const twin = await readFile(new URL("apps/web/src/app/digital-twin.tsx", root), "utf8");
   const p6Browser = await readFile(new URL("tests/e2e/p6-judge-path.spec.ts", root), "utf8");
@@ -112,8 +119,11 @@ test("P3-P7 are load-bearing and the judge boundary remains non-authoritative", 
     `${ledger}\n${ledgerTransport}\n${strictAction}\n${release}`,
     /@ledgerhq\/hw-|personal_sign/,
   );
-  assert.match(web, /createDemoPublicData/);
-  assert.match(web, /JudgeDashboard/);
+  assert.match(web, /LandingPage/);
+  assert.match(landing, /Get started/);
+  assert.match(onboarding, /preflight\.workspace\.setup/);
+  assert.match(productApp, /ProductApp/);
+  assert.match(evaluatePage, /JudgeDashboard/);
   assert.match(judge, /CLEARANCE_BINDING_MISMATCH/);
   assert.match(judge, /Physical device: not demonstrated/);
   assert.match(judge, /CRE authenticated simulation evidence/);

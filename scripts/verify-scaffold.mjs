@@ -40,6 +40,18 @@ const required = [
   "apps/api/test/openai-responses-model.test.ts",
   "apps/api/test/server.test.ts",
   "apps/web/src/app/page.tsx",
+  "apps/web/src/app/landing-page.tsx",
+  "apps/web/src/app/onboarding-flow.tsx",
+  "apps/web/src/app/product-app.tsx",
+  "apps/web/src/app/workspace-views.tsx",
+  "apps/web/src/app/release-view.tsx",
+  "apps/web/src/app/evidence-view.tsx",
+  "apps/web/src/app/app/page.tsx",
+  "apps/web/src/app/app/setup/page.tsx",
+  "apps/web/src/app/app/builds/page.tsx",
+  "apps/web/src/app/app/evaluate/page.tsx",
+  "apps/web/src/app/app/releases/page.tsx",
+  "apps/web/src/app/app/evidence/page.tsx",
   "apps/web/src/app/judge-dashboard.tsx",
   "apps/web/src/app/digital-twin.tsx",
   "apps/web/src/app/demo-data.ts",
@@ -305,6 +317,9 @@ for (const forbidden of [
   if (forbidden.test(p5Source)) throw new Error(`Forbidden P5 signing path found: ${forbidden}`);
 }
 const webPage = readFileSync(resolve(root, "apps/web/src/app/page.tsx"), "utf8");
+const landingPage = readFileSync(resolve(root, "apps/web/src/app/landing-page.tsx"), "utf8");
+const productApp = readFileSync(resolve(root, "apps/web/src/app/product-app.tsx"), "utf8");
+const evaluatePage = readFileSync(resolve(root, "apps/web/src/app/app/evaluate/page.tsx"), "utf8");
 const judgeDashboard = readFileSync(resolve(root, "apps/web/src/app/judge-dashboard.tsx"), "utf8");
 const digitalTwin = readFileSync(resolve(root, "apps/web/src/app/digital-twin.tsx"), "utf8");
 const demoData = readFileSync(resolve(root, "apps/web/src/app/demo-data.ts"), "utf8");
@@ -312,8 +327,10 @@ const p6Browser = readFileSync(resolve(root, "tests/e2e/p6-judge-path.spec.ts"),
 const p7Browser = readFileSync(resolve(root, "tests/e2e/p7-deterministic-demo.spec.ts"), "utf8");
 const p7DemoScript = readFileSync(resolve(root, "scripts/p7-demo.mjs"), "utf8");
 const p7Fixture = readFileSync(resolve(root, "apps/api/scripts/p7-demo-fixture.ts"), "utf8");
-if (!webPage.includes("createDemoPublicData") || !webPage.includes("JudgeDashboard"))
-  throw new Error("P6 root route must render the server-side public dashboard projection");
+if (!webPage.includes("LandingPage") || !landingPage.includes("Get started"))
+  throw new Error("P8 root route must render the product landing page");
+if (!productApp.includes("ProductApp") || !evaluatePage.includes("JudgeDashboard"))
+  throw new Error("P6 evaluator must remain available inside the product workspace");
 for (const requiredSurface of [
   "CLEARANCE_BINDING_MISMATCH",
   "CRE authenticated simulation evidence",
