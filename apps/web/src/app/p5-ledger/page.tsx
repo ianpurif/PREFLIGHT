@@ -6,6 +6,7 @@ import {
   LedgerBrowserAdapter,
   parseLedgerTransportConfig,
 } from "@preflight/ledger-gate";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 const apiOrigin = process.env.NEXT_PUBLIC_API_ORIGIN ?? "http://localhost:4000";
@@ -134,19 +135,46 @@ export default function P5LedgerOperatorPage() {
   }
 
   return (
-    <main className="shell p5-operator">
-      <p className="eyebrow">
-        {isSpeculos
-          ? "P5 / LEDGER SPECULOS OFFICIAL DEVICE SIMULATOR"
-          : "P5 / LEDGER PHYSICAL-DEVICE EVIDENCE HARNESS"}
-      </p>
-      <h1>Exact release approval</h1>
+    <main className="shell p5-operator" id="main-content">
+      <header className="operator-topbar">
+        <Link className="brand-lockup" href="/app" aria-label="Back to Preflight workspace">
+          <span className="brand-mark" aria-hidden="true">
+            P
+          </span>
+          <span>
+            <strong>Preflight</strong>
+            <small>Human release gate</small>
+          </span>
+        </Link>
+        <Link className="operator-back-link" href="/app/releases">
+          Back to releases <span aria-hidden="true">↗</span>
+        </Link>
+      </header>
+      <div className="operator-heading">
+        <p className="eyebrow">
+          {isSpeculos
+            ? "HUMAN APPROVAL / LEDGER SPECULOS SIMULATOR"
+            : "HUMAN APPROVAL / LEDGER DEVICE"}
+        </p>
+        <span className="operator-step-state">STEP 4 OF 4 · OPERATOR ACTION</span>
+      </div>
+      <h1>Approve the exact release.</h1>
       <p className="lede">
-        Operator or orchestration client proposes → deterministic Sepolia policy filters → human
-        verifies → Ledger signs. {isSpeculos ? "This run uses Ledger's official simulator. " : ""}
-        This manual evidence harness does not implement an autonomous agent, activate a robot, or
-        decide whether a clearance is valid.
+        The agent can prepare a request, but only you can verify the exact fields on Ledger.{" "}
+        {isSpeculos ? "This run uses Ledger's official simulator. " : ""}
+        This harness does not activate a robot or decide whether a clearance is valid.
       </p>
+      <ol className="operator-stepper" aria-label="Human approval steps">
+        <li className="is-complete">
+          <span>1</span>Prepare exact intent
+        </li>
+        <li className="is-current">
+          <span>2</span>Review on device
+        </li>
+        <li>
+          <span>3</span>Verify and consume once
+        </li>
+      </ol>
       <div className="operator-actions">
         <button type="button" onClick={connect}>
           Connect and verify Ledger
@@ -161,19 +189,22 @@ export default function P5LedgerOperatorPage() {
           Verify and consume once
         </button>
       </div>
-      <label htmlFor="clearance">Public P1 clearance record</label>
-      <textarea
-        id="clearance"
-        rows={16}
-        spellCheck={false}
-        value={clearanceJson}
-        onChange={(event) => {
-          setClearanceJson(event.target.value);
-          setPrepared(null);
-          setSignature(null);
-          setResult(null);
-        }}
-      />
+      <details className="operator-input-details" open={prepared === null}>
+        <summary>Advanced: provide a public P1 clearance record</summary>
+        <label htmlFor="clearance">Public P1 clearance record</label>
+        <textarea
+          id="clearance"
+          rows={16}
+          spellCheck={false}
+          value={clearanceJson}
+          onChange={(event) => {
+            setClearanceJson(event.target.value);
+            setPrepared(null);
+            setSignature(null);
+            setResult(null);
+          }}
+        />
+      </details>
       <section className="card operator-status">
         <strong>Current status</strong>
         <span>{status}</span>
