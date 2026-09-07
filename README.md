@@ -1,4 +1,4 @@
-# Preflight
+# Preflight [STILL IN DEVELOPMENT]
 
 ## A confidential deployment gate for autonomous warehouse robots
 
@@ -140,12 +140,12 @@ flowchart LR
 
 ## What stays private and what becomes public
 
-| Boundary | Data | Rule |
-| --- | --- | --- |
-| Confidential evaluation | Site envelope, blind, private rules, geometry, thresholds, and intermediate evidence | Used inside the CRE confidential callback; never logged or sent to the browser |
-| Public evaluation result | Version, verdict, evaluation ID, build/site bindings, and a behavior-input digest | Minimal result only; it does not reveal the private envelope |
-| Sepolia registry | Public hashes, exact bindings, `CLEAR`, issuer, timestamps, and revocation state | No private rules or confidential payloads |
-| Ledger release | Full deployment intent, including exact build, clearance, signer, nonce, and expiry | Human confirms on hardware; backend never holds the key |
+| Boundary                 | Data                                                                                 | Rule                                                                           |
+| ------------------------ | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| Confidential evaluation  | Site envelope, blind, private rules, geometry, thresholds, and intermediate evidence | Used inside the CRE confidential callback; never logged or sent to the browser |
+| Public evaluation result | Version, verdict, evaluation ID, build/site bindings, and a behavior-input digest    | Minimal result only; it does not reveal the private envelope                   |
+| Sepolia registry         | Public hashes, exact bindings, `CLEAR`, issuer, timestamps, and revocation state     | No private rules or confidential payloads                                      |
+| Ledger release           | Full deployment intent, including exact build, clearance, signer, nonce, and expiry  | Human confirms on hardware; backend never holds the key                        |
 
 ## The four-minute judge demo
 
@@ -178,15 +178,15 @@ the headline does not change evaluator semantics.
 
 ## Key features
 
-| Feature | What the judge can verify | User benefit |
-| --- | --- | --- |
-| Deterministic evaluation | `@preflight/simulation-core` has fixed-unit rules and negative/property tests | The same inputs produce the same verdict |
-| Confidential evaluation boundary | CRE `handlerInTee` consumes the private envelope and returns an allowlisted result | Parties can verify a rule without publishing the rule |
-| Exact build binding | Canonical digests bind site, robot, build, envelope commitment, evaluator, and expiry | A later software change cannot quietly reuse an old clearance |
-| Public attestation | `PreflightRegistry` stores public hashes and validity/revocation state on Sepolia | Separate organizations have a shared verification surface |
-| Bounded deployment agent | Host-owned tools enforce a fixed order and finite public request grammar | AI can orchestrate and explain without receiving release authority |
-| Hardware approval | Ledger DMK, WebHID, EIP-712, signer recovery, and one-time nonce checks | A human approves the exact high-impact action on a device |
-| Reliable rehearsal | `demo:setup`, `demo:reset`, `demo:run`, and browser race tests | A judge can repeat the demo without stale state |
+| Feature                          | What the judge can verify                                                             | User benefit                                                       |
+| -------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Deterministic evaluation         | `@preflight/simulation-core` has fixed-unit rules and negative/property tests         | The same inputs produce the same verdict                           |
+| Confidential evaluation boundary | CRE `handlerInTee` consumes the private envelope and returns an allowlisted result    | Parties can verify a rule without publishing the rule              |
+| Exact build binding              | Canonical digests bind site, robot, build, envelope commitment, evaluator, and expiry | A later software change cannot quietly reuse an old clearance      |
+| Public attestation               | `PreflightRegistry` stores public hashes and validity/revocation state on Sepolia     | Separate organizations have a shared verification surface          |
+| Bounded deployment agent         | Host-owned tools enforce a fixed order and finite public request grammar              | AI can orchestrate and explain without receiving release authority |
+| Hardware approval                | Ledger DMK, WebHID, EIP-712, signer recovery, and one-time nonce checks               | A human approves the exact high-impact action on a device          |
+| Reliable rehearsal               | `demo:setup`, `demo:reset`, `demo:run`, and browser race tests                        | A judge can repeat the demo without stale state                    |
 
 ## Partner integrations
 
@@ -194,10 +194,10 @@ the headline does not change evaluator semantics.
 
 These partners answer different questions:
 
-| Partner | Question | Actual use in Preflight | Current proof |
-| --- | --- | --- | --- |
-| Chainlink CRE | Can the site evaluate an exact build without exposing its private envelope? | The confidential workflow fetches one versioned secret inside `handlerInTee`, invokes the deterministic evaluator, and releases only the minimal result. | Authenticated local CRE simulations for unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`. Live DON/Vault/Nitro deployment is not claimed. |
-| Ledger | Who can authorize the exact release after it passes? | The browser uses Ledger DMK, WebHID or test-only Speculos, the Ethereum signer kit, and full EIP-712 intent checks. The agent stops at `LEDGER_APPROVAL_REQUIRED`. | Software and partial Speculos evidence are recorded. Physical Clear Signing and official Tester cases remain blocked by missing external access. |
+| Partner       | Question                                                                    | Actual use in Preflight                                                                                                                                            | Current proof                                                                                                                                               |
+| ------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chainlink CRE | Can the site evaluate an exact build without exposing its private envelope? | The confidential workflow fetches one versioned secret inside `handlerInTee`, invokes the deterministic evaluator, and releases only the minimal result.           | Authenticated local CRE simulations for unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`. Live DON/Vault/Nitro deployment is not claimed. |
+| Ledger        | Who can authorize the exact release after it passes?                        | The browser uses Ledger DMK, WebHID or test-only Speculos, the Ethereum signer kit, and full EIP-712 intent checks. The agent stops at `LEDGER_APPROVAL_REQUIRED`. | Software and partial Speculos evidence are recorded. Physical Clear Signing and official Tester cases remain blocked by missing external access.            |
 
 Without Chainlink's confidential execution, the site would need to hand its private rules to the
 party running the evaluator. Without Ledger, the deployment agent could prepare a release but there
@@ -209,31 +209,31 @@ secret custody or a remote robot attestation.
 
 ## What is implemented now
 
-| Phase | Implemented scope | Status |
-| --- | --- | --- |
-| P1 | Canonical identifiers, schemas, serialization, digests, validation, and binding failures | Complete and tested |
-| P2 | Seeded warehouse model, restricted-zone/speed/payload rules, deterministic evaluator, and negative/property tests | Complete locally |
-| P3 | CRE workflow, confidential handler, minimal public result, and redacted authenticated simulations | Implemented; live DON deployment not claimed |
-| P4 | Exact-binding Solidity registry, fuzz/invariant tests, and Sepolia deployment/source verification | Implemented; registrar attestation remains explicit and manual |
-| P5 | EIP-712 intent, exact registry checks, durable nonce, Ledger DMK/WebHID/Speculos adapter, and fail-closed signing boundary | Software implemented; hardware evidence incomplete |
-| P5.2 | Strict OpenAI Responses adapter, host-owned tool state machine, catalog resolution, and Ledger-required handoff | Local evidence complete; no external model call captured |
-| P6 | Judge dashboard and deterministic React Three Fiber digital twin | Implemented and browser-tested |
-| P7 | Fixed-clock offline A/B/C rehearsal, demo reset, stale-response protection, and Playwright flow | Implemented and locally rehearsed |
+| Phase | Implemented scope                                                                                                          | Status                                                         |
+| ----- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| P1    | Canonical identifiers, schemas, serialization, digests, validation, and binding failures                                   | Complete and tested                                            |
+| P2    | Seeded warehouse model, restricted-zone/speed/payload rules, deterministic evaluator, and negative/property tests          | Complete locally                                               |
+| P3    | CRE workflow, confidential handler, minimal public result, and redacted authenticated simulations                          | Implemented; live DON deployment not claimed                   |
+| P4    | Exact-binding Solidity registry, fuzz/invariant tests, and Sepolia deployment/source verification                          | Implemented; registrar attestation remains explicit and manual |
+| P5    | EIP-712 intent, exact registry checks, durable nonce, Ledger DMK/WebHID/Speculos adapter, and fail-closed signing boundary | Software implemented; hardware evidence incomplete             |
+| P5.2  | Strict OpenAI Responses adapter, host-owned tool state machine, catalog resolution, and Ledger-required handoff            | Local evidence complete; no external model call captured       |
+| P6    | Judge dashboard and deterministic React Three Fiber digital twin                                                           | Implemented and browser-tested                                 |
+| P7    | Fixed-clock offline A/B/C rehearsal, demo reset, stale-response protection, and Playwright flow                            | Implemented and locally rehearsed                              |
 
 ## Technology and architecture
 
-| Area | Technology | Why it is here |
-| --- | --- | --- |
-| Runtime | Bun 1.4.x, TypeScript, Turborepo | One monorepo workflow for the apps, packages, and partner integrations |
-| Judge UI | Next.js 16, React 19, React Three Fiber, Three.js | Shows the public evaluation projection and warehouse scene without receiving private inputs |
-| API | Fastify 5 | Hosts the release boundary and the narrow deployment-agent orchestration |
-| Domain | Dependency-light TypeScript | Keeps identifiers, schemas, canonical bytes, and digests independent of web or partner code |
-| Evaluator | `@preflight/simulation-core` | Pure deterministic rules that can run locally and inside the CRE callback |
-| Confidential compute | Chainlink CRE TypeScript SDK | Provides the confidential workflow boundary for private envelope inputs |
-| Attestation | Solidity, Foundry, viem, Ethereum Sepolia | Stores public exact bindings without storing private facility data |
-| Human approval | Ledger DMK, WebHID, Speculos test transport, Ethereum Signer Kit, EIP-712 | Keeps the release key on the device and makes the signed intent explicit |
-| Persistence | Bun SQLite with WAL and atomic nonce consumption | Provides a single-node replay boundary for the release service |
-| Quality | Biome, Bun test, Playwright, Foundry, GitHub Actions | Covers formatting, unit tests, browser flow, contracts, and scaffold checks |
+| Area                 | Technology                                                                | Why it is here                                                                              |
+| -------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Runtime              | Bun 1.4.x, TypeScript, Turborepo                                          | One monorepo workflow for the apps, packages, and partner integrations                      |
+| Judge UI             | Next.js 16, React 19, React Three Fiber, Three.js                         | Shows the public evaluation projection and warehouse scene without receiving private inputs |
+| API                  | Fastify 5                                                                 | Hosts the release boundary and the narrow deployment-agent orchestration                    |
+| Domain               | Dependency-light TypeScript                                               | Keeps identifiers, schemas, canonical bytes, and digests independent of web or partner code |
+| Evaluator            | `@preflight/simulation-core`                                              | Pure deterministic rules that can run locally and inside the CRE callback                   |
+| Confidential compute | Chainlink CRE TypeScript SDK                                              | Provides the confidential workflow boundary for private envelope inputs                     |
+| Attestation          | Solidity, Foundry, viem, Ethereum Sepolia                                 | Stores public exact bindings without storing private facility data                          |
+| Human approval       | Ledger DMK, WebHID, Speculos test transport, Ethereum Signer Kit, EIP-712 | Keeps the release key on the device and makes the signed intent explicit                    |
+| Persistence          | Bun SQLite with WAL and atomic nonce consumption                          | Provides a single-node replay boundary for the release service                              |
+| Quality              | Biome, Bun test, Playwright, Foundry, GitHub Actions                      | Covers formatting, unit tests, browser flow, contracts, and scaffold checks                 |
 
 ### Sepolia registry
 
@@ -297,16 +297,16 @@ does not substitute the offline scripted rehearsal as a production result.
 Keep real values in ignored local environment files. Never commit keys, private keys, origin tokens,
 envelope blinds, signatures, or confidential CRE payloads.
 
-| Variable | Used for |
-| --- | --- |
-| `EVM_RPC_URL` or `SEPOLIA_RPC_URL` | Read-only Sepolia registry access |
-| `PREFLIGHT_AUTHORIZED_SIGNERS` | Public Ledger signer allowlist |
-| `PREFLIGHT_RELEASE_DB_PATH` | SQLite release/nonce state |
-| `OPENAI_API_KEY` | Optional real Responses API provider |
-| `PREFLIGHT_AGENT_MODEL` | Explicit provider model name |
-| `PREFLIGHT_AGENT_CATALOG_PATH` | Public deployment catalog path |
-| `NEXT_PUBLIC_LEDGER_TRANSPORT` | `webhid` by default; `speculos` only in development/test |
-| `NEXT_PUBLIC_LEDGER_ORIGIN_TOKEN` | Partner-issued signing-origin token, when available |
+| Variable                           | Used for                                                 |
+| ---------------------------------- | -------------------------------------------------------- |
+| `EVM_RPC_URL` or `SEPOLIA_RPC_URL` | Read-only Sepolia registry access                        |
+| `PREFLIGHT_AUTHORIZED_SIGNERS`     | Public Ledger signer allowlist                           |
+| `PREFLIGHT_RELEASE_DB_PATH`        | SQLite release/nonce state                               |
+| `OPENAI_API_KEY`                   | Optional real Responses API provider                     |
+| `PREFLIGHT_AGENT_MODEL`            | Explicit provider model name                             |
+| `PREFLIGHT_AGENT_CATALOG_PATH`     | Public deployment catalog path                           |
+| `NEXT_PUBLIC_LEDGER_TRANSPORT`     | `webhid` by default; `speculos` only in development/test |
+| `NEXT_PUBLIC_LEDGER_ORIGIN_TOKEN`  | Partner-issued signing-origin token, when available      |
 
 The complete variable list is in [`.env.example`](.env.example). The API catalog must contain public
 canonical targets and clearance records only; it must never contain a private safety envelope or
@@ -369,8 +369,8 @@ These artifacts are intentionally separated by trust boundary:
 These images show public-address confirmation in the Speculos development emulator. They are not
 physical Ledger-device evidence.
 
-| Address review | Address confirmation |
-| --- | --- |
+| Address review                                                                                 | Address confirmation                                                                                  |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | ![Speculos address review](docs/compliance/evidence/p5-speculos-2026-09-07/address-review.png) | ![Speculos address confirmation](docs/compliance/evidence/p5-speculos-2026-09-07/address-confirm.png) |
 
 ## Project structure
