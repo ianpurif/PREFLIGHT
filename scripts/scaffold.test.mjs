@@ -23,7 +23,9 @@ test("P5 uses pinned current Ledger packages without legacy LedgerJS", async () 
   const parsed = JSON.parse(pkg);
   assert.equal(parsed.dependencies["@ledgerhq/device-management-kit"], "1.9.0");
   assert.equal(parsed.dependencies["@ledgerhq/device-signer-kit-ethereum"], "1.18.0");
+  assert.equal(parsed.dependencies["@ledgerhq/device-transport-kit-speculos"], "1.2.1");
   assert.equal(parsed.dependencies["@ledgerhq/device-transport-kit-web-hid"], "1.2.4");
+  assert.equal(parsed.devDependencies["@ledgerhq/speculos-device-controller"], "0.3.0");
   assert.doesNotMatch(parsed.scripts.test, /pass-with-no-tests/);
 });
 
@@ -39,6 +41,10 @@ test("P3-P5 are load-bearing while P6 remains deferred", async () => {
   const contract = await readFile(new URL("contracts/src/PreflightRegistry.sol", root), "utf8");
   const ledger = await readFile(
     new URL("packages/ledger-gate/src/browser-adapter.ts", root),
+    "utf8",
+  );
+  const ledgerTransport = await readFile(
+    new URL("packages/ledger-gate/src/transport.ts", root),
     "utf8",
   );
   const strictAction = await readFile(
@@ -59,15 +65,21 @@ test("P3-P5 are load-bearing while P6 remains deferred", async () => {
   assert.match(contract, /isClearanceValidFor/);
   assert.match(contract, /revokeClearance/);
   assert.doesNotMatch(contract, /restrictedZones|commitmentBlind/);
-  assert.match(ledger, /DeviceManagementKitBuilder/);
-  assert.match(ledger, /webHidTransportFactory/);
+  assert.match(ledgerTransport, /DeviceManagementKitBuilder/);
+  assert.match(ledgerTransport, /webHidTransportFactory/);
+  assert.match(ledgerTransport, /speculosTransportFactory/);
+  assert.match(ledgerTransport, /speculosIdentifier/);
+  assert.match(ledgerTransport, /127\.0\.0\.1/);
   assert.match(ledger, /\.signTypedData\(/);
   assert.match(strictAction, /SIGN_TYPED_DATA_LEGACY/);
   assert.match(strictAction, /action\.cancel\(\)/);
   assert.match(eip712, /recoverTypedDataAddress/);
   assert.match(release, /assertDeploymentIntentSignature/);
   assert.match(release, /CLEARANCE_INVALIDATED/);
-  assert.doesNotMatch(`${ledger}\n${strictAction}\n${release}`, /@ledgerhq\/hw-|personal_sign/);
+  assert.doesNotMatch(
+    `${ledger}\n${ledgerTransport}\n${strictAction}\n${release}`,
+    /@ledgerhq\/hw-|personal_sign/,
+  );
   assert.match(web, /Product behavior is intentionally not implemented/);
   assert.doesNotMatch(p5Web, /Canvas|digital.?twin|activateRobot|robotActivation/);
 });

@@ -130,6 +130,7 @@ const expectedLedgerDependencies = {
   "@ledgerhq/context-module": "2.5.0",
   "@ledgerhq/device-management-kit": "1.9.0",
   "@ledgerhq/device-signer-kit-ethereum": "1.18.0",
+  "@ledgerhq/device-transport-kit-speculos": "1.2.1",
   "@ledgerhq/device-transport-kit-web-hid": "1.2.4",
   rxjs: "7.8.2",
 };
@@ -137,10 +138,16 @@ for (const [name, version] of Object.entries(expectedLedgerDependencies)) {
   if (ledgerPackage.dependencies?.[name] !== version)
     throw new Error(`P5 Ledger dependency ${name} must be pinned to ${version}`);
 }
+if (ledgerPackage.devDependencies?.["@ledgerhq/speculos-device-controller"] !== "0.3.0")
+  throw new Error("P5.1 Speculos device controller must be pinned to 0.3.0");
 if (ledgerPackage.scripts?.test?.includes("pass-with-no-tests"))
   throw new Error("P5 Ledger tests must not permit an empty test suite");
 const ledgerAdapter = readFileSync(
   resolve(root, "packages/ledger-gate/src/browser-adapter.ts"),
+  "utf8",
+);
+const ledgerTransport = readFileSync(
+  resolve(root, "packages/ledger-gate/src/transport.ts"),
   "utf8",
 );
 const strictLedgerAction = readFileSync(
@@ -161,14 +168,18 @@ const releaseService = readFileSync(
   "utf8",
 );
 const nonceStore = readFileSync(resolve(root, "apps/api/src/release/nonce-store.ts"), "utf8");
+for (const requiredSurface of ["SignerEthBuilder", "signTypedData"]) {
+  if (!ledgerAdapter.includes(requiredSurface))
+    throw new Error(`P5 browser adapter is missing current Ledger surface: ${requiredSurface}`);
+}
 for (const requiredSurface of [
   "DeviceManagementKitBuilder",
   "webHidTransportFactory",
-  "SignerEthBuilder",
-  "signTypedData",
+  "speculosTransportFactory",
+  "speculosIdentifier",
 ]) {
-  if (!ledgerAdapter.includes(requiredSurface))
-    throw new Error(`P5 browser adapter is missing current Ledger surface: ${requiredSurface}`);
+  if (!ledgerTransport.includes(requiredSurface))
+    throw new Error(`P5.1 transport abstraction is missing Ledger surface: ${requiredSurface}`);
 }
 if (
   !strictLedgerAction.includes("SIGN_TYPED_DATA_LEGACY") ||

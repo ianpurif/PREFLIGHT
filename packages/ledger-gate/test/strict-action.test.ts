@@ -38,9 +38,11 @@ import { Observable, of } from "rxjs";
 import clearSigningDescriptor from "../clear-signing/eip712-preflight-deployment-intent.json";
 import { GuardedClearSigningContext } from "../src/clear-signing-context.js";
 import {
+  createLedgerTransportRuntime,
   LedgerBrowserAdapter,
   type LedgerBrowserDependencies,
   LedgerGateError,
+  parseLedgerTransportConfig,
   parsePreparedLedgerSigningRequest,
 } from "../src/index.js";
 import { runStrictTypedDataAction } from "../src/strict-action.js";
@@ -200,7 +202,9 @@ function adapterHarness(
     appName?: string;
     descriptorResolved?: boolean;
     signStates?: readonly SignTypedDataDAState[];
-    webHid?: boolean;
+    transportSupported?: boolean;
+    transportKind?: "webhid" | "speculos";
+    transportIdentifier?: string;
   } = {},
 ) {
   const events: string[] = [];
@@ -232,8 +236,8 @@ function adapterHarness(
   } as unknown as SignerEth;
   const dmk = {
     isEnvironmentSupported: () => true,
-    startDiscovering: () => {
-      events.push("discover");
+    startDiscovering: (args: { transport?: string }) => {
+      events.push(`discover:${args.transport ?? "all"}`);
       return of({ id: "device" });
     },
     stopDiscovering: async () => {
@@ -264,7 +268,11 @@ function adapterHarness(
     },
   } as unknown as DeviceManagementKit;
   const dependencies: LedgerBrowserDependencies = {
-    hasWebHid: () => options.webHid ?? true,
+    transportKind: options.transportKind ?? "webhid",
+    ...(options.transportIdentifier === undefined
+      ? {}
+      : { transportIdentifier: options.transportIdentifier as never }),
+    isTransportSupported: () => options.transportSupported ?? true,
     createDmk: () => dmk,
     createSigner: () => ({
       signer,
@@ -295,6 +303,8 @@ describe("Ledger browser adapter lifecycle", () => {
       signerAddress,
       ethereumAppVersion: "1.14.0",
       dmkVersion: "1.9.0",
+      transport: "webhid",
+      executionEnvironment: "physical-device",
     });
     expect(events).toContain("address:true:11155111");
     await adapter.disconnect();
@@ -303,8 +313,26 @@ describe("Ledger browser adapter lifecycle", () => {
     expect(events).toContain("close");
   });
 
+  test("scopes Speculos discovery while retaining the shared signing lifecycle", async () => {
+    const { dependencies, events } = adapterHarness({
+      transportKind: "speculos",
+      transportIdentifier: "SPECULOS_HTTP_TRANSPORT",
+    });
+    const adapter = new LedgerBrowserAdapter("ledger-origin-token", undefined, dependencies);
+    const session = await adapter.connect();
+    expect(session).toMatchObject({
+      transport: "speculos",
+      executionEnvironment: "official-device-simulator",
+    });
+    expect(events).toContain("discover:SPECULOS_HTTP_TRANSPORT");
+    await adapter.sign(buildDeploymentTypedData(intent, signerAddress));
+    expect(events).toContain("clear-signing-begin");
+    expect(events).toContain("sign");
+    await adapter.disconnect();
+  });
+
   test("rejects unsupported transport without constructing a DMK", async () => {
-    const { dependencies, events } = adapterHarness({ webHid: false });
+    const { dependencies, events } = adapterHarness({ transportSupported: false });
     const adapter = new LedgerBrowserAdapter("ledger-origin-token", undefined, dependencies);
     await expect(adapter.connect()).rejects.toMatchObject({ code: "UNSUPPORTED_BROWSER" });
     expect(events).toEqual([]);
@@ -342,7 +370,7 @@ describe("Ledger browser adapter lifecycle", () => {
     expect(events).toContain("close");
   });
 
-  test("maps physical rejection and generic signing failure without retry", async () => {
+  test("maps device rejection and generic signing failure without retry", async () => {
     for (const [errorCode, expected] of [
       ["6985", "HUMAN_REJECTED"],
       ["6a80", "SIGNING_FAILED"],
@@ -407,20 +435,60 @@ describe("Ledger Clear Signing descriptor candidate", () => {
   });
 
   test("matches the exact EIP-712 domain, schema, and required display fields", () => {
-    const schema = clearSigningDescriptor.context.eip712.schemas[0];
     expect(clearSigningDescriptor.context.eip712.domain).toEqual({
       name: "Preflight",
       version: "1",
-      chainId: PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId,
-      verifyingContract: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
     });
-    expect(schema?.primaryType).toBe("DeploymentIntent");
-    expect(schema?.types.DeploymentIntent).toEqual(
-      PREFLIGHT_DEPLOYMENT_INTENT_TYPES.DeploymentIntent.map((field) => ({ ...field })),
-    );
-    expect(clearSigningDescriptor.display.formats.DeploymentIntent.required).toEqual(
+    expect(clearSigningDescriptor.context.eip712.deployments).toEqual([
+      {
+        chainId: PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId,
+        address: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
+      },
+    ]);
+    const encodeType = `DeploymentIntent(${PREFLIGHT_DEPLOYMENT_INTENT_TYPES.DeploymentIntent.map(
+      (field) => `${field.type} ${field.name}`,
+    ).join(",")})`;
+    expect(Object.keys(clearSigningDescriptor.display.formats)).toEqual([encodeType]);
+    const format = Object.values(clearSigningDescriptor.display.formats)[0];
+    expect(format).toBeDefined();
+    expect(format?.fields.map((field) => field.path)).toEqual(
       PREFLIGHT_DEPLOYMENT_INTENT_TYPES.DeploymentIntent.map((field) => field.name),
     );
+    expect(format?.fields.every((field) => field.visible === "always")).toBe(true);
+  });
+
+  test("selects only WebHID or a loopback Speculos transport", () => {
+    expect(parseLedgerTransportConfig(undefined, undefined, "production")).toEqual({
+      kind: "webhid",
+    });
+    const speculos = parseLedgerTransportConfig("speculos", "http://localhost:5000", "test");
+    expect(speculos).toEqual({ kind: "speculos", url: "http://localhost:5000" });
+    const runtime = createLedgerTransportRuntime(speculos, "test");
+    expect(runtime.kind).toBe("speculos");
+    expect(String(runtime.identifier)).toBe("SPECULOS_HTTP_TRANSPORT");
+    expect(runtime.isSupported()).toBe(true);
+    expect(() => parseLedgerTransportConfig("mock", undefined, "test")).toThrow(LedgerGateError);
+    expect(() =>
+      parseLedgerTransportConfig("speculos", "https://speculos.example.com", "test"),
+    ).toThrow(LedgerGateError);
+    expect(() =>
+      parseLedgerTransportConfig("speculos", "http://127.0.0.1:5000/apdu", "test"),
+    ).toThrow(LedgerGateError);
+  });
+
+  test("fails closed when Speculos is selected outside development or test", () => {
+    expect(() =>
+      parseLedgerTransportConfig("speculos", "http://127.0.0.1:5000", "production"),
+    ).toThrow(LedgerGateError);
+    expect(() => parseLedgerTransportConfig("speculos", "http://127.0.0.1:5000")).toThrow(
+      LedgerGateError,
+    );
+    expect(() =>
+      createLedgerTransportRuntime({ kind: "speculos", url: "http://127.0.0.1:5000" }),
+    ).toThrow(LedgerGateError);
+    expect(parseLedgerTransportConfig("webhid", undefined, "production")).toEqual({
+      kind: "webhid",
+    });
   });
 
   test("resolves only an exact runtime descriptor with all display filters", async () => {

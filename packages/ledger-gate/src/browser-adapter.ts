@@ -3,16 +3,15 @@
 import {
   DeviceActionStatus,
   type DeviceManagementKit,
-  DeviceManagementKitBuilder,
   type DeviceSessionId,
   DeviceSessionStateType,
+  type TransportIdentifier,
 } from "@ledgerhq/device-management-kit";
 import {
   type SignerEth,
   SignerEthBuilder,
   type TypedData,
 } from "@ledgerhq/device-signer-kit-ethereum";
-import { webHidTransportFactory } from "@ledgerhq/device-transport-kit-web-hid";
 import {
   buildDeploymentTypedData,
   PREFLIGHT_SEPOLIA_DEPLOYMENT,
@@ -22,6 +21,11 @@ import { filter, firstValueFrom, lastValueFrom } from "rxjs";
 import { type ClearSigningAttempt, GuardedClearSigningContext } from "./clear-signing-context";
 import { failLedger, LedgerGateError, normalizeLedgerError } from "./errors";
 import { runStrictTypedDataAction, type StrictLedgerSignature } from "./strict-action";
+import {
+  createLedgerTransportRuntime,
+  type LedgerTransportKind,
+  type LedgerTransportRuntime,
+} from "./transport";
 
 export const DEFAULT_ETHEREUM_DERIVATION_PATH = "44'/60'/0'/0/0" as const;
 
@@ -31,16 +35,20 @@ export interface LedgerSession {
   readonly firmwareVersion: string | null;
   readonly ethereumAppVersion: string;
   readonly dmkVersion: string;
+  readonly transport: LedgerTransportKind;
+  readonly executionEnvironment: "physical-device" | "official-device-simulator";
 }
 
-export interface LedgerHardwareApproval extends StrictLedgerSignature {
+export interface LedgerDeviceApproval extends StrictLedgerSignature {
   readonly signerAddress: `0x${string}`;
   readonly protocolIntentDigest: string;
   readonly typedDataDigest: `0x${string}`;
 }
 
 export interface LedgerBrowserDependencies {
-  readonly hasWebHid: () => boolean;
+  readonly transportKind: LedgerTransportKind;
+  readonly transportIdentifier?: TransportIdentifier;
+  readonly isTransportSupported: () => boolean;
   readonly createDmk: () => DeviceManagementKit;
   readonly createSigner: (options: {
     readonly dmk: DeviceManagementKit;
@@ -54,9 +62,12 @@ export interface LedgerBrowserDependencies {
 
 type CreateSignerOptions = Parameters<LedgerBrowserDependencies["createSigner"]>[0];
 
+const DEFAULT_WEBHID_RUNTIME = createLedgerTransportRuntime({ kind: "webhid" });
+
 const DEFAULT_BROWSER_DEPENDENCIES: LedgerBrowserDependencies = Object.freeze({
-  hasWebHid: () => typeof navigator !== "undefined" && "hid" in navigator,
-  createDmk: () => new DeviceManagementKitBuilder().addTransport(webHidTransportFactory).build(),
+  transportKind: DEFAULT_WEBHID_RUNTIME.kind,
+  isTransportSupported: DEFAULT_WEBHID_RUNTIME.isSupported,
+  createDmk: DEFAULT_WEBHID_RUNTIME.createDmk,
   createSigner: ({ dmk, sessionId, originToken }: CreateSignerOptions) => {
     const clearSigningContext = new GuardedClearSigningContext(originToken);
     const signer = new SignerEthBuilder({
@@ -69,6 +80,18 @@ const DEFAULT_BROWSER_DEPENDENCIES: LedgerBrowserDependencies = Object.freeze({
     return { signer, clearSigningAttempt: clearSigningContext };
   },
 });
+
+export function createLedgerBrowserDependencies(
+  transport: LedgerTransportRuntime,
+): LedgerBrowserDependencies {
+  return Object.freeze({
+    transportKind: transport.kind,
+    ...(transport.identifier === undefined ? {} : { transportIdentifier: transport.identifier }),
+    isTransportSupported: transport.isSupported,
+    createDmk: transport.createDmk,
+    createSigner: DEFAULT_BROWSER_DEPENDENCIES.createSigner,
+  });
+}
 
 export function parsePreparedLedgerSigningRequest(input: unknown): PreparedLedgerSigningRequest {
   if (input === null || typeof input !== "object" || Array.isArray(input)) {
@@ -121,13 +144,20 @@ export class LedgerBrowserAdapter {
     return this.#session;
   }
 
-  /** Must be invoked directly by a human click/key gesture for WebHID permission. */
+  /** WebHID callers must invoke this directly from a human gesture. */
   async connect(): Promise<LedgerSession> {
     if (this.#busy) {
       return failLedger("DEVICE_CONNECTION_FAILED", "A Ledger operation is already running");
     }
-    if (!this.#dependencies.hasWebHid()) {
-      return failLedger("UNSUPPORTED_BROWSER", "WebHID requires a supported Chromium browser");
+    if (!this.#dependencies.isTransportSupported()) {
+      return failLedger(
+        this.#dependencies.transportKind === "webhid"
+          ? "UNSUPPORTED_BROWSER"
+          : "DEVICE_CONNECTION_FAILED",
+        this.#dependencies.transportKind === "webhid"
+          ? "WebHID requires a supported Chromium browser"
+          : "Ledger Speculos official device simulator is unavailable",
+      );
     }
     this.#busy = true;
     try {
@@ -135,10 +165,23 @@ export class LedgerBrowserAdapter {
       const dmk = this.#dependencies.createDmk();
       if (!dmk.isEnvironmentSupported()) {
         dmk.close();
-        return failLedger("UNSUPPORTED_BROWSER", "Ledger WebHID is unavailable in this browser");
+        return failLedger(
+          this.#dependencies.transportKind === "webhid"
+            ? "UNSUPPORTED_BROWSER"
+            : "DEVICE_CONNECTION_FAILED",
+          this.#dependencies.transportKind === "webhid"
+            ? "Ledger WebHID is unavailable in this browser"
+            : "Ledger Speculos official device simulator is unavailable",
+        );
       }
       this.#dmk = dmk;
-      const discoveredDevice = await firstValueFrom(dmk.startDiscovering({}));
+      const discoveredDevice = await firstValueFrom(
+        dmk.startDiscovering(
+          this.#dependencies.transportIdentifier === undefined
+            ? {}
+            : { transport: this.#dependencies.transportIdentifier },
+        ),
+      );
       await dmk.stopDiscovering();
       const sessionId = await dmk.connect({ device: discoveredDevice });
       this.#sessionId = sessionId;
@@ -175,6 +218,11 @@ export class LedgerBrowserAdapter {
         firmwareVersion: deviceState.firmwareVersion?.os ?? null,
         ethereumAppVersion: deviceState.currentApp.version,
         dmkVersion: await dmk.getVersion(),
+        transport: this.#dependencies.transportKind,
+        executionEnvironment:
+          this.#dependencies.transportKind === "webhid"
+            ? "physical-device"
+            : "official-device-simulator",
       });
       this.#session = session;
       return session;
@@ -187,7 +235,7 @@ export class LedgerBrowserAdapter {
     }
   }
 
-  async sign(input: unknown): Promise<LedgerHardwareApproval> {
+  async sign(input: unknown): Promise<LedgerDeviceApproval> {
     if (this.#busy) return failLedger("SIGNING_FAILED", "A Ledger operation is already running");
     if (this.#originToken === "") {
       return failLedger(

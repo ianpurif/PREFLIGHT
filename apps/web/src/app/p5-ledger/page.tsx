@@ -1,9 +1,20 @@
 "use client";
 
-import { LedgerBrowserAdapter } from "@preflight/ledger-gate";
+import {
+  createLedgerBrowserDependencies,
+  createLedgerTransportRuntime,
+  LedgerBrowserAdapter,
+  parseLedgerTransportConfig,
+} from "@preflight/ledger-gate";
 import { useEffect, useRef, useState } from "react";
 
 const apiOrigin = process.env.NEXT_PUBLIC_API_ORIGIN ?? "http://localhost:4000";
+const ledgerTransport = parseLedgerTransportConfig(
+  process.env.NEXT_PUBLIC_LEDGER_TRANSPORT,
+  process.env.NEXT_PUBLIC_LEDGER_SPECULOS_URL,
+  process.env.NODE_ENV,
+);
+const isSpeculos = ledgerTransport.kind === "speculos";
 
 function publicError(error: unknown): string {
   if (error !== null && typeof error === "object" && "code" in error) return String(error.code);
@@ -35,6 +46,9 @@ export default function P5LedgerOperatorPage() {
     const ledger = new LedgerBrowserAdapter(
       process.env.NEXT_PUBLIC_LEDGER_ORIGIN_TOKEN ?? "",
       process.env.NEXT_PUBLIC_LEDGER_DERIVATION_PATH || undefined,
+      createLedgerBrowserDependencies(
+        createLedgerTransportRuntime(ledgerTransport, process.env.NODE_ENV),
+      ),
     );
     adapter.current = ledger;
     return () => {
@@ -109,12 +123,17 @@ export default function P5LedgerOperatorPage() {
 
   return (
     <main className="shell p5-operator">
-      <p className="eyebrow">P5 / LEDGER HARDWARE EVIDENCE HARNESS</p>
+      <p className="eyebrow">
+        {isSpeculos
+          ? "P5 / LEDGER SPECULOS OFFICIAL DEVICE SIMULATOR"
+          : "P5 / LEDGER PHYSICAL-DEVICE EVIDENCE HARNESS"}
+      </p>
       <h1>Exact release approval</h1>
       <p className="lede">
         Operator or orchestration client proposes → deterministic Sepolia policy filters → human
-        verifies → Ledger signs. This manual evidence harness does not implement an autonomous
-        agent, activate a robot, or decide whether a clearance is valid.
+        verifies → Ledger signs. {isSpeculos ? "This run uses Ledger's official simulator. " : ""}
+        This manual evidence harness does not implement an autonomous agent, activate a robot, or
+        decide whether a clearance is valid.
       </p>
       <div className="operator-actions">
         <button type="button" onClick={connect}>
@@ -124,7 +143,7 @@ export default function P5LedgerOperatorPage() {
           Run deterministic pre-sign gate
         </button>
         <button type="button" onClick={approve}>
-          Request physical approval
+          {isSpeculos ? "Request simulator approval" : "Request physical approval"}
         </button>
         <button type="button" onClick={consume}>
           Verify and consume once
