@@ -4,7 +4,7 @@
 
 **Scope:** P5 software, partial P5.1 Speculos evidence, P5.2 AI deployment-agent closure, P6 judge-facing digital twin, and P7 deterministic demo reliability; P1–P4 regression-checked; P8 not started
 
-**Status:** P5.2 agent software/local adversarial evidence, P6 browser flow, P7 offline A/B/C rehearsal, and live read-only Sepolia blocking pass. P5 official Speculos transport/app/address UI smoke, real pre-sign C, and invalid/unregistered D pass. The latest aggregate verification rerun is environment-blocked by host `spawn EPERM` during Next/Node subprocess creation; prior clean build and browser runs passed. External model execution, authenticated Clear Signing A/B/E/F, and physical Ledger evidence remain unavailable and are not claimed.
+**Status:** P5.2 agent software/local adversarial evidence, P6 browser flow, P7 offline A/B/C rehearsal, live read-only Sepolia blocking, and the latest aggregate verification pass. P5 official Speculos transport/app/address UI smoke, real pre-sign C, and invalid/unregistered D pass. External model execution, authenticated Clear Signing A/B/E/F, and physical Ledger evidence remain unavailable and are not claimed.
 
 ## P6 judge-facing dashboard result
 
@@ -212,27 +212,24 @@ only.
 - `bun run lint`: pass; Biome checks 119 files.
 - `bun run typecheck`: pass; 7/7 Turbo tasks.
 - `bun run test`: pass; 11/11 Turbo tasks.
-- `bun run build`: the prior clean P7 run passed 7/7 tasks and produced static `/` and
-  `/p5-ledger`; the latest rerun compiled successfully but the host rejected Next's TypeScript
-  worker with `spawn EPERM` before completion.
+- `bun run build`: pass; 7/7 tasks; Next.js production build includes static `/` and `/p5-ledger`.
 - `bun run --cwd apps/web test`: pass; 2 P6 projection/mutation tests, 9 assertions.
-- `bun run test:e2e`: prior clean P7 run passed all 7 browser tests, including the five P6 states
-  plus the P7 clean startup → reset → A → reset → B/prepared handoff → reset → C/repeated C flow
-  and a late-response race guard; the latest rerun was blocked immediately by host `spawn EPERM`.
+- `bun run test:e2e`: pass; 7 browser tests, including the five P6 states plus the P7 clean
+  startup → reset → A → reset → B/prepared handoff → reset → C/repeated C flow and a late-response
+  race guard.
 - `bun run demo:setup`, two idempotent `bun run demo:reset` calls, and repeated `bun run demo:run`:
   pass; generated public trace is byte-for-byte stable. Local timings were approximately `0.43s`
   for setup and `0.37s` for a repeat run.
 - Client bundle leakage scan: pass; no confidential fixture markers in `apps/web/.next/static/chunks`.
 - `bun run contracts:test`: pass; 24 Foundry unit/fuzz tests plus five invariants (128 runs,
   8,192 calls).
-- `bun run verify:scaffold`: the structural guard passed and the equivalent Bun invocation passed
-  4/4 assertions; the prescribed Node test-runner subprocess was blocked by host `spawn EPERM`.
+- `bun run verify:scaffold`: pass; 4/4 tests with positive P5.2/P6/P7 assertions and the
+  non-authoritative judge guard intact.
 - `bun audit`: pass after top-level compatible `uuid` `11.1.1` and `ws` `8.21.0` overrides; 212
   packages checked, no known vulnerabilities.
 - `git diff --check`: pass.
-- `bun run verify`: latest run passed lint, typecheck, and all package tests, then stopped at the
-  Next build's host `spawn EPERM`; no verification gate was weakened to bypass that environment
-  limit.
+- `bun run verify`: pass; lint, typecheck, package tests, build, Foundry contracts, and scaffold
+  verification all completed successfully.
 
 The read-only live Sepolia P5 client confirmed chain, registry code, and exact-reader behavior at
 block `11645707`; a deliberately unregistered local fixture returned `exists=false` and
