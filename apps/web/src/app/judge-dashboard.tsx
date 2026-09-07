@@ -139,8 +139,10 @@ export function JudgeDashboard({
 }) {
   const [selection, setSelection] = useState<Selection>(initialSelection);
   const [agent, setAgent] = useState<AgentState>(() => initialAgentState(initialSelection));
-  const [statusMessage, setStatusMessage] = useState(
-    "Build A is loaded. Evaluate it to see why Preflight holds the release.",
+  const [statusMessage, setStatusMessage] = useState(() =>
+    initialSelection === "corrected"
+      ? "Build B is loaded. This corrected build is clear, but human approval is still required."
+      : "Build A is loaded. Evaluate it to see why Preflight holds the release.",
   );
   const requestGeneration = useRef(0);
 
