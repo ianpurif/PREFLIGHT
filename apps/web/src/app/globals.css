@@ -1870,6 +1870,261 @@ pre {
   }
 }
 
+/* Release preparation and human-approval explanation. */
+.release-status-banner {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 15px;
+  margin-top: 43px;
+  border: 1px solid #dfcba8;
+  border-radius: 12px;
+  padding: 19px 20px;
+  background: #fffaf1;
+}
+
+.release-status-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid #e1bf83;
+  border-radius: 50%;
+  color: #a66d25;
+  background: #fff3da;
+  font-size: 12px;
+  font-weight: 820;
+}
+
+.release-status-banner h2 {
+  margin: 7px 0 5px;
+  color: #825a24;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.release-status-banner p {
+  max-width: 560px;
+  margin: 0;
+  color: #927b58;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.release-status-label,
+.intent-preview-lock {
+  border: 1px solid #e2c793;
+  border-radius: 999px;
+  padding: 6px 8px;
+  color: #a5742f;
+  background: #fff7e8;
+  font-size: 9px;
+  font-weight: 820;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+}
+
+.release-section-heading {
+  margin-top: 62px;
+}
+
+.release-check-list {
+  display: grid;
+  gap: 8px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.release-check-list li {
+  display: grid;
+  grid-template-columns: 29px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 13px;
+  min-height: 77px;
+  border: 1px solid #dfe8e6;
+  border-radius: 10px;
+  padding: 12px 15px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.release-check-list li.is-current {
+  border-color: #e1c99f;
+  background: #fffcf7;
+}
+
+.release-check-icon {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border: 1px solid #d4e1de;
+  border-radius: 50%;
+  color: #81918f;
+  font-size: 10px;
+  font-weight: 820;
+}
+
+.release-check-list .is-done .release-check-icon {
+  border-color: #9ed1c1;
+  color: #217a68;
+  background: #eaf8f1;
+}
+
+.release-check-list .is-current .release-check-icon {
+  border-color: #e1c28d;
+  color: #a56d26;
+  background: #fff5e3;
+}
+
+.release-check-list strong {
+  color: #304849;
+  font-size: 12px;
+  font-weight: 770;
+}
+
+.release-check-list p {
+  margin: 4px 0 0;
+  color: #839290;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.release-check-state {
+  color: #a5b0ae;
+  font-size: 9px;
+  font-weight: 820;
+  letter-spacing: 0.08em;
+}
+
+.release-check-list .is-done .release-check-state {
+  color: #27806c;
+}
+
+.release-check-action {
+  color: #a36c28;
+  font-size: 10px;
+  font-weight: 780;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.release-check-action:hover,
+.release-check-action:focus-visible {
+  color: #7d511c;
+}
+
+.intent-preview-card {
+  margin-top: 43px;
+  border: 1px solid #d9e5e2;
+  border-radius: 12px;
+  padding: 22px 23px 19px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.intent-preview-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.intent-preview-heading h2 {
+  margin: 8px 0 0;
+  color: #304849;
+  font-size: 19px;
+  font-weight: 730;
+  letter-spacing: -0.04em;
+}
+
+.intent-preview-lock {
+  border-color: #d4e2df;
+  color: #78918d;
+  background: #f5faf8;
+}
+
+.intent-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 20px;
+  margin: 26px 0 0;
+  border-top: 1px solid #e2ece9;
+}
+
+.intent-preview-grid > div {
+  min-height: 73px;
+  padding: 15px 0;
+  border-bottom: 1px solid #e2ece9;
+}
+
+.intent-preview-grid dt {
+  color: #93a2a0;
+  font-size: 9px;
+  font-weight: 820;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.intent-preview-grid dd {
+  margin: 6px 0 0;
+  color: #506867;
+  font-size: 10px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.intent-preview-note {
+  margin: 17px 0 0;
+  color: #899896;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+  .release-status-banner {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+
+  .release-status-label {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .release-check-list li {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+
+  .release-check-state,
+  .release-check-action {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .release-check-state {
+    margin-top: -7px;
+  }
+
+  .release-check-action {
+    margin-top: -7px;
+  }
+
+  .intent-preview-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .intent-preview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .intent-preview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Evaluation workspace overrides: keep the existing deterministic P6 mechanics, but place them
    inside the lighter product shell rather than presenting a standalone dark dashboard. */
 .product-content .evaluation-workspace {
