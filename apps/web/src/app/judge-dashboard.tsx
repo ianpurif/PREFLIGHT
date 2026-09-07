@@ -307,7 +307,7 @@ export function JudgeDashboard({
         </span>
       </section>
 
-      <div className="evaluation-state-guide" aria-label="Evaluation state guide">
+      <section className="evaluation-state-guide" aria-label="Evaluation state guide">
         <span>
           <i className="state-guide-dot hold" aria-hidden="true" /> <strong>HOLD</strong> needs a
           build change
@@ -320,7 +320,7 @@ export function JudgeDashboard({
           <i className="state-guide-dot blocked" aria-hidden="true" /> <strong>BLOCKED</strong>{" "}
           binding failed
         </span>
-      </div>
+      </section>
 
       <section className="workspace-grid">
         <aside className="control-rail panel">

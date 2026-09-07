@@ -167,8 +167,8 @@ export function BuildsView({ demo }: { readonly demo: DemoPublicData }) {
         </Link>
       </div>
 
-      <div className="build-list" aria-label="Candidate builds">
-        <article className="build-list-card is-hold">
+      <ul className="build-list" aria-label="Candidate builds">
+        <li className="build-list-card is-hold">
           <div className="build-list-main">
             <div className="build-list-topline">
               <span className="build-status-badge hold">HOLD</span>
@@ -193,9 +193,9 @@ export function BuildsView({ demo }: { readonly demo: DemoPublicData }) {
               Review held build <span aria-hidden="true">→</span>
             </Link>
           </div>
-        </article>
+        </li>
 
-        <article className="build-list-card is-clear">
+        <li className="build-list-card is-clear">
           <div className="build-list-main">
             <div className="build-list-topline">
               <span className="build-status-badge clear">CLEAR</span>
@@ -219,8 +219,8 @@ export function BuildsView({ demo }: { readonly demo: DemoPublicData }) {
               Evaluate this build <span aria-hidden="true">→</span>
             </Link>
           </div>
-        </article>
-      </div>
+        </li>
+      </ul>
 
       <div className="builds-footnote">
         <span className="footnote-icon" aria-hidden="true">

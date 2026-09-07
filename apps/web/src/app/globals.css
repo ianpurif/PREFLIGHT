@@ -1226,7 +1226,7 @@ pre {
   letter-spacing: 0.11em;
 }
 
-.landing-proof-strip strong {
+.landing-page .landing-proof-strip strong {
   color: var(--landing-ink);
   font-size: 13px;
   font-weight: 760;
@@ -1356,7 +1356,7 @@ pre {
   text-decoration: none;
 }
 
-.brand-lockup-footer strong {
+.landing-page .brand-lockup-footer strong {
   font-size: 13px;
 }
 
@@ -1566,7 +1566,7 @@ pre {
   gap: 4px;
 }
 
-.onboarding-promise strong {
+.onboarding-page .onboarding-promise strong {
   color: #35504f;
   font-size: 12px;
   font-weight: 780;
@@ -2173,7 +2173,7 @@ pre {
   background: #fff5e3;
 }
 
-.release-check-list strong {
+.product-shell .release-check-list strong {
   color: #304849;
   font-size: 12px;
   font-weight: 770;
@@ -2247,7 +2247,7 @@ pre {
   border-top: 1px solid #e2ece9;
 }
 
-.intent-preview-grid > div {
+.product-shell .intent-preview-grid > div {
   min-height: 73px;
   padding: 15px 0;
   border-bottom: 1px solid #e2ece9;
@@ -2395,7 +2395,7 @@ pre {
   font-weight: 740;
 }
 
-.evidence-card-status i {
+.product-shell .product-content .evidence-card-status i {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -2483,24 +2483,24 @@ pre {
   border-bottom: 1px solid #e2ece9;
 }
 
-.evidence-result-grid > div {
+.product-shell .evidence-result-grid > div {
   display: grid;
   gap: 7px;
   min-height: 76px;
   padding: 16px 15px 15px 0;
 }
 
-.evidence-result-grid > div + div {
+.product-shell .evidence-result-grid > div + div {
   border-left: 1px solid #e2ece9;
   padding-left: 15px;
 }
 
-.evidence-result-grid span {
+.product-shell .evidence-result-grid span {
   color: #899896;
   font-size: 10px;
 }
 
-.evidence-result-grid strong {
+.product-shell .evidence-result-grid strong {
   font-size: 15px;
   font-weight: 820;
   letter-spacing: 0.05em;
@@ -2571,13 +2571,13 @@ pre {
   border-top: 1px solid #e2ece9;
 }
 
-.evidence-facts > div {
+.product-shell .product-content .evidence-facts > div {
   min-height: 81px;
   padding: 16px 15px 14px 0;
   border-bottom: 1px solid #e2ece9;
 }
 
-.evidence-facts > div + div {
+.product-shell .product-content .evidence-facts > div + div {
   border-left: 1px solid #e2ece9;
   padding-left: 15px;
 }
@@ -2617,19 +2617,19 @@ pre {
   border-bottom: 1px solid #e2ece9;
 }
 
-.ledger-boundary-steps > div {
+.shell.p5-operator div.ledger-boundary-steps > div {
   display: grid;
   gap: 5px;
   min-height: 91px;
   padding: 15px 14px 14px 0;
 }
 
-.ledger-boundary-steps > div + div {
+.shell.p5-operator .ledger-boundary-steps > div + div {
   border-left: 1px solid #e2ece9;
   padding-left: 14px;
 }
 
-.ledger-boundary-steps span {
+.p5-operator .ledger-boundary-steps span {
   display: grid;
   width: 21px;
   height: 21px;
@@ -2653,7 +2653,7 @@ pre {
   background: #fff5e3;
 }
 
-.ledger-boundary-steps strong {
+.p5-operator .ledger-boundary-steps strong {
   color: #526a68;
   font-size: 10px;
   font-weight: 770;
@@ -2673,7 +2673,7 @@ pre {
   padding-top: 16px;
 }
 
-.evidence-footer-note > span {
+.product-shell .evidence-footer-note > span {
   display: grid;
   width: 21px;
   height: 21px;
@@ -2768,13 +2768,13 @@ pre {
   font-size: 10px;
 }
 
-.evaluation-state-guide span {
+.product-content .evaluation-state-guide span {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
-.evaluation-state-guide strong {
+.product-content .evaluation-state-guide strong {
   color: #506c6a;
   font-size: 9px;
   letter-spacing: 0.06em;
@@ -2812,24 +2812,24 @@ pre {
   padding: 20px;
 }
 
-.evaluation-workspace .target-list div,
-.evaluation-workspace .release-details div,
-.evaluation-workspace .verification-details,
-.evaluation-workspace .public-identifiers,
-.evaluation-workspace .agent-message {
+.product-content .evaluation-workspace dl.target-list div,
+.product-content .evaluation-workspace dl.release-details div,
+.product-content .evaluation-workspace .verification-details,
+.product-content .evaluation-workspace .public-identifiers,
+.product-content .evaluation-workspace .agent-message {
   border-color: #e1eae8;
 }
 
-.evaluation-workspace dt,
-.evaluation-workspace .rail-callout > span,
-.evaluation-workspace .build-identity > span,
-.evaluation-workspace .twin-caption,
-.evaluation-workspace .public-identifiers,
-.evaluation-workspace .source-note,
-.evaluation-workspace .agent-message,
-.evaluation-workspace .ledger-evidence,
-.evaluation-workspace .public-result,
-.evaluation-workspace .metric-subline {
+.product-content .evaluation-workspace dt,
+.product-content .evaluation-workspace .rail-callout > span,
+.product-content .evaluation-workspace .build-identity > span,
+.product-content .evaluation-workspace .twin-caption,
+.product-content .evaluation-workspace .public-identifiers,
+.product-content .evaluation-workspace .source-note,
+.product-content .evaluation-workspace .agent-message,
+.product-content .evaluation-workspace .ledger-evidence,
+.product-content .evaluation-workspace .public-result,
+.product-content .evaluation-workspace .metric-subline {
   color: #7d908e;
 }
 
@@ -2861,7 +2861,7 @@ pre {
   background: #f5f9f7;
 }
 
-.evaluation-workspace .status-word {
+.product-content .evaluation-workspace .status-word {
   color: #345050;
 }
 
@@ -2910,7 +2910,7 @@ pre {
   color: #2c826f;
 }
 
-.evaluation-workspace .public-result {
+.product-content .evaluation-workspace .public-result {
   border-top-color: #deebe8;
 }
 
@@ -3031,7 +3031,7 @@ pre {
   text-transform: uppercase;
 }
 
-.sidebar-workspace-card strong {
+.product-shell .sidebar-workspace-card strong {
   color: #24403f;
   font-size: 12px;
   font-weight: 780;
@@ -3241,7 +3241,7 @@ pre {
   gap: 3px;
 }
 
-.sidebar-boundary-card strong {
+.product-shell .sidebar-boundary-card strong {
   color: #526d6b;
   font-size: 10px;
   font-weight: 780;
@@ -3290,7 +3290,7 @@ pre {
   text-transform: uppercase;
 }
 
-.product-breadcrumb span {
+.product-shell .product-main .product-breadcrumb span {
   padding: 0 6px;
   color: #a7b3b2;
 }
@@ -3318,7 +3318,7 @@ pre {
   font-weight: 700;
 }
 
-.workspace-status i {
+.product-shell .product-main .workspace-status i {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -3360,8 +3360,8 @@ pre {
   text-transform: uppercase;
 }
 
-.view-heading-row h1,
-.product-empty-state h1 {
+.product-shell .view-heading-row h1,
+.product-shell .product-empty-state h1 {
   max-width: 620px;
   margin: 14px 0 11px;
   color: var(--product-ink);
@@ -3427,7 +3427,7 @@ pre {
   gap: 15px;
 }
 
-.summary-card-heading h2 {
+.product-shell .summary-card-heading h2 {
   margin: 7px 0 0;
   color: var(--product-ink);
   font-size: 20px;
@@ -3449,7 +3449,7 @@ pre {
   letter-spacing: 0.04em;
 }
 
-.summary-ready-pill i {
+.product-shell .product-main .summary-ready-pill i {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -3463,33 +3463,29 @@ pre {
   border-top: 1px solid #e1eae8;
 }
 
-.summary-facts > div {
+.product-shell .product-main div.summary-facts > div {
   display: grid;
   gap: 4px;
   min-height: 105px;
   padding: 17px 18px 19px 0;
 }
 
-.summary-facts > div + div {
+.product-shell .product-main .summary-facts > div + div {
   border-left: 1px solid #e1eae8;
   padding-left: 18px;
 }
 
-.summary-facts span,
-.summary-facts small {
+.product-shell .product-main .summary-facts span,
+.product-shell .product-main .summary-facts small {
   color: #879697;
   font-size: 10px;
 }
 
-.summary-facts strong {
+.product-shell .summary-facts strong {
   color: #2b4445;
   font-size: 19px;
   font-weight: 760;
   letter-spacing: -0.04em;
-}
-
-.summary-facts small {
-  font-size: 10px;
 }
 
 .summary-facts .summary-hold {
@@ -3503,7 +3499,7 @@ pre {
   margin-top: 66px;
 }
 
-.product-section-heading h2 {
+.product-shell .product-section-heading h2 {
   margin: 8px 0 0;
   color: var(--product-ink);
   font-size: 22px;
@@ -3565,13 +3561,13 @@ pre {
   background: #e5f4ef;
 }
 
-.release-path-item strong {
+.product-shell .release-path-item strong {
   color: #304849;
   font-size: 12px;
   font-weight: 770;
 }
 
-.release-path-item p {
+.product-shell .release-path-item p {
   margin: 4px 0 0;
   color: #829291;
   font-size: 10px;
@@ -3636,7 +3632,7 @@ pre {
   letter-spacing: -0.025em;
 }
 
-.overview-detail-card > p {
+.product-shell .overview-detail-card > p {
   max-width: 430px;
   margin: 0;
   color: #829291;
@@ -3661,8 +3657,8 @@ pre {
   flex: 1;
 }
 
-.mini-build-row strong,
-.proof-line strong {
+.product-shell .mini-build-row strong,
+.product-shell .proof-line strong {
   color: #80918e;
   font-size: 9px;
   font-weight: 820;
@@ -3690,7 +3686,7 @@ pre {
   justify-items: start;
 }
 
-.product-empty-state h1 {
+.product-shell .product-empty-state h1 {
   max-width: 480px;
   font-size: clamp(29px, 4vw, 46px);
 }
@@ -3883,8 +3879,8 @@ pre {
   padding: 23px;
 }
 
-.form-card-heading h2,
-.setup-side-card h2 {
+.product-shell .form-card-heading h2,
+.product-shell .setup-side-card h2 {
   margin: 9px 0 6px;
   color: #304849;
   font-size: 20px;
@@ -3892,8 +3888,8 @@ pre {
   letter-spacing: -0.04em;
 }
 
-.form-card-heading p,
-.setup-side-card > p {
+.product-shell .form-card-heading p,
+.product-shell .setup-side-card > p {
   margin: 0;
   color: #829291;
   font-size: 11px;
@@ -3964,7 +3960,7 @@ pre {
   background: #f1f7f5;
 }
 
-.setup-side-card h2 {
+.product-shell .setup-side-card h2 {
   font-size: 18px;
 }
 
@@ -3976,7 +3972,7 @@ pre {
   list-style: none;
 }
 
-.setup-boundary-list li {
+.product-shell .setup-boundary-list li {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -3984,7 +3980,7 @@ pre {
   font-size: 10px;
 }
 
-.setup-boundary-list span {
+.product-shell .product-main .setup-boundary-list span {
   display: grid;
   width: 18px;
   height: 18px;
@@ -3996,7 +3992,7 @@ pre {
   font-weight: 800;
 }
 
-.setup-boundary-list li:last-child span {
+.product-shell .product-main .setup-boundary-list li:last-child span {
   border-color: #e1c8bf;
   color: #bc6e64;
 }
@@ -4077,7 +4073,7 @@ pre {
   font-size: 10px;
 }
 
-.build-list-main h2 {
+.product-shell .build-list-main h2 {
   margin: 18px 0 2px;
   color: #2d4748;
   font-size: 21px;
@@ -4107,7 +4103,7 @@ pre {
   margin-top: 14px;
 }
 
-.build-list-reasons span {
+.product-shell .builds-view .build-list-card.is-hold .build-list-reasons span {
   border: 1px solid #ecd5d1;
   border-radius: 999px;
   padding: 5px 7px;
@@ -4126,7 +4122,7 @@ pre {
   font-weight: 680;
 }
 
-.build-clear-note span {
+.product-shell .builds-view .build-list-card.is-clear .build-clear-note span {
   display: grid;
   width: 18px;
   height: 18px;
@@ -4207,7 +4203,7 @@ pre {
   font-size: 13px;
 }
 
-.builds-footnote p {
+.product-shell .builds-footnote p {
   max-width: 490px;
   margin: 0;
   color: #839391;

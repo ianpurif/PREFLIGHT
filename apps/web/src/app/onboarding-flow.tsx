@@ -90,7 +90,14 @@ export function OnboardingFlow() {
         </aside>
 
         <div className="onboarding-card">
-          <div className="onboarding-progress" aria-label={`Setup step ${step + 1} of 3`}>
+          <div
+            className="onboarding-progress"
+            role="progressbar"
+            aria-label={`Setup step ${step + 1} of 3`}
+            aria-valuemin={1}
+            aria-valuemax={steps.length}
+            aria-valuenow={step + 1}
+          >
             <div className="onboarding-progress-bar">
               <span style={{ width: `${((step + 1) / steps.length) * 100}%` }} />
             </div>

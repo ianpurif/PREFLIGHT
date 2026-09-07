@@ -76,7 +76,7 @@ export function LandingPage() {
           </p>
         </div>
 
-        <div className="landing-hero-visual" aria-label="Preflight release flow preview">
+        <div className="landing-hero-visual" role="img" aria-label="Preflight release flow preview">
           <div className="hero-visual-topline">
             <span>RELEASE REVIEW</span>
             <span className="hero-visual-live">
