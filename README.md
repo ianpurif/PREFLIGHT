@@ -11,10 +11,11 @@ publish its private safety envelope, and the deployment agent cannot approve a r
 
 **Built for ETHGlobal From Scratch with Chainlink CRE and Ledger as load-bearing integrations.**
 
-> **Current status:** P1–P7 software is implemented. The Sepolia registry, deterministic evaluator,
-> authenticated CRE simulation path, bounded deployment agent, judge dashboard, and offline demo
-> rehearsal are present. Physical Ledger/Clear Signing evidence, a live DON run, and an external
-> model run are still open items. P8 submission work has not started.
+> **Current status:** P1–P7 software is implemented and the product UI flow is now present: landing,
+> onboarding, workspace setup, build selection, evaluation, release preparation, evidence, and the
+> human Ledger handoff. The Sepolia registry, deterministic evaluator, authenticated CRE simulation
+> path, bounded deployment agent, and offline rehearsal remain in place. Physical Ledger/Clear
+> Signing evidence, a live DON run, an external model run, and P8 submission assets remain open.
 
 [Judge path](#try-the-judge-demo) · [How it works](#how-it-works) · [Partner proof](#partner-integrations) · [Testing](#testing) · [Known limits](#current-status-and-known-limits)
 
@@ -149,8 +150,13 @@ flowchart LR
 
 ## The four-minute judge demo
 
-Open `/` after starting the web app. The dashboard is an explanatory view over the existing
-deterministic evaluator; it is not a second safety authority.
+Open `/` after starting the web app. The landing page explains the product and links to **Get
+started** for a short target setup. The workspace then guides the user through `/app/setup`,
+`/app/builds`, `/app/evaluate`, `/app/releases`, and `/app/evidence`. The evaluator is an
+explanatory view over the existing deterministic core; it is not a second safety authority.
+
+For a direct judge path, open `/app/evaluate` or use **View the deterministic demo** on the landing
+page. The existing P6/P7 A/B/C scenarios remain available there.
 
 ### A — Unsafe build
 
@@ -219,6 +225,7 @@ secret custody or a remote robot attestation.
 | P5.2  | Strict OpenAI Responses adapter, host-owned tool state machine, catalog resolution, and Ledger-required handoff            | Local evidence complete; no external model call captured       |
 | P6    | Judge dashboard and deterministic React Three Fiber digital twin                                                           | Implemented and browser-tested                                 |
 | P7    | Fixed-clock offline A/B/C rehearsal, demo reset, stale-response protection, and Playwright flow                            | Implemented and locally rehearsed                              |
+| UI    | Landing, first-time onboarding, workspace navigation, setup/build/evaluate/release/evidence views, and Ledger handoff UX  | Implemented and browser-smoke-tested                          |
 
 ## Technology and architecture
 
@@ -376,7 +383,7 @@ physical Ledger-device evidence.
 ## Project structure
 
 ```text
-apps/web/                  Next.js judge dashboard and /p5-ledger harness
+apps/web/                  Next.js landing page, product workspace, evaluator, evidence views, and /p5-ledger harness
 apps/api/                  Fastify release boundary and bounded deployment agent
 packages/domain/           Canonical identifiers, schemas, serialization, and digests
 packages/simulation-core/  Pure deterministic warehouse evaluator
@@ -386,7 +393,7 @@ integrations/chainlink-cre CRE workflow and confidential handler
 contracts/                 Foundry PreflightRegistry and deployment artifacts
 scripts/                   Demo rehearsal and scaffold verification commands
 docs/                      Planning, architecture, partner, compliance, and AI-use records
-tests/e2e/                 P6/P7 browser flows
+tests/e2e/                 P6/P7 regression flows plus the P8 landing/onboarding smoke path
 ```
 
 The main architecture references are [`docs/architecture/OVERVIEW.md`](docs/architecture/OVERVIEW.md),
@@ -404,7 +411,8 @@ Implemented and locally verified:
 - exact-binding Sepolia registry and read policy;
 - Ledger release-intent software boundary and replay protection;
 - bounded deployment-agent orchestration;
-- judge dashboard, digital twin, reset flow, and deterministic rehearsal.
+- product landing, onboarding, workspace navigation, digital twin, reset flow, and deterministic
+  rehearsal.
 
 Not yet proven or intentionally not implemented:
 

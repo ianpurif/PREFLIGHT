@@ -2,7 +2,21 @@
 
 ## Phase
 
-**P1–P7 software is implemented. P5.2 adds the narrow AI deployment-agent workflow, deterministic tool/capability boundary, public audit projection, local positive/adversarial evidence, and a live read-only Sepolia blocked-state trace. P6 adds the judge-facing dashboard and deterministic digital twin over a server-side public projection of the existing P2/P3 fixture. P7 adds an offline fixed-clock A/B/C rehearsal, demo-owned idempotent reset, stale-browser protection, and reliable Playwright flow coverage. The real provider adapter is implemented but no external model call was captured because provider credentials/model are absent. P5.1 has official Speculos transport, actual Ethereum app/address UI smoke, ERC-7730 v2 validation, real pre-sign C, and invalid/unregistered D. Authenticated Clear Signing A/B/E/F and physical Ledger evidence remain externally blocked. P8 is intentionally not started.**
+**P1–P7 software is implemented. P5.2 adds the narrow AI deployment-agent workflow, deterministic tool/capability boundary, public audit projection, local positive/adversarial evidence, and a live read-only Sepolia blocked-state trace. P6 adds the deterministic digital twin over a server-side public projection of the existing P2/P3 fixture. P7 adds an offline fixed-clock A/B/C rehearsal, demo-owned idempotent reset, stale-browser protection, and reliable Playwright flow coverage. The product UI pass now adds a landing page, first-time onboarding, workspace navigation, target/build views, evaluation/release/evidence views, and a polished Ledger handoff without changing authority. The real provider adapter is implemented but no external model call was captured because provider credentials/model are absent. P5.1 has official Speculos transport, actual Ethereum app/address UI smoke, ERC-7730 v2 validation, real pre-sign C, and invalid/unregistered D. Authenticated Clear Signing A/B/E/F and physical Ledger evidence remain externally blocked. P8 submission evidence/assets remain open.**
+
+## Product UI/UX pass now present
+
+- `/` is a plain-language landing page for warehouse safety engineers and robot integrators.
+- `/start` captures only public/demo workspace context (site, robot, and build labels) and stores it
+  in the browser session; it does not invent backend persistence or authority.
+- `/app` is the workspace overview. `/app/setup`, `/app/builds`, `/app/evaluate`, `/app/releases`,
+  and `/app/evidence` are focused product views with simple navigation.
+- The existing deterministic P6/P7 evaluator remains at `/app/evaluate`; Build A, Build B, mutated
+  build, reset, stale-response handling, and the real P5 preparation boundary remain unchanged.
+- The UI distinguishes `HOLD`, `CLEAR`, `BLOCKED`, and `LEDGER_APPROVAL_REQUIRED`. Technical CRE,
+  Sepolia, and Ledger details live behind the Evidence view rather than leading the workflow.
+- Private envelope inputs, blinds, restricted geometry, thresholds, internal reports, credentials,
+  and raw model/CRE payloads remain outside the browser projection.
 
 ## P6 implementation now present
 
@@ -108,9 +122,10 @@ P5 therefore does not yet prove either a complete official Speculos Clear Signin
 
 ## Next exact task
 
-P8 may address submission evidence only. Do not add robot activation, make UI state authoritative,
-or turn the offline rehearsal into a live-partner claim. Persisting agent audit history may be
-considered later without changing P5 nonce authority.
+P8 submission evidence may address the partner matrix, architecture diagram, AI attribution, and
+showcase assets. Do not add robot activation, make UI state authoritative, or turn the offline
+rehearsal into a live-partner claim. Persisting agent audit history may be considered later without
+changing P5 nonce authority.
 
 External evidence remains separately open: run the real provider adapter when an approved
 `OPENAI_API_KEY` and explicit `PREFLIGHT_AGENT_MODEL` are available; obtain legitimate Ledger

@@ -79,12 +79,14 @@ and emits a `ReleaseAuthorization` only after verification. This is an offchain 
 boundary, not an onchain authorization claim. The API and agent never sign or receive private keys.
 
 ### `apps/web`
-The root route is the P6 judge-facing dashboard: it renders a deterministic warehouse digital twin,
+The root route is a product landing page. `/start` provides a short first-time setup for public site,
+robot, and build labels, and `/app` provides the workspace shell with setup, build, evaluation,
+release, and evidence views. `/app/evaluate` embeds the P6 deterministic warehouse digital twin,
 public P2/P3 evaluation projection, public Sepolia registry identity, P5.2 activity boundary, and
 Ledger human-approval state. The server computes the existing fixture projection; the browser never
 receives the confidential envelope, blind, private rule data, or internal report. The digital twin
 is explanatory and cannot decide clearance or authorization. A real prepared response from the
-existing P5.2 API is required before the dashboard hands the exact request to `/p5-ledger`.
+existing P5.2 API is required before the evaluation view hands the exact request to `/p5-ledger`.
 
 The `/p5-ledger` route remains the separate minimal operator/evidence harness. It defaults to WebHID
 and can select the loopback Ledger Speculos official device simulator only in development/test
