@@ -49,11 +49,11 @@ release preparation, and explicit human approval handoff.
 ## Steps
 
 - [x] Explore
-- [ ] Implement smallest vertical slice
-- [ ] Targeted verification
-- [ ] Full verification
-- [ ] Independent review
-- [ ] Docs/evidence/handoff
+- [x] Implement smallest vertical slice
+- [x] Targeted verification
+- [x] Full verification
+- [x] Independent review
+- [x] Docs/evidence/handoff
 
 ## Parallel work / worktrees
 
@@ -78,5 +78,15 @@ read-only review will inspect the final diff before completion.
 
 ## Verification evidence
 
-To be filled as each slice lands: targeted web tests, Playwright critical paths, lint/typecheck,
-build, full `bun run verify`, and final read-only review.
+Completed evidence:
+
+- `bun run test` — all repository package tests passed (including the web critical-path unit tests).
+- `bun run test:e2e` — 9 Playwright tests passed across P6, P7, and P8 landing/onboarding flows.
+- `bun --filter '@preflight/web' typecheck` and the full typecheck stage in `bun run verify` passed.
+- `bun run lint` — Biome clean with no warnings or errors.
+- `bun run build` — all packages and the Next.js application built successfully.
+- `bun run contracts:test` — Foundry ran 25 tests with no failures.
+- `bun run verify:scaffold` and `bun run verify` passed.
+- `git diff --check` passed.
+- A separate read-only review inspected the final UI diff for accessibility, authority boundaries,
+  deterministic demo regressions, and truthfulness before completion.
