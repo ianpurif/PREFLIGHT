@@ -4285,6 +4285,15 @@ pre {
   }
 }
 
+.product-content .evaluation-workspace .target-boundary-note {
+  margin: 15px 0 0;
+  border-top: 1px solid #e1eae8;
+  padding-top: 12px;
+  color: #879796;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
 .product-content .evaluation-workspace .release-gate-callout {
   display: grid;
   gap: 5px;

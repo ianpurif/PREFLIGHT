@@ -347,6 +347,10 @@ export function JudgeDashboard({
               </dd>
             </div>
           </dl>
+          <p className="target-boundary-note">
+            Demo fixture target. Workspace labels are display-only and do not change evaluator
+            bindings.
+          </p>
           <div className="control-stack">
             <button
               type="button"
