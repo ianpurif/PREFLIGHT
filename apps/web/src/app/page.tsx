@@ -1,6 +1,5 @@
-import { createDemoPublicData } from "./demo-data";
-import { JudgeDashboard } from "./judge-dashboard";
+import { LandingPage } from "./landing-page";
 
 export default function Home() {
-  return <JudgeDashboard demo={createDemoPublicData()} />;
+  return <LandingPage />;
 }
