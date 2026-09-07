@@ -130,9 +130,15 @@ async function postAgentPrepare(request: string): Promise<Readonly<Record<string
   return payload;
 }
 
-export function JudgeDashboard({ demo }: { readonly demo: DemoPublicData }) {
-  const [selection, setSelection] = useState<Selection>("unsafe");
-  const [agent, setAgent] = useState<AgentState>(() => initialAgentState("unsafe"));
+export function JudgeDashboard({
+  demo,
+  initialSelection = "unsafe",
+}: {
+  readonly demo: DemoPublicData;
+  readonly initialSelection?: Selection;
+}) {
+  const [selection, setSelection] = useState<Selection>(initialSelection);
+  const [agent, setAgent] = useState<AgentState>(() => initialAgentState(initialSelection));
   const [statusMessage, setStatusMessage] = useState(
     "Build A is loaded. Evaluate it to see why Preflight holds the release.",
   );
@@ -273,27 +279,46 @@ export function JudgeDashboard({ demo }: { readonly demo: DemoPublicData }) {
   }
 
   return (
-    <main className="judge-shell" data-testid="demo-dashboard" data-demo-selection={selection}>
+    <section
+      className="judge-shell evaluation-workspace"
+      data-testid="demo-dashboard"
+      data-demo-selection={selection}
+    >
       <header className="topbar">
         <div>
-          <p className="eyebrow">PREFLIGHT / DEPLOYMENT GATE</p>
-          <h1>Ship the exact build. Prove it first.</h1>
+          <p className="eyebrow">STEP 2 OF 4 / EVALUATION</p>
+          <h1>Review the exact build.</h1>
         </div>
         <div className="topbar-badges">
-          <span>Sepolia</span>
-          <span>Chainlink CRE</span>
-          <span>Ledger human gate</span>
+          <span>Same site envelope</span>
+          <span>Deterministic fixture</span>
         </div>
       </header>
 
       <section className="hero-copy">
         <p>
-          A deployment agent can prepare a release for a warehouse robot, but it cannot authorize
-          one. Preflight evaluates the exact build against a confidential site workflow, then stops
-          at human Ledger approval.
+          Select a build to see the public result. A clear evaluation makes release preparation
+          possible; it never skips human approval.
         </p>
-        <span className="fixture-note">Deterministic judge fixture · no robot activation</span>
+        <span className="fixture-note">
+          Public projection · no private rules or robot activation
+        </span>
       </section>
+
+      <div className="evaluation-state-guide" aria-label="Evaluation state guide">
+        <span>
+          <i className="state-guide-dot hold" aria-hidden="true" /> <strong>HOLD</strong> needs a
+          build change
+        </span>
+        <span>
+          <i className="state-guide-dot clear" aria-hidden="true" /> <strong>CLEAR</strong> can
+          continue to release prep
+        </span>
+        <span>
+          <i className="state-guide-dot blocked" aria-hidden="true" /> <strong>BLOCKED</strong>{" "}
+          binding failed
+        </span>
+      </div>
 
       <section className="workspace-grid">
         <aside className="control-rail panel">
@@ -337,7 +362,7 @@ export function JudgeDashboard({ demo }: { readonly demo: DemoPublicData }) {
             </button>
           </div>
           <div className="rail-callout">
-            <span>Current gate</span>
+            <span>Current evaluation state</span>
             <strong className={`status-word ${statusClass(status)}`}>{status}</strong>
             <p aria-live="polite">{statusMessage}</p>
           </div>
@@ -469,6 +494,9 @@ export function JudgeDashboard({ demo }: { readonly demo: DemoPublicData }) {
             <span className="boundary-tag">host-owned tools</span>
           </div>
           <h2>Preparation, not authorization</h2>
+          {agent.phase === "prepared" ? (
+            <span className="release-state-badge">LEDGER_APPROVAL_REQUIRED</span>
+          ) : null}
           <ul className="activity-list">
             {activity.map((item) => (
               <li
@@ -678,6 +706,6 @@ export function JudgeDashboard({ demo }: { readonly demo: DemoPublicData }) {
           </details>
         </article>
       </section>
-    </main>
+    </section>
   );
 }

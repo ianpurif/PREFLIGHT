@@ -1870,6 +1870,266 @@ pre {
   }
 }
 
+/* Evaluation workspace overrides: keep the existing deterministic P6 mechanics, but place them
+   inside the lighter product shell rather than presenting a standalone dark dashboard. */
+.product-content .evaluation-workspace {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  color: #1c3033;
+  background: transparent;
+}
+
+.evaluation-workspace .topbar {
+  border-bottom-color: #dce7e4;
+  padding-bottom: 20px;
+}
+
+.evaluation-workspace .topbar h1 {
+  color: #172a2e;
+  font-size: clamp(29px, 4vw, 46px);
+}
+
+.evaluation-workspace .topbar-badges {
+  padding-top: 4px;
+}
+
+.evaluation-workspace .topbar-badges span,
+.evaluation-workspace .fixture-note,
+.evaluation-workspace .route-pill,
+.evaluation-workspace .boundary-tag {
+  border-color: #cededb;
+  color: #718685;
+  background: #fbfdfc;
+}
+
+.evaluation-workspace .hero-copy {
+  padding: 20px 0 12px;
+}
+
+.evaluation-workspace .hero-copy p {
+  color: #6c7f81;
+}
+
+.evaluation-state-guide {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px 19px;
+  border-bottom: 1px solid #e1eae8;
+  padding: 0 0 18px;
+  color: #879796;
+  font-size: 10px;
+}
+
+.evaluation-state-guide span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.evaluation-state-guide strong {
+  color: #506c6a;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+}
+
+.state-guide-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.state-guide-dot.hold {
+  background: #ca6b65;
+}
+
+.state-guide-dot.clear {
+  background: #38a88c;
+}
+
+.state-guide-dot.blocked {
+  background: #ca913d;
+}
+
+.evaluation-workspace .panel,
+.evaluation-workspace .status-card {
+  border-color: #d8e5e2;
+  background: rgba(255, 255, 255, 0.77);
+  box-shadow: 0 12px 28px rgba(41, 72, 70, 0.06);
+}
+
+.evaluation-workspace .control-rail,
+.evaluation-workspace .twin-panel,
+.evaluation-workspace .ledger-panel,
+.evaluation-workspace .attestation-panel {
+  padding: 20px;
+}
+
+.evaluation-workspace .target-list div,
+.evaluation-workspace .release-details div,
+.evaluation-workspace .verification-details,
+.evaluation-workspace .public-identifiers,
+.evaluation-workspace .agent-message {
+  border-color: #e1eae8;
+}
+
+.evaluation-workspace dt,
+.evaluation-workspace .rail-callout > span,
+.evaluation-workspace .build-identity > span,
+.evaluation-workspace .twin-caption,
+.evaluation-workspace .public-identifiers,
+.evaluation-workspace .source-note,
+.evaluation-workspace .agent-message,
+.evaluation-workspace .ledger-evidence,
+.evaluation-workspace .public-result,
+.evaluation-workspace .metric-subline {
+  color: #7d908e;
+}
+
+.evaluation-workspace dd {
+  color: #354c4d;
+}
+
+.evaluation-workspace .control-stack button {
+  border-color: #d2e1dd;
+  color: #55706f;
+  background: #f7faf9;
+}
+
+.evaluation-workspace .control-stack button:hover:not(:disabled),
+.evaluation-workspace .control-stack button:focus-visible {
+  border-color: #8bc8b8;
+  color: #0c7d72;
+  background: #eef8f4;
+}
+
+.evaluation-workspace .control-stack button.active {
+  border-color: #8bc8b8;
+  color: #0c7d72;
+  background: #e7f4ef;
+}
+
+.evaluation-workspace .rail-callout {
+  border-color: #d7e4e1;
+  background: #f5f9f7;
+}
+
+.evaluation-workspace .status-word {
+  color: #345050;
+}
+
+.evaluation-workspace .status-word.hold,
+.evaluation-workspace .status-card.hold .status-word {
+  color: #bd625c;
+}
+
+.evaluation-workspace .status-word.clear,
+.evaluation-workspace .status-card.clear .status-word {
+  color: #22806b;
+}
+
+.evaluation-workspace .status-word.blocked,
+.evaluation-workspace .status-card.blocked .status-word {
+  color: #b47727;
+}
+
+.evaluation-workspace .status-card.hold {
+  border-color: #e3c2be;
+  background: linear-gradient(145deg, #fff8f6, #fffdfc);
+}
+
+.evaluation-workspace .status-card.clear {
+  border-color: #b9dccf;
+  background: linear-gradient(145deg, #f2fbf7, #fffdfc);
+}
+
+.evaluation-workspace .status-card.blocked {
+  border-color: #e5cfaa;
+  background: linear-gradient(145deg, #fffaf1, #fffdfb);
+}
+
+.evaluation-workspace .status-card h2,
+.evaluation-workspace .panel-heading h2 {
+  color: #273f40;
+}
+
+.evaluation-workspace .reason-list li,
+.evaluation-workspace .check-list li,
+.evaluation-workspace .activity-list li {
+  color: #58706f;
+}
+
+.evaluation-workspace .check-list li {
+  color: #2c826f;
+}
+
+.evaluation-workspace .public-result {
+  border-top-color: #deebe8;
+}
+
+.evaluation-workspace .public-result strong {
+  color: #27816d;
+}
+
+.evaluation-workspace .release-details .waiting {
+  color: #ac762d;
+}
+
+.evaluation-workspace .ledger-mark {
+  color: #a67832;
+}
+
+.evaluation-workspace .primary-button,
+.evaluation-workspace .button-link {
+  border-color: #bd8a3c;
+  color: #fffaf0;
+  background: #bd8a3c;
+}
+
+.evaluation-workspace .primary-button:hover:not(:disabled),
+.evaluation-workspace .button-link:hover,
+.evaluation-workspace .button-link:focus-visible {
+  border-color: #9f7029;
+  background: #9f7029;
+}
+
+.evaluation-workspace .verification-details summary {
+  color: #5a7471;
+}
+
+.evaluation-workspace .verification-list li {
+  color: #849492;
+}
+
+.evaluation-workspace .verification-list strong {
+  color: #2e836f;
+}
+
+.evaluation-workspace .release-state-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-top: 14px;
+  border: 1px solid #e4cfaa;
+  border-radius: 999px;
+  padding: 5px 8px;
+  color: #a6712d;
+  background: #fff9ed;
+  font-size: 9px;
+  font-weight: 820;
+  letter-spacing: 0.06em;
+}
+
+@media (max-width: 760px) {
+  .evaluation-workspace .topbar {
+    align-items: flex-start;
+  }
+
+  .evaluation-workspace .topbar-badges {
+    justify-content: flex-start;
+  }
+}
+
 /* Authenticated product workspace shell. */
 .product-shell {
   --product-ink: #16262b;
