@@ -42,6 +42,7 @@ const required = [
   "apps/web/src/app/page.tsx",
   "apps/web/src/app/landing-page.tsx",
   "apps/web/src/app/onboarding-flow.tsx",
+  "apps/web/src/app/workspace-context.tsx",
   "apps/web/src/app/product-app.tsx",
   "apps/web/src/app/workspace-views.tsx",
   "apps/web/src/app/release-view.tsx",
@@ -318,6 +319,10 @@ for (const forbidden of [
 }
 const webPage = readFileSync(resolve(root, "apps/web/src/app/page.tsx"), "utf8");
 const landingPage = readFileSync(resolve(root, "apps/web/src/app/landing-page.tsx"), "utf8");
+const workspaceContext = readFileSync(
+  resolve(root, "apps/web/src/app/workspace-context.tsx"),
+  "utf8",
+);
 const productApp = readFileSync(resolve(root, "apps/web/src/app/product-app.tsx"), "utf8");
 const evaluatePage = readFileSync(resolve(root, "apps/web/src/app/app/evaluate/page.tsx"), "utf8");
 const judgeDashboard = readFileSync(resolve(root, "apps/web/src/app/judge-dashboard.tsx"), "utf8");
@@ -329,6 +334,8 @@ const p7DemoScript = readFileSync(resolve(root, "scripts/p7-demo.mjs"), "utf8");
 const p7Fixture = readFileSync(resolve(root, "apps/api/scripts/p7-demo-fixture.ts"), "utf8");
 if (!webPage.includes("LandingPage") || !landingPage.includes("Get started"))
   throw new Error("P8 root route must render the product landing page");
+if (!workspaceContext.includes("preflight.workspace.setup"))
+  throw new Error("P8 workspace context must retain setup values in the browser session");
 if (!productApp.includes("ProductApp") || !evaluatePage.includes("JudgeDashboard"))
   throw new Error("P6 evaluator must remain available inside the product workspace");
 for (const requiredSurface of [

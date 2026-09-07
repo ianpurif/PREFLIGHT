@@ -62,6 +62,10 @@ test("P3-P7 are load-bearing and the judge boundary remains non-authoritative", 
   const web = await readFile(new URL("apps/web/src/app/page.tsx", root), "utf8");
   const landing = await readFile(new URL("apps/web/src/app/landing-page.tsx", root), "utf8");
   const onboarding = await readFile(new URL("apps/web/src/app/onboarding-flow.tsx", root), "utf8");
+  const workspaceContext = await readFile(
+    new URL("apps/web/src/app/workspace-context.tsx", root),
+    "utf8",
+  );
   const productApp = await readFile(new URL("apps/web/src/app/product-app.tsx", root), "utf8");
   const evaluatePage = await readFile(
     new URL("apps/web/src/app/app/evaluate/page.tsx", root),
@@ -121,7 +125,8 @@ test("P3-P7 are load-bearing and the judge boundary remains non-authoritative", 
   );
   assert.match(web, /LandingPage/);
   assert.match(landing, /Get started/);
-  assert.match(onboarding, /preflight\.workspace\.setup/);
+  assert.match(onboarding, /WORKSPACE_SETUP_STORAGE_KEY/);
+  assert.match(workspaceContext, /preflight\.workspace\.setup/);
   assert.match(productApp, /ProductApp/);
   assert.match(evaluatePage, /JudgeDashboard/);
   assert.match(judge, /CLEARANCE_BINDING_MISMATCH/);
