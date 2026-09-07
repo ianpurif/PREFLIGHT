@@ -343,7 +343,7 @@ bun run verify
 
 The current verification report records 172 TypeScript tests across the domain, evaluator,
 Chainlink, API, chain-client, Ledger, and web packages, plus contract fuzz/invariant coverage and
-seven browser tests. On the authoring host, a later aggregate rerun hit a host-level `spawn EPERM`
+nine browser tests. On the authoring host, a later aggregate rerun hit a host-level `spawn EPERM`
 while creating Next/Node subprocesses; the earlier clean build and browser runs passed. See
 [`VERIFICATION_REPORT.md`](VERIFICATION_REPORT.md) for the exact boundary and current evidence.
 
