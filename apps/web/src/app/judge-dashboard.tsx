@@ -320,6 +320,10 @@ export function JudgeDashboard({
           <i className="state-guide-dot blocked" aria-hidden="true" /> <strong>BLOCKED</strong>{" "}
           binding failed
         </span>
+        <span>
+          <i className="state-guide-dot ledger" aria-hidden="true" />
+          <strong>LEDGER_APPROVAL_REQUIRED</strong> human review pending
+        </span>
       </section>
 
       <section className="workspace-grid">
@@ -454,6 +458,15 @@ export function JudgeDashboard({
               </div>
             </>
           )}
+          {agent.phase === "prepared" ? (
+            <div className="release-gate-callout" role="status">
+              <span className="section-kicker">Release gate</span>
+              <strong>LEDGER_APPROVAL_REQUIRED</strong>
+              <p>
+                Evaluation is CLEAR. The exact request still needs human confirmation on Ledger.
+              </p>
+            </div>
+          ) : null}
           <div className="public-identifiers">
             <span>
               Public result ·{" "}

@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import type { DemoPublicData } from "./demo-data";
+import { useWorkspaceSetup, WorkspaceSetupProvider } from "./workspace-context";
 
 export type ProductView = "overview" | "setup" | "builds" | "evaluate" | "releases" | "evidence";
 
@@ -26,6 +29,7 @@ function ProductBrand() {
 }
 
 function ProductHeader({ view }: { readonly view: ProductView }) {
+  const { setup } = useWorkspaceSetup();
   const labels: Readonly<Record<ProductView, string>> = {
     overview: "Workspace overview",
     setup: "Site & robot",
@@ -40,7 +44,9 @@ function ProductHeader({ view }: { readonly view: ProductView }) {
         <p className="product-breadcrumb">
           Workspace <span aria-hidden="true">/</span> {labels[view]}
         </p>
-        <span className="product-header-context">Warehouse Manila-01 · AMR-17</span>
+        <span className="product-header-context">
+          {setup.siteName} · {setup.robotName}
+        </span>
       </div>
       <div className="product-header-actions">
         <span className="workspace-status">
@@ -55,14 +61,15 @@ function ProductHeader({ view }: { readonly view: ProductView }) {
 }
 
 function WorkspaceSidebar({ view }: { readonly view: ProductView }) {
+  const { setup } = useWorkspaceSetup();
   return (
     <aside className="product-sidebar">
       <div className="product-sidebar-top">
         <ProductBrand />
         <div className="sidebar-workspace-card">
           <span className="sidebar-label">Current workspace</span>
-          <strong>Manila warehouse</strong>
-          <span>AMR-17 · release review</span>
+          <strong>{setup.siteName}</strong>
+          <span>{setup.robotName} · release review</span>
         </div>
         <nav className="product-nav" aria-label="Workspace navigation">
           <span className="sidebar-label">Review</span>
@@ -108,6 +115,7 @@ function WorkspaceSidebar({ view }: { readonly view: ProductView }) {
 }
 
 function OverviewView({ demo }: { readonly demo: DemoPublicData }) {
+  const { setup } = useWorkspaceSetup();
   return (
     <div className="product-view overview-view">
       <div className="view-heading-row">
@@ -128,7 +136,7 @@ function OverviewView({ demo }: { readonly demo: DemoPublicData }) {
         <div className="summary-card-heading">
           <div>
             <span className="view-eyebrow">Current target</span>
-            <h2 id="summary-title">Warehouse Manila-01</h2>
+            <h2 id="summary-title">{setup.siteName}</h2>
           </div>
           <span className="summary-ready-pill">
             <i aria-hidden="true" /> Ready for review
@@ -137,13 +145,13 @@ function OverviewView({ demo }: { readonly demo: DemoPublicData }) {
         <div className="summary-facts">
           <div>
             <span>Robot</span>
-            <strong>AMR-17</strong>
+            <strong>{setup.robotName}</strong>
             <small>Autonomous mobile robot</small>
           </div>
           <div>
-            <span>Builds waiting</span>
-            <strong>2</strong>
-            <small>4.7.20 and 4.7.21</small>
+            <span>Workspace build label</span>
+            <strong>{setup.buildLabel || "Release candidate"}</strong>
+            <small>{setup.buildVersion} · local context only</small>
           </div>
           <div>
             <span>Current decision</span>
@@ -254,26 +262,28 @@ export function ProductApp({
   readonly children?: React.ReactNode;
 }) {
   return (
-    <main className="product-shell" id="main-content" data-product-view={initialView}>
-      <WorkspaceSidebar view={initialView} />
-      <div className="product-main">
-        <ProductHeader view={initialView} />
-        <div className="product-content">
-          {initialView === "overview" ? (
-            <OverviewView demo={demo} />
-          ) : (
-            (children ?? (
-              <div className="product-empty-state">
-                <p className="view-eyebrow">Coming next</p>
-                <h1>Open this workspace from the review path.</h1>
-                <Link href="/app/evaluate" className="view-primary-action">
-                  Open evaluation <span aria-hidden="true">→</span>
-                </Link>
-              </div>
-            ))
-          )}
+    <WorkspaceSetupProvider>
+      <main className="product-shell" id="main-content" data-product-view={initialView}>
+        <WorkspaceSidebar view={initialView} />
+        <div className="product-main">
+          <ProductHeader view={initialView} />
+          <div className="product-content">
+            {initialView === "overview" ? (
+              <OverviewView demo={demo} />
+            ) : (
+              (children ?? (
+                <div className="product-empty-state">
+                  <p className="view-eyebrow">Coming next</p>
+                  <h1>Open this workspace from the review path.</h1>
+                  <Link href="/app/evaluate" className="view-primary-action">
+                    Open evaluation <span aria-hidden="true">→</span>
+                  </Link>
+                </div>
+              ))
+            )}
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </WorkspaceSetupProvider>
   );
 }

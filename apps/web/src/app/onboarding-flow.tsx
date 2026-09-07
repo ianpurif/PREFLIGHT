@@ -2,24 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-
-type Setup = {
-  siteName: string;
-  facilityType: string;
-  robotName: string;
-  fleetLabel: string;
-  buildVersion: string;
-  buildLabel: string;
-};
-
-const DEFAULT_SETUP: Setup = {
-  siteName: "Warehouse Manila-01",
-  facilityType: "Warehouse",
-  robotName: "AMR-17",
-  fleetLabel: "Manila autonomous fleet",
-  buildVersion: "4.7.21",
-  buildLabel: "Controller release candidate",
-};
+import {
+  DEFAULT_WORKSPACE_SETUP,
+  WORKSPACE_SETUP_STORAGE_KEY,
+  type WorkspaceSetup,
+} from "./workspace-context";
 
 const steps = [
   { label: "Site", helper: "Where will this build run?" },
@@ -29,10 +16,10 @@ const steps = [
 
 export function OnboardingFlow() {
   const [step, setStep] = useState(0);
-  const [setup, setSetup] = useState<Setup>(DEFAULT_SETUP);
+  const [setup, setSetup] = useState<WorkspaceSetup>(DEFAULT_WORKSPACE_SETUP);
   const [saved, setSaved] = useState(false);
 
-  function update(field: keyof Setup, value: string) {
+  function update(field: keyof WorkspaceSetup, value: string) {
     setSaved(false);
     setSetup((current) => ({ ...current, [field]: value }));
   }
@@ -42,7 +29,7 @@ export function OnboardingFlow() {
       setStep((current) => current + 1);
       return;
     }
-    window.sessionStorage.setItem("preflight.workspace.setup", JSON.stringify(setup));
+    window.sessionStorage.setItem(WORKSPACE_SETUP_STORAGE_KEY, JSON.stringify(setup));
     setSaved(true);
   }
 

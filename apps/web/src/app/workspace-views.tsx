@@ -1,58 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { DemoPublicData } from "./demo-data";
 import { shortDigest } from "./demo-mutation";
-
-type SetupValues = {
-  siteName: string;
-  facilityType: string;
-  robotName: string;
-  fleetLabel: string;
-};
-
-const DEFAULT_SETUP: SetupValues = {
-  siteName: "Warehouse Manila-01",
-  facilityType: "Warehouse",
-  robotName: "AMR-17",
-  fleetLabel: "Manila autonomous fleet",
-};
-
-function loadSetup(): SetupValues {
-  if (typeof window === "undefined") return DEFAULT_SETUP;
-  const saved = window.sessionStorage.getItem("preflight.workspace.setup");
-  if (saved === null) return DEFAULT_SETUP;
-  try {
-    const parsed = JSON.parse(saved) as Partial<SetupValues>;
-    return {
-      siteName: typeof parsed.siteName === "string" ? parsed.siteName : DEFAULT_SETUP.siteName,
-      facilityType:
-        typeof parsed.facilityType === "string" ? parsed.facilityType : DEFAULT_SETUP.facilityType,
-      robotName: typeof parsed.robotName === "string" ? parsed.robotName : DEFAULT_SETUP.robotName,
-      fleetLabel:
-        typeof parsed.fleetLabel === "string" ? parsed.fleetLabel : DEFAULT_SETUP.fleetLabel,
-    };
-  } catch {
-    return DEFAULT_SETUP;
-  }
-}
+import {
+  useWorkspaceSetup,
+  WORKSPACE_SETUP_STORAGE_KEY,
+  type WorkspaceSetup,
+} from "./workspace-context";
 
 export function SetupView() {
-  const [values, setValues] = useState<SetupValues>(DEFAULT_SETUP);
+  const { setup: values, setSetup } = useWorkspaceSetup();
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => {
-    setValues(loadSetup());
-  }, []);
-
-  function update(field: keyof SetupValues, value: string) {
+  function update(field: keyof WorkspaceSetup, value: string) {
     setSaved(false);
-    setValues((current) => ({ ...current, [field]: value }));
+    setSetup((current) => ({ ...current, [field]: value }));
   }
 
   function save() {
-    window.sessionStorage.setItem("preflight.workspace.setup", JSON.stringify(values));
+    window.sessionStorage.setItem(WORKSPACE_SETUP_STORAGE_KEY, JSON.stringify(values));
     setSaved(true);
   }
 
@@ -151,6 +119,7 @@ export function SetupView() {
 }
 
 export function BuildsView({ demo }: { readonly demo: DemoPublicData }) {
+  const { setup } = useWorkspaceSetup();
   return (
     <div className="product-view builds-view">
       <div className="view-heading-row">
@@ -221,6 +190,12 @@ export function BuildsView({ demo }: { readonly demo: DemoPublicData }) {
           </div>
         </li>
       </ul>
+
+      <p className="builds-workspace-context">
+        Workspace label: <strong>{setup.buildLabel || "Release candidate"}</strong> ·{" "}
+        {setup.buildVersion}. The deterministic demo candidates below keep their exact fixture
+        identities.
+      </p>
 
       <div className="builds-footnote">
         <span className="footnote-icon" aria-hidden="true">

@@ -22,15 +22,22 @@ test.describe("P8 product flow", () => {
     await expect(
       page.getByRole("heading", { name: "Set up a release review in a minute." }),
     ).toBeVisible();
+    await page.getByLabel("Site name").fill("Dockyard North");
     await page.getByRole("button", { name: "Continue" }).click();
+    await page.getByLabel("Robot name").fill("AMR-09");
     await page.getByRole("button", { name: "Continue" }).click();
+    await page.getByLabel("Build version").fill("5.1.0");
+    await page.getByLabel("Build label").fill("Nightly candidate");
     await page.getByRole("button", { name: "Open workspace" }).click();
 
-    await expect(page.getByRole("heading", { name: "Warehouse Manila-01" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Dockyard North" })).toBeVisible();
     await page.getByRole("link", { name: "Open Preflight workspace" }).click();
     await expect(page).toHaveURL(/\/app$/);
     await expect(
       page.getByRole("heading", { name: "Make the next release easy to trust." }),
     ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Dockyard North" })).toBeVisible();
+    await expect(page.getByText("AMR-09 · release review")).toBeVisible();
+    await expect(page.getByText("Nightly candidate")).toBeVisible();
   });
 });

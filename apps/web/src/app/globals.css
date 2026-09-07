@@ -2798,6 +2798,10 @@ pre {
   background: #ca913d;
 }
 
+.state-guide-dot.ledger {
+  background: #8b6bc5;
+}
+
 .evaluation-workspace .panel,
 .evaluation-workspace .status-card {
   border-color: #d8e5e2;
@@ -3792,12 +3796,12 @@ pre {
     grid-template-columns: 1fr;
   }
 
-  .summary-facts > div {
+  .product-shell .product-main div.summary-facts > div {
     min-height: auto;
     padding: 13px 0;
   }
 
-  .summary-facts > div + div {
+  .product-shell .product-main .summary-facts > div + div {
     border-top: 1px solid #e1eae8;
     border-left: 0;
     padding-left: 0;
@@ -4211,6 +4215,18 @@ pre {
   line-height: 1.5;
 }
 
+.builds-workspace-context {
+  margin: 16px 0 0;
+  color: #81918f;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.product-shell .builds-view .builds-workspace-context strong {
+  color: #466563;
+  font-weight: 760;
+}
+
 .builds-footnote a {
   margin-left: auto;
   color: #0c7d72;
@@ -4267,4 +4283,31 @@ pre {
     align-items: flex-start;
     flex-direction: column;
   }
+}
+
+.product-content .evaluation-workspace .release-gate-callout {
+  display: grid;
+  gap: 5px;
+  margin-top: 18px;
+  border: 1px solid #ded2f0;
+  border-radius: 10px;
+  padding: 12px;
+  background: #faf8ff;
+}
+
+.product-content .evaluation-workspace .release-gate-callout .section-kicker {
+  color: #7e68ad;
+}
+
+.product-content .evaluation-workspace .release-gate-callout strong {
+  color: #6f52a8;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.product-content .evaluation-workspace .release-gate-callout p {
+  margin: 0;
+  color: #756b88;
+  font-size: 10px;
+  line-height: 1.5;
 }
