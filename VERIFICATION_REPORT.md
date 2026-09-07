@@ -1,10 +1,67 @@
-# P5 / P5.1 Ledger Release Gate Verification Report
+# P5–P7 Ledger, AI Deployment Agent + Deterministic Judge Demo Verification Report
 
 **Date:** 2026-09-07 (implementation and live read began 2026-09-06)
 
-**Scope:** P5 software plus the partial P5.1 Speculos evidence attempt; P1–P4 regression-checked; P6–P8 not implemented
+**Scope:** P5 software, partial P5.1 Speculos evidence, P5.2 AI deployment-agent closure, P6 judge-facing digital twin, and P7 deterministic demo reliability; P1–P4 regression-checked; P8 not started
 
-**Status:** Software, official Speculos transport/app/address UI smoke, real pre-sign C, and invalid/unregistered D pass; P5 remains incomplete because authenticated Clear Signing A/B/E/F and physical Ledger evidence are blocked
+**Status:** P5.2 agent software/local adversarial evidence, P6 browser flow, P7 offline A/B/C rehearsal, and live read-only Sepolia blocking pass. P5 official Speculos transport/app/address UI smoke, real pre-sign C, and invalid/unregistered D pass. The latest aggregate verification rerun is environment-blocked by host `spawn EPERM` during Next/Node subprocess creation; prior clean build and browser runs passed. External model execution, authenticated Clear Signing A/B/E/F, and physical Ledger evidence remain unavailable and are not claimed.
+
+## P6 judge-facing dashboard result
+
+The root web route now provides one deterministic judge flow over the existing P2 fixture:
+
+- Build A renders `HOLD`, three public violation reasons, and a route projected from the
+  caller-supplied behavior trace.
+- Build B renders `CLEAR`, the brief-required `487 scenarios` public headline, and `0 critical
+  violations`. The dashboard explicitly states that the authoritative bounded P2 report contains
+  three committed templates; the headline is a judge-facing brief metric, not a change to P2's
+  evaluator or a live facility claim.
+- Mutating Build B recomputes its canonical build digest and renders `BLOCKED` /
+  `CLEARANCE_BINDING_MISMATCH`. The CRE panel says `NOT RUN / BINDING MISMATCH`; no Ledger request
+  is offered.
+- The Chainlink card uses the committed P3 authenticated-simulation outcomes as a recorded public
+  evidence projection and states that no browser CRE execution or live DON deployment is claimed.
+  Private envelope values, blind, rules, thresholds, geometry, and internal reports are absent from
+  the server-to-browser projection and rendered output.
+- A successful `LEDGER_APPROVAL_REQUIRED` response from the existing agent API is handed through
+  session storage to `/p5-ledger`; the browser test verifies the handoff while keeping
+  authorization pending. Provider failure remains visibly unavailable. The panel exposes public
+  site/robot/build/evaluation bindings and shows clearance/expiry/intent fields only when an actual
+  prepared response supplies them; fixture-only states say that no live clearance record was issued.
+  The optional `NEXT_PUBLIC_P6_SIGNER_ADDRESS` setting is documented as a public address only; no
+  private key is accepted by the web app.
+- The Ledger panel labels Speculos as a development/test simulator and states that physical-device
+  evidence is not demonstrated. The Sepolia registry link is the deployed address already recorded
+  by P4; no clearance transaction is invented.
+
+The dashboard is explanatory only. P2 remains the sole local evaluator, P5 remains the release
+authority, and P6 does not activate a robot.
+
+## P7 deterministic demo reliability result
+
+`bun run demo:setup` resets only the ignored `.data/preflight-demo` directory, writes a public
+manifest, and runs the fixed-clock offline rehearsal. `bun run demo:reset` is idempotent; it does
+not touch source fixtures, deployment metadata, evidence, environment files, or the normal P5
+SQLite store. `bun run demo:run` repeats the prepared rehearsal and writes the same public trace.
+
+The authoritative P7 fixture reuses `@preflight/simulation-core` for the P2 verdict and the
+existing P5.2 `DeploymentAgent` plus `ReleaseService` for the host-owned proposal boundary. A
+demo-only nonce factory, fixed registry block/timestamp, fixed attempt IDs, and fixed clock make
+the local prepared digest reproducible; the production nonce default remains cryptographically
+random. Public output includes only scenario, exact public site/robot/build bindings, digests,
+clearance/intent metadata, tool order, and Ledger status.
+
+- A: P2 `HOLD`; agent decision `HOLD`; Ledger `NOT_REQUESTED`.
+- B: P2 `CLEAR`; local deterministic clearance; agent `LEDGER_APPROVAL_REQUIRED`; exact intent
+  prepared; Ledger `AWAITING_HUMAN` and handoff reachable, with no authorization.
+- C: deterministic Build B ID/artifact mutation changes the canonical digest; the corrected
+  baseline clearance is retained; agent returns `BLOCKED / CLEARANCE_BINDING_MISMATCH`; CRE is
+  marked not run and Ledger remains `NOT_REQUESTED`.
+
+The rehearsal is explicitly not live OpenAI, Sepolia, CRE, Ledger, or Speculos execution. The
+dashboard reset clears the prepared session handoff on mount and scenario changes, and ignores a
+late agent response after reset/mutation. P7 Playwright coverage runs the clean startup → reset →
+A → reset → B/prepared handoff → reset → C → repeated C sequence without sleeps or developer paths.
 
 ## Implemented authorization boundary
 
@@ -59,9 +116,51 @@ requires the context-resolution guard and a build-context → provide-context �
 so callers cannot omit the guard. Source/scaffold/dependency audits find no legacy LedgerJS,
 hashed-EIP-712, personal-sign, raw-transaction, private-key, or frontend-boolean fallback.
 
-`POST /release/prepare` is the intentionally small agent-facing/orchestration boundary. The current
-browser route is a manual operator evidence harness; no autonomous or LLM agent runtime was
-implemented or demonstrated, so the agent half of the intended partner story is not claimed.
+`POST /release/prepare` remains the deterministic proposal authority. P5.2 invokes it through a
+narrow model/tool controller; the browser route remains the separate manual operator evidence
+harness and only place that may begin Ledger signing.
+
+## P5.2 AI deployment-agent result
+
+The API now contains a real provider boundary and dependency-free OpenAI Responses adapter using
+strict function calls with `store: false`. Before the provider is invoked, the host matches the
+whole deployment input against finite forms generated from the public catalog, resolves the exact
+target, discards raw text, and provides only a canonical public projection. The host gives the model
+exactly one next tool and enforces this sequence:
+
+```text
+resolve target → lock context → evaluation → clearance → release prepare → Ledger status
+```
+
+Only reference extraction accepts arguments, and those aliases must resolve to the same target the
+host already resolved. Later calls cannot supply site/build substitutions, signer, chain, registry,
+nonce, signature, typed data, or authorization. There is no generic HTTP, shell, filesystem,
+registry-write, signing, or release-consumption tool. Provider failure, unexpected output, extra
+arguments, skipped/repeated/reordered tools, a conflicting target, and non-catalog private-context
+text fail closed before Ledger.
+
+The public evaluation/clearance reads inform the trace, while the existing `ReleaseService.prepare`
+remains the sole eligibility transition. Its live P4 check, exact bindings, authorized signer,
+expiry, and durable server nonce override model claims. Successful local Build B preparation returns
+`LEDGER_APPROVAL_REQUIRED`; unsafe A stops on `EVALUATION_HOLD`; mutated C reaches preparation and
+returns `CLEARANCE_BINDING_MISMATCH`. Revoked and expired fixtures stop before Ledger.
+
+The agent reports `AUTHORIZED` only after its exact prepared nonce has been consumed by the existing
+P5 flow. A positive test signs the actual EIP-712 payload with a test-only key, exercises signature
+recovery, signer authorization, P4 postcheck, and atomic nonce consumption, then reads the stored
+`ReleaseAuthorization`. Model claims and old/foreign attempt identifiers cannot produce that state.
+
+The local evidence runner records public A/B/C audit trails. A separate live read-only agent run
+queried chain `11155111`, registry `0xFB270cc222efa8B5005AA097dD512Be2558dde65`, block
+`11653234`, and correctly returned `CLEARANCE_NOT_FOUND` for the deliberately unregistered existing
+fixture. No live positive Build B clearance or chain write is claimed. The real provider adapter is
+contract-tested; no external model call was made because no provider key/model was configured.
+See `docs/compliance/evidence/p5.2-ai-deployment-agent-2026-09-07.md` and ADR-0008.
+
+Independent adversarial review initially identified a conflicting-target and raw-text-disclosure
+gap. The final controller now uses a finite catalog grammar, raw-text discard, canonical provider/
+audit projection, `store: false`, and exact first-tool target comparison; targeted negative tests
+cover a negated second target and a non-keyword private-context canary.
 
 ## P5.1 Speculos and ERC-7730 result
 
@@ -101,22 +200,39 @@ only.
 - Chain client: 11/11 tests for deployed-domain EIP-712, all field/domain mutations, signature
   recovery, exact P4 transport, positive pinned-block reader/ABI behavior, chain/registry, verdict,
   revocation, and expiry boundaries.
-- API: 12/12 tests for pre-sign mismatch/allowlist, signature tampering, Build A/Build B rejection,
-  durable reopen, concurrent one-time consumption, replay, TOCTOU, strict request shape, CORS, and
-  fail-closed HTTP error mapping.
+- API: 28/28 tests. The 12 P5 regressions still cover pre-sign mismatch/allowlist, signature
+  tampering, durable reopen, concurrent one-time consumption, replay, TOCTOU, strict request shape,
+  CORS, and fail-closed HTTP errors. Fourteen P5.2 tests cover exact orchestration, unsafe/mutated/
+  revoked/expired blocks, genuine P5 authorization status, tool/prompt injection, alternate and
+  conflicting targets, private-context non-disclosure, deterministic wording, provider schemas/
+  failure, and routes. Two P7 tests repeat the fixed-clock A/B/C public trace and verify the
+  corrected clearance remains bound after mutation.
 - Domain: 30/30; simulation core: 60/60; Chainlink CRE: 25/25.
-- Full TypeScript total: 156 tests, 2,704 assertions, zero failures.
-- `bun run lint`: pass; Biome checks 102 files.
+- Full TypeScript total: 172 tests, 2,814 assertions, zero failures.
+- `bun run lint`: pass; Biome checks 119 files.
 - `bun run typecheck`: pass; 7/7 Turbo tasks.
 - `bun run test`: pass; 11/11 Turbo tasks.
-- `bun run build`: pass; 7/7 tasks; Next.js production build includes static `/p5-ledger`.
+- `bun run build`: the prior clean P7 run passed 7/7 tasks and produced static `/` and
+  `/p5-ledger`; the latest rerun compiled successfully but the host rejected Next's TypeScript
+  worker with `spawn EPERM` before completion.
+- `bun run --cwd apps/web test`: pass; 2 P6 projection/mutation tests, 9 assertions.
+- `bun run test:e2e`: prior clean P7 run passed all 7 browser tests, including the five P6 states
+  plus the P7 clean startup → reset → A → reset → B/prepared handoff → reset → C/repeated C flow
+  and a late-response race guard; the latest rerun was blocked immediately by host `spawn EPERM`.
+- `bun run demo:setup`, two idempotent `bun run demo:reset` calls, and repeated `bun run demo:run`:
+  pass; generated public trace is byte-for-byte stable. Local timings were approximately `0.43s`
+  for setup and `0.37s` for a repeat run.
+- Client bundle leakage scan: pass; no confidential fixture markers in `apps/web/.next/static/chunks`.
 - `bun run contracts:test`: pass; 24 Foundry unit/fuzz tests plus five invariants (128 runs,
   8,192 calls).
-- `bun run verify:scaffold`: pass; 4/4 tests with positive P5 assertions and P6 guard intact.
+- `bun run verify:scaffold`: the structural guard passed and the equivalent Bun invocation passed
+  4/4 assertions; the prescribed Node test-runner subprocess was blocked by host `spawn EPERM`.
 - `bun audit`: pass after top-level compatible `uuid` `11.1.1` and `ws` `8.21.0` overrides; 212
   packages checked, no known vulnerabilities.
 - `git diff --check`: pass.
-- `bun run verify`: pass after the last implementation and evidence corrections.
+- `bun run verify`: latest run passed lint, typecheck, and all package tests, then stopped at the
+  Next build's host `spawn EPERM`; no verification gate was weakened to bypass that environment
+  limit.
 
 The read-only live Sepolia P5 client confirmed chain, registry code, and exact-reader behavior at
 block `11645707`; a deliberately unregistered local fixture returned `exists=false` and
@@ -158,15 +274,15 @@ CRE local secrets remain ignored.
 
 ## Scope and unresolved risk
 
-No P6 robot activation, digital twin, autonomous execution, Key Ring, new contract, automatic
-CRE-to-EVM delivery, or private-key custody was added. The `/p5-ledger` page is only an explicit
-WebHID/Speculos evidence harness.
+No P7 robot activation, autonomous release execution, Key Ring, new contract, automatic CRE-to-EVM
+delivery, or private-key custody was added. P6's digital twin is explanatory only. The P5.2 agent
+can inspect and prepare only. The `/p5-ledger` page remains an explicit WebHID/Speculos evidence
+harness.
 
-P5 cannot be called complete until legitimate official Tester access plus a signature-preserving
+P5 physical partner evidence cannot be called complete until legitimate official Tester access plus a signature-preserving
 origin/accepted-descriptor path permit Speculos A/B/E/F, and the separate device prerequisites
-permit physical A–F. The intended
-autonomous-agent story also needs truthful execution evidence; P5
-currently provides the proposal API but no agent runtime. Even after hardware closure, SQLite
+permit physical A–F. P5.2 closes the software agent/product-fit gap, but an external provider run
+still needs an approved key/model and is not fabricated here. Even after hardware closure, SQLite
 protects one coordinated API database only. Database loss/split replicas, Sepolia reorgs, and
 clearance revocation after authorization but before a future P6 action require operational/finality
 policy. P5 does not prove physical robot safety, trace provenance, registrar honesty, or live CRE

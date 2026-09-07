@@ -6,7 +6,7 @@ import {
   SCENARIO_SUITE_VERSION,
   type ScenarioGenerationConfig,
   type ScenarioSuite,
-} from "./model.js";
+} from "./model";
 
 /**
  * xorshift32 v1: x ^= x << 13; x ^= x >>> 17; x ^= x << 5; output x >>> 0.

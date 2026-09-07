@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "bun --watch src/index.ts",
     "build": "tsc -p tsconfig.build.json",
+    "evidence:p52-agent": "bun scripts/p52-agent-evidence.ts",
+    "evidence:p52-agent:live-read": "bun run --env-file ../../.env scripts/p52-agent-live-read-evidence.ts",
     "evidence:p5-presign": "bun run --env-file ../../.env scripts/p5-presign-evidence.ts",
     "typecheck": "tsc --noEmit -p tsconfig.test.json",
     "test": "bun test"
@@ -13,6 +15,7 @@
   "dependencies": {
     "@preflight/chain-client": "workspace:*",
     "@preflight/domain": "workspace:*",
+    "@preflight/simulation-core": "workspace:*",
     "fastify": "5.12.1",
     "viem": "2.56.3"
   },

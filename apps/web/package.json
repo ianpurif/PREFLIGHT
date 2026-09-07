@@ -11,6 +11,7 @@
   "dependencies": {
     "@preflight/domain": "workspace:*",
     "@preflight/ledger-gate": "workspace:*",
+    "@preflight/simulation-core": "workspace:*",
     "@react-three/fiber": "9.7.0",
     "next": "16.3.4",
     "react": "19.2.8",

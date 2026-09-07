@@ -1,5 +1,6 @@
 import { ReleaseGateError } from "@preflight/chain-client";
 import Fastify, { type FastifyReply } from "fastify";
+import { type DeploymentAgent, DeploymentAgentError } from "./agent/index.js";
 import type { ReleaseService } from "./release/index.js";
 
 function rejectMalformed(reply: FastifyReply) {
@@ -15,13 +16,16 @@ function expectBody(input: unknown, keys: readonly string[]): Record<string, unk
   return record;
 }
 
-export function buildServer(options: { releaseService?: ReleaseService } = {}) {
+export function buildServer(
+  options: { releaseService?: ReleaseService; deploymentAgent?: DeploymentAgent } = {},
+) {
   const app = Fastify({
     logger: {
       redact: ["req.headers.authorization", "req.headers.cookie"],
     },
   });
   const releaseService = options.releaseService;
+  const deploymentAgent = options.deploymentAgent;
   app.addHook("onSend", async (request, reply, payload) => {
     const origin = request.headers.origin;
     if (origin === "http://localhost:3000") {
@@ -50,13 +54,40 @@ export function buildServer(options: { releaseService?: ReleaseService } = {}) {
               : 403;
       return reply.code(status).send({ error: error.code, message: error.message });
     }
+    if (error instanceof DeploymentAgentError) {
+      const status = error.code === "PROVIDER_UNAVAILABLE" ? 503 : 400;
+      return reply.code(status).send({ error: error.code, message: error.message });
+    }
     return reply.code(400).send({ error: "MALFORMED_REQUEST", message: "Request failed closed" });
   });
   app.get("/health", async () => ({
     status: "ok",
-    phase: "p5-ledger-release-gate",
+    phase: "p5.2-ai-deployment-agent",
     releaseGateConfigured: releaseService !== undefined,
+    deploymentAgentConfigured: deploymentAgent !== undefined,
   }));
+  app.post("/agent/deployment/prepare", async (request, reply) => {
+    if (deploymentAgent === undefined) {
+      throw new DeploymentAgentError("PROVIDER_UNAVAILABLE", "Deployment agent is not configured");
+    }
+    const body = expectBody(request.body, ["request", "signerAddress"]);
+    if (
+      body === null ||
+      typeof body.request !== "string" ||
+      typeof body.signerAddress !== "string"
+    ) {
+      return rejectMalformed(reply);
+    }
+    return deploymentAgent.run({ request: body.request, signerAddress: body.signerAddress });
+  });
+  app.post("/agent/deployment/status", async (request, reply) => {
+    if (deploymentAgent === undefined) {
+      throw new DeploymentAgentError("PROVIDER_UNAVAILABLE", "Deployment agent is not configured");
+    }
+    const body = expectBody(request.body, ["attemptId"]);
+    if (body === null || typeof body.attemptId !== "string") return rejectMalformed(reply);
+    return deploymentAgent.getAuthorizationStatus(body.attemptId);
+  });
   app.post("/release/prepare", async (request, reply) => {
     if (releaseService === undefined) {
       throw new ReleaseGateError("PERSISTENCE_UNAVAILABLE", "Release gate is not configured");

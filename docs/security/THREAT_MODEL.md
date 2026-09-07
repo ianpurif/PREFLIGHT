@@ -17,6 +17,9 @@
 - evaluator/version mismatch
 - compromised UI presenting one intent while signing another
 - nondeterministic simulator creating irreproducible outcomes
+- prompt/tool injection attempting to gain signing or registry-write capability
+- model output fabricating readiness or authorization
+- ambiguous or substituted deployment target resolution
 
 ## Test families
 - mismatch/replay/expiry/revocation tests
@@ -26,9 +29,10 @@
 - contract fuzz/invariant tests
 - frontend intent-display vs signed-payload consistency
 
-P1–P5 software now covers canonical vectors, evaluator properties, contract invariants, exact
+P1–P5.2 software now covers canonical vectors, evaluator properties, contract invariants, exact
 EIP-712/domain mutations, registry mismatch/expiry/revocation, durable/concurrent nonce replay,
-TOCTOU, build mutation, device refusal/errors, and legacy fallback cancellation. Physical Ledger
+TOCTOU, build mutation, device refusal/errors, legacy fallback cancellation, model/tool injection,
+strict capability order, and fabricated-agent authorization. Physical Ledger
 display/approval/refusal remains an evidence requirement, not a mocked-test claim.
 
 ## P1 controls established
@@ -107,9 +111,43 @@ precision clock. No live CRE-to-contract provenance is claimed.
 - no release decision based on agent/LLM output or a UI approval boolean
 
 Residual risks: physical device/app behavior and Clear Signing display are not yet evidenced; the
-origin token is unavailable and the ERC-7730 file is not confirmed accepted. The proposal API is
-agent-facing, but no autonomous/LLM agent runtime or agent-execution evidence exists in P5. SQLite
+origin token is unavailable and the ERC-7730 file is not confirmed accepted. SQLite
 protects one coordinated API store only; loss or split replicas can undermine replay state. A
 Sepolia reorg or revocation after the postcheck but before a future P6 action needs an execution-time
 policy. P5 does not prove physical robot safety, authenticated trace origin, registrar honesty, or
 automatic CRE delivery.
+
+## P5.2 controls established
+
+- exact six-tool allowlist with one host-selected next tool per provider turn and no parallel calls
+- a finite catalog-generated public grammar resolves site/robot/build locally before any provider
+  call; raw submitted text is discarded and only a host-generated canonical public request is sent
+  with `store: false`
+- only human-reference extraction accepts model arguments, and its aliases must match the already
+  locked site, robot, build ID/digest, and candidate public clearance
+- later calls accept no chain, registry, signer, nonce, signature, arbitrary payload, or approval data
+- no generic network, shell, filesystem, registry mutation, Ledger signing, or release-consumption tool
+- public evaluation/clearance reads are informational; only the existing `ReleaseService.prepare()`
+  can issue an intent, preserving live P4, signer, binding, expiry, and nonce enforcement
+- host-derived final state and deterministic explanations; model prose/tool text cannot authorize
+- exact attempt-to-prepared-request correlation; `AUTHORIZED` requires a validated authorization
+  read from P5's atomically consumed nonce state
+- provider request/response bounds, strict schemas, `store: false`, stable redacted failures, and no
+  credentialless mock fallback
+- public audit allowlist excludes raw submitted text/model output, signature material, credentials,
+  private envelope/blind data, CRE payloads, and detailed evaluator findings
+- adversarial coverage for skip/reorder/repeat, unknown tools, alternate build/chain/registry,
+  old-signature injection, prompt/tool injection, Unicode-confusable references, fake approval,
+  provider failure, and wording-independent security results
+
+Residual risks: the public catalog is operationally curated and can become stale, though live P4
+policy remains authoritative. The deliberately narrow input grammar rejects free-form conversation,
+which protects confidentiality but limits usability until an independently reviewed public-request
+parser is introduced. Attempt/audit state is process-local, so restart loses agent history but not
+the durable P5 nonce. No actual external model execution was captured because no provider
+credential/model was configured. The live Sepolia agent evidence is a read-only blocked fixture;
+positive Build B evidence uses a labeled deterministic reader because no live positive clearance is
+currently documented. Before a network-exposed production deployment, the API owner must add
+operator authentication, rate/cost controls, catalog update governance, and durable audit retention;
+CORS is not authorization. P5.2 adds no activation authority and does not reduce the existing
+physical Ledger/Clear Signing evidence blockers.

@@ -75,6 +75,105 @@ export interface ConsumeReleaseRequest {
   readonly signature: unknown;
 }
 
+export type ReleaseAuthorizationStatus =
+  | Readonly<{
+      status: "AWAITING_LEDGER";
+      protocolIntentDigest: string;
+      typedDataDigest: Hex;
+    }>
+  | Readonly<{
+      status: "AUTHORIZED";
+      protocolIntentDigest: string;
+      typedDataDigest: Hex;
+      authorization: ReleaseAuthorization;
+    }>;
+
+const RELEASE_AUTHORIZATION_KEYS = Object.freeze([
+  "schemaVersion",
+  "intent",
+  "protocolIntentDigest",
+  "typedDataDigest",
+  "action",
+  "chainId",
+  "registry",
+  "recoveredSigner",
+  "signatureHash",
+  "authorizedAt",
+  "expiresAt",
+  "precheckBlockNumber",
+  "precheckBlockHash",
+  "postcheckBlockNumber",
+  "postcheckBlockHash",
+] as const);
+const SORTED_RELEASE_AUTHORIZATION_KEYS = Object.freeze([...RELEASE_AUTHORIZATION_KEYS].sort());
+
+function parseStoredAuthorization(
+  input: string,
+  prepared: PreparedReleaseRequest,
+  authorizedSigner: string,
+): ReleaseAuthorization {
+  try {
+    const value: unknown = JSON.parse(input);
+    if (value === null || typeof value !== "object" || Array.isArray(value)) throw new Error();
+    const record = value as Record<string, unknown>;
+    const keys = Object.keys(record).sort();
+    if (
+      keys.length !== RELEASE_AUTHORIZATION_KEYS.length ||
+      keys.some((key, index) => key !== SORTED_RELEASE_AUTHORIZATION_KEYS[index])
+    ) {
+      throw new Error();
+    }
+    const intent = parseDeploymentIntent(record.intent);
+    const authorizedAt = parseUnixTimestamp(record.authorizedAt, "authorizedAt");
+    const expiresAt = parseUnixTimestamp(record.expiresAt, "expiresAt");
+    if (
+      record.schemaVersion !== RELEASE_AUTHORIZATION_SCHEMA_VERSION ||
+      canonicalSerialize(intent) !== canonicalSerialize(prepared.intent) ||
+      record.protocolIntentDigest !== prepared.protocolIntentDigest ||
+      record.typedDataDigest !== prepared.typedDataDigest ||
+      record.action !== "ACTIVATE_DEPLOYMENT" ||
+      record.chainId !== PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId ||
+      record.registry !== PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract ||
+      typeof record.recoveredSigner !== "string" ||
+      record.recoveredSigner.toLowerCase() !== authorizedSigner.toLowerCase() ||
+      typeof record.signatureHash !== "string" ||
+      !/^0x[0-9a-f]{64}$/i.test(record.signatureHash) ||
+      expiresAt !== intent.expiresAt ||
+      typeof record.precheckBlockNumber !== "string" ||
+      !/^[0-9]+$/.test(record.precheckBlockNumber) ||
+      record.precheckBlockNumber !== prepared.precheck.blockNumber ||
+      typeof record.precheckBlockHash !== "string" ||
+      record.precheckBlockHash !== prepared.precheck.blockHash ||
+      typeof record.postcheckBlockNumber !== "string" ||
+      !/^[0-9]+$/.test(record.postcheckBlockNumber) ||
+      BigInt(record.postcheckBlockNumber) < BigInt(record.precheckBlockNumber) ||
+      typeof record.postcheckBlockHash !== "string" ||
+      !/^0x[0-9a-f]{64}$/i.test(record.postcheckBlockHash)
+    ) {
+      throw new Error();
+    }
+    return Object.freeze({
+      schemaVersion: RELEASE_AUTHORIZATION_SCHEMA_VERSION,
+      intent,
+      protocolIntentDigest: prepared.protocolIntentDigest,
+      typedDataDigest: prepared.typedDataDigest,
+      action: "ACTIVATE_DEPLOYMENT",
+      chainId: PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId,
+      registry: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
+      recoveredSigner: record.recoveredSigner,
+      signatureHash: record.signatureHash,
+      authorizedAt,
+      expiresAt,
+      precheckBlockNumber: record.precheckBlockNumber,
+      precheckBlockHash: record.precheckBlockHash,
+      postcheckBlockNumber: record.postcheckBlockNumber,
+      postcheckBlockHash: record.postcheckBlockHash,
+    }) as ReleaseAuthorization;
+  } catch {
+    return failRelease("PERSISTENCE_UNAVAILABLE", "Stored authorization failed validation");
+  }
+}
+
 function assertProposalBindings(proposal: DeploymentProposal, clearance: ClearanceRecord): void {
   if (
     parseSiteId(proposal.siteId) !== clearance.inputs.siteId ||
@@ -111,12 +210,18 @@ export class ReleaseService {
   readonly #store: SqliteReleaseStore;
   readonly #signers: AuthorizedSignerPolicy;
   readonly #intentTtlSeconds: number;
+  readonly #nonceFactory: () => ReturnType<typeof parseDeploymentNonce>;
 
   constructor(options: {
     reader: ClearanceRegistryReader;
     store: SqliteReleaseStore;
     signers: AuthorizedSignerPolicy;
     intentTtlSeconds?: number;
+    /**
+     * Test/demo-only determinism seam. Production callers omit this and retain the
+     * cryptographically random nonce required by the release protocol.
+     */
+    nonceFactory?: () => ReturnType<typeof parseDeploymentNonce>;
   }) {
     const ttl = options.intentTtlSeconds ?? DEFAULT_INTENT_TTL_SECONDS;
     if (!Number.isSafeInteger(ttl) || ttl < 1 || ttl > 900) {
@@ -126,6 +231,7 @@ export class ReleaseService {
     this.#store = options.store;
     this.#signers = options.signers;
     this.#intentTtlSeconds = ttl;
+    this.#nonceFactory = options.nonceFactory ?? newNonce;
   }
 
   async prepare(proposal: DeploymentProposal): Promise<PreparedReleaseRequest> {
@@ -137,7 +243,7 @@ export class ReleaseService {
     );
     const intent = createDeploymentIntent(clearance, {
       targetEnvironment: "sepolia",
-      nonce: newNonce(),
+      nonce: this.#nonceFactory(),
       issuedAt: snapshot.blockTimestamp,
       expiresAt: computeExpiry(snapshot, clearance, this.#intentTtlSeconds),
     });
@@ -222,6 +328,48 @@ export class ReleaseService {
     });
     this.#store.consume(intent.nonce, canonicalSerialize(authorization));
     return authorization;
+  }
+
+  getAuthorizationStatus(prepared: PreparedReleaseRequest): ReleaseAuthorizationStatus {
+    const intent = parseDeploymentIntent(prepared.intent);
+    const stored = this.#store.load(intent.nonce);
+    if (
+      stored.intentJson !== canonicalSerialize(intent) ||
+      stored.protocolIntentDigest !== prepared.protocolIntentDigest ||
+      stored.typedDataDigest !== prepared.typedDataDigest ||
+      stored.authorizedSigner.toLowerCase() !== prepared.authorizedSigner.toLowerCase()
+    ) {
+      return failRelease("SIGNATURE_MISMATCH", "Prepared request does not match issued state");
+    }
+    if (stored.state === "ISSUED") {
+      if (stored.authorizationJson !== null) {
+        return failRelease(
+          "PERSISTENCE_UNAVAILABLE",
+          "Issued request contains authorization state",
+        );
+      }
+      return Object.freeze({
+        status: "AWAITING_LEDGER",
+        protocolIntentDigest: prepared.protocolIntentDigest,
+        typedDataDigest: prepared.typedDataDigest,
+      });
+    }
+    if (stored.authorizationJson === null) {
+      return failRelease(
+        "PERSISTENCE_UNAVAILABLE",
+        "Consumed request is missing authorization state",
+      );
+    }
+    return Object.freeze({
+      status: "AUTHORIZED",
+      protocolIntentDigest: prepared.protocolIntentDigest,
+      typedDataDigest: prepared.typedDataDigest,
+      authorization: parseStoredAuthorization(
+        stored.authorizationJson,
+        prepared,
+        stored.authorizedSigner,
+      ),
+    });
   }
 
   close(): void {

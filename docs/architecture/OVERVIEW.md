@@ -2,6 +2,8 @@
 
 ```mermaid
 flowchart LR
+  HUMAN[Operator deployment request]
+  AGENT[P5.2 AI Deployment Agent]
   UI[Next.js Demo UI / R3F Digital Twin]
   API[Fastify Orchestrator]
   SIM[Deterministic Simulation Core]
@@ -11,11 +13,14 @@ flowchart LR
   LEDGER[Ledger DMK + Ethereum Signer]
   RELEASE[Deployment Release Gate]
 
+  HUMAN --> AGENT
+  AGENT --> API
   UI --> API
   API --> CRE
   CRE --> SIM
   CRE -. inspected simulation evidence .-> REGISTRAR
   REGISTRAR --> REG
+  HUMAN --> UI
   UI --> LEDGER
   LEDGER --> RELEASE
   REG --> RELEASE
@@ -60,18 +65,31 @@ artifact, maps exact P1 bindings to the deployed ABI, reads one consistent block
 fixed EIP-712 domain/message, and verifies recovered signatures.
 
 ### `apps/api`
-P5 deterministic prepare/consume authority. It enforces the signer allowlist, checks exact live P4
+P5 deterministic prepare/consume authority plus the P5.2 narrow tool-calling deployment agent. The
+agent accepts only a finite catalog-generated public request grammar, discards raw input locally,
+and sends a host-generated canonical public request to its strict provider abstraction. The
+host-owned state machine locks canonical identifiers, inspects public evaluation/live registry
+state, and invokes only the existing preparation authority. The model has no signing, consumption,
+registry-write, arbitrary network, chain, signer, nonce, or payload capability. Model prose never
+controls status; see ADR-0008.
+
+The release service enforces the signer allowlist, checks exact live P4
 state before and after signing, persists public request data and atomic one-time nonces in SQLite,
 and emits a `ReleaseAuthorization` only after verification. This is an offchain single-node replay
-boundary, not an onchain authorization claim. It is the minimal agent-facing proposal API, but P5
-does not implement or demonstrate an autonomous/LLM agent runtime. It never signs or receives
-private keys.
+boundary, not an onchain authorization claim. The API and agent never sign or receive private keys.
 
 ### `apps/web`
-The `/p5-ledger` route is a minimal operator/evidence harness. It defaults to WebHID and can select
-the loopback Ledger Speculos official device simulator only in development/test without changing authorization semantics. It
-is manual, not an autonomous-agent demo, and does not activate a robot or implement the P6 digital
-twin.
+The root route is the P6 judge-facing dashboard: it renders a deterministic warehouse digital twin,
+public P2/P3 evaluation projection, public Sepolia registry identity, P5.2 activity boundary, and
+Ledger human-approval state. The server computes the existing fixture projection; the browser never
+receives the confidential envelope, blind, private rule data, or internal report. The digital twin
+is explanatory and cannot decide clearance or authorization. A real prepared response from the
+existing P5.2 API is required before the dashboard hands the exact request to `/p5-ledger`.
+
+The `/p5-ledger` route remains the separate minimal operator/evidence harness. It defaults to WebHID
+and can select the loopback Ledger Speculos official device simulator only in development/test
+without changing authorization semantics. It does not activate a robot. An explicit browser/user
+action remains necessary, and physical Ledger evidence remains distinct from Speculos evidence.
 
 ## Intended release check
 A release must eventually prove all of:
@@ -88,4 +106,8 @@ robot trace origin nor writes onchain. P4 records an authorized registrar's immu
 clearance attestation and enforces exact binding, expiry, and revocation. P5 software adds an exact
 full EIP-712 request, Ledger-only signing adapter, deterministic pre/post policy, signature recovery,
 and durable one-time authorization. P5 remains open until physical Clear Signing cases A–F are
-evidenced. No P6 activation or digital twin exists.
+evidenced. P5.2 adds model-driven public orchestration but preserves those authorities: a valid
+local deterministic fixture reaches the Ledger-required boundary in recorded evidence, a mutated
+build loses to `CLEARANCE_BINDING_MISMATCH`, and only an already-consumed P5 nonce can be reported
+as `AUTHORIZED`. P6 renders this evidence and the exact-build mutation story; it does not activate
+a robot or create an onchain clearance.

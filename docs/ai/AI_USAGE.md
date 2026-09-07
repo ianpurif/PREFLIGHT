@@ -147,3 +147,79 @@ Case C and invalid/unregistered D passed before signer invocation; revoked/expir
 test-only. No deployment-intent signature, `ReleaseAuthorization`,
 Speculos A/B/E/F result, physical Ledger/Secure Element claim, live contract write, autonomous
 agent, or P6 behavior is claimed.
+
+## 2026-09-07 — P5.2 AI deployment-agent closure
+
+**Tool:** OpenAI Codex using the project execution-plan, vertical-slice, Ledger
+partner-compliance, verification-loop, and handoff skills; the official OpenAI function-calling
+guide; and read-only architecture, seam, partner, and adversarial-test specialists.
+
+**Human direction:** Implement only P5.2: a narrow real tool-calling deployment agent that resolves
+an exact public target, inspects evaluation/live Sepolia clearance state, reuses the existing P5
+preparation authority, stops at Ledger, records a public audit, resists model/tool injection, and
+does not begin P6 or redesign P1–P5.1.
+
+**AI-assisted output:** Host-owned six-tool state machine; strict public deployment catalog; real
+OpenAI Responses function-calling adapter over `fetch`; exact P5 authorization-status correlation;
+agent prepare/status API routes; local deterministic and live read-only Sepolia evidence runners;
+provider/orchestration/adversarial/leakage tests; scaffold transition; ADR-0008; and planning,
+architecture, security, Ledger, compliance, verification, and handoff documentation.
+
+The final adversarial review found that broad request text could become provider/audit input and that
+alias containment could accept a negated second target. Those findings were fixed by restricting
+requests to whole catalog-generated public forms, discarding raw submitted text, sending only the
+canonical public projection with Responses `store: false`, and requiring the first model tool call
+to resolve to the host-selected catalog entry. Negative tests cover both cases.
+
+**Authority boundary:** Model output is never a safety, eligibility, signing, or authorization
+decision. The model has no registry-write, Ledger-signing, signature, consumption, arbitrary-chain,
+network, shell, or filesystem tool. Existing P2/Chainlink results inform public status,
+`ReleaseService.prepare()` decides eligibility, the browser Ledger path remains the human gate, and
+only the existing cryptographic P5 consume result can produce `AUTHORIZED`.
+
+**Evidence boundary:** Positive Build B evidence uses a clearly labeled deterministic registry
+fixture; the live Sepolia agent trace is read-only and blocks the existing unregistered fixture.
+No external model execution was captured because `OPENAI_API_KEY` and
+`PREFLIGHT_AGENT_MODEL` were unavailable. No Speculos signature, physical Ledger/Secure Element,
+accepted Clear Signing descriptor, robot activation, confidential value, credential, or P6 behavior
+is claimed.
+
+## 2026-09-07 — P6 judge-facing digital twin
+
+**Tool:** OpenAI Codex using the project execution-plan, vertical-slice, verification-loop, and
+partner-compliance skills plus read-only simulation, web-test, and architecture reviewers.
+
+**Human direction:** Implement only P6: one polished deterministic dashboard for the existing P2/P3
+fixture and P5.2 public boundary, with unsafe/corrected/mutated states, an explanatory warehouse
+twin, honest CRE/Sepolia/Ledger evidence, and no P7/P8 work.
+
+**AI-assisted output:** Server-side public fixture projection, Next.js/React/R3F judge dashboard,
+deterministic build-digest mutation, exact-build blocked state, public agent/CRE/attestation/Ledger
+panels, prepared-request handoff support in the existing `/p5-ledger` route, Playwright judge-path
+coverage, and P6 planning/architecture/compliance/README updates.
+
+**Boundary:** The browser receives no confidential envelope, blind, private rule/threshold data,
+internal report, credentials, signature, or fabricated transaction. A real existing agent API
+response is required before an exact prepared P5 request is handed off; missing provider/signer
+configuration remains visible as an external limitation. The public `487 scenarios` headline is
+explicitly distinguished from the authoritative bounded three-template P2 fixture and does not
+alter evaluator semantics.
+
+## 2026-09-07 — P7 deterministic demo reliability
+
+**Tool:** OpenAI Codex using the Preflight execution-plan and verification-loop skills plus
+read-only architecture and test-gap reviewers.
+
+**Human direction:** Make the existing P6 judge path reproducible and resettable without starting
+P8, adding product/robot execution, or changing P1–P6 authority semantics.
+
+**AI-assisted output:** A fixed-clock offline P2/P5.2 rehearsal fixture, demo-owned setup/reset/run
+commands, an optional test/demo nonce seam with the production random default unchanged, API
+development startup that remains explicitly unavailable without live RPC, dashboard reset/stale
+response guards, deterministic Playwright sequence coverage, and synchronized P7 planning/evidence
+documentation.
+
+**Boundary:** The rehearsal uses a scripted model and deterministic local registry reader. It is
+not live OpenAI, Sepolia, Chainlink CRE, Ledger, or Speculos execution. B stops at
+`LEDGER_APPROVAL_REQUIRED` and C stops at `CLEARANCE_BINDING_MISMATCH`; no signature, nonce
+consumption, registry write, authorization, confidential envelope, or robot activation is produced.

@@ -23,8 +23,8 @@ import {
   SCENARIO_GENERATOR_VERSION,
   type ScenarioSuite,
   WAREHOUSE_EVALUATOR_VERSION,
-} from "./model.js";
-import { generateScenarioSuite } from "./scenarios.js";
+} from "./model";
+import { generateScenarioSuite } from "./scenarios";
 
 export interface DemoEvaluationCase {
   readonly robotBuild: RobotBuildDescriptor;

@@ -2,7 +2,81 @@
 
 ## Phase
 
-**P1–P4.1 are complete. P5 software is implemented and locally verified. P5.1 now has the official Speculos transport, actual Ethereum app/address UI smoke evidence, a clean ERC-7730 v2 validator result, real pre-sign C, and invalid/unregistered D. Authenticated Clear Signing cases A/B/E/F remain externally blocked. Physical Ledger evidence is also still open. P6–P8 are intentionally not started.**
+**P1–P7 software is implemented. P5.2 adds the narrow AI deployment-agent workflow, deterministic tool/capability boundary, public audit projection, local positive/adversarial evidence, and a live read-only Sepolia blocked-state trace. P6 adds the judge-facing dashboard and deterministic digital twin over a server-side public projection of the existing P2/P3 fixture. P7 adds an offline fixed-clock A/B/C rehearsal, demo-owned idempotent reset, stale-browser protection, and reliable Playwright flow coverage. The real provider adapter is implemented but no external model call was captured because provider credentials/model are absent. P5.1 has official Speculos transport, actual Ethereum app/address UI smoke, ERC-7730 v2 validation, real pre-sign C, and invalid/unregistered D. Authenticated Clear Signing A/B/E/F and physical Ledger evidence remain externally blocked. P8 is intentionally not started.**
+
+## P6 implementation now present
+
+- The root route is a single judge-facing dashboard: deployment target, deterministic warehouse
+  digital twin, public evaluation, Chainlink boundary, deployment-agent activity, Sepolia registry,
+  Ledger boundary, and expandable verification trail.
+- The server evaluates the existing `@preflight/simulation-core` fixture and passes only a public
+  projection to the browser. The confidential envelope, blind, rules, thresholds, geometry, and
+  internal report never enter the client bundle or rendered output.
+- Build A is the default `HOLD` state with the existing three deterministic violation families.
+  Build B is the same-envelope `CLEAR` state. The public judge headline displays `487 scenarios`
+  while the authoritative checked-in P2 fixture remains bounded to three committed templates;
+  the distinction is visible in the UI and does not alter evaluator semantics.
+- Mutating Build B changes the build ID and canonical digest and produces `BLOCKED` with
+  `CLEARANCE_BINDING_MISMATCH`. It clears any prepared state and cannot expose a Ledger request.
+- The agent panel is a public/fixture-backed projection until the existing API is configured. A
+  live `/agent/deployment/prepare` response is required before the page stores an exact prepared
+  P5 request and opens `/p5-ledger`; no frontend state can report `AUTHORIZED`.
+- Chainlink is labeled `CRE authenticated simulation evidence` and sourced as a recorded P3 public
+  outcome; a mutated build explicitly says confidential evaluation was not run. The real Sepolia
+  registry identity is linked, Speculos is labeled as a development/test simulator, and physical
+  Ledger approval is explicitly not demonstrated. No clearance transaction or robot activation is
+  fabricated.
+
+## P5.2 implementation now present
+
+- A narrow OpenAI Responses function-calling adapter supports one strict tool per turn, sends only
+  a host-generated public request with `store: false`, and fails without a deterministic/mock
+  production fallback when configuration is missing.
+- A host-owned state machine enforces
+  `resolve target → context → evaluation → clearance → release prepare → Ledger status`.
+  Unknown, malformed, skipped, repeated, reordered, or authority-bearing calls fail closed.
+- A strict public catalog accepts only its finite public request forms, resolves the exact target
+  locally, discards raw input, and gives the model only a generated canonical public request. The
+  model's first aliases must match that same entry; it cannot construct clearance, signer, chain,
+  registry, nonce, signature, typed data, or authorization.
+- Public evaluation and clearance reads are informational. Only the existing
+  `ReleaseService.prepare()` can issue a request, preserving live P4 checks, exact bindings, signer
+  allowlist, expiry, and server nonce semantics.
+- The agent has no signing, release-consumption, registry-write, arbitrary network, shell, or
+  filesystem tool. Eligible execution ends at `LEDGER_APPROVAL_REQUIRED`; the browser/user Ledger
+  action remains separate.
+- `AUTHORIZED` is available only from a read of the exact prepared nonce after the existing P5 flow
+  stored a validated `ReleaseAuthorization`. Tests prove this with actual EIP-712 signing,
+  signature recovery, postcheck, and atomic nonce consumption using a test-only key.
+- The public audit records only a host-generated canonical request/target, ordered tools, public
+  clearance/block result, policy result, intent digests, Ledger status, and final status. It excludes
+  raw submitted text/model output, signatures, credentials, private envelopes/blinds, CRE payloads,
+  and private evaluation detail.
+- Local evidence shows unsafe A blocked, corrected B reaching Ledger-required, and mutated C losing
+  to `CLEARANCE_BINDING_MISMATCH`. A live read-only agent trace queried Sepolia at block `11653234`
+  and blocked the deliberately unregistered fixture with `CLEARANCE_NOT_FOUND`.
+- Production WebHID remains unchanged/default; Speculos remains development/test-only. P6 adds
+  only the judge dashboard/public projection and exact prepared-request handoff; no activation,
+  Key Ring, contract mutation, or P1–P5.1 redesign was added. See ADR-0008 and the P6 execution
+  plan.
+
+## P7 deterministic demo reliability now present
+
+- `bun run demo:setup` resets only `.data/preflight-demo`, materializes a public manifest, and
+  runs the deterministic A/B/C rehearsal. `bun run demo:reset` is idempotent and never removes
+  source fixtures, deployment metadata, evidence, `.env`, or the normal release database.
+- The rehearsal reuses the P2 evaluator and existing P5.2 DeploymentAgent/ReleaseService with a
+  fixed clock, block snapshot, attempt IDs, and demo-only nonce factory. Production defaults remain
+  live RPC/provider-backed and cryptographically random.
+- Scenario A is `HOLD`/`NOT_REQUESTED`; B is `CLEAR` with a local deterministic clearance,
+  `LEDGER_APPROVAL_REQUIRED`, exact intent binding, and `AWAITING_HUMAN`; C mutates Build B,
+  recomputes its digest, and returns `BLOCKED / CLEARANCE_BINDING_MISMATCH` without Ledger handoff.
+- The dashboard exposes `Reset demo`, clears stale handoff storage on scenario changes/mount, and
+  ignores late agent responses after a reset or mutation. The Playwright P7 flow covers clean
+  startup, reset, A/B/C transitions, exact handoff fields, repeated C output, and race cleanup.
+- This is offline rehearsal evidence only. The recorded P3 authenticated CRE simulation, live
+  Sepolia read-only identity, Speculos development path, and physical Ledger limitations retain
+  their existing labels and boundaries.
 
 ## P5 implementation now present
 
@@ -18,7 +92,8 @@
 - A minimal `/p5-ledger` operator harness defaults to production WebHID and can opt into a loopback Ledger Speculos official device simulator only in development/test. It does not activate a robot or implement the P6 digital twin.
 - Speculos `0.27.0` executed the official Ethereum `1.22.3` Nano S Plus ELF. DMK discovery, actual emulator address review/confirmation, and public session identity were captured without a seed or secret.
 - The candidate descriptor now uses active ERC-7730 v2 and passes official `erc7730 1.0.7` lint with no issues. This is validation, not Ledger registry acceptance or display evidence.
-- `/release/prepare` is the smallest agent-facing proposal interface, but no autonomous/LLM agent runtime or agent execution evidence is implemented in P5. The current browser flow is manual and must not be presented otherwise.
+- `/release/prepare` remains the deterministic proposal authority. P5.2 now calls it through the
+  narrow agent controller; the Ledger browser flow remains manual and explicitly human-controlled.
 - Mock tests cover deterministic EIP-712 mutation, the positive exact registry-reader path, API request/error boundaries, authorized signatures, durable/concurrent replay rejection, TOCTOU, build mutation, device lifecycle, refusal, exact/partial descriptor resolution, malformed output, and legacy-fallback cancellation.
 
 ## Current blocker
@@ -33,16 +108,15 @@ P5 therefore does not yet prove either a complete official Speculos Clear Signin
 
 ## Next exact task
 
-Close the remaining P5 evidence only:
+P8 may address submission evidence only. Do not add robot activation, make UI state authoritative,
+or turn the offline rehearsal into a live-partner claim. Persisting agent audit history may be
+considered later without changing P5 nonce authority.
 
-1. obtain a legitimate official Clear Signing Tester `GATING_TOKEN` and run the committed explicit-display fixture through the official tester;
-2. separately obtain a Ledger-issued application origin token plus an accepted/served descriptor, or an officially documented Speculos descriptor-resolution path that returns the real signature without weakening the guard;
-3. register an honestly labeled, unexpired Sepolia demo/test P4 `CLEAR` record for the deterministic Speculos test signer in test-only state;
-4. run the remaining Speculos A/B/E/F cases through the shared authorization semantics;
-5. capture physical A–F when hardware is available;
-6. rerun the full verification loop and independent review.
-
-Do not begin P6 until that evidence closes P5.
+External evidence remains separately open: run the real provider adapter when an approved
+`OPENAI_API_KEY` and explicit `PREFLIGHT_AGENT_MODEL` are available; obtain legitimate Ledger
+Tester/application-origin/accepted-descriptor access for Speculos A/B/E/F; and capture physical
+Ledger cases when hardware is available. Do not fabricate these results or block deterministic P6
+UI work on claims that have already been explicitly scoped as external limitations.
 
 ## Environment status
 

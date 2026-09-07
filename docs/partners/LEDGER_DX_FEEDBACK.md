@@ -78,3 +78,13 @@ separately lacks an application origin token plus accepted/served descriptor pat
 signature. Real pre-sign C and invalid/unregistered D denials passed; revoked/expired D remain
 test-only. Preflight did not use the implicit test token or permit blind signing. Physical Ledger
 execution remains unperformed.
+
+## P5.2 agent-boundary observation
+
+The human-in-the-loop agent direction was implementable without giving the model a Ledger SDK
+capability: the agent prepares through deterministic API tools, then the existing browser DMK path
+owns the explicit user gesture and signing session. This makes Ledger materially load-bearing and
+avoids backend key custody. A concise official reference architecture showing “agent proposes →
+deterministic application policy → DMK browser handoff → verified result” would help teams avoid
+exposing signing as a general model tool. Preflight did not use Key Ring and did not execute an
+official Ledger Agent Skill; those should not be implied by using DMK itself.

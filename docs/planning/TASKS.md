@@ -49,19 +49,32 @@
 - [x] deterministic pre/post clearance policy, authorized signer, durable nonce, replay/TOCTOU/mismatch tests
 - [ ] physical hardware evidence
 
+## P5.2 — AI deployment-agent closure
+- [x] narrow real provider abstraction and OpenAI Responses strict tool-calling adapter
+- [x] exact public catalog resolution and immutable site/robot/build binding
+- [x] host-owned ordered tool/capability state machine
+- [x] live public Sepolia clearance inspection and existing `/release/prepare` authority reuse
+- [x] Ledger-required handoff with no agent signing/consumption authority
+- [x] exact consumed-P5 authorization status correlation
+- [x] structured public/non-secret attempt audit
+- [x] unsafe, corrected, mutated, revoked, expired, adversarial, injection, and determinism tests
+- [x] finite public request grammar, conflicting-target rejection, raw-text non-disclosure, and provider `store: false`
+- [x] local A/B/C agent evidence and live read-only Sepolia blocked-state evidence
+- [ ] external OpenAI model execution evidence — environment lacks provider key/model
+
 ## P6 — Demo UI / digital twin
-- [ ] deterministic warehouse scene
-- [ ] denied build scenario
-- [ ] corrected build scenario
-- [ ] visible CRE/attestation state
-- [ ] Ledger approval UX
-- [ ] mutated-build blocked scene
+- [x] deterministic warehouse scene
+- [x] denied build scenario
+- [x] corrected build scenario
+- [x] visible CRE/attestation state
+- [x] Ledger approval UX
+- [x] mutated-build blocked scene
 
 ## P7 — End-to-end demo reliability
-- [ ] scripted deterministic demo fixture
-- [ ] reset/retry path
-- [ ] offline-safe visual fallback that does not fake partner execution
-- [ ] 4-minute timing rehearsal
+- [x] scripted deterministic demo fixture
+- [x] reset/retry path
+- [x] offline-safe visual fallback that does not fake partner execution
+- [x] 4-minute timing rehearsal (repeatable offline rehearsal path; no live partner execution claimed)
 
 ## P8 — Submission evidence
 - [ ] partner evidence matrix complete

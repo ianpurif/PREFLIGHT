@@ -18,6 +18,7 @@
       "dependencies": {
         "@preflight/chain-client": "workspace:*",
         "@preflight/domain": "workspace:*",
+        "@preflight/simulation-core": "workspace:*",
         "fastify": "5.12.1",
         "viem": "2.56.3",
       },
@@ -32,6 +33,7 @@
       "dependencies": {
         "@preflight/domain": "workspace:*",
         "@preflight/ledger-gate": "workspace:*",
+        "@preflight/simulation-core": "workspace:*",
         "@react-three/fiber": "9.7.0",
         "next": "16.3.4",
         "react": "19.2.8",

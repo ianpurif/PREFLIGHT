@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { ReleaseGateError } from "@preflight/chain-client";
+import type { DeploymentAgent } from "../src/agent/index.js";
 import type { ReleaseService } from "../src/release/index.js";
 import { buildServer } from "../src/server.js";
 
@@ -10,6 +11,14 @@ function fakeReleaseService(overrides: Partial<ReleaseService> = {}): ReleaseSer
     close: () => undefined,
     ...overrides,
   } as unknown as ReleaseService;
+}
+
+function fakeDeploymentAgent(overrides: Record<string, unknown> = {}): DeploymentAgent {
+  return {
+    run: async (input: unknown) => ({ status: "LEDGER_APPROVAL_REQUIRED", input }),
+    getAuthorizationStatus: (attemptId: string) => ({ status: "AUTHORIZED", attemptId }),
+    ...overrides,
+  } as unknown as DeploymentAgent;
 }
 
 const proposal = {
@@ -28,9 +37,62 @@ describe("P5 release API boundary", () => {
     expect(response.statusCode).toBe(200);
     expect(JSON.parse(response.body)).toEqual({
       status: "ok",
-      phase: "p5-ledger-release-gate",
+      phase: "p5.2-ai-deployment-agent",
       releaseGateConfigured: false,
+      deploymentAgentConfigured: false,
     });
+    await app.close();
+  });
+
+  test("exposes exact agent prepare/status requests without accepting authority fields", async () => {
+    const runs: unknown[] = [];
+    const app = buildServer({
+      deploymentAgent: fakeDeploymentAgent({
+        run: async (input: unknown) => {
+          runs.push(input);
+          return { status: "LEDGER_APPROVAL_REQUIRED" };
+        },
+      }),
+    });
+    const accepted = await app.inject({
+      method: "POST",
+      url: "/agent/deployment/prepare",
+      payload: { request: "Deploy Build B", signerAddress: proposal.signerAddress },
+    });
+    expect(accepted.statusCode).toBe(200);
+    expect(runs).toEqual([{ request: "Deploy Build B", signerAddress: proposal.signerAddress }]);
+    for (const extra of [
+      { authorized: true },
+      { chainId: 1 },
+      { registry: `0x${"11".repeat(20)}` },
+      { signature: "0xfake" },
+    ]) {
+      const rejected = await app.inject({
+        method: "POST",
+        url: "/agent/deployment/prepare",
+        payload: {
+          request: "Deploy Build B",
+          signerAddress: proposal.signerAddress,
+          ...extra,
+        },
+      });
+      expect(rejected.statusCode).toBe(400);
+    }
+    const status = await app.inject({
+      method: "POST",
+      url: "/agent/deployment/status",
+      payload: { attemptId: "attempt:known" },
+    });
+    expect(JSON.parse(status.body)).toEqual({
+      status: "AUTHORIZED",
+      attemptId: "attempt:known",
+    });
+    const replayInjection = await app.inject({
+      method: "POST",
+      url: "/agent/deployment/status",
+      payload: { attemptId: "attempt:known", signature: "0xold" },
+    });
+    expect(replayInjection.statusCode).toBe(400);
     await app.close();
   });
 

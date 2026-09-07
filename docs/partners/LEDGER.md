@@ -6,12 +6,19 @@
 
 > An orchestration client can prepare an exact robot release request, but release authorization requires a cryptographically valid, one-time Ledger-backed human approval bound to the exact cleared build and deployed Preflight registry.
 
-P5 exposes the smallest agent-facing API boundary, but the current `/p5-ledger` route is a manual operator evidence harness. No autonomous or LLM agent runtime is implemented or demonstrated in P5, so the agent half of the intended partner story remains unproven alongside the physical Ledger cases. Ledger does not evaluate safety, run Chainlink CRE, certify an industrial system, or activate a physical robot.
+P5.2 now implements the narrow autonomous deployment-agent half: a real strict tool-calling provider
+adapter plus a host-owned deterministic controller can resolve a public request, inspect evaluation
+and Sepolia clearance state, and call the existing release-preparation authority. The agent has no
+signing/consumption key or tool and eligible execution stops at `LEDGER_APPROVAL_REQUIRED`. The
+current `/p5-ledger` route remains the separate manual operator evidence harness. Ledger does not
+evaluate safety, run Chainlink CRE, certify an industrial system, or activate a physical robot.
 
 ## Load-bearing authority flow
 
 ```text
-Operator/orchestration client proposes
+Operator asks AI deployment agent
+      ↓
+Agent inspects public evaluation + Sepolia clearance
       ↓
 Preflight deterministic policy filters
       ↓
@@ -22,11 +29,24 @@ Ledger signer enforces key custody
 API verifies, rechecks clearance, consumes nonce once
 ```
 
-- The proposal API accepts exact public fields and returns deterministic denials. A future agent may call it, but no agent runtime is claimed in P5; any such client has no key or approval authority.
+- The P5.2 agent accepts only catalog-generated public deployment forms. The host resolves and
+  locks canonical identifiers before a provider sees a generated public projection (`store: false`);
+  the model cannot construct clearance, signer, chain, registry, nonce, signature, payload, or
+  authorization.
+- Its strict tools can inspect public state and invoke `ReleaseService.prepare()`. There is no
+  signing, `/release/consume`, registry-write, arbitrary-network, shell, or filesystem tool.
 - Deterministic policy queries the deployed P4 registry and decides whether Ledger may be prompted.
 - The software requires Ledger's returned descriptor to cover every signed field before the signing command may proceed. Physical display/review remains unverified until hardware evidence is captured.
 - In production, Ledger hardware keeps the private key on-device and produces the only acceptable signature. Speculos is a test emulator and provides no Secure Element claim.
 - The API reconstructs the message, recovers the signer, repeats the P4 check, and atomically consumes the nonce.
+- Agent status becomes `AUTHORIZED` only by reading that exact stored P5 result. Model text cannot
+  create or override the state.
+
+Local P5.2 evidence shows unsafe A blocked, deterministic corrected B reaching the Ledger boundary,
+and mutated C losing to exact-build preparation. A separate live read-only Sepolia agent run blocked
+the deliberately unregistered existing fixture. No external provider credential was configured, so
+the real OpenAI adapter is contract-tested but no live model call is claimed. No Speculos signature
+or physical device approval is inferred from agent preparation.
 
 ## Current packages
 
@@ -43,6 +63,12 @@ Exact versions are pinned for demo stability:
 | `rxjs` | `7.8.2` | device-action observables |
 
 Deprecated `@ledgerhq/hw-app-*` and `@ledgerhq/hw-transport-*` packages are prohibited and absent. P5 does not use Key Ring because it needs physical human approval, not agent/VPS secret brokerage.
+
+The implemented Ledger primitives are DMK, Ethereum Device Signer Kit, WebHID Device Transport
+Kit, Speculos Device Transport Kit, Context Module, and the ERC-7730 descriptor/tooling. The
+official Ledger Agent Stack/agent-skills material informed the human-in-the-loop positioning, but
+no Agent Skill was installed or executed in this repository, so no such execution claim is made.
+Key Ring is intentionally not used for this direction.
 
 ## Exact authorization
 

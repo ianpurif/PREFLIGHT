@@ -51,6 +51,18 @@ export default function P5LedgerOperatorPage() {
       ),
     );
     adapter.current = ledger;
+    const handoff = window.sessionStorage.getItem("preflight.p5.prepared");
+    if (handoff !== null) {
+      try {
+        const preparedPayload = JSON.parse(handoff) as Record<string, unknown>;
+        setPrepared(preparedPayload);
+        setStatus(
+          "Exact P5 request handed off from the judge view. Connect Ledger to review it; authorization has not happened.",
+        );
+      } catch {
+        window.sessionStorage.removeItem("preflight.p5.prepared");
+      }
+    }
     return () => {
       void ledger.disconnect();
     };

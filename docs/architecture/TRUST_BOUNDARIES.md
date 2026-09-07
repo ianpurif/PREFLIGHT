@@ -25,10 +25,9 @@ removed registrar loses record authority but retains revoke-only power for its e
 
 ## Boundary D — Ledger hardware
 
-P5 keeps the deployment key on Ledger hardware. An operator/orchestration client can propose through
-the agent-facing API, deterministic API policy can prepare, and the browser can request a signature
-only after explicit WebHID connection and on-device address confirmation. No autonomous/LLM agent
-runtime is implemented in P5. The fixed full EIP-712 message binds every exact release field,
+P5 keeps the deployment key on Ledger hardware. The P5.2 agent can inspect public state and propose
+through the agent-facing API, deterministic API policy can prepare, and the browser can request a
+signature only after explicit WebHID connection and on-device address confirmation. The fixed full EIP-712 message binds every exact release field,
 authorized signer, one-time nonce, expiry, chain, and deployed registry. Backend-held keys and
 frontend approval booleans are not valid replacements.
 
@@ -48,6 +47,28 @@ Authenticated Clear Signing A/B/E/F remain blocked on both the official Tester's
 `GATING_TOKEN` and the separate application origin/accepted-descriptor path; they must not be
 inferred from the address smoke. Actual C and invalid/unregistered D requests fail before signer
 invocation; revoked/expired D variants remain test-only evidence.
+
+## Boundary D1 — AI deployment agent
+
+P5.2 treats the model as an untrusted orchestrator. The host first matches the entire input against
+finite public request forms generated from the trusted catalog, discards raw text, and exposes only
+the resulting canonical public request to a provider with `store: false`. A host-owned bounded state
+machine then exposes one strict next tool at a time. Only deployment-reference extraction accepts
+model arguments, and those aliases must resolve to the host-locked canonical target. Signer identity
+comes from operator context. Later tools accept no replacement site, robot, build, clearance, chain,
+registry, nonce, payload, signature, or approval fields.
+
+The agent can read allowlisted public evaluation/clearance information and request deterministic
+preparation. It has no general network, shell, filesystem, registry mutation, Ledger signing, or
+release-consumption capability. `ReleaseService.prepare()` remains the sole eligibility transition.
+Unknown, skipped, repeated, reordered, malformed, oversized, or provider-failed calls stop before
+Ledger. Tool text is data and model prose cannot set the final status.
+
+Provider context and the public audit omit raw submitted request text, raw model output, signatures,
+credentials, private envelope/blind values, CRE payloads, and private evaluator findings.
+`AUTHORIZED` can appear only after a read of the exact P5 nonce finds an internally stored, validated
+`ReleaseAuthorization`. The process-local P5.2 attempt/audit map is not durable; persistence is a
+P6 operational concern, not a substitute for P5's durable nonce authority. See ADR-0008.
 
 ## Boundary D2 — Offchain release and replay authority
 
@@ -70,6 +91,22 @@ binding, signs exact site/robot/build/clearance values under a chain/contract do
 authorization, and consumes a one-time nonce. A P4 clearance or Ledger signature alone is not a
 release authorization.
 
+## Boundary G — Judge UI projection
+
+P6 is a presentation boundary, not a new authority. The root dashboard receives a server-side
+projection of the existing deterministic P2 fixture and recorded public P3/P5.2 evidence. It may
+show verdicts, generic violation labels, public digests, route illustrations, the deployed Sepolia
+registry identity, and the Ledger human-approval boundary. It must not receive or render the
+confidential envelope/blind, private rules or thresholds, restricted geometry, internal report, raw
+CRE payload, model output, credentials, signatures, or a fabricated transaction.
+
+`CLEAR` in the dashboard remains an evaluation result only. The browser cannot construct a
+clearance, call `/release/prepare` directly, mark a request prepared, or report `AUTHORIZED`. A
+real public `LEDGER_APPROVAL_REQUIRED` response from the existing P5.2 API is required before an
+exact prepared request is handed to `/p5-ledger`; the user gesture and existing Ledger/consume path
+remain the release boundary. The digital twin projects public caller-supplied behavior points over
+fixed illustrative zones and never reimplements safety rules or exposes the private envelope.
+
 ## Threats to design for later
 - hidden-rule exfiltration via logs/errors
 - model endpoint equivocation
@@ -78,6 +115,8 @@ release authorization.
 - replayed Ledger approvals across lost/split nonce databases
 - UI showing a different build than the signed intent
 - compromised orchestrator attempting bypass
+- prompt/tool injection or a model attempting an unallowlisted capability
+- ambiguous catalog aliases or stale public catalog entries
 - accepted-descriptor/origin mismatch causing clear-signing fallback
 - post-authorization revocation or Sepolia reorg before a later P6 action
 - nondeterministic simulation results

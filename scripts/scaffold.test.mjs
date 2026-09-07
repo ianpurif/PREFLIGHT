@@ -29,7 +29,7 @@ test("P5 uses pinned current Ledger packages without legacy LedgerJS", async () 
   assert.doesNotMatch(parsed.scripts.test, /pass-with-no-tests/);
 });
 
-test("P3-P5 are load-bearing while P6 remains deferred", async () => {
+test("P3-P7 are load-bearing and the judge boundary remains non-authoritative", async () => {
   const workflow = await readFile(
     new URL("integrations/chainlink-cre/src/workflow.ts", root),
     "utf8",
@@ -53,7 +53,22 @@ test("P3-P5 are load-bearing while P6 remains deferred", async () => {
   );
   const eip712 = await readFile(new URL("packages/chain-client/src/eip712.ts", root), "utf8");
   const release = await readFile(new URL("apps/api/src/release/release-service.ts", root), "utf8");
+  const agent = await readFile(new URL("apps/api/src/agent/deployment-agent.ts", root), "utf8");
+  const agentProvider = await readFile(
+    new URL("apps/api/src/agent/openai-responses-model.ts", root),
+    "utf8",
+  );
+  const tools = await readFile(new URL("apps/api/src/agent/tools.ts", root), "utf8");
   const web = await readFile(new URL("apps/web/src/app/page.tsx", root), "utf8");
+  const judge = await readFile(new URL("apps/web/src/app/judge-dashboard.tsx", root), "utf8");
+  const twin = await readFile(new URL("apps/web/src/app/digital-twin.tsx", root), "utf8");
+  const p6Browser = await readFile(new URL("tests/e2e/p6-judge-path.spec.ts", root), "utf8");
+  const p7Browser = await readFile(
+    new URL("tests/e2e/p7-deterministic-demo.spec.ts", root),
+    "utf8",
+  );
+  const p7Demo = await readFile(new URL("scripts/p7-demo.mjs", root), "utf8");
+  const p7Fixture = await readFile(new URL("apps/api/scripts/p7-demo-fixture.ts", root), "utf8");
   const p5Web = await readFile(new URL("apps/web/src/app/p5-ledger/page.tsx", root), "utf8");
 
   assert.match(workflow, /handlerInTee/);
@@ -76,10 +91,40 @@ test("P3-P5 are load-bearing while P6 remains deferred", async () => {
   assert.match(eip712, /recoverTypedDataAddress/);
   assert.match(release, /assertDeploymentIntentSignature/);
   assert.match(release, /CLEARANCE_INVALIDATED/);
+  assert.match(agent, /this\.#releaseService\.prepare/);
+  assert.match(agent, /LEDGER_APPROVAL_REQUIRED/);
+  assert.match(agent, /resolvePublicRequest/);
+  assert.match(agent, /formatPublicRequest/);
+  assert.match(agentProvider, /store: false/);
+  assert.doesNotMatch(agent, /this\.#releaseService\.consume/);
+  for (const name of [
+    "resolveDeploymentTarget",
+    "getDeploymentContext",
+    "getEvaluationStatus",
+    "getClearance",
+    "prepareDeploymentIntent",
+    "getLedgerAuthorizationStatus",
+  ]) {
+    assert.match(tools, new RegExp(name));
+  }
+  assert.doesNotMatch(tools, /recordClearance|revokeClearance|release\/consume|signTypedData/);
   assert.doesNotMatch(
     `${ledger}\n${ledgerTransport}\n${strictAction}\n${release}`,
     /@ledgerhq\/hw-|personal_sign/,
   );
-  assert.match(web, /Product behavior is intentionally not implemented/);
+  assert.match(web, /createDemoPublicData/);
+  assert.match(web, /JudgeDashboard/);
+  assert.match(judge, /CLEARANCE_BINDING_MISMATCH/);
+  assert.match(judge, /Physical device: not demonstrated/);
+  assert.match(judge, /CRE authenticated simulation evidence/);
+  assert.match(twin, /public behavior points/);
+  assert.match(p6Browser, /hands an actual prepared response/);
+  assert.match(p7Browser, /clean startup/);
+  assert.match(p7Browser, /late prepared response/);
+  assert.match(p7Demo, /demo:setup/);
+  assert.match(p7Demo, /demo:reset/);
+  assert.match(p7Fixture, /nonceFactory/);
+  assert.match(p7Fixture, /CLEARANCE_BINDING_MISMATCH/);
+  assert.doesNotMatch(judge, /envelopeBlindingSecret|warehouseBounds|payloadGreaterThanGrams/);
   assert.doesNotMatch(p5Web, /Canvas|digital.?twin|activateRobot|robotActivation/);
 });

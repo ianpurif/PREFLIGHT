@@ -35,8 +35,8 @@ import {
   type ScenarioId,
   WAREHOUSE_EVALUATOR_VERSION,
   type WarehouseZone,
-} from "./model.js";
-import { generateScenarioSuite } from "./scenarios.js";
+} from "./model";
+import { generateScenarioSuite } from "./scenarios";
 
 export interface PointObservation {
   readonly kind: "point";

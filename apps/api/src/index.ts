@@ -1,7 +1,25 @@
+import { createDeploymentAgentFromEnvironment } from "./agent/index.js";
 import { createReleaseServiceFromEnvironment } from "./release/index.js";
 import { buildServer } from "./server";
 
-const app = buildServer({ releaseService: createReleaseServiceFromEnvironment() });
+const hasRegistryRpc = Boolean(process.env.EVM_RPC_URL || process.env.SEPOLIA_RPC_URL);
+// The judge-facing web fixture is intentionally usable without live provider credentials.
+// Keep the real release/agent authorities enabled whenever their configuration is present;
+// otherwise expose an explicit unavailable API instead of failing the development server at
+// startup. This is not a production fallback and never fabricates a release result.
+const releaseService = hasRegistryRpc ? createReleaseServiceFromEnvironment() : undefined;
+const agentEnvironmentConfigured =
+  process.env.OPENAI_API_KEY !== undefined ||
+  process.env.PREFLIGHT_AGENT_MODEL !== undefined ||
+  process.env.PREFLIGHT_AGENT_CATALOG_PATH !== undefined;
+const deploymentAgent =
+  releaseService !== undefined && agentEnvironmentConfigured
+    ? createDeploymentAgentFromEnvironment(releaseService)
+    : undefined;
+const app = buildServer({
+  ...(releaseService === undefined ? {} : { releaseService }),
+  ...(deploymentAgent === undefined ? {} : { deploymentAgent }),
+});
 const port = Number(process.env.PORT ?? 4000);
 
 await app.listen({ host: "0.0.0.0", port });
