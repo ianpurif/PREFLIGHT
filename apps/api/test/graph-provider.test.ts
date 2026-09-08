@@ -68,9 +68,11 @@ describe("The Graph clearance provider", () => {
     await expect(reader(null).readClearance(clearance)).resolves.toMatchObject({
       status: "NOT_FOUND",
     });
-    await expect(reader(entity({ revoked: true })).readClearance(clearance)).resolves.toMatchObject({
-      status: "REVOKED",
-    });
+    await expect(reader(entity({ revoked: true })).readClearance(clearance)).resolves.toMatchObject(
+      {
+        status: "REVOKED",
+      },
+    );
     await expect(
       reader(entity({ expiresAt: "1787999999" })).readClearance(clearance),
     ).resolves.toMatchObject({ status: "EXPIRED" });
@@ -82,6 +84,18 @@ describe("The Graph clearance provider", () => {
   test("does not use a fixture fallback when provider configuration is absent", async () => {
     await expect(
       new TheGraphClearanceReader({ fetch: async () => response(null) }).readClearance(clearance),
+    ).rejects.toMatchObject({ code: "GRAPH_UNAVAILABLE" } satisfies Partial<GraphProviderError>);
+  });
+
+  test("fails closed when the live provider is unreachable", async () => {
+    await expect(
+      new TheGraphClearanceReader({
+        apiKey: "graph-test-key",
+        subgraphId: "graph-test-subgraph",
+        fetch: async () => {
+          throw new Error("network down");
+        },
+      }).readClearance(clearance),
     ).rejects.toMatchObject({ code: "GRAPH_UNAVAILABLE" } satisfies Partial<GraphProviderError>);
   });
 });

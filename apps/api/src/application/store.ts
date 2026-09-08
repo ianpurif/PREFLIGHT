@@ -16,6 +16,7 @@ import {
   EVALUATION_INPUTS_SCHEMA_VERSION,
   EVALUATION_REQUEST_SCHEMA_VERSION,
   parseEvaluationRequest,
+  parseClearanceRecord,
   parseEvaluatorVersionId,
   parseRobotBuildDescriptor,
   parseSafetyEnvelopeId,
@@ -1026,6 +1027,37 @@ export class ApplicationStore {
     );
     if (match === undefined) throw new ApplicationError("NOT_FOUND", "Evaluation was not found");
     return publicEvaluation(match);
+  }
+
+  getDeploymentContext(
+    accountId: string,
+    evaluationId: string,
+    clearanceInput: unknown,
+  ): {
+    readonly evaluation: PublicEvaluation;
+    readonly clearance: ReturnType<typeof parseClearanceRecord>;
+  } {
+    const evaluation = this.getEvaluation(accountId, evaluationId);
+    let clearance: ReturnType<typeof parseClearanceRecord>;
+    try {
+      clearance = parseClearanceRecord(clearanceInput);
+    } catch {
+      throw new ApplicationError("CONFLICT", "The public clearance record is malformed");
+    }
+    const matches =
+      clearance.evaluationId === evaluation.evaluationId &&
+      clearance.inputs.siteId === evaluation.siteId &&
+      clearance.inputs.robotId === evaluation.robotId &&
+      clearance.inputs.robotBuildId === evaluation.robotBuildId &&
+      clearance.inputs.robotBuildDigest === evaluation.robotBuildDigest &&
+      clearance.inputs.safetyEnvelopeId === evaluation.safetyEnvelopeId &&
+      clearance.inputs.safetyEnvelopeCommitment === evaluation.safetyEnvelopeCommitment &&
+      clearance.inputs.evaluatorVersion === evaluation.evaluatorVersion &&
+      clearance.evaluationInputsDigest === evaluation.evaluationInputsDigest;
+    if (!matches) {
+      throw new ApplicationError("CONFLICT", "The clearance does not match the account evaluation");
+    }
+    return Object.freeze({ evaluation, clearance });
   }
 
   recordReleaseAttempt(

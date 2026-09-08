@@ -34,6 +34,7 @@ import {
   type DeploymentAgentToolName,
   DeploymentCatalog,
 } from "../src/agent/index.js";
+import type { GraphClearanceReader } from "../src/graph/index.js";
 import {
   AuthorizedSignerPolicy,
   ReleaseService,
@@ -211,11 +212,16 @@ class ScriptedModel implements DeploymentAgentModel {
   readonly turns: DeploymentAgentModelTurn[] = [];
   readonly #calls: DeploymentAgentToolCall[];
 
-  constructor(buildRef: string, overrides: Partial<Record<number, DeploymentAgentToolCall>> = {}) {
+  constructor(
+    buildRef: string,
+    overrides: Partial<Record<number, DeploymentAgentToolCall>> = {},
+    includeGraph = false,
+  ) {
     const names: DeploymentAgentToolName[] = [
       "resolveDeploymentTarget",
       "getDeploymentContext",
       "getEvaluationStatus",
+      ...(includeGraph ? ["getGraphContext" as const] : []),
       "getClearance",
       "prepareDeploymentIntent",
       "getLedgerAuthorizationStatus",
@@ -249,7 +255,16 @@ afterEach(() => {
   while (stores.length > 0) stores.pop()?.close();
 });
 
-function harness(model: DeploymentAgentModel, reader = new FixtureReader()) {
+function harness(
+  model: DeploymentAgentModel,
+  reader = new FixtureReader(),
+  graphReader?: GraphClearanceReader,
+  accountResolver?: (
+    accountId: string,
+    request: unknown,
+    clearance: unknown,
+  ) => ReturnType<typeof catalogEntry>,
+) {
   const store = new SqliteReleaseStore(":memory:");
   stores.push(store);
   const releaseService = new ReleaseService({
@@ -263,6 +278,8 @@ function harness(model: DeploymentAgentModel, reader = new FixtureReader()) {
     catalog,
     reader,
     releaseService,
+    ...(graphReader === undefined ? {} : { graphReader }),
+    ...(accountResolver === undefined ? {} : { accountResolver }),
     clock: () => FIXED_NOW,
     idFactory: () => "attempt:p52-test",
   });
@@ -270,6 +287,62 @@ function harness(model: DeploymentAgentModel, reader = new FixtureReader()) {
 }
 
 describe("P5.2 deterministic deployment-agent controller", () => {
+  test("account-backed preparation requires a matching Graph context before P5", async () => {
+    const graphReader: GraphClearanceReader = {
+      readClearance: async () => ({
+        source: "the-graph",
+        provider: "gateway",
+        chainId: 11_155_111,
+        registry: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
+        clearanceDigest: `0x${"12".repeat(32)}`,
+        status: "MATCHED",
+        indexedAtBlock: "11700000",
+        blockHash: `0x${"ab".repeat(32)}`,
+      }),
+    };
+    const accountEntry = catalogEntry({
+      key: "account-build-b",
+      buildAlias: "account-build-b",
+      buildId: buildBClearance.inputs.robotBuildId,
+      buildDigest: buildBClearance.inputs.robotBuildDigest,
+      verdict: "CLEAR",
+      evaluationId: buildBClearance.evaluationId,
+      clearance: buildBClearance,
+    });
+    const model = new ScriptedModel(
+      "account-build-b",
+      {
+        0: {
+          name: "resolveDeploymentTarget",
+          arguments: {
+            siteRef: "site:warehouse-manila-01",
+            robotRef: "robot:amr-17",
+            buildRef: "account-build-b",
+          },
+        },
+      },
+      true,
+    );
+    const { agent } = harness(model, new FixtureReader(), graphReader, () => accountEntry);
+    const result = await agent.run({
+      request: "ignored host text",
+      accountId: "account:1234567890abcdef1234567890abcdef",
+      clearance: buildBClearance,
+      signerAddress: account.address,
+    });
+    expect(result.status).toBe("LEDGER_APPROVAL_REQUIRED");
+    expect(result.audit.graphContext?.status).toBe("MATCHED");
+    expect(result.audit.toolCalls.map(({ tool }) => tool)).toEqual([
+      "resolveDeploymentTarget",
+      "getDeploymentContext",
+      "getEvaluationStatus",
+      "getGraphContext",
+      "getClearance",
+      "prepareDeploymentIntent",
+      "getLedgerAuthorizationStatus",
+    ]);
+  });
+
   test("maps natural language to exact bindings and reaches the Ledger boundary in fixed tool order", async () => {
     const model = new ScriptedModel("v4.7.21");
     const { agent, reader } = harness(model);

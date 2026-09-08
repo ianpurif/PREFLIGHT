@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { ApplicationStore } from "../src/application/index.js";
+import { evaluateSimulation } from "@rovaulta/simulation-core";
 import { buildServer } from "../src/server.js";
 
 const KEY = Uint8Array.from({ length: 32 }, (_, index) => index + 1);
@@ -39,7 +40,10 @@ async function register(app: ReturnType<typeof buildServer>, email: string) {
 describe("account-scoped product lifecycle", () => {
   test("persists a private policy and evaluates a registered build", async () => {
     const store = new ApplicationStore({ dbPath: ":memory:", policyKey: KEY });
-    const app = buildServer({ applicationStore: store });
+    const app = buildServer({
+      applicationStore: store,
+      evaluationExecutor: { evaluate: async (input) => evaluateSimulation(input) },
+    });
     const session = await register(app, "operator@example.test");
 
     const siteResponse = await app.inject({
@@ -140,7 +144,10 @@ describe("account-scoped product lifecycle", () => {
 
   test("isolates resources between accounts", async () => {
     const store = new ApplicationStore({ dbPath: ":memory:", policyKey: KEY });
-    const app = buildServer({ applicationStore: store });
+    const app = buildServer({
+      applicationStore: store,
+      evaluationExecutor: { evaluate: async (input) => evaluateSimulation(input) },
+    });
     const first = await register(app, "first@example.test");
     const second = await register(app, "second@example.test");
     const siteResponse = await app.inject({
@@ -169,7 +176,10 @@ describe("account-scoped product lifecycle", () => {
 
   test("rejects anonymous resource access and malformed account input", async () => {
     const store = new ApplicationStore({ dbPath: ":memory:", policyKey: KEY });
-    const app = buildServer({ applicationStore: store });
+    const app = buildServer({
+      applicationStore: store,
+      evaluationExecutor: { evaluate: async (input) => evaluateSimulation(input) },
+    });
     const anonymous = await app.inject({ method: "GET", url: "/sites" });
     expect(anonymous.statusCode).toBe(401);
     const malformedCookie = await app.inject({
@@ -189,7 +199,10 @@ describe("account-scoped product lifecycle", () => {
 
   test("rejects cross-origin mutations and unauthenticated legacy authority routes", async () => {
     const store = new ApplicationStore({ dbPath: ":memory:", policyKey: KEY });
-    const app = buildServer({ applicationStore: store });
+    const app = buildServer({
+      applicationStore: store,
+      evaluationExecutor: { evaluate: async (input) => evaluateSimulation(input) },
+    });
     const session = await register(app, "csrf@example.test");
     const csrfResponse = await app.inject({
       method: "POST",

@@ -115,18 +115,40 @@ export class TheGraphClearanceReader implements GraphClearanceReader {
       );
     }
     if (!/^https:\/\//.test(this.#endpoint) || !/^[A-Za-z0-9_-]{8,256}$/.test(this.#subgraphId)) {
-      throw new GraphProviderError("GRAPH_UNAVAILABLE", "The Graph provider configuration is malformed");
+      throw new GraphProviderError(
+        "GRAPH_UNAVAILABLE",
+        "The Graph provider configuration is malformed",
+      );
     }
     const requested = clearanceRecordToTransport(clearance);
     const digest = requested.clearanceDigest;
-    const response = await this.#fetch(`${this.#endpoint}/${this.#apiKey}/subgraphs/id/${this.#subgraphId}`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ query: QUERY, variables: { digest } }),
-    });
-    const text = await response.text();
+    let response: Response;
+    try {
+      response = await this.#fetch(
+        `${this.#endpoint}/${this.#apiKey}/subgraphs/id/${this.#subgraphId}`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ query: QUERY, variables: { digest } }),
+        },
+      );
+    } catch {
+      throw new GraphProviderError("GRAPH_UNAVAILABLE", "The Graph provider is unreachable");
+    }
+    let text: string;
+    try {
+      text = await response.text();
+    } catch {
+      throw new GraphProviderError(
+        "GRAPH_UNAVAILABLE",
+        "The Graph provider response could not be read",
+      );
+    }
     if (new TextEncoder().encode(text).byteLength > MAX_RESPONSE_BYTES) {
-      throw new GraphProviderError("GRAPH_RESPONSE_INVALID", "The Graph response exceeded its size bound");
+      throw new GraphProviderError(
+        "GRAPH_RESPONSE_INVALID",
+        "The Graph response exceeded its size bound",
+      );
     }
     let parsed: unknown;
     try {
@@ -134,7 +156,8 @@ export class TheGraphClearanceReader implements GraphClearanceReader {
     } catch {
       throw new GraphProviderError("GRAPH_RESPONSE_INVALID", "The Graph response was not JSON");
     }
-    if (!response.ok) throw new GraphProviderError("GRAPH_UNAVAILABLE", "The Graph provider rejected the query");
+    if (!response.ok)
+      throw new GraphProviderError("GRAPH_UNAVAILABLE", "The Graph provider rejected the query");
     const root = record(parsed, "The Graph response is malformed");
     if (root.errors !== undefined) {
       throw new GraphProviderError("GRAPH_UNAVAILABLE", "The Graph query failed");
@@ -166,10 +189,13 @@ export class TheGraphClearanceReader implements GraphClearanceReader {
       [stored.evaluatorVersionHash, requested.bindings.evaluatorVersionHash],
       [stored.evaluationInputsDigest, requested.bindings.evaluationInputsDigest],
     ] as const;
+    const blockNumber = requiredString(stored.blockNumber, "blockNumber");
+    const blockHash = hex32(stored.blockHash, "blockHash");
     const exact =
       actualDigest === digest &&
       bindings.every(([actual, expected]) => hex32(actual, "binding") === expected.toLowerCase()) &&
-      stored.verdict === VERDICT_CLEAR_BYTES32 &&
+      typeof stored.verdict === "string" &&
+      stored.verdict.toLowerCase() === VERDICT_CLEAR_BYTES32 &&
       typeof stored.revoked === "boolean";
     const base = {
       source: "the-graph" as const,
@@ -177,11 +203,13 @@ export class TheGraphClearanceReader implements GraphClearanceReader {
       chainId: ROVAULTA_SEPOLIA_DEPLOYMENT.chainId,
       registry: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
       clearanceDigest: digest,
-      ...(stored.blockNumber === undefined ? {} : { indexedAtBlock: requiredString(stored.blockNumber, "blockNumber") }),
-      ...(stored.blockHash === undefined ? {} : { blockHash: hex32(stored.blockHash, "blockHash") }),
+      indexedAtBlock: blockNumber,
+      blockHash,
     };
-    if (!exact) return Object.freeze({ ...base, status: "MISMATCH", reason: "CLEARANCE_BINDING_MISMATCH" });
-    if (stored.revoked === true) return Object.freeze({ ...base, status: "REVOKED", reason: "CLEARANCE_REVOKED" });
+    if (!exact)
+      return Object.freeze({ ...base, status: "MISMATCH", reason: "CLEARANCE_BINDING_MISMATCH" });
+    if (stored.revoked === true)
+      return Object.freeze({ ...base, status: "REVOKED", reason: "CLEARANCE_REVOKED" });
     const expiresAt = Number(requiredString(stored.expiresAt, "expiresAt"));
     if (!Number.isSafeInteger(expiresAt) || expiresAt <= this.#now()) {
       return Object.freeze({ ...base, status: "EXPIRED", reason: "CLEARANCE_EXPIRED" });

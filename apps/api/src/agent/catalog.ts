@@ -50,6 +50,10 @@ function publicRequestForms(entry: DeploymentCatalogEntry): readonly string[] {
   return Object.freeze(forms);
 }
 
+export function formatPublicDeploymentRequest(entry: DeploymentCatalogEntry): string {
+  return `Deploy ${entry.aliases.build[0]} for ${entry.aliases.robot[0]} to ${entry.aliases.site[0]}`;
+}
+
 function expectExactObject(
   input: unknown,
   keys: readonly string[],
@@ -229,6 +233,6 @@ export class DeploymentCatalog {
   }
 
   formatPublicRequest(entry: DeploymentCatalogEntry): string {
-    return `Deploy ${entry.aliases.build[0]} for ${entry.aliases.robot[0]} to ${entry.aliases.site[0]}`;
+    return formatPublicDeploymentRequest(entry);
   }
 }

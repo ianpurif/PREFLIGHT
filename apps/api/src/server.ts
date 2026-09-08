@@ -1,14 +1,10 @@
 import { randomBytes } from "node:crypto";
 import { ReleaseGateError } from "@rovaulta/chain-client";
 import { parseClearanceRecord } from "@rovaulta/domain";
-import { evaluateSimulation } from "@rovaulta/simulation-core";
 import Fastify, { type FastifyReply } from "fastify";
 import { type DeploymentAgent, DeploymentAgentError } from "./agent/index.js";
 import { ApplicationError, ApplicationStore } from "./application/index.js";
-import {
-  type ConfidentialEvaluationExecutor,
-  CreEvaluationError,
-} from "./evaluation/index.js";
+import { type ConfidentialEvaluationExecutor, CreEvaluationError } from "./evaluation/index.js";
 import { readEnvironment } from "./environment.js";
 import type { ReleaseService } from "./release/index.js";
 
@@ -75,10 +71,13 @@ export function buildServer(
   const releaseService = options.releaseService;
   const deploymentAgent = options.deploymentAgent;
   const applicationStore = options.applicationStore;
-  // The in-process P2 executor is intentionally retained only for unit/lifecycle tests that call
-  // buildServer directly. The production entrypoint always supplies the CRE executor below.
-  const evaluationExecutor: ConfidentialEvaluationExecutor =
-    options.evaluationExecutor ?? { evaluate: async (input) => evaluateSimulation(input) };
+  // P2 is never an application fallback. Tests may inject it explicitly; the production entrypoint
+  // always supplies the CRE transport. Missing CRE configuration therefore fails closed.
+  const evaluationExecutor: ConfidentialEvaluationExecutor = options.evaluationExecutor ?? {
+    evaluate: async () => {
+      throw new CreEvaluationError("CRE_UNAVAILABLE", "Confidential evaluation is not configured");
+    },
+  };
   const environment = options.environment ?? process.env;
   const allowedOrigins = new Set(
     [
@@ -144,7 +143,8 @@ export function buildServer(
       return reply.code(status).send({ error: error.code, message: error.message });
     }
     if (error instanceof DeploymentAgentError) {
-      const status = error.code === "PROVIDER_UNAVAILABLE" ? 503 : 400;
+      const status =
+        error.code === "PROVIDER_UNAVAILABLE" || error.code === "GRAPH_UNAVAILABLE" ? 503 : 400;
       return reply.code(status).send({ error: error.code, message: error.message });
     }
     if (error instanceof CreEvaluationError) {
@@ -439,56 +439,71 @@ export function buildServer(
         .code(clearanceBinding.code === "MALFORMED" ? 400 : 409)
         .send({ error: attempt.code, message: attempt.message, attempt });
     }
-    if (releaseService === undefined) {
+    if (deploymentAgent === undefined) {
       const attempt = store.recordReleaseAttempt(accountId, {
         evaluationId: evaluation.evaluationId,
         status: "BLOCKED",
-        code: "RELEASE_GATE_UNAVAILABLE",
-        message: "The live release gate is not configured",
+        code: "DEPLOYMENT_AGENT_UNAVAILABLE",
+        message: "The account-backed deployment agent is not configured",
       });
-      return reply
-        .code(503)
-        .send({ error: "RELEASE_GATE_UNAVAILABLE", message: attempt.message, attempt });
+      return reply.code(503).send({
+        error: "DEPLOYMENT_AGENT_UNAVAILABLE",
+        message: attempt.message,
+        attempt,
+      });
     }
-    try {
-      const prepared = await releaseService.prepare({
-        siteId: evaluation.siteId,
-        robotId: evaluation.robotId,
-        robotBuildId: evaluation.robotBuildId,
-        robotBuildDigest: evaluation.robotBuildDigest,
-        clearance: body.clearance,
-        signerAddress: body.signerAddress,
-      });
+    const agentResult = await deploymentAgent.run({
+      request: `Deploy ${evaluation.robotBuildId} for ${evaluation.robotId} to ${evaluation.siteId}`,
+      signerAddress: body.signerAddress,
+      accountId,
+      clearance: body.clearance,
+    });
+    if (agentResult.status === "BLOCKED") {
+      const code = agentResult.audit.policyResult;
       const attempt = store.recordReleaseAttempt(accountId, {
         evaluationId: evaluation.evaluationId,
-        status: "LEDGER_APPROVAL_REQUIRED",
-        code: null,
-        message: "Exact release request prepared; human Ledger approval is still required",
+        status: "BLOCKED",
+        code,
+        message: agentResult.explanation,
       });
-      return reply.send({ status: "LEDGER_APPROVAL_REQUIRED", attempt, prepared });
-    } catch (error) {
-      if (error instanceof ReleaseGateError) {
-        const attempt = store.recordReleaseAttempt(accountId, {
-          evaluationId: evaluation.evaluationId,
-          status: "BLOCKED",
-          code: error.code,
-          message: error.message,
-        });
-        const status =
-          error.code === "REGISTRY_UNAVAILABLE" || error.code === "PERSISTENCE_UNAVAILABLE"
-            ? 503
-            : 403;
-        return reply.code(status).send({ error: error.code, message: error.message, attempt });
-      }
-      throw error;
+      const status =
+        code === "GRAPH_UNAVAILABLE" || code.startsWith("PROVIDER_") || code.startsWith("CRE_")
+          ? 503
+          : 409;
+      return reply.code(status).send({
+        error: code,
+        message: attempt.message,
+        attempt,
+        audit: agentResult.audit,
+      });
     }
+    const agentAttempt = store.recordReleaseAttempt(accountId, {
+      evaluationId: evaluation.evaluationId,
+      status: agentResult.status,
+      code: null,
+      message: agentResult.explanation,
+    });
+    return reply.send({
+      status: agentResult.status,
+      attempt: agentAttempt,
+      audit: agentResult.audit,
+      ...(agentResult.prepared === undefined ? {} : { prepared: agentResult.prepared }),
+    });
   });
   app.post("/agent/deployment/prepare", async (request, reply) => {
     if (!requireLegacyAccess(request, reply)) return undefined;
     if (deploymentAgent === undefined) {
       throw new DeploymentAgentError("PROVIDER_UNAVAILABLE", "Deployment agent is not configured");
     }
-    const body = expectBody(request.body, ["request", "signerAddress"]);
+    const demoRoute =
+      environment.NODE_ENV !== "production" &&
+      readEnvironment(environment, "ROVAULTA_ENABLE_DEMO_ROUTES") === "true";
+    const body = expectBody(
+      request.body,
+      demoRoute
+        ? ["request", "signerAddress"]
+        : ["request", "signerAddress", "evaluationId", "clearance"],
+    );
     if (
       body === null ||
       typeof body.request !== "string" ||
@@ -496,7 +511,18 @@ export function buildServer(
     ) {
       return rejectMalformed(reply);
     }
-    return deploymentAgent.run({ request: body.request, signerAddress: body.signerAddress });
+    if (demoRoute) {
+      return deploymentAgent.run({ request: body.request, signerAddress: body.signerAddress });
+    }
+    const accountId = requireAccount(request, reply);
+    if (accountId === null || typeof body.evaluationId !== "string") return undefined;
+    requireStore().getDeploymentContext(accountId, body.evaluationId, body.clearance);
+    return deploymentAgent.run({
+      request: body.request,
+      signerAddress: body.signerAddress,
+      accountId,
+      clearance: body.clearance,
+    });
   });
   app.post("/agent/deployment/status", async (request, reply) => {
     if (!requireLegacyAccess(request, reply)) return undefined;
@@ -505,7 +531,13 @@ export function buildServer(
     }
     const body = expectBody(request.body, ["attemptId"]);
     if (body === null || typeof body.attemptId !== "string") return rejectMalformed(reply);
-    return deploymentAgent.getAuthorizationStatus(body.attemptId);
+    const accountId =
+      environment.NODE_ENV !== "production" &&
+      readEnvironment(environment, "ROVAULTA_ENABLE_DEMO_ROUTES") === "true"
+        ? undefined
+        : requireAccount(request, reply);
+    if (accountId === null) return undefined;
+    return deploymentAgent.getAuthorizationStatus(body.attemptId, accountId);
   });
   app.post("/release/prepare", async (request, reply) => {
     if (!requireLegacyAccess(request, reply)) return undefined;

@@ -13,6 +13,8 @@ const DESCRIPTIONS: Record<DeploymentAgentToolName, string> = {
   getDeploymentContext:
     "Read the locked canonical public target and fixed Sepolia registry context.",
   getEvaluationStatus: "Read the public deterministic evaluation verdict for the locked target.",
+  getGraphContext:
+    "Read the live public The Graph clearance context for the locked clearance before the P5 registry check.",
   getClearance: "Inspect the candidate public clearance against the fixed Sepolia registry.",
   prepareDeploymentIntent:
     "Ask the existing deterministic P5 release service to prepare the exact locked target.",

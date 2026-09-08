@@ -11,15 +11,14 @@ const hasRegistryRpc = Boolean(process.env.EVM_RPC_URL || process.env.SEPOLIA_RP
 // otherwise expose an explicit unavailable API instead of failing the development server at
 // startup. This is not a production fallback and never fabricates a release result.
 const releaseService = hasRegistryRpc ? createReleaseServiceFromEnvironment() : undefined;
+const applicationStore = createApplicationStoreFromEnvironment();
 const agentEnvironmentConfigured =
-  process.env.OPENAI_API_KEY !== undefined ||
-  readEnvironment(process.env, "ROVAULTA_AGENT_MODEL") !== undefined ||
-  readEnvironment(process.env, "ROVAULTA_AGENT_CATALOG_PATH") !== undefined;
+  (process.env.OPENAI_API_KEY ?? "").trim() !== "" ||
+  (readEnvironment(process.env, "ROVAULTA_AGENT_MODEL") ?? "").trim() !== "";
 const deploymentAgent =
   releaseService !== undefined && agentEnvironmentConfigured
-    ? createDeploymentAgentFromEnvironment(releaseService)
+    ? createDeploymentAgentFromEnvironment(releaseService, process.env, applicationStore)
     : undefined;
-const applicationStore = createApplicationStoreFromEnvironment();
 const evaluationExecutor = createCreEvaluationClientFromEnvironment();
 const app = buildServer({
   ...(releaseService === undefined ? {} : { releaseService }),

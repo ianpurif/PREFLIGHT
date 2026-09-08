@@ -5,8 +5,9 @@ import {
   ROVAULTA_SEPOLIA_DEPLOYMENT,
 } from "@rovaulta/chain-client";
 import { type ClearanceRecord, digestClearance } from "@rovaulta/domain";
+import { GraphProviderError, type GraphClearanceReader } from "../graph/index.js";
 import type { PreparedReleaseRequest, ReleaseService } from "../release/index.js";
-import type { DeploymentCatalog } from "./catalog.js";
+import { DeploymentCatalog, formatPublicDeploymentRequest } from "./catalog.js";
 import { parseToolArguments, toolDefinition } from "./tools.js";
 import {
   DEPLOYMENT_AGENT_AUDIT_SCHEMA_VERSION,
@@ -20,11 +21,13 @@ import {
   type DeploymentAgentToolName,
   type DeploymentAuditToolEvent,
   type DeploymentCatalogEntry,
+  type DeploymentGraphContext,
   type LedgerAuthorizationStatus,
 } from "./types.js";
 
 interface MutableAttempt {
   attemptId: string;
+  accountId?: string;
   createdAt: string;
   request: string;
   provider: Readonly<{ name: string; model: string }>;
@@ -38,6 +41,7 @@ interface MutableAttempt {
     blockNumber: string;
     blockHash: string;
   }>;
+  graphContext?: DeploymentGraphContext;
   policyResult: string;
   protocolIntentDigest?: string;
   typedDataDigest?: string;
@@ -59,6 +63,7 @@ function publicAudit(attempt: MutableAttempt): DeploymentAgentAudit {
     ...(attempt.clearanceInspection === undefined
       ? {}
       : { clearanceInspection: attempt.clearanceInspection }),
+    ...(attempt.graphContext === undefined ? {} : { graphContext: attempt.graphContext }),
     policyResult: attempt.policyResult,
     ...(attempt.protocolIntentDigest === undefined
       ? {}
@@ -80,6 +85,7 @@ function explanation(status: DeploymentAgentFinalStatus, code: string): string {
 }
 
 function errorCode(error: unknown): string {
+  if (error instanceof GraphProviderError) return "GRAPH_UNAVAILABLE";
   if (error instanceof DeploymentAgentError || error instanceof ReleaseGateError) return error.code;
   return "AGENT_PROTOCOL_VIOLATION";
 }
@@ -100,7 +106,11 @@ function clearanceProjection(clearance: ClearanceRecord | null, status: string, 
 
 export class DeploymentAgent {
   readonly #model: DeploymentAgentModel;
-  readonly #catalog: DeploymentCatalog;
+  readonly #catalog: DeploymentCatalog | undefined;
+  readonly #graphReader: GraphClearanceReader | undefined;
+  readonly #accountResolver:
+    | ((accountId: string, request: unknown, clearance: unknown) => DeploymentCatalogEntry)
+    | undefined;
   readonly #reader: ClearanceRegistryReader;
   readonly #releaseService: ReleaseService;
   readonly #attempts = new Map<string, MutableAttempt>();
@@ -109,14 +119,22 @@ export class DeploymentAgent {
 
   constructor(options: {
     model: DeploymentAgentModel;
-    catalog: DeploymentCatalog;
+    catalog?: DeploymentCatalog;
     reader: ClearanceRegistryReader;
     releaseService: ReleaseService;
+    graphReader?: GraphClearanceReader;
+    accountResolver?: (
+      accountId: string,
+      request: unknown,
+      clearance: unknown,
+    ) => DeploymentCatalogEntry;
     clock?: () => Date;
     idFactory?: () => string;
   }) {
     this.#model = options.model;
     this.#catalog = options.catalog;
+    this.#graphReader = options.graphReader;
+    this.#accountResolver = options.accountResolver;
     this.#reader = options.reader;
     this.#releaseService = options.releaseService;
     this.#clock = options.clock ?? (() => new Date());
@@ -172,14 +190,39 @@ export class DeploymentAgent {
     });
   }
 
-  async run(input: { request: unknown; signerAddress: string }): Promise<DeploymentAgentResult> {
+  async run(input: {
+    request: unknown;
+    signerAddress: string;
+    accountId?: string;
+    clearance?: unknown;
+  }): Promise<DeploymentAgentResult> {
     let requestedEntry: DeploymentCatalogEntry;
+    let resolutionCatalog: DeploymentCatalog;
     try {
-      requestedEntry = this.#catalog.resolvePublicRequest(input.request);
+      if (input.accountId !== undefined) {
+        if (this.#accountResolver === undefined) {
+          throw new DeploymentAgentError(
+            "PROVIDER_UNAVAILABLE",
+            "Account-backed deployment resolution is not configured",
+          );
+        }
+        requestedEntry = this.#accountResolver(input.accountId, input.request, input.clearance);
+        resolutionCatalog = new DeploymentCatalog([requestedEntry]);
+      } else {
+        if (this.#catalog === undefined) {
+          throw new DeploymentAgentError(
+            "PROVIDER_UNAVAILABLE",
+            "The deployment catalog is not configured",
+          );
+        }
+        requestedEntry = this.#catalog.resolvePublicRequest(input.request);
+        resolutionCatalog = this.#catalog;
+      }
     } catch (error) {
       const code = errorCode(error);
       const attempt: MutableAttempt = {
         attemptId: this.#idFactory(),
+        ...(input.accountId === undefined ? {} : { accountId: input.accountId }),
         createdAt: this.#clock().toISOString(),
         request: "REJECTED_SENSITIVE_OR_MALFORMED_REQUEST",
         provider: Object.freeze({ name: this.#model.provider, model: this.#model.model }),
@@ -193,10 +236,11 @@ export class DeploymentAgent {
       return this.#blocked(attempt, code);
     }
 
-    const request = this.#catalog.formatPublicRequest(requestedEntry);
+    const request = formatPublicDeploymentRequest(requestedEntry);
 
     const attempt: MutableAttempt = {
       attemptId: this.#idFactory(),
+      ...(input.accountId === undefined ? {} : { accountId: input.accountId }),
       createdAt: this.#clock().toISOString(),
       request,
       provider: Object.freeze({ name: this.#model.provider, model: this.#model.model }),
@@ -210,7 +254,7 @@ export class DeploymentAgent {
 
     try {
       const references = await this.#callTool(attempt, "resolveDeploymentTarget");
-      const modelEntry = this.#catalog.resolve({
+      const modelEntry = resolutionCatalog.resolve({
         siteRef: references.siteRef,
         robotRef: references.robotRef,
         buildRef: references.buildRef,
@@ -250,6 +294,59 @@ export class DeploymentAgent {
         entry.evaluation.verdict,
         Object.freeze({ ...entry.evaluation }),
       );
+
+      if (input.accountId !== undefined || this.#graphReader !== undefined) {
+        await this.#callTool(attempt, "getGraphContext");
+        if (this.#graphReader === undefined) {
+          this.#record(
+            attempt,
+            "getGraphContext",
+            "BLOCKED",
+            Object.freeze({ status: "UNAVAILABLE", code: "GRAPH_UNAVAILABLE" }),
+            "GRAPH_UNAVAILABLE",
+          );
+          return this.#blocked(attempt, "GRAPH_UNAVAILABLE");
+        }
+        if (entry.clearance === null) {
+          this.#record(
+            attempt,
+            "getGraphContext",
+            "BLOCKED",
+            Object.freeze({ status: "NOT_FOUND", reason: "CLEARANCE_NOT_FOUND" }),
+            "GRAPH_CLEARANCE_NOT_FOUND",
+          );
+          return this.#blocked(attempt, "GRAPH_CLEARANCE_NOT_FOUND");
+        }
+        try {
+          const graphContext = await this.#graphReader.readClearance(entry.clearance);
+          attempt.graphContext = graphContext;
+          this.#record(
+            attempt,
+            "getGraphContext",
+            graphContext.status,
+            Object.freeze({ ...graphContext }),
+            graphContext.status === "MATCHED" ? undefined : graphContext.reason,
+          );
+          if (graphContext.status !== "MATCHED") {
+            return this.#blocked(
+              attempt,
+              graphContext.reason === undefined
+                ? `GRAPH_${graphContext.status}`
+                : `GRAPH_${graphContext.reason}`,
+            );
+          }
+        } catch (error) {
+          const code = errorCode(error);
+          this.#record(
+            attempt,
+            "getGraphContext",
+            "BLOCKED",
+            Object.freeze({ status: "UNAVAILABLE", code }),
+            code,
+          );
+          return this.#blocked(attempt, code);
+        }
+      }
 
       await this.#callTool(attempt, "getClearance");
       let clearanceStatus = "CLEARANCE_NOT_FOUND";
@@ -378,10 +475,16 @@ export class DeploymentAgent {
     }
   }
 
-  getAuthorizationStatus(attemptId: string): DeploymentAgentResult {
+  getAuthorizationStatus(attemptId: string, accountId?: string): DeploymentAgentResult {
     const attempt = this.#attempts.get(attemptId);
     if (attempt === undefined || attempt.prepared === undefined) {
       throw new DeploymentAgentError("TARGET_NOT_FOUND", "Deployment attempt was not prepared");
+    }
+    if (attempt.accountId !== undefined && attempt.accountId !== accountId) {
+      throw new DeploymentAgentError(
+        "TARGET_NOT_FOUND",
+        "Deployment attempt is not in this account",
+      );
     }
     const status = this.#releaseService.getAuthorizationStatus(attempt.prepared);
     if (status.status === "AWAITING_LEDGER") {

@@ -1,8 +1,11 @@
 import { resolve } from "node:path";
 import { ViemClearanceRegistryReader } from "@rovaulta/chain-client";
+import { parseClearanceRecord } from "@rovaulta/domain";
 import { readEnvironment } from "../environment.js";
+import type { ApplicationStore } from "../application/index.js";
+import { createGraphReaderFromEnvironment } from "../graph/index.js";
 import type { ReleaseService } from "../release/index.js";
-import { DeploymentCatalog } from "./catalog.js";
+import { DeploymentCatalog, parseDeploymentCatalogEntry } from "./catalog.js";
 import { DeploymentAgent } from "./deployment-agent.js";
 import { OpenAIResponsesDeploymentModel } from "./openai-responses-model.js";
 import { DeploymentAgentError } from "./types.js";
@@ -16,21 +19,60 @@ export * from "./types.js";
 export function createDeploymentAgentFromEnvironment(
   releaseService: ReleaseService,
   environment: NodeJS.ProcessEnv = process.env,
+  applicationStore?: ApplicationStore,
 ): DeploymentAgent {
   const apiKey = environment.OPENAI_API_KEY;
   const model = readEnvironment(environment, "ROVAULTA_AGENT_MODEL");
   const catalogPath = readEnvironment(environment, "ROVAULTA_AGENT_CATALOG_PATH");
+  const normalizedCatalogPath = catalogPath?.trim() || undefined;
   const rpcUrl = environment.EVM_RPC_URL || environment.SEPOLIA_RPC_URL;
-  if (!apiKey || !model || !catalogPath || !rpcUrl) {
+  if (!apiKey || !model || !rpcUrl) {
     throw new DeploymentAgentError(
       "PROVIDER_UNAVAILABLE",
-      "AI provider, public catalog, and Sepolia RPC configuration are required",
+      "AI provider and Sepolia RPC configuration are required",
     );
   }
+  const graphConfigured =
+    (readEnvironment(environment, "THE_GRAPH_API_KEY")?.trim() || "") !== "" &&
+    (readEnvironment(environment, "THE_GRAPH_SUBGRAPH_ID")?.trim() || "") !== "";
+  const accountResolver =
+    applicationStore === undefined
+      ? undefined
+      : (accountId: string, _request: unknown, clearanceInput: unknown) => {
+          const clearance = parseClearanceRecord(clearanceInput);
+          const context = applicationStore.getDeploymentContext(
+            accountId,
+            clearance.evaluationId,
+            clearance,
+          );
+          return parseDeploymentCatalogEntry({
+            key: context.evaluation.evaluationId,
+            aliases: {
+              site: [context.evaluation.siteId],
+              robot: [context.evaluation.robotId],
+              build: [context.evaluation.robotBuildId],
+            },
+            target: {
+              siteId: context.evaluation.siteId,
+              robotId: context.evaluation.robotId,
+              robotBuildId: context.evaluation.robotBuildId,
+              robotBuildDigest: context.evaluation.robotBuildDigest,
+            },
+            evaluation: {
+              evaluationId: context.evaluation.evaluationId,
+              verdict: context.evaluation.verdict === "CLEAR" ? "CLEAR" : "HOLD",
+            },
+            clearance: context.clearance,
+          });
+        };
   return new DeploymentAgent({
     model: new OpenAIResponsesDeploymentModel({ apiKey, model }),
-    catalog: DeploymentCatalog.fromFile(resolve(process.cwd(), catalogPath)),
+    ...(normalizedCatalogPath === undefined
+      ? {}
+      : { catalog: DeploymentCatalog.fromFile(resolve(process.cwd(), normalizedCatalogPath)) }),
     reader: new ViemClearanceRegistryReader(rpcUrl),
     releaseService,
+    ...(accountResolver === undefined ? {} : { accountResolver }),
+    ...(graphConfigured ? { graphReader: createGraphReaderFromEnvironment(environment) } : {}),
   });
 }

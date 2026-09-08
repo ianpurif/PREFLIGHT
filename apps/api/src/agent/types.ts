@@ -7,6 +7,7 @@ export const DEPLOYMENT_AGENT_TOOL_NAMES = Object.freeze([
   "resolveDeploymentTarget",
   "getDeploymentContext",
   "getEvaluationStatus",
+  "getGraphContext",
   "getClearance",
   "prepareDeploymentIntent",
   "getLedgerAuthorizationStatus",
@@ -20,7 +21,8 @@ export type DeploymentAgentErrorCode =
   | "TARGET_AMBIGUOUS"
   | "AGENT_PROTOCOL_VIOLATION"
   | "PROVIDER_UNAVAILABLE"
-  | "PROVIDER_FAILED";
+  | "PROVIDER_FAILED"
+  | "GRAPH_UNAVAILABLE";
 
 export class DeploymentAgentError extends Error {
   readonly code: DeploymentAgentErrorCode;
@@ -54,6 +56,18 @@ export interface DeploymentCatalogEntry {
   readonly target: DeploymentTarget;
   readonly evaluation: PublicEvaluationStatus;
   readonly clearance: ClearanceRecord | null;
+}
+
+export interface DeploymentGraphContext {
+  readonly source: "the-graph";
+  readonly provider: "gateway";
+  readonly chainId: number;
+  readonly registry: string;
+  readonly clearanceDigest: string;
+  readonly status: "MATCHED" | "NOT_FOUND" | "REVOKED" | "EXPIRED" | "MISMATCH";
+  readonly indexedAtBlock?: string;
+  readonly blockHash?: string;
+  readonly reason?: string;
 }
 
 export interface DeploymentAgentToolDefinition {
@@ -109,6 +123,7 @@ export interface DeploymentAgentAudit {
     blockNumber: string;
     blockHash: string;
   }>;
+  readonly graphContext?: DeploymentGraphContext;
   readonly policyResult: string;
   readonly protocolIntentDigest?: string;
   readonly typedDataDigest?: string;

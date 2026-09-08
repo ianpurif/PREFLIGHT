@@ -1,13 +1,11 @@
 import { createHash, randomUUID } from "node:crypto";
 import {
   assertEvaluationResultBindings,
-  canonicalBytes,
   canonicalSerialize,
   digestRobotBuild,
   parseEvaluationRequest,
   parseEvaluationResult,
   parseRobotBuildDescriptor,
-  parseSha256Digest,
   parseUnixTimestamp,
   PROTOCOL_VERSION,
   type EvaluationRequest,
@@ -25,7 +23,6 @@ import {
   type CrePublicEvaluationResponse,
   type CrePublicEvaluationSuccess,
 } from "@rovaulta/chainlink-cre/protocol";
-import { ApplicationError } from "../application/errors.js";
 
 const TRACE_PROVENANCE = "SYNTHETIC_CALLER_SUPPLIED" as const;
 const SECRET_PREFIX = "ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_" as const;
@@ -266,15 +263,25 @@ export class CreHttpEvaluationClient implements ConfidentialEvaluationExecutor {
       jti: id,
     });
     const signature = await this.#sign(`${header}.${payload}`);
-    const response = await this.#fetch(this.#gatewayUrl, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${header}.${payload}.${signature}`,
-      },
-      body: bodyText,
-    });
-    const text = await response.text();
+    let response: Response;
+    try {
+      response = await this.#fetch(this.#gatewayUrl, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${header}.${payload}.${signature}`,
+        },
+        body: bodyText,
+      });
+    } catch {
+      throw new CreEvaluationError("CRE_UNAVAILABLE", "The CRE gateway is unreachable");
+    }
+    let text: string;
+    try {
+      text = await response.text();
+    } catch {
+      throw new CreEvaluationError("CRE_UNAVAILABLE", "The CRE gateway response could not be read");
+    }
     if (new TextEncoder().encode(text).byteLength > MAX_RESPONSE_BYTES) {
       throw new CreEvaluationError("CRE_RESPONSE_INVALID", "CRE response exceeded its size bound");
     }
@@ -289,7 +296,10 @@ export class CreHttpEvaluationClient implements ConfidentialEvaluationExecutor {
     }
     const result = responseJson(parsed);
     if (result.status === "REJECT") {
-      throw new CreEvaluationError("CRE_REQUEST_REJECTED", "CRE rejected the confidential evaluation");
+      throw new CreEvaluationError(
+        "CRE_REQUEST_REJECTED",
+        "CRE rejected the confidential evaluation",
+      );
     }
     return assertCompletedResult(result, normalized);
   }
@@ -322,9 +332,4 @@ export function createCreEvaluationClientFromEnvironment(
   if (environment.CHAINLINK_CRE_TRIGGER_PRIVATE_KEY !== undefined)
     options.privateKey = environment.CHAINLINK_CRE_TRIGGER_PRIVATE_KEY;
   return new CreHttpEvaluationClient(options);
-}
-
-export function creEvaluationFailure(error: unknown): ApplicationError | undefined {
-  if (!(error instanceof CreEvaluationError)) return undefined;
-  return new ApplicationError("EVALUATION_UNAVAILABLE", error.message);
 }
