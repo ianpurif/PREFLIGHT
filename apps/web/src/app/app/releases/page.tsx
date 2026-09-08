@@ -1,6 +1,4 @@
-import { createDemoPublicData } from "../../demo-data";
 import { ProductApp } from "../../product-app";
-import { ReleaseView } from "../../release-view";
 
 export const metadata = {
   title: "Releases — Preflight",
@@ -8,10 +6,5 @@ export const metadata = {
 };
 
 export default function ReleasesPage() {
-  const demo = createDemoPublicData();
-  return (
-    <ProductApp demo={demo} initialView="releases">
-      <ReleaseView demo={demo} />
-    </ProductApp>
-  );
+  return <ProductApp initialView="releases" />;
 }

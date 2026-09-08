@@ -1,5 +1,3 @@
-import { createDemoPublicData } from "../../demo-data";
-import { EvidenceView } from "../../evidence-view";
 import { ProductApp } from "../../product-app";
 
 export const metadata = {
@@ -8,10 +6,5 @@ export const metadata = {
 };
 
 export default function EvidencePage() {
-  const demo = createDemoPublicData();
-  return (
-    <ProductApp demo={demo} initialView="evidence">
-      <EvidenceView demo={demo} />
-    </ProductApp>
-  );
+  return <ProductApp initialView="evidence" />;
 }

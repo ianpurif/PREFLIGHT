@@ -1,6 +1,4 @@
-import { createDemoPublicData } from "../../demo-data";
 import { ProductApp } from "../../product-app";
-import { BuildsView } from "../../workspace-views";
 
 export const metadata = {
   title: "Builds — Preflight",
@@ -8,10 +6,5 @@ export const metadata = {
 };
 
 export default function BuildsPage() {
-  const demo = createDemoPublicData();
-  return (
-    <ProductApp demo={demo} initialView="builds">
-      <BuildsView demo={demo} />
-    </ProductApp>
-  );
+  return <ProductApp initialView="builds" />;
 }

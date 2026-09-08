@@ -1,4 +1,3 @@
-import { createDemoPublicData } from "../demo-data";
 import { ProductApp } from "../product-app";
 
 export const metadata = {
@@ -7,5 +6,5 @@ export const metadata = {
 };
 
 export default function AppPage() {
-  return <ProductApp demo={createDemoPublicData()} initialView="overview" />;
+  return <ProductApp initialView="overview" />;
 }

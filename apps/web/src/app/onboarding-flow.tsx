@@ -1,47 +1,41 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import {
-  DEFAULT_WORKSPACE_SETUP,
-  WORKSPACE_SETUP_STORAGE_KEY,
-  type WorkspaceSetup,
-} from "./workspace-context";
+import { ApiError, apiFetch, jsonBody, type Account } from "./api-client";
 
-const steps = [
-  { label: "Site", helper: "Where will this build run?" },
-  { label: "Robot", helper: "Which robot is it for?" },
-  { label: "Build", helper: "What exact artifact are you reviewing?" },
-] as const;
-
-export function OnboardingFlow() {
-  const [step, setStep] = useState(0);
-  const [setup, setSetup] = useState<WorkspaceSetup>(DEFAULT_WORKSPACE_SETUP);
-  const [saved, setSaved] = useState(false);
-
-  function update(field: keyof WorkspaceSetup, value: string) {
-    setSaved(false);
-    setSetup((current) => ({ ...current, [field]: value }));
-  }
-
-  function next() {
-    if (step < steps.length - 1) {
-      setStep((current) => current + 1);
-      return;
+export function AccountEntry({
+  initialMode = "register",
+}: {
+  readonly initialMode?: "register" | "sign-in";
+}) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [mode, setMode] = useState(initialMode);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const next = searchParams.get("next");
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      await apiFetch<{ account: Account }>(
+        mode === "register" ? "/auth/register" : "/auth/sign-in",
+        { method: "POST", body: jsonBody({ email, password }) },
+      );
+      router.push(next?.startsWith("/app") ? next : mode === "register" ? "/app/setup" : "/app");
+    } catch (reason) {
+      setError(reason instanceof ApiError ? reason.message : "Account request failed. Try again.");
+    } finally {
+      setBusy(false);
     }
-    window.sessionStorage.setItem(WORKSPACE_SETUP_STORAGE_KEY, JSON.stringify(setup));
-    setSaved(true);
   }
-
-  function previous() {
-    setSaved(false);
-    setStep((current) => Math.max(0, current - 1));
-  }
-
-  const currentStep = steps[step] ?? steps[0];
-
   return (
-    <main className="onboarding-page" id="main-content">
+    <main className="onboarding-page real-account-page" id="main-content">
       <div className="onboarding-topbar">
         <Link className="brand-lockup" href="/" aria-label="Back to Preflight home">
           <span className="brand-mark" aria-hidden="true">
@@ -52,173 +46,99 @@ export function OnboardingFlow() {
             <small>Deployment safety</small>
           </span>
         </Link>
-        <Link className="onboarding-exit" href="/app/evaluate">
-          Skip setup and view demo <span aria-hidden="true">↗</span>
+        <Link className="onboarding-exit" href="/">
+          Back to overview <span aria-hidden="true">↗</span>
         </Link>
       </div>
-
-      <section className="onboarding-layout" aria-labelledby="onboarding-title">
+      <section className="onboarding-layout" aria-labelledby="account-entry-title">
         <aside className="onboarding-intro">
-          <p className="landing-eyebrow">Get started</p>
-          <h1 id="onboarding-title">Set up a release review in a minute.</h1>
+          <p className="landing-eyebrow">{mode === "register" ? "Create an account" : "Sign in"}</p>
+          <h1 id="account-entry-title">A clear release path starts with a real workspace.</h1>
           <p>
-            We&apos;ll use this context to label your workspace. You can change it later. Site rules
-            and confidential evaluation data never belong in this form.
+            Preflight keeps your sites, robots, exact build records, evaluations, and release
+            attempts separate from every other account.
           </p>
           <div className="onboarding-promise">
             <span className="promise-icon" aria-hidden="true">
               ◇
             </span>
             <span>
-              <strong>Keep the private parts private.</strong>
-              <small>Preflight only shows the public result needed for a release decision.</small>
+              <strong>Private policies stay private.</strong>
+              <small>
+                Your safety envelope is encrypted at rest and only its public commitment is shown in
+                the browser.
+              </small>
             </span>
           </div>
         </aside>
-
-        <div className="onboarding-card">
-          <div
-            className="onboarding-progress"
-            role="progressbar"
-            aria-label={`Setup step ${step + 1} of 3`}
-            aria-valuemin={1}
-            aria-valuemax={steps.length}
-            aria-valuenow={step + 1}
-          >
-            <div className="onboarding-progress-bar">
-              <span style={{ width: `${((step + 1) / steps.length) * 100}%` }} />
-            </div>
-            <div className="onboarding-progress-labels">
-              {steps.map((item, index) => (
-                <span className={index <= step ? "is-active" : ""} key={item.label}>
-                  <i aria-hidden="true">{index < step ? "✓" : index + 1}</i>
-                  {item.label}
-                </span>
-              ))}
-            </div>
+        <div className="onboarding-card real-account-card">
+          <div className="onboarding-card-heading">
+            <span className="onboarding-step-caption">
+              {mode === "register" ? "New account" : "Existing account"}
+            </span>
+            <h2>{mode === "register" ? "Create your operator account" : "Welcome back"}</h2>
+            <p>
+              {mode === "register"
+                ? "Use an email you control. You will create the site and robot target next."
+                : "Continue to the targets and evaluations owned by your account."}
+            </p>
           </div>
-
-          {!saved ? (
-            <>
-              <div className="onboarding-card-heading">
-                <span className="onboarding-step-caption">Step {step + 1} of 3</span>
-                <h2>{currentStep.label}</h2>
-                <p>{currentStep.helper}</p>
-              </div>
-
-              {step === 0 ? (
-                <div className="onboarding-fields">
-                  <label>
-                    Site name
-                    <input
-                      value={setup.siteName}
-                      onChange={(event) => update("siteName", event.target.value)}
-                      placeholder="e.g. Warehouse Manila-01"
-                    />
-                  </label>
-                  <label>
-                    Facility type
-                    <select
-                      value={setup.facilityType}
-                      onChange={(event) => update("facilityType", event.target.value)}
-                    >
-                      <option>Warehouse</option>
-                      <option>Distribution center</option>
-                      <option>Manufacturing floor</option>
-                    </select>
-                  </label>
-                </div>
-              ) : null}
-
-              {step === 1 ? (
-                <div className="onboarding-fields">
-                  <label>
-                    Robot name
-                    <input
-                      value={setup.robotName}
-                      onChange={(event) => update("robotName", event.target.value)}
-                      placeholder="e.g. AMR-17"
-                    />
-                  </label>
-                  <label>
-                    Fleet or operating group
-                    <input
-                      value={setup.fleetLabel}
-                      onChange={(event) => update("fleetLabel", event.target.value)}
-                      placeholder="e.g. Manila autonomous fleet"
-                    />
-                  </label>
-                </div>
-              ) : null}
-
-              {step === 2 ? (
-                <div className="onboarding-fields">
-                  <label>
-                    Build version
-                    <input
-                      value={setup.buildVersion}
-                      onChange={(event) => update("buildVersion", event.target.value)}
-                      placeholder="e.g. 4.7.21"
-                    />
-                  </label>
-                  <label>
-                    Build label <span className="field-optional">Optional</span>
-                    <input
-                      value={setup.buildLabel}
-                      onChange={(event) => update("buildLabel", event.target.value)}
-                      placeholder="e.g. Controller release candidate"
-                    />
-                  </label>
-                  <p className="onboarding-field-note">
-                    The evaluator binds to the exact build digest. This label is only for your
-                    workspace; it does not change evaluation semantics.
-                  </p>
-                </div>
-              ) : null}
-
-              <div className="onboarding-actions">
-                <button
-                  type="button"
-                  className="onboarding-back"
-                  onClick={previous}
-                  disabled={step === 0}
-                >
-                  Back
-                </button>
-                <button type="button" className="onboarding-next" onClick={next}>
-                  {step === steps.length - 1 ? "Open workspace" : "Continue"}
-                  <span aria-hidden="true">→</span>
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="onboarding-complete">
-              <span className="complete-mark" aria-hidden="true">
-                ✓
-              </span>
-              <span className="onboarding-step-caption">Workspace ready</span>
-              <h2>{setup.siteName}</h2>
-              <p>
-                {setup.robotName} · Build {setup.buildVersion}. Your review workspace is ready to
-                explore.
-              </p>
-              <Link className="onboarding-next onboarding-open-link" href="/app">
-                Open Preflight workspace <span aria-hidden="true">→</span>
-              </Link>
-              <button
-                type="button"
-                className="onboarding-start-over"
-                onClick={() => {
-                  setSaved(false);
-                  setStep(0);
-                }}
-              >
-                Edit setup
-              </button>
-            </div>
-          )}
+          {error ? (
+            <p className="real-error" role="alert">
+              {error}
+            </p>
+          ) : null}
+          <form className="real-account-form" onSubmit={(event) => void submit(event)}>
+            <label>
+              Email address
+              <input
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="operator@company.com"
+                required
+              />
+            </label>
+            <label>
+              Password
+              <input
+                type="password"
+                autoComplete={mode === "register" ? "new-password" : "current-password"}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="At least 12 characters"
+                minLength={12}
+                required
+              />
+            </label>
+            <button type="submit" className="view-primary-action" disabled={busy}>
+              {busy ? "Checking account…" : mode === "register" ? "Create account" : "Sign in"}{" "}
+              <span aria-hidden="true">→</span>
+            </button>
+          </form>
+          <p className="real-account-switch">
+            {mode === "register" ? "Already have an account?" : "Need an account?"}{" "}
+            <button
+              type="button"
+              onClick={() => {
+                setMode(mode === "register" ? "sign-in" : "register");
+                setError(null);
+              }}
+            >
+              {mode === "register" ? "Sign in" : "Create one"}
+            </button>
+          </p>
+          <p className="field-help">
+            This local product build uses an HTTP-only session cookie. Passwords are hashed by the
+            API and never returned to the browser.
+          </p>
         </div>
       </section>
     </main>
   );
+}
+
+export function OnboardingFlow() {
+  return <AccountEntry initialMode="register" />;
 }
