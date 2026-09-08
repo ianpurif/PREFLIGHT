@@ -270,6 +270,8 @@ account-created result exists in this environment.
   errors.
 - `bun run typecheck`: pass; 7/7 Turbo tasks.
 - `bun run test`: pass; 12/12 Turbo tasks.
+- `bunx turbo test --force`: pass; uncached 12/12 tasks, confirming 201 tests and 2,946
+  assertions after the P10 callback/selector fixes.
 - `bun run build`: pass; 7/7 tasks; Next.js production build includes static `/` and `/p5-ledger`.
 - `bun run --cwd apps/web test`: pass; 2 P6 projection/mutation tests, 9 assertions.
 - `bun run test:e2e`: pass; 10 browser tests, including the five P6 states, the account flow's
