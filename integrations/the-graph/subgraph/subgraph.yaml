@@ -1,0 +1,28 @@
+specVersion: 1.3.0
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: RovaultaRegistry
+    network: sepolia
+    source:
+      address: "0xFB270cc222efa8B5005AA097dD512Be2558dde65"
+      abi: RovaultaRegistry
+      startBlock: 11644462
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Clearance
+      abis:
+        - name: RovaultaRegistry
+          file: ./abis/RovaultaRegistry.json
+      eventHandlers:
+        - event: ClearanceRecorded(indexed bytes32,indexed bytes32,indexed bytes32,bytes32,address,uint64,uint64)
+          handler: handleClearanceRecorded
+        - event: ClearanceBindingsRecorded(indexed bytes32,indexed bytes32,indexed bytes32,bytes32,bytes32,bytes32,bytes32,bytes32,bytes32)
+          handler: handleClearanceBindingsRecorded
+        - event: ClearanceRevoked(indexed bytes32,indexed address,uint256)
+          handler: handleClearanceRevoked
+      file: ./src/rovaulta-registry.ts

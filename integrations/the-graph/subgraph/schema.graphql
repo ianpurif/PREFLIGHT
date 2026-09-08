@@ -1,0 +1,21 @@
+type Clearance @entity {
+  id: Bytes!
+  clearanceDigest: Bytes!
+  clearanceIdHash: Bytes!
+  evaluationIdHash: Bytes!
+  siteIdHash: Bytes!
+  robotIdHash: Bytes!
+  robotBuildIdHash: Bytes!
+  robotBuildDigest: Bytes!
+  safetyEnvelopeIdHash: Bytes!
+  safetyEnvelopeCommitment: Bytes!
+  evaluatorVersionHash: Bytes!
+  evaluationInputsDigest: Bytes!
+  verdict: Bytes!
+  issuer: Bytes!
+  issuedAt: BigInt!
+  expiresAt: BigInt!
+  revoked: Boolean!
+  blockNumber: BigInt!
+  blockHash: Bytes!
+}
