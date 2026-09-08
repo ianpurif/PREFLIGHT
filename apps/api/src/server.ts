@@ -393,7 +393,11 @@ export function buildServer(
       });
     } catch (error) {
       if (error instanceof CreEvaluationError && error.code === "CRE_EVALUATION_PENDING") {
-        return reply.code(202).send({ status: "PENDING", evaluationId });
+        return reply.code(202).send({
+          status: "PENDING",
+          evaluationId,
+          ...(error.executionId === undefined ? {} : { creExecutionId: error.executionId }),
+        });
       }
       throw error;
     }

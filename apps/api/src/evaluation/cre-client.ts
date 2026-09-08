@@ -60,11 +60,13 @@ export type CreEvaluationErrorCode =
 
 export class CreEvaluationError extends Error {
   readonly code: CreEvaluationErrorCode;
+  readonly executionId: string | undefined;
 
-  constructor(code: CreEvaluationErrorCode, message: string) {
+  constructor(code: CreEvaluationErrorCode, message: string, executionId?: string) {
     super(message);
     this.name = "CreEvaluationError";
     this.code = code;
+    this.executionId = executionId;
   }
 }
 
@@ -133,9 +135,15 @@ function responseJson(value: unknown, requestId: string): CrePublicEvaluationRes
   }
   if (response.status !== "EVALUATED") {
     if (response.status === "ACCEPTED" || response.workflow_execution_id !== undefined) {
+      const executionId =
+        typeof response.workflow_execution_id === "string" &&
+        /^[A-Za-z0-9._:-]{1,256}$/.test(response.workflow_execution_id)
+          ? response.workflow_execution_id
+          : undefined;
       throw new CreEvaluationError(
         "CRE_EVALUATION_PENDING",
         "CRE accepted the workflow but has not returned a completed evaluation",
+        executionId,
       );
     }
     throw new CreEvaluationError("CRE_RESPONSE_INVALID", "CRE did not return an evaluation");

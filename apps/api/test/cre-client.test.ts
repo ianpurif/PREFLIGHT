@@ -81,7 +81,10 @@ describe("CRE application transport", () => {
           { status: 200 },
         ),
     });
-    await expect(client.evaluate(input)).rejects.toMatchObject({ code: "CRE_EVALUATION_PENDING" });
+    await expect(client.evaluate(input)).rejects.toMatchObject({
+      code: "CRE_EVALUATION_PENDING",
+      executionId: "execution-1",
+    });
   });
 
   test("rejects mismatched JSON-RPC envelopes and public result bindings", async () => {

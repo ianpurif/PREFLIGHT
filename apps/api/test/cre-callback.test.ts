@@ -97,7 +97,7 @@ describe("CRE account result callback", () => {
       evaluationExecutor: {
         evaluate: async (input) => {
           captured = input;
-          throw new CreEvaluationError("CRE_EVALUATION_PENDING", "accepted");
+          throw new CreEvaluationError("CRE_EVALUATION_PENDING", "accepted", "execution-test-1");
         },
       },
     });
@@ -155,6 +155,7 @@ describe("CRE account result callback", () => {
     });
     expect(pending.statusCode).toBe(202);
     const evaluationId = JSON.parse(pending.body).evaluationId as string;
+    expect(JSON.parse(pending.body).creExecutionId).toBe("execution-test-1");
     expect(
       JSON.parse(
         (

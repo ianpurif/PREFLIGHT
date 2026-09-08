@@ -37,6 +37,11 @@ type PublicEvaluation = {
   readonly evaluatedAt: string;
 };
 
+type EvaluationOutcome = {
+  readonly evaluation: PublicEvaluation;
+  readonly creExecutionId?: string;
+};
+
 const DEFAULT_API_ORIGIN = "http://localhost:4000";
 const DEFAULT_WEB_ORIGIN = "http://localhost:3000";
 const DEFAULT_POLL_ATTEMPTS = 30;
@@ -246,22 +251,26 @@ async function evaluate(
   webOrigin: string,
   cookie: string,
   resources: { readonly siteId: string; readonly robotId: string; readonly buildId: string },
-): Promise<PublicEvaluation> {
+): Promise<EvaluationOutcome> {
   const submitted = await request(apiOrigin, webOrigin, "/evaluations", {
     method: "POST",
     cookie,
     body: resources,
   });
   if (submitted.response.status === 201) {
-    return assertEvaluationResources(
-      publicEvaluation(record(submitted.body, "evaluation response").evaluation),
-      resources,
-    );
+    return {
+      evaluation: assertEvaluationResources(
+        publicEvaluation(record(submitted.body, "evaluation response").evaluation),
+        resources,
+      ),
+    };
   }
   if (submitted.response.status !== 202) throw apiError(submitted.response.status, submitted.body);
 
   const pending = record(submitted.body, "pending evaluation response");
   const evaluationId = text(pending.evaluationId, "pending evaluationId");
+  const creExecutionId =
+    typeof pending.creExecutionId === "string" ? pending.creExecutionId : undefined;
   const attempts = positiveInteger("ROVAULTA_P13_POLL_ATTEMPTS", DEFAULT_POLL_ATTEMPTS);
   const delay = positiveInteger("ROVAULTA_P13_POLL_DELAY_MS", DEFAULT_POLL_DELAY_MS);
   for (let attempt = 0; attempt < attempts; attempt += 1) {
@@ -273,10 +282,13 @@ async function evaluate(
       { method: "GET", cookie },
     );
     if (result.response.status === 200) {
-      return assertEvaluationResources(
-        publicEvaluation(record(result.body, "completed evaluation response").evaluation),
-        resources,
-      );
+      return {
+        evaluation: assertEvaluationResources(
+          publicEvaluation(record(result.body, "completed evaluation response").evaluation),
+          resources,
+        ),
+        ...(creExecutionId === undefined ? {} : { creExecutionId }),
+      };
     }
     if (result.response.status !== 202) throw apiError(result.response.status, result.body);
   }
@@ -301,6 +313,7 @@ function writePublicEvidence(
   path: string,
   evaluation: PublicEvaluation,
   accountId: string,
+  creExecutionId: string | undefined,
 ): string {
   const target = resolve(process.cwd(), path);
   if (existsSync(target)) throw new Error("ROVAULTA_P13_EVIDENCE_PATH already exists");
@@ -310,6 +323,7 @@ function writePublicEvidence(
     execution: "normal account application path",
     capturedAt: new Date().toISOString(),
     accountId,
+    creExecutionId: creExecutionId ?? null,
     evaluation,
     confidentialFields: "absent from this public projection",
   } as const;
@@ -348,7 +362,8 @@ async function run(): Promise<void> {
   const account = record(accountResponse.body, "account response").account;
   const accountId = text(record(account, "account").id, "account.id");
   const resources = await createResources(apiOrigin, webOrigin, cookie, setup);
-  const evaluation = await evaluate(apiOrigin, webOrigin, cookie, resources);
+  const outcome = await evaluate(apiOrigin, webOrigin, cookie, resources);
+  const evaluation = outcome.evaluation;
   const evidencePath = process.env.ROVAULTA_P13_EVIDENCE_PATH?.trim();
 
   console.log(
@@ -361,6 +376,7 @@ async function run(): Promise<void> {
         robotId: evaluation.robotId,
         buildId: evaluation.buildId,
         evaluationId: evaluation.evaluationId,
+        creExecutionId: outcome.creExecutionId ?? null,
         robotBuildDigest: evaluation.robotBuildDigest,
         safetyEnvelopeCommitment: evaluation.safetyEnvelopeCommitment,
         evaluatorVersion: evaluation.evaluatorVersion,
@@ -368,7 +384,7 @@ async function run(): Promise<void> {
         evaluatedAt: evaluation.evaluatedAt,
         publicEvidencePath:
           evaluation.verdict === "CLEAR" && evidencePath !== undefined && evidencePath.length > 0
-            ? writePublicEvidence(evidencePath, evaluation, accountId)
+            ? writePublicEvidence(evidencePath, evaluation, accountId, outcome.creExecutionId)
             : null,
       },
       null,
