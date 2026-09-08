@@ -46,6 +46,6 @@ export function createApplicationStoreFromEnvironment(
   return new ApplicationStore({ dbPath, policyKey: keyFromEnvironment(environment) });
 }
 
-export * from "./errors.js";
 export * from "./clearance.js";
+export * from "./errors.js";
 export * from "./store.js";
