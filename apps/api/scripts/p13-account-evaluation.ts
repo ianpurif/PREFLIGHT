@@ -253,7 +253,10 @@ async function evaluate(
     body: resources,
   });
   if (submitted.response.status === 201) {
-    return publicEvaluation(record(submitted.body, "evaluation response").evaluation);
+    return assertEvaluationResources(
+      publicEvaluation(record(submitted.body, "evaluation response").evaluation),
+      resources,
+    );
   }
   if (submitted.response.status !== 202) throw apiError(submitted.response.status, submitted.body);
 
@@ -270,11 +273,28 @@ async function evaluate(
       { method: "GET", cookie },
     );
     if (result.response.status === 200) {
-      return publicEvaluation(record(result.body, "completed evaluation response").evaluation);
+      return assertEvaluationResources(
+        publicEvaluation(record(result.body, "completed evaluation response").evaluation),
+        resources,
+      );
     }
     if (result.response.status !== 202) throw apiError(result.response.status, result.body);
   }
   throw new Error(`CRE evaluation remained PENDING after ${attempts} polls`);
+}
+
+function assertEvaluationResources(
+  evaluation: PublicEvaluation,
+  resources: { readonly siteId: string; readonly robotId: string; readonly buildId: string },
+): PublicEvaluation {
+  if (
+    evaluation.siteId !== resources.siteId ||
+    evaluation.robotId !== resources.robotId ||
+    evaluation.buildId !== resources.buildId
+  ) {
+    throw new Error("CRE evaluation resource binding does not match the created account resources");
+  }
+  return evaluation;
 }
 
 function writePublicEvidence(
