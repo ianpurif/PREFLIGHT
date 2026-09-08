@@ -3,7 +3,8 @@
 ## Outcome
 
 Replace the demo-only normal application path with an account-scoped Preflight product:
-authenticated users create a site and private safety policy, register a robot and exact build,
+authenticated users create a site and private safety policy, register a robot and exact build
+declaration,
 run the existing deterministic evaluator through the API, inspect the public result, and prepare a
 truthful release handoff. P7 fixtures remain available only through an explicit development/test
 surface.
@@ -23,6 +24,9 @@ surface.
 - P2 remains the sole deterministic `HOLD`/`CLEAR` authority.
 - Every protected resource query is scoped by the authenticated session's account id; frontend
   account ids are never trusted.
+- Cookie-authenticated mutations reject an untrusted `Origin`/`Referer`; legacy P5/P5.2 routes
+  require the account session whenever the application store is configured (the explicit fixture
+  flag is the only non-production exception).
 - Site policy is encrypted at rest and decrypted only inside the API evaluation boundary.
 - A release proposal reuses the existing P5/P5.2 authority and stops truthfully when provider,
   registry, or Ledger configuration is unavailable.
@@ -47,10 +51,12 @@ surface.
 - Two accounts cannot read, mutate, evaluate, or prepare releases for one another's site, robot,
   build, evaluation, or release records.
 - Onboarding creates a real site with a constrained private policy, robot, and exact build record;
-  the API returns only public metadata and commitments.
+  the artifact digest is a caller-supplied identity and the declared route is the simulation input,
+  not binary provenance. The API returns only public metadata and commitments.
 - Evaluation calls `evaluateSimulation` server-side with the decrypted policy and returns only the
-  public result projection. Unsafe and corrected user-created builds produce the evaluator's real
-  verdicts; malformed bindings fail closed.
+  public result projection. Unsafe and corrected user-created build declarations produce the
+  evaluator's deterministic verdicts; malformed bindings fail closed. The product does not claim
+  to inspect or verify artifact bytes.
 - Release preparation never reports human authorization without the existing P5 boundary returning
   a validated prepared request.
 - Normal `/app/evaluate` has no deterministic fixture selector. Fixture scenarios are explicit,
@@ -112,8 +118,11 @@ surface.
   behind `PREFLIGHT_ENABLE_DEMO_ROUTES=true` and `/dev-fixtures/evaluate`; it is not a source of
   account data.
 - Evaluation uses the existing `@preflight/simulation-core` authority inside the API and stores a
-  public projection. Release preparation delegates to the existing P5/P5.2 boundary and records a
-  blocked attempt when a public P4 clearance or live release gate is unavailable. Before delegation,
+  public projection over the registered route declaration; it does not inspect binary artifact
+  bytes or claim external provenance. Release preparation delegates to the existing P5/P5.2
+  boundary and records a blocked attempt when a public P4 clearance or live release gate is
+  unavailable. An operator may paste a public P4 clearance for the exact evaluation to reach the
+  existing Ledger handoff; the product never creates that clearance. Before delegation,
   the API cross-checks the supplied public clearance against the stored evaluation's exact site,
   robot, build digest, safety-envelope id/commitment, evaluator version, evaluation id, and
   evaluation-input digest.

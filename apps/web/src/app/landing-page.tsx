@@ -56,7 +56,7 @@ export function LandingPage() {
           <h1 id="landing-title">
             Release the build
             <br />
-            you <em>actually tested.</em>
+            you <em>actually evaluated.</em>
           </h1>
           <p className="landing-lede">
             Preflight checks an exact robot software build against a site&apos;s private evaluation

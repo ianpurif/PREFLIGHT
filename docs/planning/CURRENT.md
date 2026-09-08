@@ -9,13 +9,15 @@
 - `/` is a plain-language landing page. `/start` creates or signs into an account; it does not
   create a browser-only demo session.
 - `/app/setup` creates an account-scoped site and constrained private safety policy, then registers
-  a robot and exact build through the API. Policy contents are encrypted at rest and only opened
-  inside the API evaluation boundary.
+  a robot and exact build declaration through the API. The artifact digest is recorded identity,
+  while the declared route is the deterministic simulation input; no binary provenance is claimed.
+  Policy contents are encrypted at rest and only opened inside the API evaluation boundary.
 - `/app`, `/app/builds`, `/app/evaluate`, `/app/releases`, and `/app/evidence` load authenticated,
   persisted records. All resource queries are scoped by the session account; the browser never
   chooses an account id.
-- The existing P2 evaluator is invoked server-side for user-created builds. The browser receives a
-  public projection only: bindings, verdict, counts, reason families, and commitments.
+- The existing P2 evaluator is invoked server-side for user-created build declarations. The browser
+  receives a public projection only: bindings, verdict, counts, reason families, and commitments.
+  The result is not evidence that artifact bytes were inspected.
 - Release preparation calls the existing P5 boundary when configured and otherwise records a
   truthful `BLOCKED` attempt. A local `CLEAR` result is not presented as a P4 clearance or human
   approval.

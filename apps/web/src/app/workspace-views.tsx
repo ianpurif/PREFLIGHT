@@ -1,5 +1,7 @@
 "use client";
 
+/** @deprecated Development fixture compatibility surface; normal /app routes use API state. */
+
 import Link from "next/link";
 import { useState } from "react";
 import type { DemoPublicData } from "./demo-data";

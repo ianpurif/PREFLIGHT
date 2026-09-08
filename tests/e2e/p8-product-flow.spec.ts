@@ -5,7 +5,7 @@ test.describe("P8 product flow", () => {
     await page.goto("/");
 
     await expect(
-      page.getByRole("heading", { name: /Release the build you actually tested/i }),
+      page.getByRole("heading", { name: /Release the build you actually evaluated/i }),
     ).toBeVisible();
     await expect(page.getByRole("link", { name: "Get started" }).first()).toHaveAttribute(
       "href",

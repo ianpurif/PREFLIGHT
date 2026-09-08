@@ -4803,6 +4803,41 @@ pre {
   gap: 14px;
 }
 
+.real-release-clearance {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid #d8e4e1;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.real-release-clearance legend {
+  padding: 0 6px;
+  color: #1f3733;
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.real-release-clearance textarea {
+  min-height: 150px;
+  resize: vertical;
+  border-color: #cddbd7;
+  color: #1f3733;
+  background: #fcfefd;
+  font:
+    11px / 1.5 "SFMono-Regular",
+    Consolas,
+    monospace;
+}
+
+.real-release-clearance textarea:focus {
+  outline: 3px solid rgb(47 157 126 / 18%);
+  border-color: #3a9a7c;
+}
+
 .real-release-form .field-help {
   grid-column: 1 / -1;
 }

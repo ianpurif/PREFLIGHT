@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
   type Account,
@@ -714,7 +714,10 @@ function SetupView({
                 placeholder="sha256:…"
                 required
               />
-              <span className="field-help">Use the digest produced by your build pipeline.</span>
+              <span className="field-help">
+                Use the digest produced by your build pipeline. Preflight records this identity; it
+                does not inspect the artifact bytes.
+              </span>
             </label>
             <fieldset>
               <legend>Declared route for evaluation</legend>
@@ -815,8 +818,8 @@ function BuildsView({ data }: { readonly data: WorkspaceData }) {
             <p className="view-eyebrow">Builds</p>
             <h1>Register the exact artifact.</h1>
             <p className="view-lede">
-              Build registration is part of setup so the artifact digest and route are never implied
-              by a UI label.
+              Build registration records the declared artifact digest and route used by the
+              deterministic evaluation. The API does not claim binary provenance.
             </p>
           </div>
         </div>
@@ -839,7 +842,8 @@ function BuildsView({ data }: { readonly data: WorkspaceData }) {
           <h1>Exact robot build identities.</h1>
           <p className="view-lede">
             These records are account-owned. A build digest is not a display label and cannot be
-            changed by selecting a different result.
+            changed by selecting a different result. Evaluation uses the registered route
+            declaration; it does not inspect a binary artifact.
           </p>
         </div>
       </div>
@@ -882,13 +886,23 @@ function EvaluateView({
   readonly refresh: () => Promise<void>;
 }) {
   const router = useRouter();
-  const [selectedBuildId, setSelectedBuildId] = useState(data.builds[0]?.id ?? "");
+  const searchParams = useSearchParams();
+  const requestedBuildId = searchParams.get("build");
+  const initialBuildId =
+    requestedBuildId !== null && data.builds.some((build) => build.id === requestedBuildId)
+      ? requestedBuildId
+      : (data.builds[0]?.id ?? "");
+  const [selectedBuildId, setSelectedBuildId] = useState(initialBuildId);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    if (selectedBuildId === "" && data.builds[0] !== undefined)
-      setSelectedBuildId(data.builds[0].id);
-  }, [data.builds, selectedBuildId]);
+    const nextBuildId =
+      requestedBuildId !== null && data.builds.some((build) => build.id === requestedBuildId)
+        ? requestedBuildId
+        : (data.builds[0]?.id ?? "");
+    if (nextBuildId !== "" && !data.builds.some((build) => build.id === selectedBuildId))
+      setSelectedBuildId(nextBuildId);
+  }, [data.builds, requestedBuildId, selectedBuildId]);
   const selected = data.builds.find((build) => build.id === selectedBuildId);
   const latest = data.evaluations.find((evaluation) => evaluation.buildId === selectedBuildId);
   async function evaluate() {
@@ -932,8 +946,9 @@ function EvaluateView({
           <p className="view-eyebrow">Evaluation</p>
           <h1>Understand the result before release.</h1>
           <p className="view-lede">
-            The API evaluates the stored build against the private policy and returns only a public
-            result projection.
+            The API evaluates the registered build declaration and route against the private policy
+            and returns only a public simulation result. Artifact bytes and provenance are not
+            inspected by this local workflow.
           </p>
         </div>
         <Link className="button-secondary" href="/app/builds">
@@ -986,8 +1001,8 @@ function EvaluateView({
             </div>
             <p className="real-result-summary">
               {latest.verdict === "CLEAR"
-                ? "This exact build produced no public violations for the stored policy."
-                : "This exact build must not move to release preparation until the reported violations are addressed."}
+                ? "This registered build declaration produced no public violations for the stored policy."
+                : "This registered build declaration must not move to release preparation until the reported violations are addressed."}
             </p>
             <div className="real-result-facts">
               <div>
@@ -1048,6 +1063,8 @@ function ReleasesView({
 }) {
   const clearEvaluation = data.evaluations.find((evaluation) => evaluation.verdict === "CLEAR");
   const [signer, setSigner] = useState("");
+  const [clearanceText, setClearanceText] = useState("");
+  const [handoffReady, setHandoffReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   async function prepare() {
@@ -1055,14 +1072,29 @@ function ReleasesView({
     setBusy(true);
     setError(null);
     try {
-      await apiFetch("/releases/prepare", {
+      let clearance: unknown = null;
+      if (clearanceText.trim() !== "") {
+        try {
+          clearance = JSON.parse(clearanceText);
+        } catch {
+          throw new Error("Public P4 clearance must be valid JSON");
+        }
+      }
+      const response = await apiFetch<{
+        readonly status?: string;
+        readonly prepared?: unknown;
+      }>("/releases/prepare", {
         method: "POST",
         body: jsonBody({
           evaluationId: clearEvaluation.evaluationId,
           signerAddress: signer,
-          clearance: null,
+          clearance,
         }),
       });
+      if (response.status === "LEDGER_APPROVAL_REQUIRED" && response.prepared !== undefined) {
+        window.sessionStorage.setItem("preflight.p5.prepared", JSON.stringify(response.prepared));
+        setHandoffReady(true);
+      }
       await refresh();
     } catch (reason) {
       setError(reason instanceof ApiError ? reason.message : "Release preparation failed");
@@ -1113,6 +1145,24 @@ function ReleasesView({
                 placeholder="0x…"
               />
             </label>
+            <fieldset className="real-release-clearance">
+              <legend>Public P4 clearance record</legend>
+              <p className="field-help">
+                Paste the public clearance issued for this exact evaluation. Preflight cannot create
+                one here, and private policy contents do not belong in this field.
+              </p>
+              <textarea
+                rows={8}
+                value={clearanceText}
+                onChange={(event) => {
+                  setClearanceText(event.target.value);
+                  setHandoffReady(false);
+                }}
+                placeholder='{"schemaVersion":"preflight.clearance-record/v1",…}'
+                spellCheck={false}
+                aria-label="Public P4 clearance record"
+              />
+            </fieldset>
             <button
               type="button"
               className="view-primary-action"
@@ -1124,9 +1174,14 @@ function ReleasesView({
             </button>
             <p className="field-help">
               The browser cannot create a clearance, sign, or approve. This action calls the
-              existing P5 boundary and will return a truthful blocked state when it is not
-              configured.
+              existing P5 boundary and will return a truthful blocked state when the public
+              clearance or release gate is unavailable.
             </p>
+            {handoffReady ? (
+              <Link className="view-primary-action" href="/p5-ledger">
+                Continue to human Ledger approval <span aria-hidden="true">→</span>
+              </Link>
+            ) : null}
           </div>
           {error ? <ErrorNotice message={error} /> : null}
         </section>

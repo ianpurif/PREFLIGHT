@@ -88,13 +88,17 @@ boundary, not an onchain authorization claim. The API and agent never sign or re
 The root route is a product landing page. `/start` creates or signs into an account, and `/app`
 provides the authenticated workspace shell with setup, build, evaluation, release, and evidence
 views. These views load account-scoped API records and never use the P7 fixture as normal data.
-`/app/evaluate` invokes the existing server-side deterministic evaluator for a persisted build and
-renders only its public result projection. The browser never receives the confidential envelope,
-blind, private rule data, or internal report. Release preparation delegates to the existing P5/P5.2
-boundary and remains blocked when a public P4 clearance or live gate is unavailable.
+`/app/evaluate` invokes the existing server-side deterministic evaluator for a persisted build
+declaration and renders only its public result projection. The declared route is the simulation
+input; the artifact digest is an identity supplied by the operator, not binary provenance. The
+browser never receives the confidential envelope, blind, private rule data, or internal report.
+Release preparation delegates to the existing P5/P5.2 boundary and remains blocked when a public
+P4 clearance or live gate is unavailable. A public P4 clearance can be supplied for the exact
+evaluation to reach the existing Ledger handoff; the product never creates one.
 
 The P6/P7 dashboard is retained at the explicit, env-gated `/dev-fixtures/evaluate` route for
-development and regression tests only. It is not linked from the normal product navigation.
+development and regression tests only. The route is denied in production even if the flag is set;
+it is not linked from the normal product navigation.
 
 The `/p5-ledger` route remains the separate minimal operator/evidence harness. It defaults to WebHID
 and can select the loopback Ledger Speculos official device simulator only in development/test

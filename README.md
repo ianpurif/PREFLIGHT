@@ -157,10 +157,12 @@ sign in. The authenticated workspace then guides the operator through `/app/setu
 
 1. Create a site and enter its private safety policy. The policy is encrypted at rest and is opened
    only inside the API evaluation boundary.
-2. Register a robot and the exact build artifact digest and declared route.
+2. Register a robot and an exact build declaration: the artifact digest identifies the candidate,
+   while the declared route is the deterministic simulation input. The local workflow does not
+   inspect binary artifact bytes or claim external provenance.
 3. Run the existing deterministic evaluator. Only its public result projection reaches the browser.
-4. Review a `HOLD` or `CLEAR` result, then prepare a release only when a public P4 clearance and the
-   configured P5 gate are available.
+4. Review a `HOLD` or `CLEAR` result, paste the public P4 clearance for that exact evaluation when
+   available, then prepare a release through the configured P5 gate.
 5. `LEDGER_APPROVAL_REQUIRED` means the exact request is waiting for a human Ledger action; it is
    not authorization. Missing clearance or gate configuration remains `BLOCKED`.
 
@@ -176,7 +178,7 @@ PREFLIGHT_ENABLE_DEMO_ROUTES=true bun run --cwd apps/web dev
 ```
 
 Then open `/dev-fixtures/evaluate`. This route is not linked from the product and is intended for
-development/regression tests only. It uses the checked-in P2/P7 fixture and may show the unsafe A
+development/regression tests only; it is denied when `NODE_ENV=production`. It uses the checked-in P2/P7 fixture and may show the unsafe A
 (`HOLD`), corrected B (`CLEAR`), and mutated C (`BLOCKED / CLEARANCE_BINDING_MISMATCH`) rehearsal.
 It is not account data, a live partner execution, a clearance, or proof of physical robot safety.
 

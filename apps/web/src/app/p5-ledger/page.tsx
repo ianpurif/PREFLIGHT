@@ -27,6 +27,7 @@ async function post(path: string, body: unknown) {
   const response = await fetch(`${apiOrigin}${path}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(body),
   });
   const payload = (await response.json()) as Record<string, unknown>;
