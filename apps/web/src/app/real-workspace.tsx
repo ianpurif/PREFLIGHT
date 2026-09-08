@@ -284,7 +284,7 @@ function OverviewView({ data }: { readonly data: WorkspaceData }) {
             <p>
               {latest
                 ? `Latest result is ${latest.verdict}.`
-                : "Run the deterministic evaluator against the private site policy."}
+                : "Request a confidential evaluation against the private site policy."}
             </p>
           </div>
           {latest ? (
@@ -924,7 +924,13 @@ function EvaluateView({
       });
       await refresh();
     } catch (reason) {
-      setError(reason instanceof ApiError ? reason.message : "Evaluation failed");
+      if (reason instanceof ApiError && reason.code === "CRE_EVALUATION_PENDING") {
+        setError("CRE accepted the evaluation, but no completed result is available yet.");
+      } else if (reason instanceof ApiError && reason.code === "CRE_UNAVAILABLE") {
+        setError("Confidential evaluation is unavailable until the CRE gateway is configured.");
+      } else {
+        setError(reason instanceof ApiError ? reason.message : "Evaluation failed");
+      }
     } finally {
       setBusy(false);
     }
@@ -950,9 +956,9 @@ function EvaluateView({
           <p className="view-eyebrow">Evaluation</p>
           <h1>Understand the result before release.</h1>
           <p className="view-lede">
-            The API evaluates the registered build declaration and route against the private policy
-            and returns only a public simulation result. Artifact bytes and provenance are not
-            inspected by this local workflow.
+            The configured Chainlink confidential workflow evaluates the registered build
+            declaration and supplied route against the private policy, then returns only a public
+            result. Artifact bytes and external provenance are not inspected by this workflow.
           </p>
         </div>
         <Link className="button-secondary" href="/app/builds">
@@ -1040,7 +1046,7 @@ function EvaluateView({
         ) : (
           <EmptyState
             title="No result for this build"
-            body="Run the evaluator to create a public result. Private policy values will not be returned."
+            body="Run the configured confidential evaluation to request a public result. Private policy values will not be returned."
             action={
               <button
                 type="button"
@@ -1240,8 +1246,8 @@ function EvidenceView({ data }: { readonly data: WorkspaceData }) {
           <h2>Commitment, not contents</h2>
           <p>
             The browser receives a safety-envelope commitment and public verdict only. The encrypted
-            policy and blinding secret are opened inside the API before the deterministic evaluator
-            runs.
+            policy and blinding secret are opened inside the configured confidential evaluation
+            boundary; they never enter the browser projection.
           </p>
         </article>
         <article className="real-record-card">
