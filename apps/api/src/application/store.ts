@@ -10,6 +10,7 @@ import {
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import {
+  CRE_CONFIDENTIAL_INPUT_VERSION,
   CRE_PUBLIC_REQUEST_VERSION,
   type CreEvaluationResultCallback,
   digestBehaviorInput,
@@ -244,8 +245,19 @@ interface DecryptedPolicy {
   readonly blind: Uint8Array;
 }
 
+export interface OperatorConfidentialEvaluationSecret {
+  readonly selector: string;
+  readonly value: string;
+}
+
 function nowSeconds(): string {
   return Math.floor(Date.now() / 1000).toString();
+}
+
+function bytesToHex(bytes: Uint8Array): string {
+  let output = "";
+  for (const byte of bytes) output += byte.toString(16).padStart(2, "0");
+  return output;
 }
 
 function id(prefix: string): string {
@@ -821,6 +833,29 @@ export class ApplicationStore {
   getSite(accountId: string, siteId: string): PublicSite {
     const row = this.#siteRow(accountId, siteId);
     return publicSite(row);
+  }
+
+  /**
+   * Returns the exact site-bound CRE secret for a trusted local provisioning operator.
+   *
+   * This method is intentionally not used by HTTP handlers. Callers must provision the returned
+   * value directly to CRE; it must never be sent to a browser, logged, or written to evidence.
+   */
+  readConfidentialEvaluationSecretForOperator(
+    accountId: string,
+    siteId: string,
+  ): OperatorConfidentialEvaluationSecret {
+    const site = this.#siteRow(accountId, siteId);
+    const policy = decryptPolicy(site.policy_ciphertext, this.#policyKey);
+    return Object.freeze({
+      selector: siteSecretId(site.id),
+      value: canonicalSerialize({
+        schemaVersion: CRE_CONFIDENTIAL_INPUT_VERSION,
+        protocolVersion: PROTOCOL_VERSION,
+        confidentialEnvelope: policy.envelope,
+        envelopeBlindingSecretHex: bytesToHex(policy.blind),
+      }),
+    });
   }
 
   createRobot(accountId: string, siteId: string, input: { readonly name: unknown }): PublicRobot {

@@ -42,6 +42,12 @@ type EvaluationOutcome = {
   readonly creExecutionId?: string;
 };
 
+type Resources = {
+  readonly siteId: string;
+  readonly robotId: string;
+  readonly buildId: string;
+};
+
 const DEFAULT_API_ORIGIN = "http://localhost:4000";
 const DEFAULT_WEB_ORIGIN = "http://localhost:3000";
 const DEFAULT_POLL_ATTEMPTS = 30;
@@ -58,6 +64,35 @@ function positiveInteger(name: string, fallback: number): number {
   if (value === undefined || value.length === 0) return fallback;
   if (!/^[1-9][0-9]{0,5}$/.test(value)) throw new Error(`${name} must be a positive integer`);
   return Number(value);
+}
+
+function optionalBoolean(name: string): boolean {
+  const value = process.env[name]?.trim().toLowerCase();
+  if (value === undefined || value.length === 0 || value === "false") return false;
+  if (value === "true") return true;
+  throw new Error(`${name} must be true or false`);
+}
+
+function optionalResourceId(name: string): string | undefined {
+  const value = process.env[name]?.trim();
+  return value === undefined || value.length === 0 ? undefined : value;
+}
+
+function assertApiOrigin(value: string): void {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error("ROVAULTA_P13_API_ORIGIN must be a valid URL");
+  }
+  const loopback =
+    url.protocol === "http:" && new Set(["localhost", "127.0.0.1", "[::1]"]).has(url.hostname);
+  if (url.protocol !== "https:" && !loopback) {
+    throw new Error("ROVAULTA_P13_API_ORIGIN must use HTTPS outside loopback");
+  }
+  if (url.username.length > 0 || url.password.length > 0) {
+    throw new Error("ROVAULTA_P13_API_ORIGIN must not contain credentials");
+  }
 }
 
 function record(value: unknown, label: string): JsonRecord {
@@ -199,7 +234,7 @@ async function createResources(
   webOrigin: string,
   cookie: string,
   setup: Setup,
-): Promise<{ readonly siteId: string; readonly robotId: string; readonly buildId: string }> {
+): Promise<Resources> {
   const siteResponse = await request(apiOrigin, webOrigin, "/sites", {
     method: "POST",
     cookie,
@@ -244,6 +279,66 @@ async function createResources(
     robotId,
     buildId: text(buildRecord.id, "build.id"),
   };
+}
+
+async function resolveExistingResources(
+  apiOrigin: string,
+  webOrigin: string,
+  cookie: string,
+  resources: Resources,
+): Promise<Resources> {
+  const siteResponse = await request(
+    apiOrigin,
+    webOrigin,
+    `/sites/${encodeURIComponent(resources.siteId)}`,
+    { method: "GET", cookie },
+  );
+  if (siteResponse.response.status !== 200) {
+    throw apiError(siteResponse.response.status, siteResponse.body);
+  }
+  const site = record(record(siteResponse.body, "site response").site, "site");
+  if (text(site.id, "site.id") !== resources.siteId) {
+    throw new Error("Existing site binding does not match ROVAULTA_P13_SITE_ID");
+  }
+
+  const robotsResponse = await request(
+    apiOrigin,
+    webOrigin,
+    `/sites/${encodeURIComponent(resources.siteId)}/robots`,
+    { method: "GET", cookie },
+  );
+  if (robotsResponse.response.status !== 200) {
+    throw apiError(robotsResponse.response.status, robotsResponse.body);
+  }
+  const robots = record(robotsResponse.body, "robots response").robots;
+  if (!Array.isArray(robots)) throw new Error("Existing robots response is malformed");
+  const robot = robots.find((value) => {
+    const candidate = record(value, "robot");
+    return candidate.id === resources.robotId && candidate.siteId === resources.siteId;
+  });
+  if (robot === undefined) throw new Error("Existing robot is not owned by the selected site");
+
+  const buildsResponse = await request(
+    apiOrigin,
+    webOrigin,
+    `/sites/${encodeURIComponent(resources.siteId)}/builds`,
+    { method: "GET", cookie },
+  );
+  if (buildsResponse.response.status !== 200) {
+    throw apiError(buildsResponse.response.status, buildsResponse.body);
+  }
+  const builds = record(buildsResponse.body, "builds response").builds;
+  if (!Array.isArray(builds)) throw new Error("Existing builds response is malformed");
+  const build = builds.find((value) => {
+    const candidate = record(value, "build");
+    return (
+      candidate.id === resources.buildId &&
+      candidate.siteId === resources.siteId &&
+      candidate.robotId === resources.robotId
+    );
+  });
+  if (build === undefined) throw new Error("Existing build is not bound to the selected robot");
+  return resources;
 }
 
 async function evaluate(
@@ -346,12 +441,31 @@ async function run(): Promise<void> {
     process.env.WEB_ORIGIN ??
     DEFAULT_WEB_ORIGIN
   ).replace(/\/$/, "");
+  assertApiOrigin(apiOrigin);
   const email = required("ROVAULTA_P13_EMAIL");
   const password = required("ROVAULTA_P13_PASSWORD");
-  const setupPath = required("ROVAULTA_P13_SETUP_PATH");
-  const setup = parseSetup(
-    JSON.parse(readFileSync(resolve(process.cwd(), setupPath), "utf8")) as unknown,
-  );
+  const setupOnly = optionalBoolean("ROVAULTA_P13_SETUP_ONLY");
+  const setupPath = process.env.ROVAULTA_P13_SETUP_PATH?.trim();
+  const configuredSiteId = optionalResourceId("ROVAULTA_P13_SITE_ID");
+  const configuredRobotId = optionalResourceId("ROVAULTA_P13_ROBOT_ID");
+  const configuredBuildId = optionalResourceId("ROVAULTA_P13_BUILD_ID");
+  const configuredResources = [configuredSiteId, configuredRobotId, configuredBuildId];
+  const suppliedResourceCount = configuredResources.filter((value) => value !== undefined).length;
+  if (suppliedResourceCount !== 0 && suppliedResourceCount !== configuredResources.length) {
+    throw new Error(
+      "ROVAULTA_P13_SITE_ID, ROVAULTA_P13_ROBOT_ID, and ROVAULTA_P13_BUILD_ID must be supplied together",
+    );
+  }
+  if (suppliedResourceCount === 0 && (setupPath === undefined || setupPath.length === 0)) {
+    throw new Error("ROVAULTA_P13_SETUP_PATH is required when resource IDs are not supplied");
+  }
+  if (suppliedResourceCount === configuredResources.length && setupPath !== undefined) {
+    throw new Error("Unset ROVAULTA_P13_SETUP_PATH when reusing existing resource IDs");
+  }
+  const setup =
+    setupPath === undefined
+      ? undefined
+      : parseSetup(JSON.parse(readFileSync(resolve(process.cwd(), setupPath), "utf8")) as unknown);
   const cookie = await createSession(apiOrigin, webOrigin, email, password);
   const accountResponse = await request(apiOrigin, webOrigin, "/auth/me", {
     method: "GET",
@@ -361,7 +475,36 @@ async function run(): Promise<void> {
     throw apiError(accountResponse.response.status, accountResponse.body);
   const account = record(accountResponse.body, "account response").account;
   const accountId = text(record(account, "account").id, "account.id");
-  const resources = await createResources(apiOrigin, webOrigin, cookie, setup);
+  const configuredAccountId = process.env.ROVAULTA_P13_ACCOUNT_ID?.trim();
+  if (configuredAccountId !== undefined && configuredAccountId.length > 0) {
+    if (configuredAccountId !== accountId) {
+      throw new Error("Authenticated account does not match ROVAULTA_P13_ACCOUNT_ID");
+    }
+  }
+  const resources =
+    suppliedResourceCount === configuredResources.length
+      ? await resolveExistingResources(apiOrigin, webOrigin, cookie, {
+          siteId: configuredSiteId as string,
+          robotId: configuredRobotId as string,
+          buildId: configuredBuildId as string,
+        })
+      : await createResources(apiOrigin, webOrigin, cookie, setup as Setup);
+  if (setupOnly) {
+    console.log(
+      JSON.stringify(
+        {
+          status: "SETUP_COMPLETE",
+          execution: "normal account application path",
+          accountId,
+          ...resources,
+          nextStep: "Provision the site-bound CRE secret before evaluating this build",
+        },
+        null,
+        2,
+      ),
+    );
+    return;
+  }
   const outcome = await evaluate(apiOrigin, webOrigin, cookie, resources);
   const evaluation = outcome.evaluation;
   const evidencePath = process.env.ROVAULTA_P13_EVIDENCE_PATH?.trim();

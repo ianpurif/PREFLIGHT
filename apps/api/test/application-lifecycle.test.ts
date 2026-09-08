@@ -56,6 +56,18 @@ describe("account-scoped product lifecycle", () => {
     const site = JSON.parse(siteResponse.body).site;
     expect(site).toHaveProperty("safetyEnvelopeCommitment");
     expect(JSON.stringify(site)).not.toContain("warehouseBounds");
+    const account = store.accountForSession(ApplicationStore.readSessionCookie(session));
+    if (account === null) throw new Error("test account session was not found");
+    const operatorSecret = store.readConfidentialEvaluationSecretForOperator(account.id, site.id);
+    const secretPayload = JSON.parse(operatorSecret.value) as Record<string, unknown>;
+    expect(operatorSecret.selector).toMatch(
+      /^ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_site_[a-z2-7]+$/,
+    );
+    expect(secretPayload.schemaVersion).toBe("rovaulta.cre-confidential-evaluation-input/v1");
+    expect(secretPayload.protocolVersion).toBe("rovaulta.protocol/v1");
+    expect(secretPayload.envelopeBlindingSecretHex).toMatch(/^[0-9a-f]{64}$/);
+    expect((secretPayload.confidentialEnvelope as Record<string, unknown>).siteId).toBe(site.id);
+    expect(JSON.stringify(siteResponse.body)).not.toContain(operatorSecret.value);
 
     const robotResponse = await app.inject({
       method: "POST",
