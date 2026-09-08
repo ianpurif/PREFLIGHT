@@ -4,10 +4,13 @@ import { buildServer } from "../src/server.js";
 
 const KEY = Uint8Array.from({ length: 32 }, (_, index) => index + 1);
 
-function cookie(response: { headers: Record<string, string | string[] | undefined> }): string {
+function cookie(response: { headers: Record<string, unknown> }): string {
   const value = response.headers["set-cookie"];
-  if (Array.isArray(value)) return value[0]?.split(";", 1)[0] ?? "";
-  return value?.split(";", 1)[0] ?? "";
+  if (Array.isArray(value)) {
+    const first = value[0];
+    return typeof first === "string" ? (first.split(";", 1)[0] ?? "") : "";
+  }
+  return typeof value === "string" ? (value.split(";", 1)[0] ?? "") : "";
 }
 
 const policy = {
