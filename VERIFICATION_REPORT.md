@@ -266,7 +266,7 @@ account-created result exists in this environment.
 - Domain: 31/31; simulation core: 60/60; Chainlink CRE: 31/31; chain client: 12/12; Ledger gate:
   18/18; web: 2/2.
 - Full TypeScript total: 201 tests, 2,946 assertions, zero failures.
-- `bun run lint`: pass; Biome checks 160 files with 27 existing CSS specificity warnings and no
+- `bun run lint`: pass; Biome checks 161 files with 27 existing CSS specificity warnings and no
   errors.
 - `bun run typecheck`: pass; 7/7 Turbo tasks.
 - `bun run test`: pass; 12/12 Turbo tasks.
