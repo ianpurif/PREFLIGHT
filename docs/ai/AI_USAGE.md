@@ -358,12 +358,16 @@ skills plus the official CRE secret/workflow guidance.
 fake database rows, bypass CRE, promote P2/P7 fixtures, fabricate a result/clearance, or expose
 private policy material.
 
-**AI-assisted output:** A thin HTTP-only `apps/api` operator runner that registers/signs in an
-account, creates site/robot/build records through the existing routes, submits the existing
+**AI-assisted output:** A thin two-phase `apps/api` operator path. The account runner registers/signs
+in, creates or reuses site/robot/build records through the existing routes, submits the existing
 CRE-backed evaluation, polls the owning account result, and optionally writes an allowlisted public
-projection. The runner has no SQLite, P2, P7, browser-verdict, or signing authority.
+projection. A separate local provisioning command resolves the encrypted site policy through the
+application store and passes the exact versioned site secret to the official CRE CLI in memory.
+Neither command has a P2/P7, browser-verdict, or signing-authority path, and the secret is never
+sent over HTTP or written to evidence.
 
 **Evidence boundary:** The current environment has no CRE CLI, deployed gateway/workflow ID,
-trigger signer, request-scoped Vault secret, reachable HTTPS callback, or callback HMAC. The runner
-fails closed before creating records when its operator inputs are absent. No account-created
-evaluation ID, `CLEAR`, CRE execution evidence, clearance, or confidential value was fabricated.
+trigger signer, request-scoped Vault secret, reachable HTTPS callback, or callback HMAC. The account
+runner fails closed before creating records when its operator inputs are absent, and the provisioning
+command cannot run without an account/site ID and the official CLI. No account-created evaluation
+ID, `CLEAR`, CRE execution evidence, clearance, or confidential value was fabricated.

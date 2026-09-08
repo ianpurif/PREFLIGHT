@@ -91,19 +91,53 @@ same environment used by the web app, then create an ignored local setup file su
 
 Replace the artifact digest and policy/route with the facility's real configuration. Do not commit
 this file: the policy is private even though the API returns only its commitment. Set
-`ROVAULTA_P13_EMAIL` and `ROVAULTA_P13_PASSWORD` in an ignored environment file, then run:
+`ROVAULTA_P13_EMAIL` and `ROVAULTA_P13_PASSWORD` in an ignored environment file, then create the
+account-owned resources without evaluating them:
 
 ```powershell
+$env:ROVAULTA_P13_SETUP_ONLY="true"
 bun run --cwd apps/api p13:account-evaluation
 ```
 
-The command registers (or signs in to) the account, calls the existing site/robot/build routes,
-submits `/evaluations`, and polls only the owning account's evaluation. It never opens SQLite,
-calls the P2 evaluator, imports a P7 fixture, or accepts a browser-supplied verdict. A configured
-CRE gateway returns `PENDING` until the signed TEE callback completes; missing gateway/workflow/
-trigger configuration fails closed. Set `ROVAULTA_P13_EVIDENCE_PATH` only when a completed public
-result should be written to an ignored path. The evidence file contains an allowlisted public
-projection and no policy, envelope, blind, secret, credential, or internal report.
+The command registers (or signs in to) the account and calls the existing site/robot/build routes.
+It prints only the public account/site/robot/build IDs. It never opens SQLite, calls the P2
+evaluator, imports a P7 fixture, or accepts a browser-supplied verdict.
+
+Provision the exact site-bound secret directly to the official CRE secret store from the same local
+operator environment. The helper reads the encrypted policy through the application store, creates
+only a temporary `secretsNames` mapping, passes the versioned envelope/blind to the CLI in memory,
+and deletes the mapping afterward. It never prints or writes the secret value:
+
+```powershell
+$env:ROVAULTA_P13_ACCOUNT_ID="account:<account-id-from-setup>"
+$env:ROVAULTA_P13_SITE_ID="site:<site-id-from-setup>"
+bun run --cwd apps/api p13:provision-site-secret
+```
+
+The provisioning command requires the official `cre` CLI and uses `ROVAULTA_CRE_TARGET` (or
+`CHAINLINK_CRE_TARGET`) plus optional `ROVAULTA_CRE_SECRETS_AUTH`. If the CLI or CRE access is
+unavailable it fails closed; do not copy a secret into a browser, API request, shell transcript, or
+evidence file.
+
+For the evaluation phase, unset `ROVAULTA_P13_SETUP_PATH`, set the three IDs printed by setup, and
+run the same normal account command:
+
+```powershell
+$env:ROVAULTA_P13_SETUP_ONLY="false"
+$env:ROVAULTA_P13_SITE_ID="site:<site-id-from-setup>"
+$env:ROVAULTA_P13_ROBOT_ID="robot:<robot-id-from-setup>"
+$env:ROVAULTA_P13_BUILD_ID="robot-build:<build-id-from-setup>"
+Remove-Item Env:ROVAULTA_P13_SETUP_PATH -ErrorAction SilentlyContinue
+bun run --cwd apps/api p13:account-evaluation
+```
+
+The evaluation command submits `/evaluations` and polls only the owning account's result. A
+configured CRE gateway returns `PENDING` until the signed TEE callback completes; missing
+gateway/workflow/trigger configuration fails closed. Set `ROVAULTA_P13_EVIDENCE_PATH` only when a
+completed public result should be written to an ignored path. The evidence file contains an
+allowlisted public projection and no policy, envelope, blind, secret, credential, or internal
+report. If the gateway returns a bounded public workflow execution identifier, it is carried through
+as `creExecutionId`; no raw gateway response is retained.
 
 Before running the command, an operator must deploy/activate the workflow, provision the exact
 site selector `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_site_<base32-site-id>` and the callback HMAC
@@ -111,5 +145,5 @@ secret in the CRE `main` namespace, configure the workflow's HTTPS `resultDelive
 reachable API callback, and set the matching server-only `ROVAULTA_CRE_GATEWAY_URL`,
 `CHAINLINK_CRE_WORKFLOW_ID`, `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY`, and
 `ROVAULTA_CRE_RESULT_CALLBACK_SECRET`. The application does not expose the encrypted site policy
-or blind for copying; site-secret provisioning must use the facility's approved secure operator
-process. Do not treat a local P2-injected test as P13 evidence.
+or blind over HTTP; the provisioning helper is the approved local handoff. Do not treat a local
+P2-injected test as P13 evidence.

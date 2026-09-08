@@ -66,5 +66,8 @@ fixture path and tests. They cannot serve a normal account target.
 - The account API can return a truthful pending/unavailable state instead of fabricating a verdict.
   Deploying the callback URL and provisioning the two operator-managed secrets remain external tasks,
   not a local fallback.
+- P13's site-secret handoff is a separate local operator command. It resolves the encrypted policy
+  through the application store and gives the official CRE CLI an in-memory versioned payload; it
+  is never an HTTP route and never writes the envelope or blind to evidence.
 - Unit tests use injected provider responses for determinism; they are not live Chainlink or Graph
   qualification evidence.

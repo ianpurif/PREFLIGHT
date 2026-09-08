@@ -53,23 +53,29 @@ still externally blocked:** `apps/api/scripts/p13-account-evaluation.ts` compose
 registration, site, robot, build, evaluation, and account-scoped polling routes over HTTP. It never
 opens SQLite, invokes P2, imports P7 fixtures, or writes a result; missing CRE configuration fails
 closed. The current `.env` has no workflow ID, trigger signer, callback secret, or deployed gateway,
-and the CRE CLI is not installed in this environment. A real run additionally needs the exact
-site-bound Vault secret, a reachable HTTPS callback, and a deployed/activated workflow. No P13
-evaluation ID, `CLEAR`, or evidence artifact is claimed.**
+and the CRE CLI is not installed in this environment. A bounded public CRE execution identifier is
+preserved when the gateway returns one, but no raw gateway response is exposed. The new
+`p13:provision-site-secret` helper performs the site-secret handoff locally through the encrypted
+store and official CRE CLI without sending the envelope/blind over HTTP or printing it. A real run
+additionally needs that provisioned secret, a reachable HTTPS callback, and a deployed/activated
+workflow. No P13 evaluation ID, `CLEAR`, or evidence artifact is claimed.**
 
 ## P13 first real account-created CRE evaluation
 
-- `apps/api/scripts/p13-account-evaluation.ts` is the only operator helper. It uses the normal
-  account HTTP boundary, creates a site/robot/build from an ignored setup file, submits the existing
-  CRE-backed `/evaluations` route, and polls the owning account's result. It has no SQLite, P2, P7,
-  browser-verdict, or fabricated-result path.
+- `apps/api/scripts/p13-account-evaluation.ts` uses the normal account HTTP boundary. Setup-only mode
+  creates a site/robot/build from an ignored setup file and prints public IDs; evaluation mode can
+  reuse those IDs, submits the existing CRE-backed `/evaluations` route, and polls the owning
+  account's result. It has no SQLite, P2, P7, browser-verdict, or fabricated-result path.
+- `apps/api/scripts/p13-provision-site-secret.ts` is a local operator-only handoff. It resolves the
+  encrypted policy through `ApplicationStore`, maps the exact site selector to an environment
+  variable for the official `cre secrets create` command, and removes its temporary mapping. The
+  envelope/blind never crosses the API/browser/evidence boundary.
 - The setup file may contain the facility's private policy and must remain under ignored `.data/`.
   The runner prints and optionally writes only an allowlisted public evaluation projection.
 - A deployed workflow must fetch `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_site_<base32-site-id>`
   and `ROVAULTA_CONFIDENTIAL_EVALUATION_RESULT_CALLBACK_SECRET` from CRE `main`; the API must
-  configure the matching callback HMAC, gateway URL, workflow ID, and trigger signer. The repository
-  does not expose a policy-export route, so secret provisioning remains an approved facility-operator
-  action.
+  configure the matching callback HMAC, gateway URL, workflow ID, and trigger signer. The local
+  provisioning helper does not expose a policy-export route and requires the official CRE CLI.
 - Local runner preflight: `bun run --cwd apps/api p13:account-evaluation` fails closed with the
   missing `ROVAULTA_P13_EMAIL` requirement before creating any records. No authenticated CRE
   execution was possible here.

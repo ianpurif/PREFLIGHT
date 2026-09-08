@@ -24,7 +24,8 @@ completes the request.
 
 ## Change surfaces
 
-- `apps/api/scripts/` — optional operator command for the normal account setup/evaluation flow.
+- `apps/api/scripts/` — two-phase operator commands for normal account setup/evaluation and
+  local CRE site-secret provisioning.
 - `apps/api/test/` — critical ownership/configuration/result-transport coverage only if a code seam changes.
 - `docs/planning/`, `docs/compliance/`, `docs/partners/`, `README.md`, `docs/ai/` — runbook and evidence status.
 - `integrations/chainlink-cre/` — configuration guidance only; no confidential handler redesign.
@@ -36,12 +37,15 @@ completes the request.
 - With an operator-provisioned workflow, site secret, callback secret, and HTTPS result URL,
   the request returns `PENDING`, callback validation stores a public `CLEAR`, and polling returns
   the exact account-owned evaluation.
+- Site-secret provisioning reads only through the encrypted application store and gives the official
+  CRE CLI an in-memory value; the envelope/blind never crosses HTTP or evidence boundaries.
 - No confidential envelope, blind, secret, credential, or internal report appears in public output.
 - No redacted evidence artifact is added unless real CRE execution occurs.
 
 ## Steps
 - [x] Explore account/evaluation/CRE boundaries and current environment.
 - [x] Implement the smallest operator-facing vertical slice, only where the existing API needs it.
+- [x] Add a two-phase setup/provision/evaluate handoff without a second evaluation authority.
 - [x] Targeted verification.
 - [ ] Full verification.
 - [ ] Independent review.
@@ -64,6 +68,10 @@ No parallel write work. A separate read-only reviewer will inspect the final dif
 - The repository already has normal account creation and resource routes, so no direct SQLite
   bootstrap is required. A helper is justified only if it composes those routes without creating
   a second application path.
+- Site-secret provisioning is deliberately a local operator command, not an HTTP route. It reads
+  the encrypted policy through `ApplicationStore` and supplies the exact versioned payload to
+  `cre secrets create` through a process environment variable; no secret is persisted by the
+  repository helper.
 - The current `cre` CLI is not installed in this environment; official simulation/deployment
   evidence cannot be produced locally.
 
@@ -75,6 +83,9 @@ recorded only when an authenticated workflow has completed and the public respon
 - `bun run --cwd apps/api typecheck` passed after the runner was added.
 - `bun run --cwd apps/api p13:account-evaluation` failed closed before any API call because
   `ROVAULTA_P13_EMAIL` is not configured.
+- `bun run --cwd apps/api p13:provision-site-secret` is ready for an authenticated local account
+  and site, but cannot complete here because the current environment has no P13 account/site IDs
+  and no installed `cre` CLI.
 - Current `.env` inspection found empty `CHAINLINK_CRE_WORKFLOW_ID`,
   `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY`, and `ROVAULTA_CRE_RESULT_CALLBACK_SECRET`; the `cre`
   executable is unavailable. No real account/evaluation was created.

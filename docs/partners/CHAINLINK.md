@@ -50,13 +50,18 @@ The current environment has neither a deployed workflow gateway configuration no
 evidence, so the normal account path remains explicitly pending/unavailable rather than claiming a
 completed live evaluation.
 
-P13 adds `bun run --cwd apps/api p13:account-evaluation` as the operator composition command. It
-uses only the normal authenticated HTTP routes and writes an allowlisted public result if the
-signed callback completes. It does not expose the encrypted site policy/blind or create a second
+P13 adds a two-phase operator path. First, `bun run --cwd apps/api p13:account-evaluation` with
+`ROVAULTA_P13_SETUP_ONLY=true` uses only the normal authenticated HTTP routes and prints public
+account/site/robot/build IDs. Then `bun run --cwd apps/api p13:provision-site-secret` reads the
+encrypted policy through the local application store, creates a temporary `secretsNames` mapping,
+and supplies the exact versioned site envelope/blind to the official CRE CLI in memory. The value
+is never sent over HTTP, logged, or written to evidence; the temporary mapping is removed. The
+final account-evaluation run reuses those IDs, submits the existing CRE-backed route, and writes
+an allowlisted public result only if the signed callback completes. It does not create a second
 evaluation authority. A real run remains blocked until the operator deploys/activates the workflow,
-provisions the exact request-scoped site secret and callback secret, exposes the HTTPS callback,
-and supplies the API gateway/workflow/signer environment. No P13 account-created `CLEAR` evidence
-is claimed in this checkout.
+provisions both site/callback secrets, exposes the HTTPS callback, and supplies the API
+gateway/workflow/signer environment. No P13 account-created `CLEAR` evidence is claimed in this
+checkout.
 
 The captured runtime blind was generated fresh into ignored local files and is not the source-visible P2 unit-test blind. The demo envelope itself is synthetic source-visible test data, so this is confidential-path/non-disclosure evidence rather than proof that repository readers could not know the demo rules.
 

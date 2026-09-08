@@ -145,6 +145,7 @@
 ## P13 — First real account-created CRE evaluation
 - [x] normal account/site/robot/build/evaluation HTTP path is reused without a production P2 fallback
 - [x] fail-closed operator runner with public-only polling/output
+- [x] two-phase setup, exact resource reuse, and secure local CRE site-secret provisioning handoff
 - [x] ignored setup-file contract and CRE/site-secret/callback runbook
 - [ ] deploy/activate the authenticated CRE workflow and provision its Vault secrets
 - [ ] create one normal account-backed evaluation through the deployed CRE path
