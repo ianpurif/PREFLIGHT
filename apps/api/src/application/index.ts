@@ -8,12 +8,18 @@ function keyFromEnvironment(environment: NodeJS.ProcessEnv): Uint8Array {
   const configured = environment.PREFLIGHT_POLICY_ENCRYPTION_KEY?.trim();
   if (configured !== undefined && configured !== "") {
     if (!/^[a-f0-9]{64}$/i.test(configured)) {
-      throw new ApplicationError("POLICY_UNAVAILABLE", "PREFLIGHT_POLICY_ENCRYPTION_KEY must be 32-byte hex");
+      throw new ApplicationError(
+        "POLICY_UNAVAILABLE",
+        "PREFLIGHT_POLICY_ENCRYPTION_KEY must be 32-byte hex",
+      );
     }
     return Uint8Array.from(Buffer.from(configured, "hex"));
   }
 
-  const keyPath = resolve(process.cwd(), environment.PREFLIGHT_POLICY_KEY_PATH || ".data/preflight-policy.key");
+  const keyPath = resolve(
+    process.cwd(),
+    environment.PREFLIGHT_POLICY_KEY_PATH || ".data/preflight-policy.key",
+  );
   try {
     if (existsSync(keyPath)) {
       const stored = readFileSync(keyPath, "utf8").trim();

@@ -1,6 +1,6 @@
 "use client";
 
-import { RealProductApp, type ProductView } from "./real-workspace";
+import { type ProductView, RealProductApp } from "./real-workspace";
 
 export type { ProductView } from "./real-workspace";
 

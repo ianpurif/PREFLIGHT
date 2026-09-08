@@ -1,35 +1,41 @@
 import { Database } from "bun:sqlite";
 import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  randomBytes,
+  scryptSync,
+  timingSafeEqual,
+} from "node:crypto";
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
+import {
   canonicalSerialize,
   digestRobotBuild,
   digestSafetyEnvelopeCommitment,
   EVALUATION_INPUTS_SCHEMA_VERSION,
   EVALUATION_REQUEST_SCHEMA_VERSION,
-  failProtocol,
   parseEvaluationRequest,
   parseEvaluatorVersionId,
-  parseSafetyEnvelopeId,
-  parseSiteId,
   parseRobotBuildDescriptor,
+  parseSafetyEnvelopeId,
   parseSha256Digest,
+  parseSiteId,
   ROBOT_BUILD_SCHEMA_VERSION,
   type RobotBuildDescriptor,
 } from "@preflight/domain";
 import {
   CONFIDENTIAL_EVALUATION_ENVELOPE_VERSION,
+  type ConfidentialEvaluationEnvelope,
   confidentialEnvelopeCommitmentPayload,
   parseConfidentialEvaluationEnvelope,
   parsePointMm,
   parseRobotBehaviorTraceSuite,
   ROBOT_TRACE_SUITE_VERSION,
-  type ConfidentialEvaluationEnvelope,
   type RobotBehaviorTraceSuite,
   SCENARIO_GENERATOR_VERSION,
   WAREHOUSE_EVALUATOR_VERSION,
 } from "@preflight/simulation-core";
-import { createCipheriv, createDecipheriv, createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
-import { mkdirSync } from "node:fs";
-import { dirname } from "node:path";
 import { ApplicationError } from "./errors.js";
 
 const SESSION_COOKIE = "preflight_session";
@@ -222,13 +228,19 @@ function validatePassword(input: unknown): string {
 
 function hashPassword(password: string): string {
   const salt = randomBytes(16);
-  const digest = scryptSync(password, salt, 32, { N: 16_384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 });
+  const digest = scryptSync(password, salt, 32, {
+    N: 16_384,
+    r: 8,
+    p: 1,
+    maxmem: 64 * 1024 * 1024,
+  });
   return `scrypt$${salt.toString("base64url")}$${digest.toString("base64url")}`;
 }
 
 function verifyPassword(password: string, encoded: string): boolean {
   const [algorithm, saltEncoded, digestEncoded] = encoded.split("$");
-  if (algorithm !== "scrypt" || saltEncoded === undefined || digestEncoded === undefined) return false;
+  if (algorithm !== "scrypt" || saltEncoded === undefined || digestEncoded === undefined)
+    return false;
   try {
     const salt = Buffer.from(saltEncoded, "base64url");
     const expected = Buffer.from(digestEncoded, "base64url");
@@ -252,17 +264,29 @@ function canonicalPolicyKey(input: Uint8Array | undefined): Uint8Array {
 }
 
 function parseInteger(input: unknown, label: string, minimum: number, maximum: number): number {
-  if (typeof input !== "number" || !Number.isSafeInteger(input) || input < minimum || input > maximum) {
-    throw new ApplicationError("INVALID_INPUT", `${label} must be an integer from ${minimum} to ${maximum}`);
+  if (
+    typeof input !== "number" ||
+    !Number.isSafeInteger(input) ||
+    input < minimum ||
+    input > maximum
+  ) {
+    throw new ApplicationError(
+      "INVALID_INPUT",
+      `${label} must be an integer from ${minimum} to ${maximum}`,
+    );
   }
   return input;
 }
 
 function parseText(input: unknown, label: string, minimum = 1, maximum = 120): string {
-  if (typeof input !== "string") throw new ApplicationError("INVALID_INPUT", `${label} is required`);
+  if (typeof input !== "string")
+    throw new ApplicationError("INVALID_INPUT", `${label} is required`);
   const value = input.trim();
   if (value.length < minimum || value.length > maximum) {
-    throw new ApplicationError("INVALID_INPUT", `${label} must be ${minimum}-${maximum} characters`);
+    throw new ApplicationError(
+      "INVALID_INPUT",
+      `${label} must be ${minimum}-${maximum} characters`,
+    );
   }
   return value;
 }
@@ -315,13 +339,32 @@ function parsePolicy(input: unknown): PolicyInput {
     warehouseWidthMm: width,
     warehouseHeightMm: height,
     restrictedZone: Object.freeze(parsedZone),
-    maximumSpeedMmPerSecond: parseInteger(record.maximumSpeedMmPerSecond, "Maximum speed", 1, 1_000_000),
-    zoneSpeedLimitMmPerSecond: parseInteger(record.zoneSpeedLimitMmPerSecond, "Zone speed limit", 1, 1_000_000),
-    payloadThresholdGrams: parseInteger(record.payloadThresholdGrams, "Payload threshold", 0, 1_000_000_000),
+    maximumSpeedMmPerSecond: parseInteger(
+      record.maximumSpeedMmPerSecond,
+      "Maximum speed",
+      1,
+      1_000_000,
+    ),
+    zoneSpeedLimitMmPerSecond: parseInteger(
+      record.zoneSpeedLimitMmPerSecond,
+      "Zone speed limit",
+      1,
+      1_000_000,
+    ),
+    payloadThresholdGrams: parseInteger(
+      record.payloadThresholdGrams,
+      "Payload threshold",
+      0,
+      1_000_000_000,
+    ),
   });
 }
 
-function buildEnvelope(siteId: string, safetyEnvelopeId: string, input: PolicyInput): ConfidentialEvaluationEnvelope {
+function buildEnvelope(
+  siteId: string,
+  safetyEnvelopeId: string,
+  input: PolicyInput,
+): ConfidentialEvaluationEnvelope {
   try {
     return parseConfidentialEvaluationEnvelope({
       schemaVersion: CONFIDENTIAL_EVALUATION_ENVELOPE_VERSION,
@@ -336,17 +379,43 @@ function buildEnvelope(siteId: string, safetyEnvelopeId: string, input: PolicyIn
       zones: [{ zoneId: "zone:restricted", bounds: input.restrictedZone }],
       rules: [
         { ruleId: "rule:restricted-zone", type: "restricted-zone", zoneId: "zone:restricted" },
-        { ruleId: "rule:site-speed", type: "site-speed-limit", maximumMmPerSecond: input.maximumSpeedMmPerSecond },
-        { ruleId: "rule:zone-speed", type: "zone-speed-limit", zoneId: "zone:restricted", maximumMmPerSecond: input.zoneSpeedLimitMmPerSecond },
-        { ruleId: "rule:payload-zone", type: "payload-zone-restriction", zoneId: "zone:restricted", payloadGreaterThanGrams: input.payloadThresholdGrams },
+        {
+          ruleId: "rule:site-speed",
+          type: "site-speed-limit",
+          maximumMmPerSecond: input.maximumSpeedMmPerSecond,
+        },
+        {
+          ruleId: "rule:zone-speed",
+          type: "zone-speed-limit",
+          zoneId: "zone:restricted",
+          maximumMmPerSecond: input.zoneSpeedLimitMmPerSecond,
+        },
+        {
+          ruleId: "rule:payload-zone",
+          type: "payload-zone-restriction",
+          zoneId: "zone:restricted",
+          payloadGreaterThanGrams: input.payloadThresholdGrams,
+        },
       ],
       scenarioGeneration: {
         generatorVersion: SCENARIO_GENERATOR_VERSION,
         seed: 0x5eed1234,
         templates: [
-          { scenarioId: "scenario:restricted-route", basePayloadGrams: 20_000, payloadVariationGrams: 500 },
-          { scenarioId: "scenario:human-zone-speed", basePayloadGrams: 25_000, payloadVariationGrams: 500 },
-          { scenarioId: "scenario:heavy-payload-route", basePayloadGrams: 50_000, payloadVariationGrams: 500 },
+          {
+            scenarioId: "scenario:restricted-route",
+            basePayloadGrams: 20_000,
+            payloadVariationGrams: 500,
+          },
+          {
+            scenarioId: "scenario:human-zone-speed",
+            basePayloadGrams: 25_000,
+            payloadVariationGrams: 500,
+          },
+          {
+            scenarioId: "scenario:heavy-payload-route",
+            basePayloadGrams: 50_000,
+            payloadVariationGrams: 500,
+          },
         ],
       },
     });
@@ -408,7 +477,12 @@ function publicSite(row: SiteRow): PublicSite {
 }
 
 function publicRobot(row: RobotRow): PublicRobot {
-  return Object.freeze({ id: row.id, siteId: row.site_id, name: row.name, createdAt: row.created_at });
+  return Object.freeze({
+    id: row.id,
+    siteId: row.site_id,
+    name: row.name,
+    createdAt: row.created_at,
+  });
 }
 
 function publicBuild(row: BuildRow): PublicBuild {
@@ -432,7 +506,8 @@ function publicEvaluation(row: EvaluationRow): PublicEvaluation {
 }
 
 function assertAccountId(accountId: string): void {
-  if (!ACCOUNT_ID_PATTERN.test(accountId)) throw new ApplicationError("AUTH_REQUIRED", "Session is invalid");
+  if (!ACCOUNT_ID_PATTERN.test(accountId))
+    throw new ApplicationError("AUTH_REQUIRED", "Session is invalid");
 }
 
 export class ApplicationStore {
@@ -440,7 +515,11 @@ export class ApplicationStore {
   readonly #policyKey: Uint8Array;
   readonly #now: () => string;
 
-  constructor(options: { readonly dbPath: string; readonly policyKey: Uint8Array; readonly now?: () => string }) {
+  constructor(options: {
+    readonly dbPath: string;
+    readonly policyKey: Uint8Array;
+    readonly now?: () => string;
+  }) {
     try {
       if (options.dbPath !== ":memory:") mkdirSync(dirname(options.dbPath), { recursive: true });
       this.#database = new Database(options.dbPath, { create: true, strict: true });
@@ -520,15 +599,27 @@ export class ApplicationStore {
     }
   }
 
-  registerAccount(input: { readonly email: unknown; readonly password: unknown }): { account: PublicAccount; sessionToken: string; expiresAt: string } {
+  registerAccount(input: { readonly email: unknown; readonly password: unknown }): {
+    account: PublicAccount;
+    sessionToken: string;
+    expiresAt: string;
+  } {
     const email = normalizeEmail(input.email);
     const password = validatePassword(input.password);
     const createdAt = this.#now();
     const accountId = id("account");
     try {
-      const row = this.#database.query<AccountRow, [string]>("SELECT id FROM accounts WHERE email = ?").get(email);
-      if (row !== null && row !== undefined) throw new ApplicationError("DUPLICATE_ACCOUNT", "An account with that email already exists");
-      this.#database.query("INSERT INTO accounts (id, email, password_hash, created_at) VALUES (?, ?, ?, ?)").run(accountId, email, hashPassword(password), createdAt);
+      const row = this.#database
+        .query<AccountRow, [string]>("SELECT id FROM accounts WHERE email = ?")
+        .get(email);
+      if (row !== null && row !== undefined)
+        throw new ApplicationError(
+          "DUPLICATE_ACCOUNT",
+          "An account with that email already exists",
+        );
+      this.#database
+        .query("INSERT INTO accounts (id, email, password_hash, created_at) VALUES (?, ?, ?, ?)")
+        .run(accountId, email, hashPassword(password), createdAt);
     } catch (error) {
       if (error instanceof ApplicationError) throw error;
       throw new ApplicationError("DUPLICATE_ACCOUNT", "An account with that email already exists");
@@ -537,10 +628,16 @@ export class ApplicationStore {
     return { account: { id: accountId, email, createdAt }, ...session };
   }
 
-  signIn(input: { readonly email: unknown; readonly password: unknown }): { account: PublicAccount; sessionToken: string; expiresAt: string } {
+  signIn(input: { readonly email: unknown; readonly password: unknown }): {
+    account: PublicAccount;
+    sessionToken: string;
+    expiresAt: string;
+  } {
     const email = normalizeEmail(input.email);
     const password = validatePassword(input.password);
-    const row = this.#database.query<AccountRow, [string]>("SELECT * FROM accounts WHERE email = ?").get(email);
+    const row = this.#database
+      .query<AccountRow, [string]>("SELECT * FROM accounts WHERE email = ?")
+      .get(email);
     if (row === null || row === undefined || !verifyPassword(password, row.password_hash)) {
       throw new ApplicationError("INVALID_CREDENTIALS", "Email or password is incorrect");
     }
@@ -552,19 +649,29 @@ export class ApplicationStore {
     assertAccountId(accountId);
     const token = randomBytes(32).toString("base64url");
     const expiresAt = (BigInt(this.#now()) + BigInt(SESSION_TTL_SECONDS)).toString();
-    this.#database.query("INSERT INTO sessions (token_hash, account_id, expires_at, created_at) VALUES (?, ?, ?, ?)").run(hashToken(token), accountId, expiresAt, this.#now());
+    this.#database
+      .query(
+        "INSERT INTO sessions (token_hash, account_id, expires_at, created_at) VALUES (?, ?, ?, ?)",
+      )
+      .run(hashToken(token), accountId, expiresAt, this.#now());
     return { sessionToken: token, expiresAt };
   }
 
   accountForSession(token: string | null | undefined): PublicAccount | null {
     if (token === null || token === undefined || token.length < 16) return null;
-    const row = this.#database.query<SessionRow, [string]>("SELECT account_id, expires_at FROM sessions WHERE token_hash = ?").get(hashToken(token));
+    const row = this.#database
+      .query<SessionRow, [string]>(
+        "SELECT account_id, expires_at FROM sessions WHERE token_hash = ?",
+      )
+      .get(hashToken(token));
     if (row === null || row === undefined) return null;
     if (BigInt(row.expires_at) <= BigInt(this.#now())) {
       this.#database.query("DELETE FROM sessions WHERE token_hash = ?").run(hashToken(token));
       return null;
     }
-    const account = this.#database.query<AccountRow, [string]>("SELECT * FROM accounts WHERE id = ?").get(row.account_id);
+    const account = this.#database
+      .query<AccountRow, [string]>("SELECT * FROM accounts WHERE id = ?")
+      .get(row.account_id);
     return account === null || account === undefined ? null : publicAccount(account);
   }
 
@@ -573,7 +680,10 @@ export class ApplicationStore {
     this.#database.query("DELETE FROM sessions WHERE token_hash = ?").run(hashToken(token));
   }
 
-  createSite(accountId: string, input: { readonly name: unknown; readonly location: unknown; readonly policy: unknown }): PublicSite {
+  createSite(
+    accountId: string,
+    input: { readonly name: unknown; readonly location: unknown; readonly policy: unknown },
+  ): PublicSite {
     assertAccountId(accountId);
     const name = parseText(input.name, "Site name");
     const location = parseText(input.location, "Site location", 1, 160);
@@ -599,13 +709,33 @@ export class ApplicationStore {
       policy_ciphertext: encryptPolicy({ envelope, blind }, this.#policyKey),
       created_at: createdAt,
     };
-    this.#database.query("INSERT INTO sites (id, account_id, name, location, safety_envelope_id, safety_envelope_commitment, policy_ciphertext, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").run(row.id, row.account_id, row.name, row.location, row.safety_envelope_id, row.safety_envelope_commitment, row.policy_ciphertext, row.created_at);
+    this.#database
+      .query(
+        "INSERT INTO sites (id, account_id, name, location, safety_envelope_id, safety_envelope_commitment, policy_ciphertext, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      )
+      .run(
+        row.id,
+        row.account_id,
+        row.name,
+        row.location,
+        row.safety_envelope_id,
+        row.safety_envelope_commitment,
+        row.policy_ciphertext,
+        row.created_at,
+      );
     return publicSite(row);
   }
 
   listSites(accountId: string): readonly PublicSite[] {
     assertAccountId(accountId);
-    return Object.freeze(this.#database.query<SiteRow, [string]>("SELECT * FROM sites WHERE account_id = ? ORDER BY created_at, id").all(accountId).map(publicSite));
+    return Object.freeze(
+      this.#database
+        .query<SiteRow, [string]>(
+          "SELECT * FROM sites WHERE account_id = ? ORDER BY created_at, id",
+        )
+        .all(accountId)
+        .map(publicSite),
+    );
   }
 
   getSite(accountId: string, siteId: string): PublicSite {
@@ -615,66 +745,200 @@ export class ApplicationStore {
 
   createRobot(accountId: string, siteId: string, input: { readonly name: unknown }): PublicRobot {
     const site = this.#siteRow(accountId, siteId);
-    const row: RobotRow = { id: id("robot"), account_id: accountId, site_id: site.id, name: parseText(input.name, "Robot name"), created_at: this.#now() };
-    this.#database.query("INSERT INTO robots (id, account_id, site_id, name, created_at) VALUES (?, ?, ?, ?, ?)").run(row.id, row.account_id, row.site_id, row.name, row.created_at);
+    const row: RobotRow = {
+      id: id("robot"),
+      account_id: accountId,
+      site_id: site.id,
+      name: parseText(input.name, "Robot name"),
+      created_at: this.#now(),
+    };
+    this.#database
+      .query(
+        "INSERT INTO robots (id, account_id, site_id, name, created_at) VALUES (?, ?, ?, ?, ?)",
+      )
+      .run(row.id, row.account_id, row.site_id, row.name, row.created_at);
     return publicRobot(row);
   }
 
   listRobots(accountId: string, siteId: string): readonly PublicRobot[] {
     this.#siteRow(accountId, siteId);
-    return Object.freeze(this.#database.query<RobotRow, [string, string]>("SELECT * FROM robots WHERE account_id = ? AND site_id = ? ORDER BY created_at, id").all(accountId, siteId).map(publicRobot));
+    return Object.freeze(
+      this.#database
+        .query<RobotRow, [string, string]>(
+          "SELECT * FROM robots WHERE account_id = ? AND site_id = ? ORDER BY created_at, id",
+        )
+        .all(accountId, siteId)
+        .map(publicRobot),
+    );
   }
 
-  createBuild(accountId: string, siteId: string, input: { readonly robotId: unknown; readonly version: unknown; readonly label: unknown; readonly artifactDigest: unknown; readonly route: unknown }): PublicBuild {
+  createBuild(
+    accountId: string,
+    siteId: string,
+    input: {
+      readonly robotId: unknown;
+      readonly version: unknown;
+      readonly label: unknown;
+      readonly artifactDigest: unknown;
+      readonly route: unknown;
+    },
+  ): PublicBuild {
     const site = this.#siteRow(accountId, siteId);
-    if (typeof input.robotId !== "string") throw new ApplicationError("INVALID_INPUT", "Robot id is required");
+    if (typeof input.robotId !== "string")
+      throw new ApplicationError("INVALID_INPUT", "Robot id is required");
     const robot = this.#robotRow(accountId, site.id, input.robotId);
     const version = parseText(input.version, "Build version", 1, 80);
     const label = parseText(input.label, "Build label", 1, 120);
-    let artifactDigest;
+    let artifactDigest: RobotBuildDescriptor["artifactDigest"];
     try {
       artifactDigest = parseSha256Digest(input.artifactDigest, "artifactDigest");
     } catch {
-      throw new ApplicationError("INVALID_INPUT", "Artifact digest must be sha256:<64 lowercase hex characters>");
+      throw new ApplicationError(
+        "INVALID_INPUT",
+        "Artifact digest must be sha256:<64 lowercase hex characters>",
+      );
     }
-    if (input.route === null || typeof input.route !== "object" || Array.isArray(input.route)) throw new ApplicationError("INVALID_INPUT", "A route is required");
+    if (input.route === null || typeof input.route !== "object" || Array.isArray(input.route))
+      throw new ApplicationError("INVALID_INPUT", "A route is required");
     const route = input.route as Record<string, unknown>;
     const start = parsePoint(route.start, "route.start");
     const end = parsePoint(route.end, "route.end");
     const speed = parseInteger(route.speedMmPerSecond, "Route speed", 0, 1_000_000);
     const policy = decryptPolicy(site.policy_ciphertext, this.#policyKey);
     const bounds = policy.envelope.warehouseBounds;
-    for (const [point, labelName] of [[start, "route.start"], [end, "route.end"]] as const) {
-      if (point.xMm < bounds.minXmm || point.xMm > bounds.maxXmm || point.yMm < bounds.minYmm || point.yMm > bounds.maxYmm) {
-        throw new ApplicationError("INVALID_INPUT", `${labelName} must be inside the warehouse bounds`);
+    for (const [point, labelName] of [
+      [start, "route.start"],
+      [end, "route.end"],
+    ] as const) {
+      if (
+        point.xMm < bounds.minXmm ||
+        point.xMm > bounds.maxXmm ||
+        point.yMm < bounds.minYmm ||
+        point.yMm > bounds.maxYmm
+      ) {
+        throw new ApplicationError(
+          "INVALID_INPUT",
+          `${labelName} must be inside the warehouse bounds`,
+        );
       }
     }
     const buildId = id("robot-build");
-    const descriptor: RobotBuildDescriptor = parseRobotBuildDescriptor({ schemaVersion: ROBOT_BUILD_SCHEMA_VERSION, robotId: robot.id, robotBuildId: buildId, artifactDigest });
+    const descriptor: RobotBuildDescriptor = parseRobotBuildDescriptor({
+      schemaVersion: ROBOT_BUILD_SCHEMA_VERSION,
+      robotId: robot.id,
+      robotBuildId: buildId,
+      artifactDigest,
+    });
     const traces: RobotBehaviorTraceSuite = parseRobotBehaviorTraceSuite({
       schemaVersion: ROBOT_TRACE_SUITE_VERSION,
       robotId: robot.id,
       robotBuildId: buildId,
       robotBuildDigest: digestRobotBuild(descriptor),
-      traces: ["scenario:restricted-route", "scenario:human-zone-speed", "scenario:heavy-payload-route"].map((scenarioId) => ({ scenarioId, steps: [{ stepIndex: 0, position: start, speedMmPerSecond: 0 }, { stepIndex: 1, position: end, speedMmPerSecond: speed }] })),
+      traces: [
+        "scenario:restricted-route",
+        "scenario:human-zone-speed",
+        "scenario:heavy-payload-route",
+      ].map((scenarioId) => ({
+        scenarioId,
+        steps: [
+          { stepIndex: 0, position: start, speedMmPerSecond: 0 },
+          { stepIndex: 1, position: end, speedMmPerSecond: speed },
+        ],
+      })),
     });
     const createdAt = this.#now();
-    const row: BuildRow = { id: buildId, account_id: accountId, site_id: site.id, robot_id: robot.id, version, label, descriptor_json: canonicalSerialize(descriptor), trace_json: canonicalSerialize(traces), route_json: canonicalSerialize({ start, end, speedMmPerSecond: speed }), created_at: createdAt };
-    this.#database.query("INSERT INTO builds (id, account_id, site_id, robot_id, version, label, descriptor_json, trace_json, route_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").run(row.id, row.account_id, row.site_id, row.robot_id, row.version, row.label, row.descriptor_json, row.trace_json, row.route_json, row.created_at);
+    const row: BuildRow = {
+      id: buildId,
+      account_id: accountId,
+      site_id: site.id,
+      robot_id: robot.id,
+      version,
+      label,
+      descriptor_json: canonicalSerialize(descriptor),
+      trace_json: canonicalSerialize(traces),
+      route_json: canonicalSerialize({ start, end, speedMmPerSecond: speed }),
+      created_at: createdAt,
+    };
+    this.#database
+      .query(
+        "INSERT INTO builds (id, account_id, site_id, robot_id, version, label, descriptor_json, trace_json, route_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      )
+      .run(
+        row.id,
+        row.account_id,
+        row.site_id,
+        row.robot_id,
+        row.version,
+        row.label,
+        row.descriptor_json,
+        row.trace_json,
+        row.route_json,
+        row.created_at,
+      );
     return publicBuild(row);
   }
 
   listBuilds(accountId: string, siteId: string): readonly PublicBuild[] {
     this.#siteRow(accountId, siteId);
-    return Object.freeze(this.#database.query<BuildRow, [string, string]>("SELECT * FROM builds WHERE account_id = ? AND site_id = ? ORDER BY created_at, id").all(accountId, siteId).map(publicBuild));
+    return Object.freeze(
+      this.#database
+        .query<BuildRow, [string, string]>(
+          "SELECT * FROM builds WHERE account_id = ? AND site_id = ? ORDER BY created_at, id",
+        )
+        .all(accountId, siteId)
+        .map(publicBuild),
+    );
   }
 
   listAllBuilds(accountId: string): readonly PublicBuild[] {
     assertAccountId(accountId);
-    return Object.freeze(this.#database.query<BuildRow, [string]>("SELECT * FROM builds WHERE account_id = ? ORDER BY created_at, id").all(accountId).map(publicBuild));
+    return Object.freeze(
+      this.#database
+        .query<BuildRow, [string]>(
+          "SELECT * FROM builds WHERE account_id = ? ORDER BY created_at, id",
+        )
+        .all(accountId)
+        .map(publicBuild),
+    );
   }
 
-  evaluateBuild(accountId: string, input: { readonly siteId: string; readonly robotId: string; readonly buildId: string; readonly evaluationId: string; readonly requestedAt: string; readonly evaluatedAt: string; readonly evaluate: (value: { readonly request: unknown; readonly robotBuild: unknown; readonly confidentialEnvelope: unknown; readonly envelopeBlindingSecret: Uint8Array; readonly behaviorTraces: unknown; readonly evaluatedAt: unknown }) => { readonly result: { readonly evaluationId: string; readonly inputs: { readonly siteId: string; readonly robotId: string; readonly robotBuildId: string; readonly robotBuildDigest: string; readonly safetyEnvelopeId: string; readonly safetyEnvelopeCommitment: string; readonly evaluatorVersion: string }; readonly verdict: "CLEAR" | "HOLD" | "ESCALATE"; readonly evaluatedAt: string }; readonly scenarioCount: number; readonly violationCount: number; readonly violations: readonly Readonly<{ readonly type: string }>[] } }): PublicEvaluation {
+  evaluateBuild(
+    accountId: string,
+    input: {
+      readonly siteId: string;
+      readonly robotId: string;
+      readonly buildId: string;
+      readonly evaluationId: string;
+      readonly requestedAt: string;
+      readonly evaluatedAt: string;
+      readonly evaluate: (value: {
+        readonly request: unknown;
+        readonly robotBuild: unknown;
+        readonly confidentialEnvelope: unknown;
+        readonly envelopeBlindingSecret: Uint8Array;
+        readonly behaviorTraces: unknown;
+        readonly evaluatedAt: unknown;
+      }) => {
+        readonly result: {
+          readonly evaluationId: string;
+          readonly inputs: {
+            readonly siteId: string;
+            readonly robotId: string;
+            readonly robotBuildId: string;
+            readonly robotBuildDigest: string;
+            readonly safetyEnvelopeId: string;
+            readonly safetyEnvelopeCommitment: string;
+            readonly evaluatorVersion: string;
+          };
+          readonly verdict: "CLEAR" | "HOLD" | "ESCALATE";
+          readonly evaluatedAt: string;
+        };
+        readonly scenarioCount: number;
+        readonly violationCount: number;
+        readonly violations: readonly Readonly<{ readonly type: string }>[];
+      };
+    },
+  ): PublicEvaluation {
     const site = this.#siteRow(accountId, input.siteId);
     const robot = this.#robotRow(accountId, site.id, input.robotId);
     const build = this.#buildRow(accountId, site.id, robot.id, input.buildId);
@@ -696,40 +960,146 @@ export class ApplicationStore {
       },
       requestedAt: input.requestedAt,
     });
-    const report = input.evaluate({ request, robotBuild: descriptor, confidentialEnvelope: policy.envelope, envelopeBlindingSecret: policy.blind, behaviorTraces: traces, evaluatedAt: input.evaluatedAt });
-    const reasons = Object.freeze(Array.from(new Set(report.violations.map((violation) => violation.type))));
-    const result: PublicEvaluation = Object.freeze({ id: id("evaluation-record"), siteId: site.id, robotId: robot.id, buildId: build.id, evaluationId: report.result.evaluationId, robotBuildId: report.result.inputs.robotBuildId, verdict: report.result.verdict, evaluatorVersion: report.result.inputs.evaluatorVersion, robotBuildDigest: report.result.inputs.robotBuildDigest, safetyEnvelopeCommitment: report.result.inputs.safetyEnvelopeCommitment, scenarioCount: report.scenarioCount, violationCount: report.violationCount, reasons, evaluatedAt: report.result.evaluatedAt });
-    const row: EvaluationRow = { id: result.id, account_id: accountId, site_id: site.id, robot_id: robot.id, build_id: build.id, public_json: canonicalSerialize(result), created_at: this.#now() };
-    this.#database.query("INSERT INTO evaluations (id, account_id, site_id, robot_id, build_id, public_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)").run(row.id, row.account_id, row.site_id, row.robot_id, row.build_id, row.public_json, row.created_at);
+    const report = input.evaluate({
+      request,
+      robotBuild: descriptor,
+      confidentialEnvelope: policy.envelope,
+      envelopeBlindingSecret: policy.blind,
+      behaviorTraces: traces,
+      evaluatedAt: input.evaluatedAt,
+    });
+    const reasons = Object.freeze(
+      Array.from(new Set(report.violations.map((violation) => violation.type))),
+    );
+    const result: PublicEvaluation = Object.freeze({
+      id: id("evaluation-record"),
+      siteId: site.id,
+      robotId: robot.id,
+      buildId: build.id,
+      evaluationId: report.result.evaluationId,
+      robotBuildId: report.result.inputs.robotBuildId,
+      verdict: report.result.verdict,
+      evaluatorVersion: report.result.inputs.evaluatorVersion,
+      robotBuildDigest: report.result.inputs.robotBuildDigest,
+      safetyEnvelopeCommitment: report.result.inputs.safetyEnvelopeCommitment,
+      scenarioCount: report.scenarioCount,
+      violationCount: report.violationCount,
+      reasons,
+      evaluatedAt: report.result.evaluatedAt,
+    });
+    const row: EvaluationRow = {
+      id: result.id,
+      account_id: accountId,
+      site_id: site.id,
+      robot_id: robot.id,
+      build_id: build.id,
+      public_json: canonicalSerialize(result),
+      created_at: this.#now(),
+    };
+    this.#database
+      .query(
+        "INSERT INTO evaluations (id, account_id, site_id, robot_id, build_id, public_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      )
+      .run(
+        row.id,
+        row.account_id,
+        row.site_id,
+        row.robot_id,
+        row.build_id,
+        row.public_json,
+        row.created_at,
+      );
     return result;
   }
 
   listEvaluations(accountId: string): readonly PublicEvaluation[] {
     assertAccountId(accountId);
-    return Object.freeze(this.#database.query<EvaluationRow, [string]>("SELECT * FROM evaluations WHERE account_id = ? ORDER BY created_at DESC, id DESC").all(accountId).map(publicEvaluation));
+    return Object.freeze(
+      this.#database
+        .query<EvaluationRow, [string]>(
+          "SELECT * FROM evaluations WHERE account_id = ? ORDER BY created_at DESC, id DESC",
+        )
+        .all(accountId)
+        .map(publicEvaluation),
+    );
   }
 
   getEvaluation(accountId: string, evaluationId: string): PublicEvaluation {
     assertAccountId(accountId);
-    const row = this.#database.query<EvaluationRow, [string, string]>("SELECT * FROM evaluations WHERE account_id = ? AND id = ?").get(accountId, evaluationId);
+    const row = this.#database
+      .query<EvaluationRow, [string, string]>(
+        "SELECT * FROM evaluations WHERE account_id = ? AND id = ?",
+      )
+      .get(accountId, evaluationId);
     if (row !== null && row !== undefined) return publicEvaluation(row);
-    const candidates = this.#database.query<EvaluationRow, [string]>("SELECT * FROM evaluations WHERE account_id = ?").all(accountId);
-    const match = candidates.find((candidate) => (JSON.parse(candidate.public_json) as PublicEvaluation).evaluationId === evaluationId);
+    const candidates = this.#database
+      .query<EvaluationRow, [string]>("SELECT * FROM evaluations WHERE account_id = ?")
+      .all(accountId);
+    const match = candidates.find(
+      (candidate) =>
+        (JSON.parse(candidate.public_json) as PublicEvaluation).evaluationId === evaluationId,
+    );
     if (match === undefined) throw new ApplicationError("NOT_FOUND", "Evaluation was not found");
     return publicEvaluation(match);
   }
 
-  recordReleaseAttempt(accountId: string, input: Omit<PublicReleaseAttempt, "id" | "createdAt">): PublicReleaseAttempt {
+  recordReleaseAttempt(
+    accountId: string,
+    input: Omit<PublicReleaseAttempt, "id" | "createdAt">,
+  ): PublicReleaseAttempt {
     assertAccountId(accountId);
     const evaluation = this.getEvaluation(accountId, input.evaluationId);
-    const row: ReleaseAttemptRow = { id: id("release-attempt"), account_id: accountId, evaluation_id: evaluation.id, status: input.status, code: input.code, message: input.message, created_at: this.#now() };
-    this.#database.query("INSERT INTO release_attempts (id, account_id, evaluation_id, status, code, message, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)").run(row.id, row.account_id, row.evaluation_id, row.status, row.code, row.message, row.created_at);
-    return Object.freeze({ id: row.id, evaluationId: evaluation.evaluationId, status: row.status, code: row.code, message: row.message, createdAt: row.created_at });
+    const row: ReleaseAttemptRow = {
+      id: id("release-attempt"),
+      account_id: accountId,
+      evaluation_id: evaluation.id,
+      status: input.status,
+      code: input.code,
+      message: input.message,
+      created_at: this.#now(),
+    };
+    this.#database
+      .query(
+        "INSERT INTO release_attempts (id, account_id, evaluation_id, status, code, message, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      )
+      .run(
+        row.id,
+        row.account_id,
+        row.evaluation_id,
+        row.status,
+        row.code,
+        row.message,
+        row.created_at,
+      );
+    return Object.freeze({
+      id: row.id,
+      evaluationId: evaluation.evaluationId,
+      status: row.status,
+      code: row.code,
+      message: row.message,
+      createdAt: row.created_at,
+    });
   }
 
   listReleaseAttempts(accountId: string): readonly PublicReleaseAttempt[] {
     assertAccountId(accountId);
-    return Object.freeze(this.#database.query<ReleaseAttemptRow & { evaluation_public_json: string }, [string]>("SELECT release_attempts.*, evaluations.public_json AS evaluation_public_json FROM release_attempts JOIN evaluations ON evaluations.id = release_attempts.evaluation_id WHERE release_attempts.account_id = ? ORDER BY release_attempts.created_at DESC, release_attempts.id DESC").all(accountId).map((row) => Object.freeze({ id: row.id, evaluationId: (JSON.parse(row.evaluation_public_json) as PublicEvaluation).evaluationId, status: row.status, code: row.code, message: row.message, createdAt: row.created_at })));
+    return Object.freeze(
+      this.#database
+        .query<ReleaseAttemptRow & { evaluation_public_json: string }, [string]>(
+          "SELECT release_attempts.*, evaluations.public_json AS evaluation_public_json FROM release_attempts JOIN evaluations ON evaluations.id = release_attempts.evaluation_id WHERE release_attempts.account_id = ? ORDER BY release_attempts.created_at DESC, release_attempts.id DESC",
+        )
+        .all(accountId)
+        .map((row) =>
+          Object.freeze({
+            id: row.id,
+            evaluationId: (JSON.parse(row.evaluation_public_json) as PublicEvaluation).evaluationId,
+            status: row.status,
+            code: row.code,
+            message: row.message,
+            createdAt: row.created_at,
+          }),
+        ),
+    );
   }
 
   close(): void {
@@ -759,20 +1129,33 @@ export class ApplicationStore {
 
   #siteRow(accountId: string, siteId: string): SiteRow {
     assertAccountId(accountId);
-    const row = this.#database.query<SiteRow, [string, string]>("SELECT * FROM sites WHERE account_id = ? AND id = ?").get(accountId, siteId);
-    if (row === null || row === undefined) throw new ApplicationError("NOT_FOUND", "Site was not found");
+    const row = this.#database
+      .query<SiteRow, [string, string]>("SELECT * FROM sites WHERE account_id = ? AND id = ?")
+      .get(accountId, siteId);
+    if (row === null || row === undefined)
+      throw new ApplicationError("NOT_FOUND", "Site was not found");
     return row;
   }
 
   #robotRow(accountId: string, siteId: string, robotId: string): RobotRow {
-    const row = this.#database.query<RobotRow, [string, string, string]>("SELECT * FROM robots WHERE account_id = ? AND site_id = ? AND id = ?").get(accountId, siteId, robotId);
-    if (row === null || row === undefined) throw new ApplicationError("NOT_FOUND", "Robot was not found");
+    const row = this.#database
+      .query<RobotRow, [string, string, string]>(
+        "SELECT * FROM robots WHERE account_id = ? AND site_id = ? AND id = ?",
+      )
+      .get(accountId, siteId, robotId);
+    if (row === null || row === undefined)
+      throw new ApplicationError("NOT_FOUND", "Robot was not found");
     return row;
   }
 
   #buildRow(accountId: string, siteId: string, robotId: string, buildId: string): BuildRow {
-    const row = this.#database.query<BuildRow, [string, string, string, string]>("SELECT * FROM builds WHERE account_id = ? AND site_id = ? AND robot_id = ? AND id = ?").get(accountId, siteId, robotId, buildId);
-    if (row === null || row === undefined) throw new ApplicationError("NOT_FOUND", "Build was not found");
+    const row = this.#database
+      .query<BuildRow, [string, string, string, string]>(
+        "SELECT * FROM builds WHERE account_id = ? AND site_id = ? AND robot_id = ? AND id = ?",
+      )
+      .get(accountId, siteId, robotId, buildId);
+    if (row === null || row === undefined)
+      throw new ApplicationError("NOT_FOUND", "Build was not found");
     return row;
   }
 }

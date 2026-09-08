@@ -207,7 +207,6 @@ export function LandingPage() {
             <small>Confidential deployment gate</small>
           </span>
         </div>
-        <span>Simulation evidence is not a guarantee of physical robot safety.</span>
         <Link href="/start">Start a workspace →</Link>
       </footer>
     </main>

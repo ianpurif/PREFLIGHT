@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { ApiError, apiFetch, jsonBody, type Account } from "./api-client";
+import { type Account, ApiError, apiFetch, jsonBody } from "./api-client";
 
 export function AccountEntry({
   initialMode = "register",

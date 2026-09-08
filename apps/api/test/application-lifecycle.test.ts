@@ -64,7 +64,11 @@ describe("account-scoped product lifecycle", () => {
         version: "1.0.0",
         label: "Clear candidate",
         artifactDigest: `sha256:${"ab".repeat(32)}`,
-        route: { start: { xMm: 100, yMm: 100 }, end: { xMm: 900, yMm: 100 }, speedMmPerSecond: 400 },
+        route: {
+          start: { xMm: 100, yMm: 100 },
+          end: { xMm: 900, yMm: 100 },
+          speedMmPerSecond: 400,
+        },
       },
     });
     expect(buildResponse.statusCode).toBe(201);
@@ -86,7 +90,11 @@ describe("account-scoped product lifecycle", () => {
       method: "POST",
       url: "/releases/prepare",
       headers: { cookie: session },
-      payload: { evaluationId: evaluation.evaluationId, signerAddress: "0x0000000000000000000000000000000000000001", clearance: null },
+      payload: {
+        evaluationId: evaluation.evaluationId,
+        signerAddress: "0x0000000000000000000000000000000000000001",
+        clearance: null,
+      },
     });
     expect(releaseResponse.statusCode).toBe(409);
     expect(JSON.parse(releaseResponse.body).error).toBe("CLEARANCE_NOT_AVAILABLE");
@@ -106,7 +114,11 @@ describe("account-scoped product lifecycle", () => {
     });
     const site = JSON.parse(siteResponse.body).site;
 
-    const hidden = await app.inject({ method: "GET", url: `/sites/${site.id}`, headers: { cookie: second } });
+    const hidden = await app.inject({
+      method: "GET",
+      url: `/sites/${site.id}`,
+      headers: { cookie: second },
+    });
     expect(hidden.statusCode).toBe(404);
     const hiddenBuild = await app.inject({
       method: "POST",

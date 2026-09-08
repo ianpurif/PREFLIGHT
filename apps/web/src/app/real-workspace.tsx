@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
+  type Account,
   ApiError,
   apiFetch,
-  jsonBody,
-  type Account,
   type Build,
   type Evaluation,
+  jsonBody,
   type ReleaseAttempt,
   type Robot,
   type Site,
@@ -531,7 +531,7 @@ function SetupView({
         <span className="local-only-badge">Account-backed</span>
       </div>
       <section className="real-onboarding-card">
-        <div className="real-stepper" aria-label={`Setup step ${step + 1} of ${steps.length}`}>
+        <nav className="real-stepper" aria-label={`Setup step ${step + 1} of ${steps.length}`}>
           {steps.map((label, index) => (
             <span
               className={index === step ? "active" : index < step ? "complete" : ""}
@@ -541,7 +541,7 @@ function SetupView({
               {label}
             </span>
           ))}
-        </div>
+        </nav>
         {error ? <ErrorNotice message={error} /> : null}
         {step === 0 ? (
           <div className="real-form-grid">
@@ -843,9 +843,9 @@ function BuildsView({ data }: { readonly data: WorkspaceData }) {
           </p>
         </div>
       </div>
-      <div className="real-list" role="list">
+      <ul className="real-list">
         {data.builds.map((build) => (
-          <article className="real-list-card" key={build.id} role="listitem">
+          <li className="real-list-card" key={build.id}>
             <div>
               <span className="view-eyebrow">{build.label}</span>
               <h2>{build.version}</h2>
@@ -867,9 +867,9 @@ function BuildsView({ data }: { readonly data: WorkspaceData }) {
                 Evaluate <span aria-hidden="true">→</span>
               </Link>
             </div>
-          </article>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }

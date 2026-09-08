@@ -1,10 +1,10 @@
+import { randomBytes } from "node:crypto";
 import { ReleaseGateError } from "@preflight/chain-client";
 import { evaluateSimulation } from "@preflight/simulation-core";
 import Fastify, { type FastifyReply } from "fastify";
 import { type DeploymentAgent, DeploymentAgentError } from "./agent/index.js";
 import { ApplicationError, ApplicationStore } from "./application/index.js";
 import type { ReleaseService } from "./release/index.js";
-import { randomBytes } from "node:crypto";
 
 function rejectMalformed(reply: FastifyReply) {
   return reply.code(400).send({ error: "MALFORMED_REQUEST", message: "Request body is malformed" });
@@ -37,8 +37,9 @@ export function buildServer(
   const applicationStore = options.applicationStore;
   const environment = options.environment ?? process.env;
   const allowedOrigins = new Set(
-    ["http://localhost:3000", "http://127.0.0.1:3000", environment.PREFLIGHT_WEB_ORIGIN]
-      .filter((origin): origin is string => typeof origin === "string" && origin.length > 0),
+    ["http://localhost:3000", "http://127.0.0.1:3000", environment.PREFLIGHT_WEB_ORIGIN].filter(
+      (origin): origin is string => typeof origin === "string" && origin.length > 0,
+    ),
   );
   app.addHook("onSend", async (request, reply, payload) => {
     const origin = request.headers.origin;
@@ -100,12 +101,18 @@ export function buildServer(
 
   function requireStore(): ApplicationStore {
     if (applicationStore === undefined) {
-      throw new ApplicationError("PERSISTENCE_UNAVAILABLE", "Application persistence is not configured");
+      throw new ApplicationError(
+        "PERSISTENCE_UNAVAILABLE",
+        "Application persistence is not configured",
+      );
     }
     return applicationStore;
   }
 
-  function requireAccount(request: { headers: { cookie?: string | undefined } }, reply: FastifyReply): string | null {
+  function requireAccount(
+    request: { headers: { cookie?: string | undefined } },
+    reply: FastifyReply,
+  ): string | null {
     const store = requireStore();
     const token = ApplicationStore.readSessionCookie(request.headers.cookie);
     const account = store.accountForSession(token);
@@ -143,14 +150,20 @@ export function buildServer(
   app.post("/auth/sign-out", async (request, reply) => {
     const store = requireStore();
     store.revokeSession(ApplicationStore.readSessionCookie(request.headers.cookie));
-    reply.header("Set-Cookie", ApplicationStore.clearSessionCookie(environment.NODE_ENV === "production"));
+    reply.header(
+      "Set-Cookie",
+      ApplicationStore.clearSessionCookie(environment.NODE_ENV === "production"),
+    );
     return reply.code(204).send();
   });
 
   app.get("/auth/me", async (request, reply) => {
     const store = requireStore();
-    const account = store.accountForSession(ApplicationStore.readSessionCookie(request.headers.cookie));
-    if (account === null) return reply.code(401).send({ error: "AUTH_REQUIRED", message: "Sign in to continue" });
+    const account = store.accountForSession(
+      ApplicationStore.readSessionCookie(request.headers.cookie),
+    );
+    if (account === null)
+      return reply.code(401).send({ error: "AUTH_REQUIRED", message: "Sign in to continue" });
     return reply.send({ account });
   });
 
@@ -164,7 +177,11 @@ export function buildServer(
     if (accountId === null) return undefined;
     const body = expectBody(request.body, ["name", "location", "policy"]);
     if (body === null) return rejectMalformed(reply);
-    const site = requireStore().createSite(accountId, { name: body.name, location: body.location, policy: body.policy });
+    const site = requireStore().createSite(accountId, {
+      name: body.name,
+      location: body.location,
+      policy: body.policy,
+    });
     return reply.code(201).send({ site });
   });
 
@@ -191,7 +208,9 @@ export function buildServer(
     if (typeof params.siteId !== "string") return rejectMalformed(reply);
     const body = expectBody(request.body, ["name"]);
     if (body === null) return rejectMalformed(reply);
-    return reply.code(201).send({ robot: requireStore().createRobot(accountId, params.siteId, { name: body.name }) });
+    return reply
+      .code(201)
+      .send({ robot: requireStore().createRobot(accountId, params.siteId, { name: body.name }) });
   });
 
   app.get("/sites/:siteId/builds", async (request, reply) => {
@@ -207,14 +226,30 @@ export function buildServer(
     if (accountId === null) return undefined;
     const params = request.params as { siteId?: unknown };
     if (typeof params.siteId !== "string") return rejectMalformed(reply);
-    const body = expectBody(request.body, ["robotId", "version", "label", "artifactDigest", "route"]);
+    const body = expectBody(request.body, [
+      "robotId",
+      "version",
+      "label",
+      "artifactDigest",
+      "route",
+    ]);
     if (body === null) return rejectMalformed(reply);
-    return reply.code(201).send({ build: requireStore().createBuild(accountId, params.siteId, { robotId: body.robotId, version: body.version, label: body.label, artifactDigest: body.artifactDigest, route: body.route }) });
+    return reply.code(201).send({
+      build: requireStore().createBuild(accountId, params.siteId, {
+        robotId: body.robotId,
+        version: body.version,
+        label: body.label,
+        artifactDigest: body.artifactDigest,
+        route: body.route,
+      }),
+    });
   });
 
   app.get("/evaluations", async (request, reply) => {
     const accountId = requireAccount(request, reply);
-    return accountId === null ? undefined : { evaluations: requireStore().listEvaluations(accountId) };
+    return accountId === null
+      ? undefined
+      : { evaluations: requireStore().listEvaluations(accountId) };
   });
 
   app.post("/evaluations", async (request, reply) => {
@@ -226,7 +261,8 @@ export function buildServer(
       typeof body.siteId !== "string" ||
       typeof body.robotId !== "string" ||
       typeof body.buildId !== "string"
-    ) return rejectMalformed(reply);
+    )
+      return rejectMalformed(reply);
     const timestamp = Math.floor(Date.now() / 1000).toString();
     const evaluation = requireStore().evaluateBuild(accountId, {
       siteId: body.siteId,
@@ -250,36 +286,84 @@ export function buildServer(
 
   app.get("/releases", async (request, reply) => {
     const accountId = requireAccount(request, reply);
-    return accountId === null ? undefined : { releases: requireStore().listReleaseAttempts(accountId) };
+    return accountId === null
+      ? undefined
+      : { releases: requireStore().listReleaseAttempts(accountId) };
   });
 
   app.post("/releases/prepare", async (request, reply) => {
     const accountId = requireAccount(request, reply);
     if (accountId === null) return undefined;
     const body = expectBody(request.body, ["evaluationId", "signerAddress", "clearance"]);
-    if (body === null || typeof body.evaluationId !== "string" || typeof body.signerAddress !== "string") return rejectMalformed(reply);
+    if (
+      body === null ||
+      typeof body.evaluationId !== "string" ||
+      typeof body.signerAddress !== "string"
+    )
+      return rejectMalformed(reply);
     const store = requireStore();
     const evaluation = store.getEvaluation(accountId, body.evaluationId);
     if (evaluation.verdict !== "CLEAR") {
-      const attempt = store.recordReleaseAttempt(accountId, { evaluationId: evaluation.evaluationId, status: "BLOCKED", code: "EVALUATION_NOT_CLEAR", message: "Only a CLEAR evaluation can prepare a release" });
-      return reply.code(409).send({ error: "EVALUATION_NOT_CLEAR", message: attempt.message, attempt });
+      const attempt = store.recordReleaseAttempt(accountId, {
+        evaluationId: evaluation.evaluationId,
+        status: "BLOCKED",
+        code: "EVALUATION_NOT_CLEAR",
+        message: "Only a CLEAR evaluation can prepare a release",
+      });
+      return reply
+        .code(409)
+        .send({ error: "EVALUATION_NOT_CLEAR", message: attempt.message, attempt });
     }
     if (body.clearance === null || typeof body.clearance !== "object") {
-      const attempt = store.recordReleaseAttempt(accountId, { evaluationId: evaluation.evaluationId, status: "BLOCKED", code: "CLEARANCE_NOT_AVAILABLE", message: "A public P4 clearance record is required before release preparation" });
-      return reply.code(409).send({ error: "CLEARANCE_NOT_AVAILABLE", message: attempt.message, attempt });
+      const attempt = store.recordReleaseAttempt(accountId, {
+        evaluationId: evaluation.evaluationId,
+        status: "BLOCKED",
+        code: "CLEARANCE_NOT_AVAILABLE",
+        message: "A public P4 clearance record is required before release preparation",
+      });
+      return reply
+        .code(409)
+        .send({ error: "CLEARANCE_NOT_AVAILABLE", message: attempt.message, attempt });
     }
     if (releaseService === undefined) {
-      const attempt = store.recordReleaseAttempt(accountId, { evaluationId: evaluation.evaluationId, status: "BLOCKED", code: "RELEASE_GATE_UNAVAILABLE", message: "The live release gate is not configured" });
-      return reply.code(503).send({ error: "RELEASE_GATE_UNAVAILABLE", message: attempt.message, attempt });
+      const attempt = store.recordReleaseAttempt(accountId, {
+        evaluationId: evaluation.evaluationId,
+        status: "BLOCKED",
+        code: "RELEASE_GATE_UNAVAILABLE",
+        message: "The live release gate is not configured",
+      });
+      return reply
+        .code(503)
+        .send({ error: "RELEASE_GATE_UNAVAILABLE", message: attempt.message, attempt });
     }
     try {
-      const prepared = await releaseService.prepare({ siteId: evaluation.siteId, robotId: evaluation.robotId, robotBuildId: evaluation.robotBuildId, robotBuildDigest: evaluation.robotBuildDigest, clearance: body.clearance, signerAddress: body.signerAddress });
-      const attempt = store.recordReleaseAttempt(accountId, { evaluationId: evaluation.evaluationId, status: "LEDGER_APPROVAL_REQUIRED", code: null, message: "Exact release request prepared; human Ledger approval is still required" });
+      const prepared = await releaseService.prepare({
+        siteId: evaluation.siteId,
+        robotId: evaluation.robotId,
+        robotBuildId: evaluation.robotBuildId,
+        robotBuildDigest: evaluation.robotBuildDigest,
+        clearance: body.clearance,
+        signerAddress: body.signerAddress,
+      });
+      const attempt = store.recordReleaseAttempt(accountId, {
+        evaluationId: evaluation.evaluationId,
+        status: "LEDGER_APPROVAL_REQUIRED",
+        code: null,
+        message: "Exact release request prepared; human Ledger approval is still required",
+      });
       return reply.send({ status: "LEDGER_APPROVAL_REQUIRED", attempt, prepared });
     } catch (error) {
       if (error instanceof ReleaseGateError) {
-        const attempt = store.recordReleaseAttempt(accountId, { evaluationId: evaluation.evaluationId, status: "BLOCKED", code: error.code, message: error.message });
-        const status = error.code === "REGISTRY_UNAVAILABLE" || error.code === "PERSISTENCE_UNAVAILABLE" ? 503 : 403;
+        const attempt = store.recordReleaseAttempt(accountId, {
+          evaluationId: evaluation.evaluationId,
+          status: "BLOCKED",
+          code: error.code,
+          message: error.message,
+        });
+        const status =
+          error.code === "REGISTRY_UNAVAILABLE" || error.code === "PERSISTENCE_UNAVAILABLE"
+            ? 503
+            : 403;
         return reply.code(status).send({ error: error.code, message: error.message, attempt });
       }
       throw error;
