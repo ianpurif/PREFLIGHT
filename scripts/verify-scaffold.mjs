@@ -326,6 +326,7 @@ const webPage = readFileSync(resolve(root, "apps/web/src/app/page.tsx"), "utf8")
 const landingPage = readFileSync(resolve(root, "apps/web/src/app/landing-page.tsx"), "utf8");
 const onboarding = readFileSync(resolve(root, "apps/web/src/app/onboarding-flow.tsx"), "utf8");
 const apiClient = readFileSync(resolve(root, "apps/web/src/app/api-client.ts"), "utf8");
+const ledgerPage = readFileSync(resolve(root, "apps/web/src/app/p5-ledger/page.tsx"), "utf8");
 const realWorkspace = readFileSync(resolve(root, "apps/web/src/app/real-workspace.tsx"), "utf8");
 const fixtureRoute = readFileSync(
   resolve(root, "apps/web/src/app/dev-fixtures/evaluate/page.tsx"),
@@ -349,6 +350,12 @@ if (!webPage.includes("LandingPage") || !landingPage.includes("Get started"))
   throw new Error("P8 root route must render the product landing page");
 if (!onboarding.includes("auth/register") || !apiClient.includes('credentials: "include"'))
   throw new Error("P8 account entry must use authenticated API sessions");
+const connectBlock =
+  ledgerPage.match(
+    /async function connect\(\) \{[\s\S]*?\n  \}\n\n  async function prepare/,
+  )?.[0] ?? "";
+if (!ledgerPage.includes('credentials: "include"') || /setPrepared\(null\)/.test(connectBlock))
+  throw new Error("P5 Ledger handoff must preserve the prepared request across connect");
 if (
   !realWorkspace.includes("/releases/prepare") ||
   /createDemoPublicData|JudgeDashboard/.test(realWorkspace)
