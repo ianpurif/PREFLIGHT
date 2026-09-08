@@ -1,9 +1,8 @@
 const apiKey = process.env.THE_GRAPH_API_KEY?.trim();
 const subgraphId = process.env.THE_GRAPH_SUBGRAPH_ID?.trim();
-const endpoint = (process.env.THE_GRAPH_API_URL?.trim() || "https://gateway.thegraph.com/api").replace(
-  /\/$/u,
-  "",
-);
+const endpoint = (
+  process.env.THE_GRAPH_API_URL?.trim() || "https://gateway.thegraph.com/api"
+).replace(/\/$/u, "");
 const clearanceDigest = process.env.ROVAULTA_P11_CLEARANCE_DIGEST?.trim();
 
 if (apiKey === undefined || apiKey.length === 0) {
