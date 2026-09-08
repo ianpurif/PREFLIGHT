@@ -1,4 +1,5 @@
 import { createDeploymentAgentFromEnvironment } from "./agent/index.js";
+import { createApplicationStoreFromEnvironment } from "./application/index.js";
 import { createReleaseServiceFromEnvironment } from "./release/index.js";
 import { buildServer } from "./server";
 
@@ -16,9 +17,11 @@ const deploymentAgent =
   releaseService !== undefined && agentEnvironmentConfigured
     ? createDeploymentAgentFromEnvironment(releaseService)
     : undefined;
+const applicationStore = createApplicationStoreFromEnvironment();
 const app = buildServer({
   ...(releaseService === undefined ? {} : { releaseService }),
   ...(deploymentAgent === undefined ? {} : { deploymentAgent }),
+  applicationStore,
 });
 const port = Number(process.env.PORT ?? 4000);
 
