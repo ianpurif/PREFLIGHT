@@ -8,6 +8,7 @@
     "build": "tsc -p tsconfig.build.json",
     "evidence:p52-agent": "bun scripts/p52-agent-evidence.ts",
     "evidence:p52-agent:live-read": "bun run --env-file ../../.env scripts/p52-agent-live-read-evidence.ts",
+    "evidence:p11-graph": "bun run --env-file ../../.env scripts/p11-graph-live-evidence.ts",
     "evidence:p5-presign": "bun run --env-file ../../.env scripts/p5-presign-evidence.ts",
     "typecheck": "tsc --noEmit -p tsconfig.test.json",
     "test": "bun test"

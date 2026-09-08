@@ -73,7 +73,10 @@ describe("The Graph clearance provider", () => {
       apiKey: "graph-test-key",
       subgraphId: "graph-test-subgraph",
       fetch: async (input, init) => {
-        request = new Request(input, init);
+        request =
+          input instanceof Request
+            ? new Request(input, init)
+            : new Request(input.toString(), init);
         return response(entity());
       },
     });
