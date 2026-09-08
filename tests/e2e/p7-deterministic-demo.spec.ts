@@ -42,7 +42,7 @@ async function installPreparedAgentRoute(page: Page) {
 test.describe("P7 deterministic judge rehearsal", () => {
   test("runs clean startup → reset → A → reset → B handoff → reset → C twice", async ({ page }) => {
     await installPreparedAgentRoute(page);
-    await page.goto("/__dev__/evaluate");
+    await page.goto("/dev-fixtures/evaluate");
 
     await expect(page.getByTestId("demo-dashboard")).toHaveAttribute(
       "data-demo-selection",
@@ -75,7 +75,7 @@ test.describe("P7 deterministic judge rehearsal", () => {
       page.getByText("Exact P5 request handed off from the judge view", { exact: false }),
     ).toBeVisible();
 
-    await page.goto("/__dev__/evaluate");
+    await page.goto("/dev-fixtures/evaluate");
     await page.getByRole("button", { name: "Reset demo" }).click();
     await expect(page.getByRole("link", { name: "Open existing P5 Ledger harness" })).toHaveCount(
       0,
@@ -118,7 +118,7 @@ test.describe("P7 deterministic judge rehearsal", () => {
         }),
       });
     });
-    await page.goto("/__dev__/evaluate");
+    await page.goto("/dev-fixtures/evaluate");
     await page.getByRole("button", { name: "Switch to Cleared Build B" }).click();
     const request = page.getByRole("button", { name: "Request Ledger Approval" });
     await request.click();
