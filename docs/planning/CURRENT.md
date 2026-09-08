@@ -7,15 +7,16 @@
 **P9 partner qualification slice is implemented in code but not externally evidenced:** the normal
 account evaluation boundary now uses an official Chainlink CRE HTTP JSON-RPC/JWT client and never
 falls back to the in-process evaluator; a request-scoped site secret selector is bound into the
-public CRE request. The production gateway returns asynchronous `ACCEPTED` executions, so the API
-fails closed with an explicit pending/unavailable error until a completed CRE result transport and
-site-secret provisioning are configured. Account-backed release preparation resolves the exact
-authenticated evaluation/clearance, requires a live The Graph registry context, then delegates to
-the existing P5 authority; the static catalog remains only for the explicit development fixture
-route. The Graph subgraph/provider artifacts, unit tests, and redacted public audit projection are
-present, but no live Graph response or account-created CRE completion is captured in this
-environment. The full local verification loop (lint, typecheck, package tests, build, Foundry,
-and scaffold verification) is green; external partner evidence remains open.**
+public CRE request. The production gateway returns asynchronous `ACCEPTED` executions, and P10
+now completes them through a signed public-only callback when deployment/result-delivery
+configuration is present; without that external provisioning the API remains explicitly pending or
+unavailable. Account-backed release preparation resolves the exact authenticated
+evaluation/clearance, requires a live The Graph registry context, then delegates to the existing
+P5 authority; the static catalog remains only for the explicit development fixture route. The
+Graph subgraph/provider artifacts, unit tests, and redacted public audit projection are present,
+but no live Graph response or account-created CRE completion is captured in this environment. The
+full local verification loop (lint, typecheck, package tests, build, Foundry, and scaffold
+verification) is green; external partner evidence remains open.**
 
 **P10 closes the asynchronous CRE application transport in code:** account evaluations now persist an
 exact pending request after the official gateway returns `ACCEPTED`; a configured CRE TEE callback

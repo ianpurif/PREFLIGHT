@@ -1,6 +1,6 @@
 # P10 Final Partner Qualification Audit
 
-**Date:** 2026-09-08  
+**Date:** 2026-09-09
 **Label:** implementation and local verification; no live partner execution is claimed.
 
 This artifact records the smallest qualification map after P10. External credentials, hosted
@@ -24,8 +24,8 @@ tests.
 |---|---|---|---|
 | Start Fresh / net-new eligibility | BLOCKED | First repository commit is 2026-09-05; official event-start boundary and submitted pool are not independently verified | Document pre-existing work and choose Start Fresh or Continuity honestly. |
 | Live Graph-provider data | BLOCKED | `apps/api/src/graph/provider.ts` uses the official Gateway URL and fails closed without config | Deploy the minimal Sepolia subgraph, configure API key/subgraph ID, and capture a real response. |
-| Subgraph usage | PASS (implementation) | `integrations/the-graph/subgraph` schema/manifest/ABI/mapping indexes public `RovaultaRegistry` events | Hosted deployment/indexing evidence remains missing. |
-| Meaningful reasoning/decision | PASS (implementation) | `getGraphContext` is a required account-agent step; only `MATCHED` reaches P5 preparation | Capture live `MATCHED` context in the demo. |
+| Subgraph usage | PARTIAL | `integrations/the-graph/subgraph` schema/manifest/ABI/mapping indexes public `RovaultaRegistry` events | Hosted deployment/indexing evidence remains missing. |
+| Meaningful reasoning/decision | PARTIAL | `getGraphContext` is a required account-agent step; only `MATCHED` reaches P5 preparation | Capture live `MATCHED` context in the demo. |
 | Load-bearing normal flow | PARTIAL | Authenticated account resolver and Graph gate are wired; fixture catalog is dev-only | Complete one account-created evaluation → public registry event → Graph `MATCHED` → Ledger-required run. |
 | Public demo/README evidence | PARTIAL | Partner docs and README explain the query and public-only fields | Add live query output and the exact event-to-decision trace to submission assets. |
 
@@ -38,7 +38,6 @@ tests.
 | Ledger SDK/DMK integration | PASS (software) | Pinned DMK, Ethereum signer kit, WebHID, Speculos, Context Module packages and tests | Official origin token/descriptor evidence remains absent. |
 | Speculos evidence | PARTIAL | Official Speculos transport/app/address smoke and partial evidence | A/B/E/F Clear Signing cases remain unrun. |
 | Physical-device evidence | BLOCKED | No physical device, approval, refusal, or signature captured | Requires legitimate hardware and origin/descriptor access. |
-| Key Ring/payment directions | NOT CLAIMED | Human-in-loop release-gate direction intentionally does not use Key Ring or payments | Do not add unrelated Key Ring/payment features. |
 | Start-during-event eligibility | BLOCKED | Repository date is known, event-start proof/track selection is not | Document continuity/start-fresh status before submission. |
 
 ## Local verification boundary
