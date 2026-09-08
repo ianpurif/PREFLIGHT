@@ -61,7 +61,8 @@ P2 cannot prove that a materialized trace was authentically produced by the decl
 ## P3 controls established
 
 - real SDK `handlerInTee` registration constrained to Nitro/us-west-2
-- authenticated HTTP-trigger configuration, one compile-time fixed secret selector, and zero ordinary capability calls from the handler
+- authenticated HTTP-trigger configuration, a request-scoped site-bound secret selector (with the fixed selector retained only for legacy simulations), and zero ordinary capability calls from the handler
+- no scenario counts, violation-family summaries, or detailed findings are released in the normal application-facing CRE result
 - one atomic versioned secret containing the full private envelope and commitment blind
 - strict, bounded public/confidential parsing and exact P1/P2 binding validation
 - unchanged P2 evaluator execution, including commitment reconstruction before rule evaluation

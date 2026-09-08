@@ -74,8 +74,8 @@ Rollback is limited to the Chainlink integration, P3-positive scaffold assertion
 - One atomic `main`-namespace secret avoids mixed envelope/blind rotation. The 1,506-character ASCII demo secret fits the integration's explicit 2 KiB input cap; maximum-size P2 envelopes are not claimed to fit CRE Vault quotas.
 - The public result omits scenario/violation counts and internal-report digests. Neither is required for exact P1 binding, and both increase confidential-rule oracle/dictionary risk.
 - `rovaulta.digest.cre-behavior-input/v1` covers the normalized version, P1 request, build descriptor, entire trace suite, provenance marker, and explicit evaluation time. It prevents silent substitution but is not origin attestation.
-- The official confidential guide permits any TEE, but P3 restricts the installed SDK surface to Nitro/us-west-2 and uses one compile-time fixed secret selector with no ordinary handler capability calls.
-- CLI v1.32.0 simulation passes empty configuration to the optional pre-hook phase, so P3 follows the current official confidential TypeScript template shape without that hook. This compatibility repair does not alter the TEE handler, P1/P2 semantics, secret selector, or public projection.
+- The official confidential guide permits any TEE, but P3 restricts the installed SDK surface to Nitro/us-west-2 and uses a request-scoped site-bound secret selector with no ordinary handler capability calls. The legacy fixed selector is retained only for old simulation payloads that omit the selector.
+- CLI v1.32.0 simulation passes empty configuration to the optional pre-hook phase, so P3 follows the current official confidential TypeScript template shape without that hook. This compatibility repair does not alter the TEE handler, P1/P2 semantics, secret selector, or minimal public projection; detailed findings and violation-family summaries remain TEE-local.
 
 ## Verification evidence
 

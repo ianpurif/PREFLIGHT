@@ -242,12 +242,12 @@ OpenAI provider/model. The required next external steps are documented in
 - Chain client: 12/12 tests for deployed-domain EIP-712, all field/domain mutations, signature
   recovery, exact P4 transport, positive pinned-block reader/ABI behavior, chain/registry, verdict,
   revocation, and expiry boundaries.
-- API: 42/42 tests across 9 files, including the account lifecycle/CRE fail-closed path, Graph
+- API: 44/44 tests across 9 files, including the account lifecycle/CRE fail-closed path, Graph
   provider binding and outage cases, P5/P5.2 authority boundaries, provider schema failures, and
   deterministic P7 fixture regression.
 - Domain: 31/31; simulation core: 60/60; Chainlink CRE: 26/26; chain client: 12/12; Ledger gate:
   18/18; web: 2/2.
-- Full TypeScript total: 191 tests, 2,888 assertions, zero failures.
+- Full TypeScript total: 193 tests, 2,894 assertions, zero failures.
 - `bun run lint`: pass; Biome checks 160 files with 27 existing CSS specificity warnings and no
   errors.
 - `bun run typecheck`: pass; 7/7 Turbo tasks.

@@ -46,7 +46,7 @@ It omits counts, violations, scenario findings, geometry, rules, thresholds, bli
 ## Consequences
 
 - The private envelope and blind are load-bearing and remain inside the confidential path.
-- CLI v1.32.0's simulator passed empty configuration to the optional pre-hook phase, preventing handler execution. P3 follows the current official confidential TypeScript template shape without that optional hook; the fixed secret selector and absence of other capability calls remain enforced in source and tests.
+- CLI v1.32.0's simulator passed empty configuration to the optional pre-hook phase, preventing handler execution. P3 follows the current official confidential TypeScript template shape without that optional hook; production requests use a site-bound secret selector, while the fixed selector is retained only for legacy simulation payloads that omit it. The normal application-facing result releases only the verdict and exact public bindings; counts, violation families, and detailed findings remain confidential.
 - Later phases can use the exact P1 result without changing P1 schemas or P2 semantics.
 - Chosen-input verdict queries remain a possible oracle; authenticated submission and minimal output reduce but do not eliminate it. Later orchestration owns authorization/rate policy.
 - The atomic demo secret is known to be 1,506 ASCII characters, but fit within Vault ciphertext quotas must be proven with authenticated tooling before deployment. Maximum-shape P2 envelopes are not supported by this P3 adapter claim.

@@ -77,9 +77,9 @@ export function EvidenceView({ demo }: { readonly demo: DemoPublicData }) {
             <span className="evidence-detail-pill tone-teal-pill">Simulation evidence</span>
           </div>
           <p>
-            The official CRE workflow uses <code>handlerInTee</code> and consumes a fixed secret
-            selector inside the callback. Only the public P1 result and behavior binding leave the
-            confidential path.
+            The official CRE workflow uses <code>handlerInTee</code> and consumes the site-bound
+            secret selector inside the callback. Only the public P1 result and behavior binding
+            leave the confidential path; detailed findings stay inside the protected evaluation.
           </p>
           <div className="evidence-result-grid">
             <div>
