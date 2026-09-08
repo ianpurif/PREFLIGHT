@@ -262,3 +262,7 @@ configuration were aligned for repeatable browser verification.
 **Boundary:** The product still cannot create a clearance, sign, authorize, inspect artifact bytes,
 or expose private policy values. Missing public clearance, provider, registry, or Ledger configuration
 remains a truthful `BLOCKED` state.
+
+The post-fix review also required preserving a prepared P5 request when Ledger connection fails or
+is retried, rejecting cookie mutations with missing origin provenance, and making the reusable API
+server fail closed unless its explicit non-production fixture boundary is enabled.
