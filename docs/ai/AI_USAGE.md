@@ -387,8 +387,9 @@ CLI-output leakage checks, critical parser tests, and updated partner/planning/e
 The runner invokes the existing `handlerInTee` workflow three times and records only safe public
 evidence; it has no P2 fallback, live deployment, or signing path.
 
-**Evidence boundary:** The committed P3 artifact remains the actual authenticated CRE CLI evidence
-(`HOLD`, `CLEAR`, `REJECT`) from before the current mandatory site-selector boundary. The current
-environment lacks the `cre` executable, so the new runner fails closed when invoked here and no fresh
-current-source artifact was fabricated. Live DON/Vault/Nitro execution and account-created gateway
-completion remain unclaimed optional upgrades.
+**Evidence boundary:** The current authenticated CRE CLI run records unsafe `HOLD`, corrected
+`CLEAR`, and tampered `REJECT` with the mandatory site-selector boundary in
+`docs/compliance/evidence/chainlink-cre-p13-current-authenticated-simulation-2026-09-09.md`.
+The runner stores no raw CLI output, envelope, blind, or credential and deletes its temporary secret
+directory after execution. Live DON/Vault/Nitro execution and account-created gateway completion
+remain unclaimed optional upgrades.

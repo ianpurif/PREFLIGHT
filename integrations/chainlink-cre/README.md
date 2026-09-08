@@ -32,12 +32,11 @@ cre -R . -T staging-settings -e .\integrations\chainlink-cre\.env.cre-valid.loca
 cre -R . -T staging-settings -e .\integrations\chainlink-cre\.env.cre-tampered.local --non-interactive workflow simulate .\integrations\chainlink-cre --trigger-index 0 --http-payload .\integrations\chainlink-cre\fixtures\unsafe.public.json
 ```
 
-The committed 2026-09-06 artifact records all three commands completing through the authenticated
-official simulator: unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`. See the
-[redacted evidence](../../docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md).
-That artifact is the historical Chainlink qualification evidence and is explicitly simulation-only.
-The current source additionally requires the exact site-bound selector; recapture current-source
-evidence with the runner below after installing/authenticating the official CLI.
+The current-source runner records all three commands completing through the authenticated official
+simulator: unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`. See the
+[current redacted evidence](../../docs/compliance/evidence/chainlink-cre-p13-current-authenticated-simulation-2026-09-09.md)
+and the [historical evidence](../../docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md).
+Both are explicitly simulation-only; the current artifact includes the exact site-bound selector.
 
 These are local, single-node CRE simulations—not deployment, a hardware TEE, live DON consensus, production Vault custody, or remote robot attestation. The behavior digest binds supplied data; it cannot prove which artifact or physical robot produced it.
 

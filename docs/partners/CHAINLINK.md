@@ -12,11 +12,10 @@
 - The full P2 private safety envelope and 32-byte commitment blind are decoded from that secret inside the callback and materially determine the result.
 - The callback invokes the existing `@rovaulta/simulation-core` evaluator; it does not duplicate verdict logic.
 - The internal report remains TEE-local. Only the P1 result, canonical behavior-input digest, and synthetic-provenance marker leave the callback; errors are fixed and redacted.
-- SDK compilation and CRE CLI v1.32.0 `workflow build` succeed. The committed 2026-09-06
-  authenticated `workflow simulate` artifact records unsafe `HOLD`, corrected `CLEAR`, and tampered
-  commitment `REJECT` with one CLI-reported simulation binary/config identity. That artifact predates
-  the current required site-selector boundary; current-source evidence must be recaptured with the
-  runner below.
+- SDK compilation and CRE CLI v1.32.0 `workflow build` succeed. The current-source authenticated
+  `workflow simulate` artifact records unsafe `HOLD`, corrected `CLEAR`, and tampered commitment
+  `REJECT` with the mandatory site-bound selector. The non-verbose run did not report a simulation
+  binary/config identity; it did return process success for all three workflow executions.
 
 The account-facing API now has an official CRE HTTP JSON-RPC/JWT client boundary in
 `apps/api/src/evaluation/cre-client.ts`. It sends only the public request and a site-derived secret
@@ -40,12 +39,14 @@ The facility's private safety envelope is the sensitive input. The public result
 - source/config/tests and exact confidential-handler path: locally verified
 - SDK compiler and official CRE CLI build: passed
 - historical unsafe/corrected/tampered CRE simulations: authenticated, executed, and redacted evidence captured
+- current-source unsafe/corrected/tampered CRE simulations: authenticated, executed, and redacted
+  evidence captured by the P13 runner
 - `apps/api/scripts/cre-simulation-evidence.ts` reproduces those three cases, validates only the
   current selector-bound public result with Rovaulta's strict parser, and fails closed when the
-  CLI/auth context is absent; no current-source run is claimed in this checkout
+  CLI/auth context is absent
 - live workflow deployment, DON/Vault/Nitro execution, and attestation: not claimed
 
-Evidence: [`chainlink-cre-p3-authenticated-simulation-2026-09-06.md`](../compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md).
+Evidence: [`chainlink-cre-p13-current-authenticated-simulation-2026-09-09.md`](../compliance/evidence/chainlink-cre-p13-current-authenticated-simulation-2026-09-09.md), plus the historical [`chainlink-cre-p3-authenticated-simulation-2026-09-06.md`](../compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md).
 
 The trace suite is explicitly synthetic and caller-supplied. Its canonical digest binds output to input but does not authenticate a robot, software artifact, or model execution.
 

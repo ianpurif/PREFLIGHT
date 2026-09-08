@@ -52,12 +52,11 @@ real account-created CLEAR or live Graph `MATCHED` response has been captured in
 `apps/api/scripts/cre-simulation-evidence.ts` regenerates ignored site-bound public payloads/secrets,
 runs the existing `handlerInTee` workflow for unsafe/corrected/tampered cases, extracts only the
 minimal public result, validates it with Rovaulta's strict callback/binding parsers, and writes a
-redacted evidence artifact. The committed P3 artifact is the actual authenticated simulation record
-(`HOLD`, `CLEAR`, `REJECT`); live DON deployment, Vault, callback, and Early Access are not claimed or
-required. That historical artifact predates the current mandatory site-selector boundary, so a fresh
-current-source artifact is not claimed until the new runner executes with the official CLI. The normal
-account runner and encrypted site-secret provisioning helper remain available as an optional live
-gateway path and still fail closed when its external configuration is absent.**
+redacted evidence artifact. The current-source artifact records official CLI execution of unsafe
+`HOLD`, corrected `CLEAR`, and tampered `REJECT` with the mandatory site-selector boundary; live DON
+deployment, Vault, callback, and Early Access are not claimed or required. The normal account runner
+and encrypted site-secret provisioning helper remain available as an optional live gateway path and
+still fail closed when its external configuration is absent.**
 
 ## P13 CRE simulation qualification and account boundary
 
@@ -82,9 +81,10 @@ gateway path and still fail closed when its external configuration is absent.**
   configure the matching callback HMAC, gateway URL, workflow ID, and trigger signer. The local
   provisioning helper does not expose a policy-export route and requires the official CRE CLI.
 - Local account-runner preflight: `bun run --cwd apps/api p13:account-evaluation` fails closed with
-  the missing `ROVAULTA_P13_EMAIL` requirement before creating any records. The new simulation
-  runner also fails closed here because the official `cre` executable is unavailable; this does not
-  invalidate the committed authenticated simulation evidence.
+  the missing `ROVAULTA_P13_EMAIL` requirement before creating any records. The authenticated
+  official CLI simulation runner now completes all three current-source cases and writes only its
+  redacted public artifact; the account-backed gateway remains independently blocked without its
+  external deployment configuration.
 
 ## P11 The Graph qualification implementation
 

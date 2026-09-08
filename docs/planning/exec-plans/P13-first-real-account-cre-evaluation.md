@@ -46,9 +46,9 @@ qualification dependency.
   CRE CLI an in-memory value; the envelope/blind never crosses HTTP or evidence boundaries.
 - No confidential envelope, blind, secret, credential, or internal report appears in public output or
   committed evidence.
-- The committed P3 evidence is the actual authenticated simulation record. A new runner artifact is
-  added to submission evidence only after a real CLI run; missing CLI/authentication never produces a
-  success fallback.
+- The committed P3 evidence is the actual authenticated simulation record. The current-source
+  runner artifact is added to submission evidence only after a real CLI run; missing
+  CLI/authentication never produces a success fallback.
 
 ## Steps
 - [x] Explore account/evaluation/CRE boundaries and current environment.
@@ -98,14 +98,59 @@ response is available. The runner never stores raw CLI output.
 - `bun run --cwd apps/api p13:account-evaluation` failed closed before any API call because
   `ROVAULTA_P13_EMAIL` is not configured.
 - `bun run --cwd apps/api p13:provision-site-secret` is ready for an authenticated local account
-  and site, but cannot complete here because the current environment has no P13 account/site IDs
-  and no installed `cre` CLI.
-- `bun run --cwd apps/api evidence:cre-simulation` fails closed in this environment with the
-  explicit missing official CRE CLI error; no success artifact is written.
+  and site, but cannot complete here because no P13 account/site IDs or deployed site secret are
+  configured.
+- `bun run --cwd apps/api evidence:cre-simulation` completed with authenticated official CRE CLI
+  `1.32.0`; the current public-only artifact records all three cases below.
 - `bun --filter '@rovaulta/chainlink-cre' test` passed (31 tests, 366 assertions), including the
   confidential handler, site selector, tampered-input rejection, and leakage checks.
 - `bun --filter '@rovaulta/api' test -- cre-simulation-evidence.test.ts` passed (3 parser tests).
-- Current `.env` inspection found empty `CHAINLINK_CRE_WORKFLOW_ID`,
-  `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY`, and `ROVAULTA_CRE_RESULT_CALLBACK_SECRET`; the `cre`
-  executable is unavailable. No live account/evaluation was created; the committed authenticated
-  simulation evidence remains the Chainlink qualification proof.
+- The account-backed gateway configuration remains absent (`CHAINLINK_CRE_WORKFLOW_ID`,
+  `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY`, and `ROVAULTA_CRE_RESULT_CALLBACK_SECRET` are empty), so
+  no live account/evaluation was created. The separately authenticated official CLI simulation now
+  supplies the current-source Chainlink qualification evidence.
+
+## Current simulation secret-injection repair
+
+### User-visible outcome
+
+The reproducible P13 runner supplies every environment variable declared by the repository's
+`secrets.yaml` manifest to the official CRE CLI through its temporary `-e/--env` file, allowing the
+workflow to reach handler execution while keeping the confidential input temporary and unlogged.
+
+### Non-goals
+
+- No workflow, `handlerInTee`, secret selector, or confidential payload redesign.
+- No hard-coded secret, committed env file, evidence secret, or relaxed fail-closed behavior.
+- No removal of the legacy manifest mapping needed to parse historical wire-compatible inputs.
+
+### Invariants and acceptance checks
+
+- The current site-bound `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_JSON` mapping remains present.
+- The compatibility mapping's decoded legacy environment variable is also populated only in the
+  temporary simulation env file, using the same generated value.
+- The official `cre workflow simulate` command receives the env file through `-e/--env` and reaches
+  workflow execution; any later CLI failure is surfaced with safe diagnostics.
+- The temporary secret directory is removed in the runner's `finally` block on success or failure.
+- No secret value or confidential marker is printed or written to evidence.
+
+### Steps
+
+- [x] Trace the runner, fixture generator, `secrets.yaml`, and official CRE simulation semantics.
+- [x] Populate all declared local simulation env mappings in the generated temporary file.
+- [x] Add regression coverage for the generated env-file shape without asserting secret values.
+- [x] Run the official three-case simulation and capture the public results.
+- [x] Run affected verification and obtain an independent read-only review.
+
+### Current-source verification
+
+- `bun run --cwd apps/api evidence:cre-simulation` completed in WSL with authenticated CRE CLI
+  `1.32.0` and returned `PASS`.
+- Unsafe fixture reached the workflow and returned `EVALUATED` / `HOLD`.
+- Corrected fixture reached the workflow and returned `EVALUATED` / `CLEAR`.
+- Tampered commitment reached the workflow and returned `REJECT` /
+  `CONFIDENTIAL_EVALUATION_REJECTED` before normal evaluation output.
+- The generated public-only artifact is committed at
+  `docs/compliance/evidence/chainlink-cre-p13-current-authenticated-simulation-2026-09-09.md`.
+- The temporary secret directory was removed after the run; no secret, blind, raw CLI output, or
+  confidential payload was written to the artifact.
