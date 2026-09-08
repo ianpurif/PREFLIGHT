@@ -56,6 +56,8 @@ export interface CrePublicEvaluationRequest {
    * retained only for the existing simulation fixtures.
    */
   readonly confidentialInputSecretId?: string;
+  /** Requests a deliberately allowlisted aggregate for the account-facing public projection. */
+  readonly includePublicSummary?: boolean;
   readonly request: EvaluationRequest;
   readonly robotBuild: RobotBuildDescriptor;
   readonly behaviorTraces: RobotBehaviorTraceSuite;
@@ -78,6 +80,13 @@ export interface CrePublicEvaluationSuccess {
   readonly result: EvaluationResult;
   readonly behaviorInputDigest: Sha256Digest;
   readonly traceProvenance: typeof SYNTHETIC_TRACE_PROVENANCE;
+  readonly publicSummary?: CrePublicEvaluationSummary;
+}
+
+export interface CrePublicEvaluationSummary {
+  readonly scenarioCount: number;
+  readonly violationCount: number;
+  readonly reasons: readonly string[];
 }
 
 export interface CrePublicEvaluationFailure {
@@ -139,6 +148,7 @@ function behaviorDigestPayload(input: {
   readonly schemaVersion: string;
   readonly protocolVersion: string;
   readonly confidentialInputSecretId?: string;
+  readonly includePublicSummary?: boolean;
   readonly request: EvaluationRequest;
   readonly robotBuild: RobotBuildDescriptor;
   readonly behaviorTraces: RobotBehaviorTraceSuite;
@@ -152,6 +162,7 @@ export function digestBehaviorInput(input: {
   readonly schemaVersion: string;
   readonly protocolVersion: string;
   readonly confidentialInputSecretId?: string;
+  readonly includePublicSummary?: boolean;
   readonly request: EvaluationRequest;
   readonly robotBuild: RobotBuildDescriptor;
   readonly behaviorTraces: RobotBehaviorTraceSuite;
@@ -298,6 +309,7 @@ export function parsePublicEvaluationRequest(input: unknown): CrePublicEvaluatio
       "schemaVersion",
       "protocolVersion",
       "confidentialInputSecretId",
+      "includePublicSummary",
       "request",
       "robotBuild",
       "behaviorTraces",
@@ -306,7 +318,7 @@ export function parsePublicEvaluationRequest(input: unknown): CrePublicEvaluatio
       "evaluatedAt",
     ],
     "MALFORMED_PUBLIC_INPUT",
-    ["confidentialInputSecretId"],
+    ["confidentialInputSecretId", "includePublicSummary"],
   );
   if (
     !(
@@ -362,11 +374,16 @@ export function parsePublicEvaluationRequest(input: unknown): CrePublicEvaluatio
     ) {
       return reject("MALFORMED_PUBLIC_INPUT");
     }
+    const includePublicSummary = record.includePublicSummary;
+    if (includePublicSummary !== undefined && typeof includePublicSummary !== "boolean") {
+      return reject("MALFORMED_PUBLIC_INPUT");
+    }
 
     const normalized = Object.freeze({
       schemaVersion: String(record.schemaVersion),
       protocolVersion: String(record.protocolVersion),
       ...(confidentialInputSecretId === undefined ? {} : { confidentialInputSecretId }),
+      ...(includePublicSummary === undefined ? {} : { includePublicSummary }),
       request,
       robotBuild,
       behaviorTraces,

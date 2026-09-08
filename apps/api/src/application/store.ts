@@ -37,6 +37,10 @@ import {
   WAREHOUSE_EVALUATOR_VERSION,
 } from "@rovaulta/simulation-core";
 import { ApplicationError } from "./errors.js";
+import type {
+  ConfidentialEvaluationInput,
+  ConfidentialEvaluationReport,
+} from "../evaluation/index.js";
 
 const SESSION_COOKIE = "rovaulta_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
@@ -904,7 +908,7 @@ export class ApplicationStore {
     );
   }
 
-  evaluateBuild(
+  async evaluateBuild(
     accountId: string,
     input: {
       readonly siteId: string;
@@ -913,35 +917,11 @@ export class ApplicationStore {
       readonly evaluationId: string;
       readonly requestedAt: string;
       readonly evaluatedAt: string;
-      readonly evaluate: (value: {
-        readonly request: unknown;
-        readonly robotBuild: unknown;
-        readonly confidentialEnvelope: unknown;
-        readonly envelopeBlindingSecret: Uint8Array;
-        readonly behaviorTraces: unknown;
-        readonly evaluatedAt: unknown;
-      }) => {
-        readonly result: {
-          readonly evaluationId: string;
-          readonly inputs: {
-            readonly siteId: string;
-            readonly robotId: string;
-            readonly robotBuildId: string;
-            readonly robotBuildDigest: string;
-            readonly safetyEnvelopeId: string;
-            readonly safetyEnvelopeCommitment: string;
-            readonly evaluatorVersion: string;
-          };
-          readonly evaluationInputsDigest: string;
-          readonly verdict: "CLEAR" | "HOLD" | "ESCALATE";
-          readonly evaluatedAt: string;
-        };
-        readonly scenarioCount: number;
-        readonly violationCount: number;
-        readonly violations: readonly Readonly<{ readonly type: string }>[];
-      };
+      readonly evaluate: (
+        value: ConfidentialEvaluationInput,
+      ) => ConfidentialEvaluationReport | Promise<ConfidentialEvaluationReport>;
     },
-  ): PublicEvaluation {
+  ): Promise<PublicEvaluation> {
     const site = this.#siteRow(accountId, input.siteId);
     const robot = this.#robotRow(accountId, site.id, input.robotId);
     const build = this.#buildRow(accountId, site.id, robot.id, input.buildId);
@@ -963,7 +943,7 @@ export class ApplicationStore {
       },
       requestedAt: input.requestedAt,
     });
-    const report = input.evaluate({
+    const report = await input.evaluate({
       request,
       robotBuild: descriptor,
       confidentialEnvelope: policy.envelope,

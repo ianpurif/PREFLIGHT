@@ -1,5 +1,6 @@
 import { createDeploymentAgentFromEnvironment } from "./agent/index.js";
 import { createApplicationStoreFromEnvironment } from "./application/index.js";
+import { createCreEvaluationClientFromEnvironment } from "./evaluation/index.js";
 import { readEnvironment } from "./environment.js";
 import { createReleaseServiceFromEnvironment } from "./release/index.js";
 import { buildServer } from "./server";
@@ -19,10 +20,12 @@ const deploymentAgent =
     ? createDeploymentAgentFromEnvironment(releaseService)
     : undefined;
 const applicationStore = createApplicationStoreFromEnvironment();
+const evaluationExecutor = createCreEvaluationClientFromEnvironment();
 const app = buildServer({
   ...(releaseService === undefined ? {} : { releaseService }),
   ...(deploymentAgent === undefined ? {} : { deploymentAgent }),
   applicationStore,
+  evaluationExecutor,
 });
 const port = Number(process.env.PORT ?? 4000);
 

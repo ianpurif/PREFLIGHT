@@ -5,6 +5,10 @@ import { evaluateSimulation } from "@rovaulta/simulation-core";
 import Fastify, { type FastifyReply } from "fastify";
 import { type DeploymentAgent, DeploymentAgentError } from "./agent/index.js";
 import { ApplicationError, ApplicationStore } from "./application/index.js";
+import {
+  type ConfidentialEvaluationExecutor,
+  CreEvaluationError,
+} from "./evaluation/index.js";
 import { readEnvironment } from "./environment.js";
 import type { ReleaseService } from "./release/index.js";
 
@@ -59,6 +63,7 @@ export function buildServer(
     releaseService?: ReleaseService;
     deploymentAgent?: DeploymentAgent;
     applicationStore?: ApplicationStore;
+    evaluationExecutor?: ConfidentialEvaluationExecutor;
     environment?: NodeJS.ProcessEnv;
   } = {},
 ) {
@@ -70,6 +75,10 @@ export function buildServer(
   const releaseService = options.releaseService;
   const deploymentAgent = options.deploymentAgent;
   const applicationStore = options.applicationStore;
+  // The in-process P2 executor is intentionally retained only for unit/lifecycle tests that call
+  // buildServer directly. The production entrypoint always supplies the CRE executor below.
+  const evaluationExecutor: ConfidentialEvaluationExecutor =
+    options.evaluationExecutor ?? { evaluate: async (input) => evaluateSimulation(input) };
   const environment = options.environment ?? process.env;
   const allowedOrigins = new Set(
     [
@@ -138,6 +147,9 @@ export function buildServer(
       const status = error.code === "PROVIDER_UNAVAILABLE" ? 503 : 400;
       return reply.code(status).send({ error: error.code, message: error.message });
     }
+    if (error instanceof CreEvaluationError) {
+      return reply.code(503).send({ error: error.code, message: error.message });
+    }
     if (error instanceof ApplicationError) {
       const status =
         error.code === "AUTH_REQUIRED" || error.code === "INVALID_CREDENTIALS"
@@ -148,7 +160,9 @@ export function buildServer(
               ? 404
               : error.code === "FORBIDDEN"
                 ? 403
-                : error.code === "POLICY_UNAVAILABLE" || error.code === "PERSISTENCE_UNAVAILABLE"
+                : error.code === "POLICY_UNAVAILABLE" ||
+                    error.code === "EVALUATION_UNAVAILABLE" ||
+                    error.code === "PERSISTENCE_UNAVAILABLE"
                   ? 503
                   : 400;
       return reply.code(status).send({ error: error.code, message: error.message });
@@ -346,14 +360,14 @@ export function buildServer(
     )
       return rejectMalformed(reply);
     const timestamp = Math.floor(Date.now() / 1000).toString();
-    const evaluation = requireStore().evaluateBuild(accountId, {
+    const evaluation = await requireStore().evaluateBuild(accountId, {
       siteId: body.siteId,
       robotId: body.robotId,
       buildId: body.buildId,
       evaluationId: `evaluation:${randomBytes(16).toString("hex")}`,
       requestedAt: timestamp,
       evaluatedAt: timestamp,
-      evaluate: evaluateSimulation,
+      evaluate: (input) => evaluationExecutor.evaluate(input),
     });
     return reply.code(201).send({ evaluation });
   });

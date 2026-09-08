@@ -7,6 +7,7 @@ export type ApplicationErrorCode =
   | "FORBIDDEN"
   | "CONFLICT"
   | "POLICY_UNAVAILABLE"
+  | "EVALUATION_UNAVAILABLE"
   | "PERSISTENCE_UNAVAILABLE";
 
 export class ApplicationError extends Error {

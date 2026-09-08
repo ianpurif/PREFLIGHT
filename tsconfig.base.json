@@ -19,7 +19,8 @@
       "@rovaulta/domain": ["packages/domain/src/index.ts"],
       "@rovaulta/simulation-core": ["packages/simulation-core/src/index.ts"],
       "@rovaulta/ledger-gate": ["packages/ledger-gate/src/index.ts"],
-      "@rovaulta/chain-client": ["packages/chain-client/src/index.ts"]
+      "@rovaulta/chain-client": ["packages/chain-client/src/index.ts"],
+      "@rovaulta/chainlink-cre/*": ["integrations/chainlink-cre/src/*"]
     }
   }
 }

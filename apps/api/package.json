@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@rovaulta/chain-client": "workspace:*",
+    "@rovaulta/chainlink-cre": "workspace:*",
     "@rovaulta/domain": "workspace:*",
     "@rovaulta/simulation-core": "workspace:*",
     "fastify": "5.12.1",

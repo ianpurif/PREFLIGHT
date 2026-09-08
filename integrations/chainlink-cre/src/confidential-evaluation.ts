@@ -82,6 +82,17 @@ export function evaluateInTee(
       result: internalReport.result,
       behaviorInputDigest: publicInput.behaviorInputDigest,
       traceProvenance: publicInput.traceProvenance,
+      ...(publicInput.includePublicSummary === true
+        ? {
+            publicSummary: Object.freeze({
+              scenarioCount: internalReport.scenarioCount,
+              violationCount: internalReport.violationCount,
+              reasons: Object.freeze(
+                Array.from(new Set(internalReport.violations.map((violation) => violation.type))),
+              ),
+            }),
+          }
+        : {}),
     });
   } catch (error) {
     if (error instanceof CreBoundaryError) {
