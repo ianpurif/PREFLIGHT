@@ -70,5 +70,5 @@ The completed local loop on 2026-09-09 passed `bun run verify` (lint, typecheck,
 with a forced uncached Turbo test pass, build, Foundry contracts, and scaffold verification), with 201 TypeScript tests and 2,946
 assertions passing. Biome reported 27 pre-existing CSS specificity warnings and no errors. The
 CRE workflow also compiled with `bun run --filter '@rovaulta/chainlink-cre' cre:compile`, and
-`git diff --check` passed. This does not substitute for the still-blocked deployed CRE callback,
+`bun run test:e2e` passed all 10 browser tests; `git diff --check` passed. This does not substitute for the still-blocked deployed CRE callback,
 live Graph provider, external model, or Ledger hardware evidence.

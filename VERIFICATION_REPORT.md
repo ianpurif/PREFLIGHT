@@ -272,9 +272,9 @@ account-created result exists in this environment.
 - `bun run test`: pass; 12/12 Turbo tasks.
 - `bun run build`: pass; 7/7 tasks; Next.js production build includes static `/` and `/p5-ledger`.
 - `bun run --cwd apps/web test`: pass; 2 P6 projection/mutation tests, 9 assertions.
-- `bun run test:e2e`: pass; 7 browser tests, including the five P6 states plus the P7 clean
-  startup → reset → A → reset → B/prepared handoff → reset → C/repeated C flow and a late-response
-  race guard.
+- `bun run test:e2e`: pass; 10 browser tests, including the five P6 states, the account flow's
+  truthful CRE-unavailable stop, and the P7 clean startup → reset → A → reset → B/prepared handoff
+  → reset → C/repeated C flow plus a late-response race guard.
 - `bun run demo:setup`, two idempotent `bun run demo:reset` calls, and repeated `bun run demo:run`:
   pass; generated public trace is byte-for-byte stable. Local timings were approximately `0.43s`
   for setup and `0.37s` for a repeat run.
