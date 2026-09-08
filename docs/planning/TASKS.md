@@ -121,7 +121,7 @@
 - [x] account-backed deployment agent Graph gate before the existing P5 authority
 - [x] live-only operator scripts for hosted deployment, provider query, and account-agent evidence
 - [x] critical tests for provider request shape, malformed public data, non-matched states, and P5 handoff
-- [ ] deploy/index the subgraph through a real Graph provider and record hosted identity
+- [x] deploy/index the subgraph through a real Graph provider and record hosted identity (`rovaulta-registry` v0.1.0, Sepolia, 100% sync, zero entities before first clearance)
 - [ ] capture a live Gateway `MATCHED` response for an account-created Sepolia clearance
 - [ ] capture the live Graph result changing the account-agent outcome and reaching `LEDGER_APPROVAL_REQUIRED`
 - [ ] verify and document Start Fresh pool eligibility with the event submission record
@@ -133,3 +133,11 @@
 - [ ] README judge path
 - [ ] AI attribution complete
 - [ ] 2–4 minute showcase video
+
+## P12 — Account-backed Sepolia clearance issuance
+- [x] validated public clearance construction from an account-owned `CLEAR` evaluation
+- [x] canonical P4 registry write/event ABI and exact transport reuse
+- [x] fail-closed operator command with simulation, confirmation, event checks, and readback
+- [x] operator runbook and public-only output contract
+- [ ] create one real account-backed Sepolia clearance and capture transaction evidence
+- [ ] wait for The Graph entity and capture the exact live Gateway `MATCHED` response

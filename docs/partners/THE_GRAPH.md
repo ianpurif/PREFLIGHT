@@ -39,6 +39,12 @@ and WASM compilation locally; `integrations/the-graph/scripts/deploy.mjs` is the
 Subgraph Studio deployment path. Generated code and build output are ignored and are not treated as
 application source.
 
+The operator has deployed the current manifest as `rovaulta-registry` version `0.1.0` on Ethereum
+Sepolia; the hosted index reports 100% sync with zero entities before the first real clearance. This
+is deployment/indexing state, not a clearance proof. The next live step is to run the account-backed
+Sepolia issuance command documented in the root README, then query the exact resulting digest through
+the Gateway after the entity appears.
+
 The indexed entity contains only public P4 registry fields: exact P1 binding hashes, the verdict,
 issuer, timestamps, revocation state, and the indexing block identity. Private safety envelopes,
 blinds, rules, thresholds, behavior traces, credentials, and model output are never indexed or sent
@@ -62,9 +68,9 @@ server environment only. The browser receives the redacted public context in the
 the API key or provider URL credentials.
 
 This repository currently contains implementation and unit coverage, but no committed live Graph
-response. Qualification evidence remains blocked until an operator deploys/indexes the subgraph,
-configures a real Graph Gateway key and subgraph ID, and captures a response for a real Sepolia
-registry clearance. The unit tests intentionally use injected responses and are labelled as local
+response. Qualification evidence remains blocked until an operator configures a real Graph Gateway
+key/subgraph ID, records one account-created Sepolia clearance, and captures a response for that
+exact digest. The unit tests intentionally use injected responses and are labelled as local
 validation, not provider evidence.
 
 P11 does not add Subgraph MCP or Substreams: the minimal hosted subgraph plus Gateway query is already

@@ -34,9 +34,19 @@ subgraph, a server-only Gateway client that validates the exact clearance identi
 issuer, block metadata, verdict, revocation, and expiry, and an operator-only command that runs the
 real account-backed agent path without printing credentials. The account agent already requires
 `MATCHED` Graph context before the direct P5 check; all other Graph states fail closed. The build
-and injected critical tests are green. Hosted subgraph deployment, Graph credentials, an indexed
-account-created clearance, live `MATCHED` agent evidence, the 2–4 minute demo, and Start Fresh pool
-eligibility remain external blockers and are not claimed.**
+and injected critical tests are green. The hosted `rovaulta-registry` deployment is now operator-
+reported, but Graph Gateway credentials, an indexed account-created clearance, live `MATCHED` agent
+evidence, the 2–4 minute demo, and Start Fresh pool eligibility remain external blockers and are not
+claimed.**
+
+**P12 adds the missing operator path from account data to the deployed registry:** a validated
+account-owned public `CLEAR` evaluation can now be converted through the canonical P1 clearance
+schema and existing P4 transport, preflighted against the authorized Sepolia registrar, simulated,
+submitted to `RovaultaRegistry.recordClearance`, confirmed, checked for both public registry events,
+and read back through the existing exact-binding client. The command emits only public confirmation
+fields and can write a public-only clearance JSON for P5/P11. The hosted `rovaulta-registry` v0.1.0
+subgraph is operator-reported as fully indexed with zero entities before this first transaction; no
+real account-created CLEAR or live Graph `MATCHED` response has been captured in this checkout.**
 
 ## P11 The Graph qualification implementation
 
@@ -55,6 +65,20 @@ eligibility remain external blockers and are not claimed.**
 - `apps/api evidence:p11-graph` is the reproducible live-account evidence command. It requires a
   real Graph key/subgraph ID, account-created public clearance, account identifier, and public
   signer address; missing configuration fails closed.
+
+## P12 account-backed clearance issuance
+
+- `apps/api/src/application/clearance.ts` constructs a clearance only from a stored account
+  evaluation whose public verdict is `CLEAR`; all P1 site/robot/build/envelope-commitment/evaluator
+  and input-digest bindings are copied and revalidated by `assertClearanceBindings`.
+- `apps/api/scripts/record-sepolia-clearance.ts` is an explicit operator-only write path. It requires
+  an existing account database/evaluation, an explicit clearance id, a confirmation flag, and an
+  authorized registrar key. It validates Sepolia chain/bytecode/registrar state, duplicate IDs,
+  timestamps, simulation, both `ClearanceRecorded` and `ClearanceBindingsRecorded` logs, and the
+  existing exact registry readback before reporting `CONFIRMED`.
+- The script never opens the encrypted policy and never prints envelope, blind, credential, private
+  key, or confidential evaluation fields. A missing account evaluation, CRE completion, RPC, or
+  funded registrar is a pre-broadcast blocker.
 
 ## P9 partner qualification slice
 

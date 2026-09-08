@@ -12,6 +12,25 @@
 
 Add future material AI-assisted changes as dated entries. Do not claim fully human-authored code where Codex generated or substantially rewrote it.
 
+## 2026-09-09 — P12 account-backed Sepolia clearance issuance
+
+**Tool:** OpenAI Codex using the Rovaulta execution-plan, verification-loop, and partner-compliance
+skills.
+
+**Human direction:** Reuse the existing account evaluation and P4/P5 transport to create one real
+Sepolia `CLEAR` clearance for The Graph indexing; do not insert mock Graph data, alter the contract,
+or expose confidential inputs.
+
+**AI-assisted output:** A validated public clearance constructor from account-owned evaluations, the
+existing registry ABI extended with `recordClearance`/event definitions, and an explicit operator
+command that checks registrar authorization, simulates and confirms the transaction, validates both
+registry events, performs exact readback, and emits only public confirmation fields.
+
+**Evidence boundary:** This checkout has no account-created completed CRE evaluation yet, so no live
+clearance transaction was broadcast and no Graph entity or `MATCHED` response is claimed. The
+operator command fails closed until the account, evaluation, registrar, RPC, and explicit confirmation
+are supplied.
+
 ## 2026-09-05 — Boilerplate verification repair
 
 **Tool:** OpenAI Codex.

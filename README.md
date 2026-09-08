@@ -350,12 +350,51 @@ envelope blinds, signatures, or confidential CRE payloads.
 | `ROVAULTA_P11_ACCOUNT_ID`         | Operator-only live account evidence input               |
 | `ROVAULTA_P11_CLEARANCE_PATH`     | Public clearance JSON for live evidence                  |
 | `ROVAULTA_P11_SIGNER_ADDRESS`     | Public Ledger signer address for live evidence           |
+| `SEPOLIA_REGISTRAR_PRIVATE_KEY`   | Operator-only authorized Sepolia registrar key           |
+| `ROVAULTA_CLEARANCE_CONFIRM`      | Must be `YES` to authorize one registry write             |
+| `ROVAULTA_CLEARANCE_ACCOUNT_ID`   | Existing account that owns the evaluation                 |
+| `ROVAULTA_CLEARANCE_EVALUATION_ID` | Existing account evaluation with public `CLEAR` result  |
+| `ROVAULTA_CLEARANCE_ID`            | New unique public clearance identifier                   |
+| `ROVAULTA_CLEARANCE_TTL_SECONDS`  | Clearance lifetime from the latest Sepolia block         |
+| `ROVAULTA_CLEARANCE_OUTPUT_PATH`  | Optional public-only clearance JSON output path          |
 | `NEXT_PUBLIC_LEDGER_TRANSPORT`     | `webhid` by default; `speculos` only in development/test |
 | `NEXT_PUBLIC_LEDGER_ORIGIN_TOKEN`  | Partner-issued signing-origin token, when available      |
 
 The complete variable list is in [`.env.example`](.env.example). The API catalog must contain public
 canonical targets and clearance records only; it must never contain a private safety envelope or
 blind. See [`apps/api/README.md`](apps/api/README.md) for the exact request grammar and endpoints.
+
+### Record one real account clearance on Sepolia
+
+After the normal account flow has completed a real `CLEAR` evaluation through the configured CRE
+result boundary, an operator can attest that exact public result in the already deployed registry.
+The command reads the account-scoped evaluation from the existing API database, derives the P1
+clearance and P4 bytes32 transport, checks the pinned Sepolia contract and registrar authorization,
+simulates `recordClearance`, waits for one confirmation, validates both registry events, and performs
+the existing exact-binding readback. It never reads or prints the encrypted policy, envelope, blind,
+credentials, or confidential evaluation data.
+
+PowerShell example (replace the account/evaluation/clearance identifiers with real values):
+
+```powershell
+$env:ROVAULTA_CLEARANCE_CONFIRM="YES"
+$env:ROVAULTA_CLEARANCE_ACCOUNT_ID="account:<account-token>"
+$env:ROVAULTA_CLEARANCE_EVALUATION_ID="evaluation:<evaluation-token>"
+$env:ROVAULTA_CLEARANCE_ID="clearance:<unique-token>"
+$env:ROVAULTA_CLEARANCE_TTL_SECONDS="604800"
+$env:ROVAULTA_CLEARANCE_OUTPUT_PATH=".data/clearance-account-001.json"
+# Prefer a dedicated operator variable. The existing deployer key is accepted for the deployed
+# initial registrar only; never paste a private key into the command or commit it.
+$env:SEPOLIA_REGISTRAR_PRIVATE_KEY=$env:SEPOLIA_DEPLOYER_PRIVATE_KEY
+bun run --cwd apps/api record:sepolia-clearance
+```
+
+The command prints only public confirmation data: chain/contract, transaction and block, issuer,
+clearance/build digests, exact public bindings, expiry, and the two event-presence checks. The output
+JSON is suitable for the existing P5/P11 public-clearance input. A successful transaction is the
+required prerequisite for The Graph to index the clearance; indexing remains eventually consistent.
+If the account database, completed `CLEAR` evaluation, funded authorized registrar, or Sepolia RPC
+is missing, the command stops before broadcast.
 
 ## Testing
 
