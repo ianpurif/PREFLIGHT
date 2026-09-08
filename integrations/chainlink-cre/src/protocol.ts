@@ -1,6 +1,7 @@
 import { sha256 } from "@noble/hashes/sha2.js";
 import {
   canonicalBytes,
+  canonicalSerialize,
   digestRobotBuild,
   type EvaluationRequest,
   type EvaluationResult,
@@ -10,7 +11,9 @@ import {
   LEGACY_PROTOCOL_VERSION,
   LEGACY_SCHEMA_VERSIONS,
   PROTOCOL_VERSION,
+  parseEvaluationId,
   parseEvaluationRequest,
+  parseEvaluationResult,
   parseRobotBuildDescriptor,
   parseSha256Digest,
   parseUnixTimestamp,
@@ -31,6 +34,9 @@ export const CRE_CONFIDENTIAL_INPUT_VERSION =
   "rovaulta.cre-confidential-evaluation-input/v1" as const;
 export const CRE_PUBLIC_RESULT_VERSION = "rovaulta.cre-public-evaluation-result/v1" as const;
 export const CRE_PUBLIC_ERROR_VERSION = "rovaulta.cre-public-evaluation-error/v1" as const;
+export const CRE_RESULT_CALLBACK_VERSION = "rovaulta.cre-evaluation-result-callback/v1" as const;
+export const CRE_RESULT_CALLBACK_SECRET_ID =
+  "ROVAULTA_CONFIDENTIAL_EVALUATION_RESULT_CALLBACK_SECRET" as const;
 export const SYNTHETIC_TRACE_PROVENANCE = "SYNTHETIC_CALLER_SUPPLIED" as const;
 export const CONFIDENTIAL_INPUT_SECRET_ID = "ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT" as const;
 export const COMPATIBILITY_CONFIDENTIAL_INPUT_SECRET_ID = LEGACY_CONFIDENTIAL_INPUT_SECRET_ID;
@@ -39,6 +45,13 @@ export const MAX_CONFIDENTIAL_PAYLOAD_BYTES = 2 * 1024;
 
 const BEHAVIOR_INPUT_DIGEST_DOMAIN = "rovaulta.digest.cre-behavior-input/v1" as const;
 
+export function siteSecretId(siteId: string): string {
+  const suffix = siteId.replace(/[^a-z0-9_-]/gi, "_").toLowerCase();
+  if (suffix.length === 0 || suffix.length > 96)
+    throw new Error("site secret reference is malformed");
+  return `${CONFIDENTIAL_INPUT_SECRET_ID}_${suffix}`;
+}
+
 export type CrePublicFailureCode =
   | "MALFORMED_PUBLIC_INPUT"
   | "CONFIDENTIAL_INPUT_UNAVAILABLE"
@@ -46,6 +59,15 @@ export type CrePublicFailureCode =
   | "UNSUPPORTED_VERSION"
   | "CONFIDENTIAL_EVALUATION_REJECTED"
   | "CONFIDENTIAL_HANDLER_FAILURE";
+
+const CRE_PUBLIC_FAILURE_CODES = Object.freeze([
+  "MALFORMED_PUBLIC_INPUT",
+  "CONFIDENTIAL_INPUT_UNAVAILABLE",
+  "MALFORMED_CONFIDENTIAL_INPUT",
+  "UNSUPPORTED_VERSION",
+  "CONFIDENTIAL_EVALUATION_REJECTED",
+  "CONFIDENTIAL_HANDLER_FAILURE",
+] as const);
 
 export interface CrePublicEvaluationRequest {
   readonly schemaVersion: string;
@@ -85,6 +107,18 @@ export interface CrePublicEvaluationFailure {
   readonly protocolVersion: string;
   readonly status: "REJECT";
   readonly code: CrePublicFailureCode;
+}
+
+/**
+ * The only payload allowed to leave the confidential handler for account completion. It is
+ * deliberately a wrapper around the already-minimal public CRE response; private envelope data,
+ * blinds, policy contents, and internal reports have no representation here.
+ */
+export interface CreEvaluationResultCallback {
+  readonly schemaVersion: typeof CRE_RESULT_CALLBACK_VERSION;
+  readonly protocolVersion: typeof PROTOCOL_VERSION;
+  readonly evaluationId: string;
+  readonly response: CrePublicEvaluationResponse;
 }
 
 export type CrePublicEvaluationResponse = CrePublicEvaluationSuccess | CrePublicEvaluationFailure;
@@ -440,4 +474,130 @@ export function makePublicFailureForProtocol(
     status: "REJECT",
     code,
   });
+}
+
+export function makeEvaluationResultCallback(
+  evaluationId: string,
+  response: CrePublicEvaluationResponse,
+): CreEvaluationResultCallback {
+  return Object.freeze({
+    schemaVersion: CRE_RESULT_CALLBACK_VERSION,
+    protocolVersion: PROTOCOL_VERSION,
+    evaluationId: parseEvaluationId(evaluationId),
+    response,
+  });
+}
+
+/** Canonical bytes signed by the TEE callback HMAC and verified by the account API. */
+export function serializeEvaluationResultCallback(input: CreEvaluationResultCallback): string {
+  return canonicalSerialize(parseEvaluationResultCallback(input));
+}
+
+export function parseEvaluationResultCallback(input: unknown): CreEvaluationResultCallback {
+  const record = expectExactObject(
+    input,
+    ["schemaVersion", "protocolVersion", "evaluationId", "response"],
+    "MALFORMED_PUBLIC_INPUT",
+  );
+  if (
+    record.schemaVersion !== CRE_RESULT_CALLBACK_VERSION ||
+    record.protocolVersion !== PROTOCOL_VERSION
+  ) {
+    return reject("UNSUPPORTED_VERSION");
+  }
+  try {
+    const evaluationId = parseEvaluationId(record.evaluationId);
+    const responseRecord = expectExactObject(
+      record.response,
+      [
+        "schemaVersion",
+        "protocolVersion",
+        "status",
+        "result",
+        "behaviorInputDigest",
+        "traceProvenance",
+        "code",
+      ],
+      "MALFORMED_PUBLIC_INPUT",
+      ["result", "behaviorInputDigest", "traceProvenance", "code"],
+    );
+    if (responseRecord.status === "EVALUATED") {
+      const responseKeys = [
+        "schemaVersion",
+        "protocolVersion",
+        "status",
+        "result",
+        "behaviorInputDigest",
+        "traceProvenance",
+      ] as const;
+      if (
+        Object.keys(responseRecord).some(
+          (key) => !responseKeys.includes(key as (typeof responseKeys)[number]),
+        ) ||
+        responseKeys.some((key) => !Object.hasOwn(responseRecord, key))
+      ) {
+        return reject("MALFORMED_PUBLIC_INPUT");
+      }
+      if (
+        responseRecord.schemaVersion !== CRE_PUBLIC_RESULT_VERSION ||
+        responseRecord.protocolVersion !== PROTOCOL_VERSION ||
+        responseRecord.traceProvenance !== SYNTHETIC_TRACE_PROVENANCE
+      ) {
+        return reject("MALFORMED_PUBLIC_INPUT");
+      }
+      const result = parseEvaluationResult(responseRecord.result);
+      if (result.evaluationId !== evaluationId) return reject("MALFORMED_PUBLIC_INPUT");
+      const behaviorInputDigest = parseSha256Digest(
+        responseRecord.behaviorInputDigest,
+        "behaviorInputDigest",
+      );
+      return Object.freeze({
+        schemaVersion: CRE_RESULT_CALLBACK_VERSION,
+        protocolVersion: PROTOCOL_VERSION,
+        evaluationId,
+        response: Object.freeze({
+          schemaVersion: CRE_PUBLIC_RESULT_VERSION,
+          protocolVersion: PROTOCOL_VERSION,
+          status: "EVALUATED",
+          result,
+          behaviorInputDigest,
+          traceProvenance: SYNTHETIC_TRACE_PROVENANCE,
+        }),
+      });
+    }
+    if (responseRecord.status === "REJECT") {
+      const responseKeys = ["schemaVersion", "protocolVersion", "status", "code"] as const;
+      if (
+        Object.keys(responseRecord).some(
+          (key) => !responseKeys.includes(key as (typeof responseKeys)[number]),
+        ) ||
+        responseKeys.some((key) => !Object.hasOwn(responseRecord, key))
+      ) {
+        return reject("MALFORMED_PUBLIC_INPUT");
+      }
+      if (
+        responseRecord.schemaVersion !== CRE_PUBLIC_ERROR_VERSION ||
+        responseRecord.protocolVersion !== PROTOCOL_VERSION ||
+        typeof responseRecord.code !== "string" ||
+        !CRE_PUBLIC_FAILURE_CODES.includes(responseRecord.code as CrePublicFailureCode)
+      ) {
+        return reject("MALFORMED_PUBLIC_INPUT");
+      }
+      return Object.freeze({
+        schemaVersion: CRE_RESULT_CALLBACK_VERSION,
+        protocolVersion: PROTOCOL_VERSION,
+        evaluationId,
+        response: Object.freeze({
+          schemaVersion: CRE_PUBLIC_ERROR_VERSION,
+          protocolVersion: PROTOCOL_VERSION,
+          status: "REJECT",
+          code: responseRecord.code as CrePublicFailureCode,
+        }),
+      });
+    }
+    return reject("MALFORMED_PUBLIC_INPUT");
+  } catch (error) {
+    if (error instanceof CreBoundaryError) throw error;
+    return reject("MALFORMED_PUBLIC_INPUT");
+  }
 }

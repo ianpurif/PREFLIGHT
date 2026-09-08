@@ -5,6 +5,11 @@ import { initWorkflow } from "./workflow.js";
 const configSchema = z
   .object({
     authorizedEvmAddress: z.string().regex(/^0x[0-9a-fA-F]{40}$/),
+    resultDeliveryUrl: z.string().url().startsWith("https://").optional(),
+    resultDeliverySecretId: z
+      .string()
+      .regex(/^[A-Z0-9_-]{1,128}$/)
+      .optional(),
   })
   .strict();
 

@@ -1,13 +1,19 @@
 import { describe, expect, test } from "bun:test";
 import { canonicalSerialize, ProtocolError } from "@rovaulta/domain";
+import { evaluateSimulation } from "@rovaulta/simulation-core";
 import {
+  CRE_PUBLIC_RESULT_VERSION,
+  CRE_RESULT_CALLBACK_VERSION,
   CRE_PUBLIC_REQUEST_VERSION,
   CreBoundaryError,
   type CrePublicFailureCode,
   decodePublicPayload,
   digestBehaviorInput,
   parseConfidentialEvaluationInput,
+  makeEvaluationResultCallback,
+  parseEvaluationResultCallback,
   parsePublicEvaluationRequest,
+  serializeEvaluationResultCallback,
 } from "../src/protocol.js";
 import {
   deepClone,
@@ -204,5 +210,61 @@ describe("P3 confidential protocol", () => {
 
   test("P1 canonical failures cannot escape the public boundary helper", () => {
     expect(() => canonicalSerialize({ bad: undefined })).toThrow(ProtocolError);
+  });
+});
+
+describe("P10 CRE result callback protocol", () => {
+  test("canonicalizes a minimal evaluated callback and rejects private fields", () => {
+    const demoCase = fixture.correctedFixtureBuild;
+    const result = evaluateSimulation({
+      request: demoCase.request,
+      robotBuild: demoCase.robotBuild,
+      confidentialEnvelope: fixture.confidentialEnvelope,
+      envelopeBlindingSecret: fixture.envelopeBlindingSecret,
+      behaviorTraces: demoCase.behaviorTraces,
+      evaluatedAt: demoCase.evaluatedAt,
+    }).result;
+    const publicInput = makePublicInput(demoCase);
+    const response = {
+      schemaVersion: CRE_PUBLIC_RESULT_VERSION,
+      protocolVersion: "rovaulta.protocol/v1",
+      status: "EVALUATED" as const,
+      result,
+      behaviorInputDigest: publicInput.behaviorInputDigest,
+      traceProvenance: "SYNTHETIC_CALLER_SUPPLIED" as const,
+    };
+    const callback = makeEvaluationResultCallback(result.evaluationId, response);
+    expect(callback.schemaVersion).toBe(CRE_RESULT_CALLBACK_VERSION);
+    const reordered = {
+      response,
+      evaluationId: callback.evaluationId,
+      protocolVersion: callback.protocolVersion,
+      schemaVersion: callback.schemaVersion,
+    };
+    expect(serializeEvaluationResultCallback(callback)).toBe(
+      serializeEvaluationResultCallback(reordered),
+    );
+    expect(
+      parseEvaluationResultCallback(JSON.parse(serializeEvaluationResultCallback(callback))),
+    ).toEqual(callback);
+    expect(() =>
+      parseEvaluationResultCallback({ ...callback, privateEnvelope: "never-public" }),
+    ).toThrow(CreBoundaryError);
+  });
+
+  test("reject callbacks are versioned and bounded to known failure codes", () => {
+    const callback = makeEvaluationResultCallback(fixture.unsafeFixtureBuild.request.evaluationId, {
+      schemaVersion: "rovaulta.cre-public-evaluation-error/v1",
+      protocolVersion: "rovaulta.protocol/v1",
+      status: "REJECT",
+      code: "CONFIDENTIAL_EVALUATION_REJECTED",
+    });
+    expect(parseEvaluationResultCallback(callback).response.status).toBe("REJECT");
+    expect(() =>
+      parseEvaluationResultCallback({
+        ...callback,
+        response: { ...callback.response, code: "private-detail" },
+      }),
+    ).toThrow(CreBoundaryError);
   });
 });

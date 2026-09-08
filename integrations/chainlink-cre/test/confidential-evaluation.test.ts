@@ -5,6 +5,9 @@ import { evaluateInTee } from "../src/confidential-evaluation.js";
 import {
   CRE_PUBLIC_ERROR_VERSION,
   CRE_PUBLIC_RESULT_VERSION,
+  CRE_RESULT_CALLBACK_SECRET_ID,
+  parseEvaluationResultCallback,
+  serializeEvaluationResultCallback,
   type CrePublicEvaluationFailure,
   digestBehaviorInput,
 } from "../src/protocol.js";
@@ -248,5 +251,54 @@ describe("confidential evaluation", () => {
     for (let iteration = 0; iteration < 100; iteration += 1) {
       expect(canonicalSerialize(evaluate(fixture.unsafeFixtureBuild))).toBe(expected);
     }
+  });
+
+  test("optional callback sends only the signed minimal public result through HTTP capability", () => {
+    let capabilityCall:
+      | {
+          readonly payload: {
+            readonly body?: Uint8Array;
+            readonly multiHeaders?: unknown;
+          };
+        }
+      | undefined;
+    const runtime = {
+      config: {
+        authorizedEvmAddress: `0x${"12".repeat(20)}`,
+        resultDeliveryUrl: "https://api.example.test/internal/cre/evaluation-result",
+      },
+      getSecret(request: { readonly id?: string; readonly namespace?: string }) {
+        if (request.namespace !== "main") throw new Error("unexpected namespace");
+        if (request.id === CRE_RESULT_CALLBACK_SECRET_ID) {
+          return { result: () => ({ value: "callback-only-test-secret" }) };
+        }
+        if (request.id === "ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT") {
+          return { result: () => ({ value: makeConfidentialSecret() }) };
+        }
+        throw new Error("unexpected secret selector");
+      },
+      callCapability(params: {
+        readonly payload: {
+          readonly body?: Uint8Array;
+          readonly multiHeaders?: unknown;
+        };
+      }) {
+        capabilityCall = params;
+        return { result: () => ({ statusCode: 204, body: new Uint8Array() }) };
+      },
+    } as never;
+    const response = evaluateInTee(runtime, {
+      input: encodePublicInput(makePublicInput(fixture.correctedFixtureBuild)),
+    });
+    expect(response.status).toBe("EVALUATED");
+    expect(capabilityCall).toBeDefined();
+    const bodyBytes = capabilityCall?.payload.body;
+    if (bodyBytes === undefined) throw new Error("callback body missing");
+    const body = new TextDecoder().decode(bodyBytes);
+    const callback = parseEvaluationResultCallback(JSON.parse(body));
+    expect(serializeEvaluationResultCallback(callback)).toBe(body);
+    expect(body).not.toContain("confidentialEnvelope");
+    expect(body).not.toContain("callback-only-test-secret");
+    expect(body).not.toContain("warehouseBounds");
   });
 });
