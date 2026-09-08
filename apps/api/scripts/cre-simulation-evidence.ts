@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { relative, resolve } from "node:path";
 import {
   CRE_PUBLIC_ERROR_VERSION,
@@ -21,6 +22,21 @@ const WORKFLOW_PATH = "integrations/chainlink-cre";
 const TARGET = "staging-settings";
 const TRIGGER_INDEX = "0";
 const ANSI_ESCAPE_CHARACTER = String.fromCharCode(27);
+const SAFE_EXECUTION_ID = /^[A-Za-z0-9._:-]{1,256}$/;
+const CONFIDENTIAL_OUTPUT_MARKERS = Object.freeze([
+  "confidentialEnvelope",
+  "envelopeBlindingSecret",
+  "envelopeBlindingSecretHex",
+  "warehouseBounds",
+  "scenarioGeneration",
+  "maximumMmPerSecond",
+  "payloadGreaterThanGrams",
+  "restricted-zone",
+  "zone-speed-limit",
+  "payload-zone-restriction",
+  "ruleId",
+  "zoneId",
+]);
 
 type JsonRecord = { readonly [key: string]: unknown };
 
@@ -69,6 +85,7 @@ function cliExecutable(): string {
 
 function relativeCliPath(path: string): string {
   const value = relative(REPOSITORY_ROOT, path).replaceAll("\\", "/");
+  if (value === ".." || value.startsWith("../")) return path;
   return value.startsWith(".") ? value : `./${value}`;
 }
 
@@ -205,11 +222,46 @@ function executionId(output: string, jsonValues: readonly unknown[]): string | n
   const textual = output.match(
     /workflow execution (?:id|identifier)\s*[:=]\s*([A-Za-z0-9._:-]{1,256})/i,
   );
-  return (
+  const candidate =
     textual?.[1] ??
-    findStringField(jsonValues, ["workflow_execution_id", "workflowExecutionId", "executionId"]) ??
-    null
-  );
+    findStringField(jsonValues, ["workflow_execution_id", "workflowExecutionId", "executionId"]);
+  if (candidate === undefined) return null;
+  if (!SAFE_EXECUTION_ID.test(candidate)) {
+    throw new Error("the CRE workflow execution identifier was malformed");
+  }
+  return candidate;
+}
+
+function confidentialMarkers(environmentPath: string): readonly string[] {
+  const environment = readFileSync(environmentPath, "utf8").trim();
+  const prefix = "ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_JSON='";
+  if (!environment.startsWith(prefix) || !environment.endsWith("'")) {
+    throw new Error("the generated CRE confidential environment file was malformed");
+  }
+  const serializedSecret = environment.slice(prefix.length, -1);
+  let confidentialInput: unknown;
+  try {
+    confidentialInput = JSON.parse(serializedSecret) as unknown;
+  } catch {
+    throw new Error("the generated CRE confidential environment was not valid JSON");
+  }
+  const markers = new Set<string>([...CONFIDENTIAL_OUTPUT_MARKERS, serializedSecret]);
+  if (confidentialInput !== null && typeof confidentialInput === "object") {
+    const blind = (confidentialInput as JsonRecord).envelopeBlindingSecretHex;
+    if (typeof blind === "string" && blind.length > 0) markers.add(blind);
+  }
+  return [...markers];
+}
+
+function assertNoConfidentialOutput(
+  output: string,
+  environmentPath: string,
+  secretValue: string,
+): void {
+  const markers = [...confidentialMarkers(environmentPath), secretValue];
+  if (markers.some((marker) => output.includes(marker))) {
+    throw new Error("the CRE CLI output contained confidential input markers");
+  }
 }
 
 function publicBinding(request: ReturnType<typeof parsePublicEvaluationRequest>) {
@@ -291,76 +343,86 @@ async function main(): Promise<void> {
       `.data/cre-simulation/${new Date().toISOString().replaceAll(/[^0-9]/g, "")}-${randomUUID().slice(0, 8)}`,
   );
   mkdirSync(resolve(outputRoot, "fixtures"), { recursive: true });
-  const files = await createSimulationFixtureFiles(outputRoot);
-  const versionRun = runCli(["-v"]);
-  if (versionRun.exitCode !== 0)
-    throw new Error("the CRE CLI version check failed; authenticate with cre login");
-  const cliVersion = versionFromOutput(versionRun.output);
-  const results: Array<Record<string, unknown>> = [];
-
-  for (const definition of CASES) {
-    const args = commandFor(definition, files);
-    const run = runCli(args);
-    if (run.exitCode !== 0) {
-      throw new Error(`CRE ${definition.name} simulation failed with exit code ${run.exitCode}`);
-    }
-    if (run.output.includes(files.secretValue)) {
-      throw new Error(`CRE ${definition.name} output contained confidential input`);
-    }
-    const publicInput = JSON.parse(readFileSync(files[definition.payloadPath], "utf8")) as unknown;
-    const request = parsePublicEvaluationRequest(publicInput, { requireSiteSecretSelector: true });
-    const response = extractPublicResponse(run.output);
-    const validation = validatePublicResponse(response, request, definition.expected);
-    const jsonValues = balancedJsonValues(run.output);
-    results.push({
-      case: definition.name,
-      command: [cliExecutable(), ...args].map(quote).join(" "),
-      executionId: executionId(run.output, jsonValues),
-      engineStatus: "SUCCESS",
-      processExitCode: run.exitCode,
-      publicBinding: publicBinding(request),
-      result: validation,
-      simulationBinaryHash: labeledHash(run.output, "simulation(?: binary)? hash"),
-      workflowConfigHash: labeledHash(run.output, "workflow config hash"),
-      confidentialFieldsAbsent: true,
-      rawCliOutputStored: false,
+  const confidentialRoot = mkdtempSync(resolve(tmpdir(), "rovaulta-cre-simulation-"));
+  try {
+    const files = await createSimulationFixtureFiles(outputRoot, {
+      confidentialOutputRoot: confidentialRoot,
     });
-  }
+    const versionRun = runCli(["-v"]);
+    if (versionRun.exitCode !== 0)
+      throw new Error("the CRE CLI version check failed; authenticate with cre login");
+    const cliVersion = versionFromOutput(versionRun.output);
+    const results: Array<Record<string, unknown>> = [];
 
-  const evidence = {
-    evidenceClass: "CRE authenticated simulation",
-    capturedAt: new Date().toISOString(),
-    executionMode: "official CRE CLI simulation",
-    liveDeploymentClaimed: false,
-    cliVersion,
-    target: TARGET,
-    workflowPath: WORKFLOW_PATH,
-    triggerIndex: Number(TRIGGER_INDEX),
-    validationBoundary: "Rovaulta public request parser, callback parser, and exact binding checks",
-    cases: results,
-    confidentiality: {
-      privateEnvelopeStored: false,
-      blindStored: false,
-      credentialsStored: false,
-      rawCliOutputStored: false,
-      publicResultOnly: true,
-    },
-  };
-  const evidencePath = resolve(outputRoot, "evidence.json");
-  writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`, "utf8");
-  console.log(
-    JSON.stringify(
-      {
-        status: "PASS",
-        evidenceClass: evidence.evidenceClass,
-        cliVersion,
-        cases: results.map((result) => ({ case: result.case, result: result.result })),
-        evidencePath: relative(REPOSITORY_ROOT, evidencePath).replaceAll("\\", "/"),
+    for (const definition of CASES) {
+      const args = commandFor(definition, files);
+      const run = runCli(args);
+      if (run.exitCode !== 0) {
+        throw new Error(`CRE ${definition.name} simulation failed with exit code ${run.exitCode}`);
+      }
+      assertNoConfidentialOutput(run.output, files[definition.environmentPath], files.secretValue);
+      const publicInput = JSON.parse(
+        readFileSync(files[definition.payloadPath], "utf8"),
+      ) as unknown;
+      const request = parsePublicEvaluationRequest(publicInput, {
+        requireSiteSecretSelector: true,
+      });
+      const response = extractPublicResponse(run.output);
+      const validation = validatePublicResponse(response, request, definition.expected);
+      const jsonValues = balancedJsonValues(run.output);
+      results.push({
+        case: definition.name,
+        command: [cliExecutable(), ...args].map(quote).join(" "),
+        executionId: executionId(run.output, jsonValues),
+        engineStatus: "SUCCESS",
+        processExitCode: run.exitCode,
+        publicBinding: publicBinding(request),
+        result: validation,
+        simulationBinaryHash: labeledHash(run.output, "simulation(?: binary)? hash"),
+        workflowConfigHash: labeledHash(run.output, "workflow config hash"),
+        confidentialFieldsAbsent: true,
+        rawCliOutputStored: false,
+      });
+    }
+
+    const evidence = {
+      evidenceClass: "CRE authenticated simulation",
+      capturedAt: new Date().toISOString(),
+      executionMode: "official CRE CLI simulation",
+      liveDeploymentClaimed: false,
+      cliVersion,
+      target: TARGET,
+      workflowPath: WORKFLOW_PATH,
+      triggerIndex: Number(TRIGGER_INDEX),
+      validationBoundary:
+        "Rovaulta public request parser, callback parser, and exact binding checks",
+      cases: results,
+      confidentiality: {
+        privateEnvelopeStored: false,
+        blindStored: false,
+        credentialsStored: false,
+        rawCliOutputStored: false,
+        publicResultOnly: true,
       },
-      null,
-      2,
-    ),
-  );
+    };
+    const evidencePath = resolve(outputRoot, "evidence.json");
+    writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`, "utf8");
+    console.log(
+      JSON.stringify(
+        {
+          status: "PASS",
+          evidenceClass: evidence.evidenceClass,
+          cliVersion,
+          cases: results.map((result) => ({ case: result.case, result: result.result })),
+          evidencePath: relative(REPOSITORY_ROOT, evidencePath).replaceAll("\\", "/"),
+        },
+        null,
+        2,
+      ),
+    );
+  } finally {
+    rmSync(confidentialRoot, { recursive: true, force: true });
+  }
 }
 
 if (import.meta.main) {

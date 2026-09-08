@@ -29,6 +29,11 @@ export interface SimulationFixtureFiles {
   readonly siteSecretSelector: string;
 }
 
+export interface SimulationFixtureOptions {
+  /** Keep confidential environment files outside the redacted evidence directory when requested. */
+  readonly confidentialOutputRoot?: string;
+}
+
 function bytesToHex(bytes: Uint8Array): string {
   let output = "";
   for (const byte of bytes) output += byte.toString(16).padStart(2, "0");
@@ -85,9 +90,11 @@ function envFile(value: string): string {
 
 export async function createSimulationFixtureFiles(
   outputRoot: string,
+  options: SimulationFixtureOptions = {},
 ): Promise<SimulationFixtureFiles> {
   const root = resolve(outputRoot);
   const fixturesRoot = resolve(root, "fixtures");
+  const confidentialRoot = resolve(options.confidentialOutputRoot ?? root);
 
   const fixture = createDeterministicDemoFixture();
   const validBlindBytes = crypto.getRandomValues(new Uint8Array(32));
@@ -104,8 +111,8 @@ export async function createSimulationFixtureFiles(
 
   const unsafePayloadPath = resolve(fixturesRoot, "unsafe.public.json");
   const correctedPayloadPath = resolve(fixturesRoot, "corrected.public.json");
-  const validEnvironmentPath = resolve(root, ".env.cre-valid.local");
-  const tamperedEnvironmentPath = resolve(root, ".env.cre-tampered.local");
+  const validEnvironmentPath = resolve(confidentialRoot, ".env.cre-valid.local");
+  const tamperedEnvironmentPath = resolve(confidentialRoot, ".env.cre-tampered.local");
   await Bun.write(unsafePayloadPath, `${JSON.stringify(publicInput(unsafeFixture), null, 2)}\n`);
   await Bun.write(
     correctedPayloadPath,
