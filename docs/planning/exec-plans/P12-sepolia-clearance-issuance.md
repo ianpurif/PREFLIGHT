@@ -61,5 +61,17 @@ clearance record for the existing P5/P11 flows.
 
 ## Verification evidence
 
-- Implementation and tests: pending.
-- Real Sepolia transaction, event topics, receipt, and Graph indexing: pending operator execution.
+- `bun test apps/api/test/clearance-issuance.test.ts packages/chain-client/test/registry.test.ts`:
+  8 tests passed, 38 assertions.
+- `bun run typecheck`: pass across all 8 workspaces.
+- `bun run build`: pass across all 8 workspaces, including Graph codegen/WASM compilation and the
+  Next.js production build.
+- `bun run contracts:test`: 25 Foundry tests/invariants passed.
+- `bun run verify:scaffold`: pass; `git diff --check`: pass.
+- `bun run verify`: pass. Biome reports 27 pre-existing CSS specificity warnings and no errors.
+- A separate read-only P12 review was requested; the reviewer runtime hit its usage limit before
+  returning findings. The implementation was self-reviewed for chain/registrar guards, exact
+  binding reuse, receipt/event matching, secret redaction, and pre-broadcast failure behavior.
+- Real Sepolia transaction, event topics, receipt, and Graph indexing: pending operator execution;
+  this checkout has no account-owned completed `CLEAR` evaluation and the operator command correctly
+  stops before broadcast when its required inputs are absent.
