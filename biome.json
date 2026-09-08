@@ -18,6 +18,8 @@
       "!!integrations/the-graph/subgraph/generated",
       "!!integrations/the-graph/subgraph/build",
       "!!integrations/the-graph/subgraph/src",
+      "!!integrations/the-graph/generated",
+      "!!integrations/the-graph/build",
       "!!contracts/out",
       "!!contracts/cache",
       "!!contracts/broadcast",

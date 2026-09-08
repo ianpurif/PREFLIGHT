@@ -74,9 +74,7 @@ describe("The Graph clearance provider", () => {
       subgraphId: "graph-test-subgraph",
       fetch: async (input, init) => {
         request =
-          input instanceof Request
-            ? new Request(input, init)
-            : new Request(input.toString(), init);
+          input instanceof Request ? new Request(input, init) : new Request(input.toString(), init);
         return response(entity());
       },
     });
