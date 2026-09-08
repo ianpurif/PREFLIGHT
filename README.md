@@ -383,9 +383,8 @@ $env:ROVAULTA_CLEARANCE_EVALUATION_ID="evaluation:<evaluation-token>"
 $env:ROVAULTA_CLEARANCE_ID="clearance:<unique-token>"
 $env:ROVAULTA_CLEARANCE_TTL_SECONDS="604800"
 $env:ROVAULTA_CLEARANCE_OUTPUT_PATH=".data/clearance-account-001.json"
-# Prefer a dedicated operator variable. The existing deployer key is accepted for the deployed
-# initial registrar only; never paste a private key into the command or commit it.
-$env:SEPOLIA_REGISTRAR_PRIVATE_KEY=$env:SEPOLIA_DEPLOYER_PRIVATE_KEY
+# Prefer a dedicated SEPOLIA_REGISTRAR_PRIVATE_KEY in the ignored .env. The existing deployer key
+# is accepted as a fallback for the deployed initial registrar; never paste a key into the command.
 bun run --cwd apps/api record:sepolia-clearance
 ```
 
