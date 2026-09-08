@@ -311,9 +311,23 @@ export class CreHttpEvaluationClient implements ConfidentialEvaluationExecutor {
 
   async #sign(message: string): Promise<string> {
     const { privateKeyToAccount } = await import("viem/accounts");
+    const { parseSignature } = await import("viem");
     const account = privateKeyToAccount(this.#privateKey as `0x${string}`);
     const signature = await account.signMessage({ message });
-    return base64Url(Uint8Array.from(Buffer.from(signature.slice(2), "hex")));
+    const { r, s, v, yParity } = parseSignature(signature);
+    const recoveryId = v === undefined ? yParity : v >= 27n ? v - 27n : v;
+    if (recoveryId === undefined || (recoveryId !== 0n && recoveryId !== 1n)) {
+      throw new CreEvaluationError(
+        "CRE_UNAVAILABLE",
+        "CRE signing returned an invalid recovery ID",
+      );
+    }
+    const signatureBytes = Buffer.concat([
+      Buffer.from(r.slice(2).padStart(64, "0"), "hex"),
+      Buffer.from(s.slice(2).padStart(64, "0"), "hex"),
+      Buffer.from([Number(recoveryId)]),
+    ]);
+    return base64Url(Uint8Array.from(signatureBytes));
   }
 }
 

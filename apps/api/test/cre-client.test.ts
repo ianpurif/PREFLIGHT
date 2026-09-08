@@ -62,6 +62,10 @@ describe("CRE application transport", () => {
     expect(capturedBody).not.toContain("envelopeBlindingSecret");
     expect(capturedBody).toContain("confidentialInputSecretId");
     expect(capturedAuthorization.startsWith("Bearer ey")).toBe(true);
+    const jwtSignature = capturedAuthorization.split(".")[2] ?? "";
+    const signatureBytes = Buffer.from(jwtSignature, "base64url");
+    expect(signatureBytes.byteLength).toBe(65);
+    expect([0, 1]).toContain(signatureBytes[64] ?? -1);
   });
 
   test("treats an accepted asynchronous gateway execution as unavailable to the synchronous API", async () => {
