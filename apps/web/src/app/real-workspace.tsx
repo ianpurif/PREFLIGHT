@@ -318,9 +318,11 @@ function OverviewView({ data }: { readonly data: WorkspaceData }) {
                 <StatusPill status={latest.verdict} />
               </h3>
               <p>
-                {latest.violationCount === 0
-                  ? "No public violations were returned by the evaluator."
-                  : `${latest.violationCount} public violation${latest.violationCount === 1 ? "" : "s"} need attention before release.`}
+                {latest.violationCount === null
+                  ? "The confidential evaluator returned the verdict; detailed findings remain inside the protected evaluation boundary."
+                  : latest.violationCount === 0
+                    ? "No public violations were returned by the evaluator."
+                    : `${latest.violationCount} public violation${latest.violationCount === 1 ? "" : "s"} need attention before release.`}
               </p>
               <div className="proof-line">
                 <span>Build</span>
@@ -1011,8 +1013,12 @@ function EvaluateView({
             </div>
             <p className="real-result-summary">
               {latest.verdict === "CLEAR"
-                ? "This registered build declaration produced no public violations for the stored policy."
-                : "This registered build declaration must not move to release preparation until the reported violations are addressed."}
+                ? latest.violationCount === null
+                  ? "CRE returned CLEAR for this exact build and binding. Detailed private evaluation findings are not released to the application."
+                  : "This registered build declaration produced no public violations for the stored policy."
+                : latest.violationCount === null
+                  ? "CRE returned HOLD for this exact build and binding. The private evaluation report remains inside the confidential boundary."
+                  : "This registered build declaration must not move to release preparation until the reported violations are addressed."}
             </p>
             <div className="real-result-facts">
               <div>
@@ -1022,11 +1028,11 @@ function EvaluateView({
               </div>
               <div>
                 <span>Scenarios</span>
-                <strong>{latest.scenarioCount}</strong>
+                <strong>{latest.scenarioCount ?? "Not returned"}</strong>
               </div>
               <div>
                 <span>Violations</span>
-                <strong>{latest.violationCount}</strong>
+                <strong>{latest.violationCount ?? "Not returned"}</strong>
               </div>
             </div>
             {latest.reasons.length > 0 ? (

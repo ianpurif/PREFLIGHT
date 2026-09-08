@@ -1,6 +1,8 @@
 import { createHash, randomUUID } from "node:crypto";
 import {
+  CRE_PUBLIC_ERROR_VERSION,
   CRE_PUBLIC_REQUEST_VERSION,
+  CRE_PUBLIC_RESULT_VERSION,
   type CrePublicEvaluationResponse,
   type CrePublicEvaluationSuccess,
   digestBehaviorInput,
@@ -41,9 +43,9 @@ export interface ConfidentialEvaluationInput {
 
 export interface ConfidentialEvaluationReport {
   readonly result: EvaluationResult;
-  readonly scenarioCount: number;
-  readonly violationCount: number;
-  readonly violations: readonly Readonly<{ readonly type: string }>[];
+  readonly scenarioCount?: number;
+  readonly violationCount?: number;
+  readonly violations?: readonly Readonly<{ readonly type: string }>[];
 }
 
 export type ConfidentialEvaluationExecutor = {
@@ -93,15 +95,46 @@ function expectRecord(value: unknown, message: string): Record<string, unknown> 
   return value as Record<string, unknown>;
 }
 
-function responseJson(value: unknown): CrePublicEvaluationResponse {
+function assertExactKeys(
+  record: Record<string, unknown>,
+  keys: readonly string[],
+  message: string,
+): void {
+  const expected = new Set(keys);
+  if (Object.keys(record).some((key) => !expected.has(key))) {
+    throw new CreEvaluationError("CRE_RESPONSE_INVALID", message);
+  }
+  for (const key of keys) {
+    if (!Object.hasOwn(record, key)) {
+      throw new CreEvaluationError("CRE_RESPONSE_INVALID", message);
+    }
+  }
+}
+
+function responseJson(value: unknown, requestId: string): CrePublicEvaluationResponse {
   const record = expectRecord(value, "CRE response is malformed");
-  const candidate =
-    record.result !== null && typeof record.result === "object" && !Array.isArray(record.result)
-      ? record.result
-      : record;
-  const response = expectRecord(candidate, "CRE response result is malformed");
+  if (
+    record.jsonrpc !== "2.0" ||
+    record.id !== requestId ||
+    (record.method !== undefined && record.method !== "workflows.execute")
+  ) {
+    throw new CreEvaluationError("CRE_RESPONSE_INVALID", "CRE response envelope is invalid");
+  }
+  if (record.error !== undefined) {
+    throw new CreEvaluationError("CRE_REQUEST_REJECTED", "CRE gateway returned a workflow error");
+  }
+  const response = expectRecord(record.result, "CRE response result is malformed");
   if (response.status === "REJECT") {
-    if (typeof response.code !== "string") {
+    assertExactKeys(
+      response,
+      ["schemaVersion", "protocolVersion", "status", "code"],
+      "CRE rejection shape is invalid",
+    );
+    if (
+      response.schemaVersion !== CRE_PUBLIC_ERROR_VERSION ||
+      typeof response.protocolVersion !== "string" ||
+      typeof response.code !== "string"
+    ) {
       throw new CreEvaluationError("CRE_RESPONSE_INVALID", "CRE rejection code is malformed");
     }
     return response as unknown as CrePublicEvaluationResponse;
@@ -114,6 +147,21 @@ function responseJson(value: unknown): CrePublicEvaluationResponse {
       );
     }
     throw new CreEvaluationError("CRE_RESPONSE_INVALID", "CRE did not return an evaluation");
+  }
+  assertExactKeys(
+    response,
+    [
+      "schemaVersion",
+      "protocolVersion",
+      "status",
+      "result",
+      "behaviorInputDigest",
+      "traceProvenance",
+    ],
+    "CRE evaluation shape is invalid",
+  );
+  if (response.schemaVersion !== CRE_PUBLIC_RESULT_VERSION) {
+    throw new CreEvaluationError("CRE_RESPONSE_INVALID", "CRE result schema version changed");
   }
   return response as unknown as CrePublicEvaluationResponse;
 }
@@ -139,7 +187,6 @@ function publicRequest(input: ConfidentialEvaluationInput): {
     schemaVersion: CRE_PUBLIC_REQUEST_VERSION,
     protocolVersion: PROTOCOL_VERSION,
     confidentialInputSecretId: siteSecretId(request.inputs.siteId),
-    includePublicSummary: true,
     request,
     robotBuild,
     behaviorTraces,
@@ -165,6 +212,9 @@ function assertCompletedResult(
   if (response.protocolVersion !== input.payload.protocolVersion) {
     throw new CreEvaluationError("CRE_RESPONSE_INVALID", "CRE protocol version changed");
   }
+  if (response.traceProvenance !== TRACE_PROVENANCE) {
+    throw new CreEvaluationError("CRE_RESPONSE_INVALID", "CRE trace provenance changed");
+  }
   if (response.behaviorInputDigest !== input.payload.behaviorInputDigest) {
     throw new CreEvaluationError("CRE_RESPONSE_INVALID", "CRE behavior binding changed");
   }
@@ -175,28 +225,8 @@ function assertCompletedResult(
   if (result.inputs.robotBuildDigest !== input.request.inputs.robotBuildDigest) {
     throw new CreEvaluationError("CRE_RESPONSE_INVALID", "CRE result build binding changed");
   }
-  const summary = response.publicSummary;
-  if (
-    summary === undefined ||
-    !Number.isSafeInteger(summary.scenarioCount) ||
-    summary.scenarioCount < 0 ||
-    !Number.isSafeInteger(summary.violationCount) ||
-    summary.violationCount < 0 ||
-    !Array.isArray(summary.reasons) ||
-    summary.reasons.some((reason) => typeof reason !== "string")
-  ) {
-    throw new CreEvaluationError(
-      "CRE_RESPONSE_INVALID",
-      "CRE did not return the required allowlisted public summary",
-    );
-  }
   return Object.freeze({
     result,
-    scenarioCount: summary.scenarioCount,
-    violationCount: summary.violationCount,
-    violations: Object.freeze(
-      Array.from(new Set(summary.reasons)).map((type) => Object.freeze({ type })),
-    ),
   });
 }
 
@@ -294,7 +324,7 @@ export class CreHttpEvaluationClient implements ConfidentialEvaluationExecutor {
     if (!response.ok) {
       throw new CreEvaluationError("CRE_REQUEST_REJECTED", "CRE gateway rejected the request");
     }
-    const result = responseJson(parsed);
+    const result = responseJson(parsed, id);
     if (result.status === "REJECT") {
       throw new CreEvaluationError(
         "CRE_REQUEST_REJECTED",

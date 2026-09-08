@@ -114,8 +114,8 @@ export interface PublicEvaluation {
   readonly robotBuildDigest: string;
   readonly safetyEnvelopeCommitment: string;
   readonly evaluationInputsDigest: string;
-  readonly scenarioCount: number;
-  readonly violationCount: number;
+  readonly scenarioCount: number | null;
+  readonly violationCount: number | null;
   readonly reasons: readonly string[];
   readonly evaluatedAt: string;
 }
@@ -953,7 +953,7 @@ export class ApplicationStore {
       evaluatedAt: input.evaluatedAt,
     });
     const reasons = Object.freeze(
-      Array.from(new Set(report.violations.map((violation) => violation.type))),
+      Array.from(new Set((report.violations ?? []).map((violation) => violation.type))),
     );
     const result: PublicEvaluation = Object.freeze({
       id: id("evaluation-record"),
@@ -968,8 +968,8 @@ export class ApplicationStore {
       robotBuildDigest: report.result.inputs.robotBuildDigest,
       safetyEnvelopeCommitment: report.result.inputs.safetyEnvelopeCommitment,
       evaluationInputsDigest: report.result.evaluationInputsDigest,
-      scenarioCount: report.scenarioCount,
-      violationCount: report.violationCount,
+      scenarioCount: report.scenarioCount ?? null,
+      violationCount: report.violationCount ?? null,
       reasons,
       evaluatedAt: report.result.evaluatedAt,
     });

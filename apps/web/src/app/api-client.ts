@@ -51,8 +51,8 @@ export interface Evaluation {
   readonly robotBuildDigest: string;
   readonly safetyEnvelopeCommitment: string;
   readonly evaluationInputsDigest: string;
-  readonly scenarioCount: number;
-  readonly violationCount: number;
+  readonly scenarioCount: number | null;
+  readonly violationCount: number | null;
   readonly reasons: readonly string[];
   readonly evaluatedAt: string;
 }
