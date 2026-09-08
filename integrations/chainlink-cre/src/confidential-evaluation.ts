@@ -37,11 +37,19 @@ export function evaluateInTee(
   }
 
   let secretValue: string;
+  const secretId = publicInput.confidentialInputSecretId;
   try {
-    secretValue = runtime
-      .getSecret({ id: CONFIDENTIAL_INPUT_SECRET_ID, namespace: "main" })
-      .result().value;
+    secretValue = runtime.getSecret({ id: secretId ?? CONFIDENTIAL_INPUT_SECRET_ID, namespace: "main" }).result().value;
   } catch {
+    // Never fall back from a request-scoped selector to the legacy fixed secret. That could bind a
+    // real account request to a different site's envelope. The compatibility selector is only for
+    // old simulation payloads which omit the new field.
+    if (secretId !== undefined) {
+      return makePublicFailureForProtocol(
+        "CONFIDENTIAL_INPUT_UNAVAILABLE",
+        publicInput.protocolVersion,
+      );
+    }
     try {
       secretValue = runtime
         .getSecret({ id: COMPATIBILITY_CONFIDENTIAL_INPUT_SECRET_ID, namespace: "main" })

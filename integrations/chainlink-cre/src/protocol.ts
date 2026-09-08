@@ -50,6 +50,12 @@ export type CrePublicFailureCode =
 export interface CrePublicEvaluationRequest {
   readonly schemaVersion: string;
   readonly protocolVersion: string;
+  /**
+   * Optional request-scoped CRE secret selector.  Production application requests must set this
+   * to the site-bound secret provisioned in the CRE secret store.  The legacy fixed selector is
+   * retained only for the existing simulation fixtures.
+   */
+  readonly confidentialInputSecretId?: string;
   readonly request: EvaluationRequest;
   readonly robotBuild: RobotBuildDescriptor;
   readonly behaviorTraces: RobotBehaviorTraceSuite;
@@ -103,6 +109,7 @@ function expectExactObject(
   input: unknown,
   allowedKeys: readonly string[],
   failure: CrePublicFailureCode,
+  optionalKeys: readonly string[] = [],
 ): DataRecord {
   if (input === null || typeof input !== "object" || Array.isArray(input)) return reject(failure);
   const prototype = Object.getPrototypeOf(input);
@@ -115,8 +122,9 @@ function expectExactObject(
       return reject(failure);
     }
   }
+  const optional = new Set(optionalKeys);
   for (const key of allowedKeys) {
-    if (!Object.hasOwn(input, key)) return reject(failure);
+    if (!optional.has(key) && !Object.hasOwn(input, key)) return reject(failure);
   }
   return input as DataRecord;
 }
@@ -130,6 +138,7 @@ function bytesToHex(bytes: Uint8Array): string {
 function behaviorDigestPayload(input: {
   readonly schemaVersion: string;
   readonly protocolVersion: string;
+  readonly confidentialInputSecretId?: string;
   readonly request: EvaluationRequest;
   readonly robotBuild: RobotBuildDescriptor;
   readonly behaviorTraces: RobotBehaviorTraceSuite;
@@ -142,6 +151,7 @@ function behaviorDigestPayload(input: {
 export function digestBehaviorInput(input: {
   readonly schemaVersion: string;
   readonly protocolVersion: string;
+  readonly confidentialInputSecretId?: string;
   readonly request: EvaluationRequest;
   readonly robotBuild: RobotBuildDescriptor;
   readonly behaviorTraces: RobotBehaviorTraceSuite;
@@ -287,6 +297,7 @@ export function parsePublicEvaluationRequest(input: unknown): CrePublicEvaluatio
     [
       "schemaVersion",
       "protocolVersion",
+      "confidentialInputSecretId",
       "request",
       "robotBuild",
       "behaviorTraces",
@@ -295,6 +306,7 @@ export function parsePublicEvaluationRequest(input: unknown): CrePublicEvaluatio
       "evaluatedAt",
     ],
     "MALFORMED_PUBLIC_INPUT",
+    ["confidentialInputSecretId"],
   );
   if (
     !(
@@ -340,9 +352,21 @@ export function parsePublicEvaluationRequest(input: unknown): CrePublicEvaluatio
       return reject("MALFORMED_PUBLIC_INPUT");
     }
 
+    const confidentialInputSecretId = record.confidentialInputSecretId;
+    if (
+      confidentialInputSecretId !== undefined &&
+      (typeof confidentialInputSecretId !== "string" ||
+        !/^ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_[a-z0-9_-]{1,96}$/.test(
+          confidentialInputSecretId,
+        ))
+    ) {
+      return reject("MALFORMED_PUBLIC_INPUT");
+    }
+
     const normalized = Object.freeze({
       schemaVersion: String(record.schemaVersion),
       protocolVersion: String(record.protocolVersion),
+      ...(confidentialInputSecretId === undefined ? {} : { confidentialInputSecretId }),
       request,
       robotBuild,
       behaviorTraces,
