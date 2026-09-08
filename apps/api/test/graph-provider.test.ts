@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { clearanceRecordToTransport } from "@rovaulta/chain-client";
 import { parseClearanceRecord } from "@rovaulta/domain";
 import { createDeterministicDemoFixture, evaluateSimulation } from "@rovaulta/simulation-core";
-import { TheGraphClearanceReader, GraphProviderError } from "../src/graph/index.js";
+import { type GraphProviderError, TheGraphClearanceReader } from "../src/graph/index.js";
 
 const fixture = createDeterministicDemoFixture();
 const report = evaluateSimulation({

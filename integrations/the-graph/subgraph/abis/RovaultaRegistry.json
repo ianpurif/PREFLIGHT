@@ -19,12 +19,42 @@
       { "indexed": true, "internalType": "bytes32", "name": "clearanceDigest", "type": "bytes32" },
       { "indexed": true, "internalType": "bytes32", "name": "siteIdHash", "type": "bytes32" },
       { "indexed": true, "internalType": "bytes32", "name": "robotIdHash", "type": "bytes32" },
-      { "indexed": false, "internalType": "bytes32", "name": "robotBuildIdHash", "type": "bytes32" },
-      { "indexed": false, "internalType": "bytes32", "name": "safetyEnvelopeIdHash", "type": "bytes32" },
-      { "indexed": false, "internalType": "bytes32", "name": "safetyEnvelopeCommitment", "type": "bytes32" },
-      { "indexed": false, "internalType": "bytes32", "name": "evaluatorVersionHash", "type": "bytes32" },
-      { "indexed": false, "internalType": "bytes32", "name": "evaluationIdHash", "type": "bytes32" },
-      { "indexed": false, "internalType": "bytes32", "name": "evaluationInputsDigest", "type": "bytes32" }
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "robotBuildIdHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "safetyEnvelopeIdHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "safetyEnvelopeCommitment",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "evaluatorVersionHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "evaluationIdHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "evaluationInputsDigest",
+        "type": "bytes32"
+      }
     ],
     "name": "ClearanceBindingsRecorded",
     "type": "event"

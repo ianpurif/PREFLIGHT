@@ -1,8 +1,8 @@
 import { resolve } from "node:path";
 import { ViemClearanceRegistryReader } from "@rovaulta/chain-client";
 import { parseClearanceRecord } from "@rovaulta/domain";
-import { readEnvironment } from "../environment.js";
 import type { ApplicationStore } from "../application/index.js";
+import { readEnvironment } from "../environment.js";
 import { createGraphReaderFromEnvironment } from "../graph/index.js";
 import type { ReleaseService } from "../release/index.js";
 import { DeploymentCatalog, parseDeploymentCatalogEntry } from "./catalog.js";

@@ -1,7 +1,7 @@
 import { createDeploymentAgentFromEnvironment } from "./agent/index.js";
 import { createApplicationStoreFromEnvironment } from "./application/index.js";
-import { createCreEvaluationClientFromEnvironment } from "./evaluation/index.js";
 import { readEnvironment } from "./environment.js";
+import { createCreEvaluationClientFromEnvironment } from "./evaluation/index.js";
 import { createReleaseServiceFromEnvironment } from "./release/index.js";
 import { buildServer } from "./server";
 

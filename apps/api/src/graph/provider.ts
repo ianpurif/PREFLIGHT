@@ -3,7 +3,7 @@ import {
   ROVAULTA_SEPOLIA_DEPLOYMENT,
   VERDICT_CLEAR_BYTES32,
 } from "@rovaulta/chain-client";
-import { parseClearanceRecord, type ClearanceRecord } from "@rovaulta/domain";
+import { type ClearanceRecord, parseClearanceRecord } from "@rovaulta/domain";
 
 const DEFAULT_ENDPOINT = "https://gateway.thegraph.com/api";
 const MAX_RESPONSE_BYTES = 256 * 1024;

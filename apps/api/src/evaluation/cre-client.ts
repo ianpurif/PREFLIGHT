@@ -1,15 +1,21 @@
 import { createHash, randomUUID } from "node:crypto";
 import {
+  CRE_PUBLIC_REQUEST_VERSION,
+  type CrePublicEvaluationResponse,
+  type CrePublicEvaluationSuccess,
+  digestBehaviorInput,
+} from "@rovaulta/chainlink-cre/protocol";
+import {
   assertEvaluationResultBindings,
   canonicalSerialize,
   digestRobotBuild,
+  type EvaluationRequest,
+  type EvaluationResult,
+  PROTOCOL_VERSION,
   parseEvaluationRequest,
   parseEvaluationResult,
   parseRobotBuildDescriptor,
   parseUnixTimestamp,
-  PROTOCOL_VERSION,
-  type EvaluationRequest,
-  type EvaluationResult,
   type RobotBuildDescriptor,
   type UnixTimestamp,
 } from "@rovaulta/domain";
@@ -17,12 +23,6 @@ import {
   parseRobotBehaviorTraceSuite,
   type RobotBehaviorTraceSuite,
 } from "@rovaulta/simulation-core";
-import {
-  CRE_PUBLIC_REQUEST_VERSION,
-  digestBehaviorInput,
-  type CrePublicEvaluationResponse,
-  type CrePublicEvaluationSuccess,
-} from "@rovaulta/chainlink-cre/protocol";
 
 const TRACE_PROVENANCE = "SYNTHETIC_CALLER_SUPPLIED" as const;
 const SECRET_PREFIX = "ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_" as const;

@@ -4,8 +4,8 @@ import { parseClearanceRecord } from "@rovaulta/domain";
 import Fastify, { type FastifyReply } from "fastify";
 import { type DeploymentAgent, DeploymentAgentError } from "./agent/index.js";
 import { ApplicationError, ApplicationStore } from "./application/index.js";
-import { type ConfidentialEvaluationExecutor, CreEvaluationError } from "./evaluation/index.js";
 import { readEnvironment } from "./environment.js";
+import { type ConfidentialEvaluationExecutor, CreEvaluationError } from "./evaluation/index.js";
 import type { ReleaseService } from "./release/index.js";
 
 function rejectMalformed(reply: FastifyReply) {

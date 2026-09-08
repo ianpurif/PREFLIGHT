@@ -25,7 +25,8 @@ describe("CRE application transport", () => {
       now: () => 1_788_000_000,
       fetch: async (_url, init) => {
         capturedBody = String(init?.body);
-        capturedAuthorization = String((init?.headers as Record<string, string>).authorization);
+        const headers = init?.headers as Record<string, string> | undefined;
+        capturedAuthorization = String(headers?.authorization);
         const body = JSON.parse(capturedBody) as {
           id: string;
           jsonrpc: string;

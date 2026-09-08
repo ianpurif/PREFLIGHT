@@ -5,7 +5,7 @@ import {
   ROVAULTA_SEPOLIA_DEPLOYMENT,
 } from "@rovaulta/chain-client";
 import { type ClearanceRecord, digestClearance } from "@rovaulta/domain";
-import { GraphProviderError, type GraphClearanceReader } from "../graph/index.js";
+import { type GraphClearanceReader, GraphProviderError } from "../graph/index.js";
 import type { PreparedReleaseRequest, ReleaseService } from "../release/index.js";
 import { DeploymentCatalog, formatPublicDeploymentRequest } from "./catalog.js";
 import { parseToolArguments, toolDefinition } from "./tools.js";

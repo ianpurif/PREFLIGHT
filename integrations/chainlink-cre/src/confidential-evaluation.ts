@@ -39,7 +39,9 @@ export function evaluateInTee(
   let secretValue: string;
   const secretId = publicInput.confidentialInputSecretId;
   try {
-    secretValue = runtime.getSecret({ id: secretId ?? CONFIDENTIAL_INPUT_SECRET_ID, namespace: "main" }).result().value;
+    secretValue = runtime
+      .getSecret({ id: secretId ?? CONFIDENTIAL_INPUT_SECRET_ID, namespace: "main" })
+      .result().value;
   } catch {
     // Never fall back from a request-scoped selector to the legacy fixed secret. That could bind a
     // real account request to a different site's envelope. The compatibility selector is only for

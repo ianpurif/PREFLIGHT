@@ -1,10 +1,10 @@
-import {
+import { Bytes } from "@graphprotocol/graph-ts";
+import type {
   ClearanceBindingsRecorded,
   ClearanceRecorded,
   ClearanceRevoked,
 } from "../generated/RovaultaRegistry/RovaultaRegistry";
 import { Clearance } from "../generated/schema";
-import { Bytes } from "@graphprotocol/graph-ts";
 
 const ZERO_BYTES32 = Bytes.fromHexString(`0x${"00".repeat(32)}`);
 

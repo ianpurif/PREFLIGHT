@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { ApplicationStore } from "../src/application/index.js";
 import { evaluateSimulation } from "@rovaulta/simulation-core";
+import { ApplicationStore } from "../src/application/index.js";
 import { buildServer } from "../src/server.js";
 
 const KEY = Uint8Array.from({ length: 32 }, (_, index) => index + 1);

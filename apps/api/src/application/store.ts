@@ -15,8 +15,8 @@ import {
   digestSafetyEnvelopeCommitment,
   EVALUATION_INPUTS_SCHEMA_VERSION,
   EVALUATION_REQUEST_SCHEMA_VERSION,
-  parseEvaluationRequest,
   parseClearanceRecord,
+  parseEvaluationRequest,
   parseEvaluatorVersionId,
   parseRobotBuildDescriptor,
   parseSafetyEnvelopeId,
@@ -37,11 +37,11 @@ import {
   SCENARIO_GENERATOR_VERSION,
   WAREHOUSE_EVALUATOR_VERSION,
 } from "@rovaulta/simulation-core";
-import { ApplicationError } from "./errors.js";
 import type {
   ConfidentialEvaluationInput,
   ConfidentialEvaluationReport,
 } from "../evaluation/index.js";
+import { ApplicationError } from "./errors.js";
 
 const SESSION_COOKIE = "rovaulta_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
