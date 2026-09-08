@@ -101,6 +101,36 @@ describe("account-scoped product lifecycle", () => {
     });
     expect(releaseResponse.statusCode).toBe(409);
     expect(JSON.parse(releaseResponse.body).error).toBe("CLEARANCE_NOT_AVAILABLE");
+    const tamperedClearanceResponse = await app.inject({
+      method: "POST",
+      url: "/releases/prepare",
+      headers: { cookie: session },
+      payload: {
+        evaluationId: evaluation.evaluationId,
+        signerAddress: "0x0000000000000000000000000000000000000001",
+        clearance: {
+          schemaVersion: "preflight.clearance-record/v1",
+          clearanceId: "clearance:test-record",
+          evaluationId: evaluation.evaluationId,
+          inputs: {
+            schemaVersion: "preflight.evaluation-inputs/v1",
+            siteId: evaluation.siteId,
+            robotId: evaluation.robotId,
+            robotBuildId: evaluation.robotBuildId,
+            robotBuildDigest: evaluation.robotBuildDigest,
+            safetyEnvelopeId: evaluation.safetyEnvelopeId,
+            safetyEnvelopeCommitment: `sha256:${"cd".repeat(32)}`,
+            evaluatorVersion: evaluation.evaluatorVersion,
+          },
+          evaluationInputsDigest: evaluation.evaluationInputsDigest,
+          verdict: "CLEAR",
+          issuedAt: evaluation.evaluatedAt,
+          expiresAt: (Number(evaluation.evaluatedAt) + 3_600).toString(),
+        },
+      },
+    });
+    expect(tamperedClearanceResponse.statusCode).toBe(409);
+    expect(JSON.parse(tamperedClearanceResponse.body).error).toBe("CLEARANCE_BINDING_MISMATCH");
     await app.close();
   });
 

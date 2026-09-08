@@ -89,7 +89,8 @@ Completed evidence:
 - `bun run test:e2e` — 10 Playwright tests passed across P6, P7, and P8 landing, account lifecycle,
   release-boundary, and fixture-isolation flows.
 - `bun --filter '@preflight/web' typecheck` and the full typecheck stage in `bun run verify` passed.
-- `bun run lint` — Biome clean with no warnings or errors.
+- `bun run lint` — passed; Biome reports non-blocking `noDescendingSpecificity` warnings in the
+  existing large stylesheet, with no lint errors or disabled rules.
 - `bun run build` — all packages and the Next.js application built successfully.
 - `bun run contracts:test` — Foundry ran 25 tests with no failures.
 - `bun run verify:scaffold` and `bun run verify` passed.

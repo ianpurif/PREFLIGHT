@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { ReleaseGateError } from "@preflight/chain-client";
+import { parseClearanceRecord } from "@preflight/domain";
 import { evaluateSimulation } from "@preflight/simulation-core";
 import Fastify, { type FastifyReply } from "fastify";
 import { type DeploymentAgent, DeploymentAgentError } from "./agent/index.js";
@@ -17,6 +18,39 @@ function expectBody(input: unknown, keys: readonly string[]): Record<string, unk
   if (Object.keys(record).some((key) => !allowed.has(key))) return null;
   if (keys.some((key) => !Object.hasOwn(record, key))) return null;
   return record;
+}
+
+function clearanceMatchesEvaluation(
+  input: unknown,
+  evaluation: {
+    readonly evaluationId: string;
+    readonly siteId: string;
+    readonly robotId: string;
+    readonly robotBuildId: string;
+    readonly robotBuildDigest: string;
+    readonly safetyEnvelopeId: string;
+    readonly safetyEnvelopeCommitment: string;
+    readonly evaluatorVersion: string;
+    readonly evaluationInputsDigest: string;
+  },
+): { readonly ok: true } | { readonly ok: false; readonly code: "MALFORMED" | "MISMATCH" } {
+  let clearance: ReturnType<typeof parseClearanceRecord>;
+  try {
+    clearance = parseClearanceRecord(input);
+  } catch {
+    return { ok: false, code: "MALFORMED" };
+  }
+  const matches =
+    clearance.evaluationId === evaluation.evaluationId &&
+    clearance.inputs.siteId === evaluation.siteId &&
+    clearance.inputs.robotId === evaluation.robotId &&
+    clearance.inputs.robotBuildId === evaluation.robotBuildId &&
+    clearance.inputs.robotBuildDigest === evaluation.robotBuildDigest &&
+    clearance.inputs.safetyEnvelopeId === evaluation.safetyEnvelopeId &&
+    clearance.inputs.safetyEnvelopeCommitment === evaluation.safetyEnvelopeCommitment &&
+    clearance.inputs.evaluatorVersion === evaluation.evaluatorVersion &&
+    clearance.evaluationInputsDigest === evaluation.evaluationInputsDigest;
+  return matches ? { ok: true } : { ok: false, code: "MISMATCH" };
 }
 
 export function buildServer(
@@ -37,9 +71,12 @@ export function buildServer(
   const applicationStore = options.applicationStore;
   const environment = options.environment ?? process.env;
   const allowedOrigins = new Set(
-    ["http://localhost:3000", "http://127.0.0.1:3000", environment.PREFLIGHT_WEB_ORIGIN].filter(
-      (origin): origin is string => typeof origin === "string" && origin.length > 0,
-    ),
+    [
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      environment.PREFLIGHT_WEB_ORIGIN,
+      environment.WEB_ORIGIN,
+    ].filter((origin): origin is string => typeof origin === "string" && origin.length > 0),
   );
   app.addHook("onSend", async (request, reply, payload) => {
     const origin = request.headers.origin;
@@ -324,6 +361,24 @@ export function buildServer(
       return reply
         .code(409)
         .send({ error: "CLEARANCE_NOT_AVAILABLE", message: attempt.message, attempt });
+    }
+    const clearanceBinding = clearanceMatchesEvaluation(body.clearance, evaluation);
+    if (!clearanceBinding.ok) {
+      const attempt = store.recordReleaseAttempt(accountId, {
+        evaluationId: evaluation.evaluationId,
+        status: "BLOCKED",
+        code:
+          clearanceBinding.code === "MALFORMED"
+            ? "CLEARANCE_MALFORMED"
+            : "CLEARANCE_BINDING_MISMATCH",
+        message:
+          clearanceBinding.code === "MALFORMED"
+            ? "The public clearance record is malformed"
+            : "The public clearance does not match this exact evaluation",
+      });
+      return reply
+        .code(clearanceBinding.code === "MALFORMED" ? 400 : 409)
+        .send({ error: attempt.code, message: attempt.message, attempt });
     }
     if (releaseService === undefined) {
       const attempt = store.recordReleaseAttempt(accountId, {

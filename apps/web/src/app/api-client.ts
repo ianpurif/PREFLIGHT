@@ -46,9 +46,11 @@ export interface Evaluation {
   readonly evaluationId: string;
   readonly robotBuildId: string;
   readonly verdict: EvaluationVerdict;
+  readonly safetyEnvelopeId: string;
   readonly evaluatorVersion: string;
   readonly robotBuildDigest: string;
   readonly safetyEnvelopeCommitment: string;
+  readonly evaluationInputsDigest: string;
   readonly scenarioCount: number;
   readonly violationCount: number;
   readonly reasons: readonly string[];

@@ -113,4 +113,7 @@ surface.
   account data.
 - Evaluation uses the existing `@preflight/simulation-core` authority inside the API and stores a
   public projection. Release preparation delegates to the existing P5/P5.2 boundary and records a
-  blocked attempt when a public P4 clearance or live release gate is unavailable.
+  blocked attempt when a public P4 clearance or live release gate is unavailable. Before delegation,
+  the API cross-checks the supplied public clearance against the stored evaluation's exact site,
+  robot, build digest, safety-envelope id/commitment, evaluator version, evaluation id, and
+  evaluation-input digest.

@@ -104,9 +104,11 @@ export interface PublicEvaluation {
   readonly evaluationId: string;
   readonly robotBuildId: string;
   readonly verdict: "CLEAR" | "HOLD" | "ESCALATE";
+  readonly safetyEnvelopeId: string;
   readonly evaluatorVersion: string;
   readonly robotBuildDigest: string;
   readonly safetyEnvelopeCommitment: string;
+  readonly evaluationInputsDigest: string;
   readonly scenarioCount: number;
   readonly violationCount: number;
   readonly reasons: readonly string[];
@@ -930,6 +932,7 @@ export class ApplicationStore {
             readonly safetyEnvelopeCommitment: string;
             readonly evaluatorVersion: string;
           };
+          readonly evaluationInputsDigest: string;
           readonly verdict: "CLEAR" | "HOLD" | "ESCALATE";
           readonly evaluatedAt: string;
         };
@@ -979,9 +982,11 @@ export class ApplicationStore {
       evaluationId: report.result.evaluationId,
       robotBuildId: report.result.inputs.robotBuildId,
       verdict: report.result.verdict,
+      safetyEnvelopeId: report.result.inputs.safetyEnvelopeId,
       evaluatorVersion: report.result.inputs.evaluatorVersion,
       robotBuildDigest: report.result.inputs.robotBuildDigest,
       safetyEnvelopeCommitment: report.result.inputs.safetyEnvelopeCommitment,
+      evaluationInputsDigest: report.result.evaluationInputsDigest,
       scenarioCount: report.scenarioCount,
       violationCount: report.violationCount,
       reasons,

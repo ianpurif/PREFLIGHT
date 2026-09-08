@@ -111,7 +111,9 @@ The deterministic P6/P7 dashboard remains a separate, explicitly env-gated devel
 only supported consumer of its scenario selectors.
 
 `CLEAR` in either the product UI or fixture dashboard remains an evaluation result only. The browser cannot construct a
-clearance, call `/release/prepare` directly, mark a request prepared, or report `AUTHORIZED`. A
+clearance, call `/release/prepare` directly, mark a request prepared, or report `AUTHORIZED`. The
+account release endpoint also cross-checks every public clearance input and its evaluation-input
+digest against the stored evaluation before invoking P5. A
 real public `LEDGER_APPROVAL_REQUIRED` response from the existing P5.2 API is required before an
 exact prepared request is handed to `/p5-ledger`; the user gesture and existing Ledger/consume path
 remain the release boundary. The digital twin projects public caller-supplied behavior points over
