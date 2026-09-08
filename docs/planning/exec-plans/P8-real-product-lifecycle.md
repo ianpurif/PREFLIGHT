@@ -98,7 +98,7 @@ surface.
 - [x] Account-scoped API and evaluation boundary
 - [x] Real authenticated web lifecycle
 - [x] Fixture isolation and critical tests
-- [ ] Documentation and full verification (in progress)
+- [x] Documentation and full verification
 
 ## Implemented boundary notes
 
