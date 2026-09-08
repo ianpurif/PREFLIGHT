@@ -55,9 +55,16 @@ function run(): void {
     store.close();
   }
 
+  const secretsAuth = process.env.ROVAULTA_CRE_SECRETS_AUTH?.trim();
+  if (
+    secretsAuth !== undefined &&
+    secretsAuth !== "" &&
+    !["auto", "browser"].includes(secretsAuth)
+  ) {
+    throw new Error("ROVAULTA_CRE_SECRETS_AUTH must be auto or browser");
+  }
   const temporaryRoot = mkdtempSync(join(tmpdir(), "rovaulta-p13-cre-secrets-"));
   const secretsPath = join(temporaryRoot, "secrets-names.yaml");
-  const secretsAuth = process.env.ROVAULTA_CRE_SECRETS_AUTH?.trim();
   try {
     writeFileSync(
       secretsPath,

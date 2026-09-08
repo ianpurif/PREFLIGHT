@@ -115,9 +115,9 @@ bun run --cwd apps/api p13:provision-site-secret
 ```
 
 The provisioning command requires the official `cre` CLI and uses `ROVAULTA_CRE_TARGET` (or
-`CHAINLINK_CRE_TARGET`) plus optional `ROVAULTA_CRE_SECRETS_AUTH`. If the CLI or CRE access is
-unavailable it fails closed; do not copy a secret into a browser, API request, shell transcript, or
-evidence file.
+`CHAINLINK_CRE_TARGET`) plus optional `ROVAULTA_CRE_SECRETS_AUTH` (`auto` or `browser`, an auth
+mode rather than a credential). If the CLI or CRE access is unavailable it fails closed; do not
+copy a secret into a browser, API request, shell transcript, or evidence file.
 
 For the evaluation phase, unset `ROVAULTA_P13_SETUP_PATH`, set the three IDs printed by setup, and
 run the same normal account command:
