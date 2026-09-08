@@ -1,6 +1,10 @@
-import { randomBytes } from "node:crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { ReleaseGateError } from "@rovaulta/chain-client";
 import { parseClearanceRecord } from "@rovaulta/domain";
+import {
+  parseEvaluationResultCallback,
+  serializeEvaluationResultCallback,
+} from "@rovaulta/chainlink-cre/protocol";
 import Fastify, { type FastifyReply } from "fastify";
 import { type DeploymentAgent, DeploymentAgentError } from "./agent/index.js";
 import { ApplicationError, ApplicationStore } from "./application/index.js";
@@ -10,6 +14,17 @@ import type { ReleaseService } from "./release/index.js";
 
 function rejectMalformed(reply: FastifyReply) {
   return reply.code(400).send({ error: "MALFORMED_REQUEST", message: "Request body is malformed" });
+}
+
+function callbackSignature(secret: string, body: string): string {
+  return `sha256=${createHmac("sha256", secret).update(body, "utf8").digest("hex")}`;
+}
+
+function validCallbackSignature(secret: string, body: string, header: unknown): boolean {
+  if (typeof header !== "string" || !/^sha256=[0-9a-f]{64}$/.test(header)) return false;
+  const expected = Buffer.from(callbackSignature(secret, body), "utf8");
+  const actual = Buffer.from(header, "utf8");
+  return expected.length === actual.length && timingSafeEqual(expected, actual);
 }
 
 function expectBody(input: unknown, keys: readonly string[]): Record<string, unknown> | null {
@@ -79,6 +94,10 @@ export function buildServer(
     },
   };
   const environment = options.environment ?? process.env;
+  const creCallbackSecret = readEnvironment(
+    environment,
+    "ROVAULTA_CRE_RESULT_CALLBACK_SECRET",
+  )?.trim();
   const allowedOrigins = new Set(
     [
       "http://localhost:3000",
@@ -360,16 +379,59 @@ export function buildServer(
     )
       return rejectMalformed(reply);
     const timestamp = Math.floor(Date.now() / 1000).toString();
-    const evaluation = await requireStore().evaluateBuild(accountId, {
-      siteId: body.siteId,
-      robotId: body.robotId,
-      buildId: body.buildId,
-      evaluationId: `evaluation:${randomBytes(16).toString("hex")}`,
-      requestedAt: timestamp,
-      evaluatedAt: timestamp,
-      evaluate: (input) => evaluationExecutor.evaluate(input),
-    });
+    const evaluationId = `evaluation:${randomBytes(16).toString("hex")}`;
+    let evaluation;
+    try {
+      evaluation = await requireStore().evaluateBuild(accountId, {
+        siteId: body.siteId,
+        robotId: body.robotId,
+        buildId: body.buildId,
+        evaluationId,
+        requestedAt: timestamp,
+        evaluatedAt: timestamp,
+        evaluate: (input) => evaluationExecutor.evaluate(input),
+      });
+    } catch (error) {
+      if (error instanceof CreEvaluationError && error.code === "CRE_EVALUATION_PENDING") {
+        return reply.code(202).send({ status: "PENDING", evaluationId });
+      }
+      throw error;
+    }
     return reply.code(201).send({ evaluation });
+  });
+
+  app.post("/internal/cre/evaluation-result", async (request, reply) => {
+    if (creCallbackSecret === undefined || creCallbackSecret.length === 0) {
+      return reply
+        .code(503)
+        .send({
+          error: "CRE_CALLBACK_UNAVAILABLE",
+          message: "CRE result callback is not configured",
+        });
+    }
+    const signature = request.headers["x-rovaulta-cre-signature"];
+    let callback: ReturnType<typeof parseEvaluationResultCallback>;
+    try {
+      callback = parseEvaluationResultCallback(request.body);
+    } catch {
+      return reply
+        .code(400)
+        .send({ error: "CRE_CALLBACK_INVALID", message: "CRE result callback is malformed" });
+    }
+    const body = serializeEvaluationResultCallback(callback);
+    if (!validCallbackSignature(creCallbackSecret, body, signature)) {
+      return reply
+        .code(401)
+        .send({
+          error: "CRE_CALLBACK_UNAUTHORIZED",
+          message: "CRE result callback signature is invalid",
+        });
+    }
+    const completion = requireStore().completeCreEvaluation(callback);
+    if (completion.status === "REJECTED") {
+      return reply.send({ status: completion.status, code: completion.code });
+    }
+    return reply.send({ status: completion.status });
   });
 
   app.get("/evaluations/:evaluationId", async (request, reply) => {
@@ -377,7 +439,11 @@ export function buildServer(
     if (accountId === null) return undefined;
     const params = request.params as { evaluationId?: unknown };
     if (typeof params.evaluationId !== "string") return rejectMalformed(reply);
-    return { evaluation: requireStore().getEvaluation(accountId, params.evaluationId) };
+    const status = requireStore().getEvaluationStatus(accountId, params.evaluationId);
+    if ("status" in status && status.status === "PENDING") {
+      return reply.code(202).send(status);
+    }
+    return { evaluation: status };
   });
 
   app.get("/releases", async (request, reply) => {

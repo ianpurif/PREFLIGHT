@@ -10,6 +10,7 @@ import {
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import {
+  assertEvaluationResultBindings,
   canonicalSerialize,
   digestRobotBuild,
   digestSafetyEnvelopeCommitment,
@@ -17,14 +18,24 @@ import {
   EVALUATION_REQUEST_SCHEMA_VERSION,
   parseClearanceRecord,
   parseEvaluationRequest,
+  parseEvaluationResult,
   parseEvaluatorVersionId,
   parseRobotBuildDescriptor,
   parseSafetyEnvelopeId,
   parseSha256Digest,
   parseSiteId,
+  parseUnixTimestamp,
+  PROTOCOL_VERSION,
   ROBOT_BUILD_SCHEMA_VERSION,
   type RobotBuildDescriptor,
 } from "@rovaulta/domain";
+import {
+  CRE_PUBLIC_REQUEST_VERSION,
+  SYNTHETIC_TRACE_PROVENANCE,
+  digestBehaviorInput,
+  siteSecretId,
+  type CreEvaluationResultCallback,
+} from "@rovaulta/chainlink-cre/protocol";
 import {
   CONFIDENTIAL_EVALUATION_ENVELOPE_VERSION,
   type ConfidentialEvaluationEnvelope,
@@ -120,6 +131,15 @@ export interface PublicEvaluation {
   readonly evaluatedAt: string;
 }
 
+export interface PublicEvaluationPending {
+  readonly status: "PENDING";
+  readonly evaluationId: string;
+  readonly siteId: string;
+  readonly robotId: string;
+  readonly buildId: string;
+  readonly requestedAt: string;
+}
+
 export interface PublicReleaseAttempt {
   readonly id: string;
   readonly evaluationId: string;
@@ -180,6 +200,17 @@ interface EvaluationRow {
   robot_id: string;
   build_id: string;
   public_json: string;
+  created_at: string;
+}
+
+interface PendingEvaluationRow {
+  evaluation_id: string;
+  account_id: string;
+  site_id: string;
+  robot_id: string;
+  build_id: string;
+  behavior_input_digest: string;
+  requested_at: string;
   created_at: string;
 }
 
@@ -512,6 +543,17 @@ function publicEvaluation(row: EvaluationRow): PublicEvaluation {
   return Object.freeze(JSON.parse(row.public_json) as PublicEvaluation);
 }
 
+function publicPendingEvaluation(row: PendingEvaluationRow): PublicEvaluationPending {
+  return Object.freeze({
+    status: "PENDING",
+    evaluationId: row.evaluation_id,
+    siteId: row.site_id,
+    robotId: row.robot_id,
+    buildId: row.build_id,
+    requestedAt: row.requested_at,
+  });
+}
+
 function assertAccountId(accountId: string): void {
   if (!ACCOUNT_ID_PATTERN.test(accountId))
     throw new ApplicationError("AUTH_REQUIRED", "Session is invalid");
@@ -587,6 +629,17 @@ export class ApplicationStore {
           public_json TEXT NOT NULL,
           created_at TEXT NOT NULL,
           UNIQUE(account_id, id)
+        ) STRICT;
+        CREATE TABLE IF NOT EXISTS pending_evaluations (
+          evaluation_id TEXT PRIMARY KEY,
+          account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+          site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+          robot_id TEXT NOT NULL REFERENCES robots(id) ON DELETE CASCADE,
+          build_id TEXT NOT NULL REFERENCES builds(id) ON DELETE CASCADE,
+          behavior_input_digest TEXT NOT NULL,
+          requested_at TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          UNIQUE(account_id, evaluation_id)
         ) STRICT;
         CREATE TABLE IF NOT EXISTS release_attempts (
           id TEXT PRIMARY KEY,
@@ -909,6 +962,204 @@ export class ApplicationStore {
     );
   }
 
+  #findEvaluationByEvaluationId(accountId: string, evaluationId: string): EvaluationRow | null {
+    const rows = this.#database
+      .query<EvaluationRow, [string]>("SELECT * FROM evaluations WHERE account_id = ?")
+      .all(accountId);
+    return (
+      rows.find(
+        (row) => (JSON.parse(row.public_json) as PublicEvaluation).evaluationId === evaluationId,
+      ) ?? null
+    );
+  }
+
+  #findAnyEvaluationByEvaluationId(evaluationId: string): EvaluationRow | null {
+    const rows = this.#database.query<EvaluationRow, []>("SELECT * FROM evaluations").all();
+    return (
+      rows.find(
+        (row) => (JSON.parse(row.public_json) as PublicEvaluation).evaluationId === evaluationId,
+      ) ?? null
+    );
+  }
+
+  #recordPendingEvaluation(input: {
+    readonly accountId: string;
+    readonly evaluationId: string;
+    readonly siteId: string;
+    readonly robotId: string;
+    readonly buildId: string;
+    readonly behaviorInputDigest: string;
+    readonly requestedAt: string;
+  }): void {
+    const existing = this.#database
+      .query<PendingEvaluationRow, [string]>(
+        "SELECT * FROM pending_evaluations WHERE evaluation_id = ?",
+      )
+      .get(input.evaluationId);
+    if (existing !== null && existing !== undefined) {
+      if (
+        existing.account_id !== input.accountId ||
+        existing.site_id !== input.siteId ||
+        existing.robot_id !== input.robotId ||
+        existing.build_id !== input.buildId ||
+        existing.behavior_input_digest !== input.behaviorInputDigest ||
+        existing.requested_at !== input.requestedAt
+      ) {
+        throw new ApplicationError("CONFLICT", "Evaluation request binding changed");
+      }
+      return;
+    }
+    if (this.#findEvaluationByEvaluationId(input.accountId, input.evaluationId) !== null) return;
+    this.#database
+      .query(
+        "INSERT INTO pending_evaluations (evaluation_id, account_id, site_id, robot_id, build_id, behavior_input_digest, requested_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      )
+      .run(
+        input.evaluationId,
+        input.accountId,
+        input.siteId,
+        input.robotId,
+        input.buildId,
+        input.behaviorInputDigest,
+        input.requestedAt,
+        this.#now(),
+      );
+  }
+
+  #deletePendingEvaluation(evaluationId: string): void {
+    this.#database
+      .query("DELETE FROM pending_evaluations WHERE evaluation_id = ?")
+      .run(evaluationId);
+  }
+
+  getEvaluationStatus(
+    accountId: string,
+    evaluationId: string,
+  ): PublicEvaluation | PublicEvaluationPending {
+    assertAccountId(accountId);
+    const completed = this.#findEvaluationByEvaluationId(accountId, evaluationId);
+    if (completed !== null) return publicEvaluation(completed);
+    const pending = this.#database
+      .query<PendingEvaluationRow, [string, string]>(
+        "SELECT * FROM pending_evaluations WHERE account_id = ? AND evaluation_id = ?",
+      )
+      .get(accountId, evaluationId);
+    if (pending !== null && pending !== undefined) return publicPendingEvaluation(pending);
+    throw new ApplicationError("NOT_FOUND", "Evaluation was not found");
+  }
+
+  completeCreEvaluation(
+    callback: CreEvaluationResultCallback,
+  ):
+    | { readonly status: "COMPLETED"; readonly evaluation: PublicEvaluation }
+    | { readonly status: "ALREADY_COMPLETED"; readonly evaluation: PublicEvaluation }
+    | { readonly status: "REJECTED"; readonly code: string } {
+    const pending = this.#database
+      .query<PendingEvaluationRow, [string]>(
+        "SELECT * FROM pending_evaluations WHERE evaluation_id = ?",
+      )
+      .get(callback.evaluationId);
+    if (pending === null || pending === undefined) {
+      const existing = this.#findAnyEvaluationByEvaluationId(callback.evaluationId);
+      if (existing !== null) {
+        return { status: "ALREADY_COMPLETED", evaluation: publicEvaluation(existing) };
+      }
+      throw new ApplicationError("NOT_FOUND", "Pending evaluation was not found");
+    }
+    if (callback.response.status === "REJECT") {
+      this.#deletePendingEvaluation(callback.evaluationId);
+      return { status: "REJECTED", code: callback.response.code };
+    }
+    if (callback.response.behaviorInputDigest !== pending.behavior_input_digest) {
+      throw new ApplicationError("CONFLICT", "CRE result behavior binding does not match request");
+    }
+    const site = this.#siteRow(pending.account_id, pending.site_id);
+    const robot = this.#robotRow(pending.account_id, site.id, pending.robot_id);
+    const build = this.#buildRow(pending.account_id, site.id, robot.id, pending.build_id);
+    const descriptor = parseRobotBuildDescriptor(JSON.parse(build.descriptor_json));
+    const request = parseEvaluationRequest({
+      schemaVersion: EVALUATION_REQUEST_SCHEMA_VERSION,
+      evaluationId: callback.evaluationId,
+      inputs: {
+        schemaVersion: EVALUATION_INPUTS_SCHEMA_VERSION,
+        siteId: site.id,
+        robotId: robot.id,
+        robotBuildId: descriptor.robotBuildId,
+        robotBuildDigest: digestRobotBuild(descriptor),
+        safetyEnvelopeId: site.safety_envelope_id,
+        safetyEnvelopeCommitment: site.safety_envelope_commitment,
+        evaluatorVersion: parseEvaluatorVersionId(WAREHOUSE_EVALUATOR_VERSION),
+      },
+      requestedAt: pending.requested_at,
+    });
+    const result = assertEvaluationResultBindings(callback.response.result, request);
+    const publicResult: PublicEvaluation = Object.freeze({
+      id: id("evaluation-record"),
+      siteId: site.id,
+      robotId: robot.id,
+      buildId: build.id,
+      evaluationId: result.evaluationId,
+      robotBuildId: result.inputs.robotBuildId,
+      verdict: result.verdict,
+      safetyEnvelopeId: result.inputs.safetyEnvelopeId,
+      evaluatorVersion: result.inputs.evaluatorVersion,
+      robotBuildDigest: result.inputs.robotBuildDigest,
+      safetyEnvelopeCommitment: result.inputs.safetyEnvelopeCommitment,
+      evaluationInputsDigest: result.evaluationInputsDigest,
+      scenarioCount: null,
+      violationCount: null,
+      reasons: Object.freeze([]),
+      evaluatedAt: result.evaluatedAt,
+    });
+    const row: EvaluationRow = {
+      id: publicResult.id,
+      account_id: pending.account_id,
+      site_id: site.id,
+      robot_id: robot.id,
+      build_id: build.id,
+      public_json: canonicalSerialize(publicResult),
+      created_at: this.#now(),
+    };
+    try {
+      this.#database.run("BEGIN IMMEDIATE");
+      const duplicate = this.#findEvaluationByEvaluationId(
+        pending.account_id,
+        callback.evaluationId,
+      );
+      if (duplicate !== null) {
+        this.#database.run("ROLLBACK");
+        return { status: "ALREADY_COMPLETED", evaluation: publicEvaluation(duplicate) };
+      }
+      this.#database
+        .query(
+          "INSERT INTO evaluations (id, account_id, site_id, robot_id, build_id, public_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        )
+        .run(
+          row.id,
+          row.account_id,
+          row.site_id,
+          row.robot_id,
+          row.build_id,
+          row.public_json,
+          row.created_at,
+        );
+      this.#deletePendingEvaluation(callback.evaluationId);
+      this.#database.run("COMMIT");
+    } catch (error) {
+      try {
+        this.#database.run("ROLLBACK");
+      } catch {
+        // Preserve the original failure without exposing SQLite details.
+      }
+      if (error instanceof ApplicationError) throw error;
+      throw new ApplicationError(
+        "PERSISTENCE_UNAVAILABLE",
+        "CRE evaluation result could not be stored",
+      );
+    }
+    return { status: "COMPLETED", evaluation: publicResult };
+  }
+
   async evaluateBuild(
     accountId: string,
     input: {
@@ -944,14 +1195,50 @@ export class ApplicationStore {
       },
       requestedAt: input.requestedAt,
     });
-    const report = await input.evaluate({
+    const behaviorInputDigest = digestBehaviorInput({
+      schemaVersion: CRE_PUBLIC_REQUEST_VERSION,
+      protocolVersion: PROTOCOL_VERSION,
+      confidentialInputSecretId: siteSecretId(site.id),
       request,
       robotBuild: descriptor,
-      confidentialEnvelope: policy.envelope,
-      envelopeBlindingSecret: policy.blind,
       behaviorTraces: traces,
-      evaluatedAt: input.evaluatedAt,
+      traceProvenance: SYNTHETIC_TRACE_PROVENANCE,
+      evaluatedAt: parseUnixTimestamp(input.evaluatedAt, "evaluatedAt"),
     });
+    this.#recordPendingEvaluation({
+      accountId,
+      evaluationId: input.evaluationId,
+      siteId: site.id,
+      robotId: robot.id,
+      buildId: build.id,
+      behaviorInputDigest,
+      requestedAt: input.requestedAt,
+    });
+    let report: ConfidentialEvaluationReport;
+    try {
+      report = await input.evaluate({
+        request,
+        robotBuild: descriptor,
+        confidentialEnvelope: policy.envelope,
+        envelopeBlindingSecret: policy.blind,
+        behaviorTraces: traces,
+        evaluatedAt: input.evaluatedAt,
+      });
+    } catch (error) {
+      const existing = this.#findEvaluationByEvaluationId(accountId, input.evaluationId);
+      if (existing !== null) return publicEvaluation(existing);
+      if (
+        !(
+          error !== null &&
+          typeof error === "object" &&
+          (error as { readonly code?: unknown }).code === "CRE_EVALUATION_PENDING"
+        )
+      ) {
+        this.#deletePendingEvaluation(input.evaluationId);
+      }
+      throw error;
+    }
+    const boundResult = assertEvaluationResultBindings(report.result, request);
     const reasons = Object.freeze(
       Array.from(new Set((report.violations ?? []).map((violation) => violation.type))),
     );
@@ -960,18 +1247,18 @@ export class ApplicationStore {
       siteId: site.id,
       robotId: robot.id,
       buildId: build.id,
-      evaluationId: report.result.evaluationId,
-      robotBuildId: report.result.inputs.robotBuildId,
-      verdict: report.result.verdict,
-      safetyEnvelopeId: report.result.inputs.safetyEnvelopeId,
-      evaluatorVersion: report.result.inputs.evaluatorVersion,
-      robotBuildDigest: report.result.inputs.robotBuildDigest,
-      safetyEnvelopeCommitment: report.result.inputs.safetyEnvelopeCommitment,
-      evaluationInputsDigest: report.result.evaluationInputsDigest,
+      evaluationId: boundResult.evaluationId,
+      robotBuildId: boundResult.inputs.robotBuildId,
+      verdict: boundResult.verdict,
+      safetyEnvelopeId: boundResult.inputs.safetyEnvelopeId,
+      evaluatorVersion: boundResult.inputs.evaluatorVersion,
+      robotBuildDigest: boundResult.inputs.robotBuildDigest,
+      safetyEnvelopeCommitment: boundResult.inputs.safetyEnvelopeCommitment,
+      evaluationInputsDigest: boundResult.evaluationInputsDigest,
       scenarioCount: report.scenarioCount ?? null,
       violationCount: report.violationCount ?? null,
       reasons,
-      evaluatedAt: report.result.evaluatedAt,
+      evaluatedAt: boundResult.evaluatedAt,
     });
     const row: EvaluationRow = {
       id: result.id,
@@ -995,6 +1282,7 @@ export class ApplicationStore {
         row.public_json,
         row.created_at,
       );
+    this.#deletePendingEvaluation(input.evaluationId);
     return result;
   }
 
@@ -1012,20 +1300,14 @@ export class ApplicationStore {
 
   getEvaluation(accountId: string, evaluationId: string): PublicEvaluation {
     assertAccountId(accountId);
-    const row = this.#database
+    const byRecordId = this.#database
       .query<EvaluationRow, [string, string]>(
         "SELECT * FROM evaluations WHERE account_id = ? AND id = ?",
       )
       .get(accountId, evaluationId);
-    if (row !== null && row !== undefined) return publicEvaluation(row);
-    const candidates = this.#database
-      .query<EvaluationRow, [string]>("SELECT * FROM evaluations WHERE account_id = ?")
-      .all(accountId);
-    const match = candidates.find(
-      (candidate) =>
-        (JSON.parse(candidate.public_json) as PublicEvaluation).evaluationId === evaluationId,
-    );
-    if (match === undefined) throw new ApplicationError("NOT_FOUND", "Evaluation was not found");
+    if (byRecordId !== null && byRecordId !== undefined) return publicEvaluation(byRecordId);
+    const match = this.#findEvaluationByEvaluationId(accountId, evaluationId);
+    if (match === null) throw new ApplicationError("NOT_FOUND", "Evaluation was not found");
     return publicEvaluation(match);
   }
 

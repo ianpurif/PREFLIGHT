@@ -6,6 +6,7 @@ import {
   type CrePublicEvaluationResponse,
   type CrePublicEvaluationSuccess,
   digestBehaviorInput,
+  siteSecretId,
 } from "@rovaulta/chainlink-cre/protocol";
 import {
   assertEvaluationResultBindings,
@@ -27,7 +28,6 @@ import {
 } from "@rovaulta/simulation-core";
 
 const TRACE_PROVENANCE = "SYNTHETIC_CALLER_SUPPLIED" as const;
-const SECRET_PREFIX = "ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_" as const;
 const MAX_RESPONSE_BYTES = 256 * 1024;
 
 type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
@@ -78,14 +78,6 @@ function canonicalBase64(value: unknown): string {
 
 function sha256Hex(value: string): string {
   return createHash("sha256").update(value, "utf8").digest("hex");
-}
-
-function siteSecretId(siteId: string): string {
-  const suffix = siteId.replace(/[^a-z0-9_-]/gi, "_").toLowerCase();
-  if (suffix.length === 0 || suffix.length > 96) {
-    throw new CreEvaluationError("CRE_RESPONSE_INVALID", "Site secret reference is malformed");
-  }
-  return `${SECRET_PREFIX}${suffix}`;
 }
 
 function expectRecord(value: unknown, message: string): Record<string, unknown> {
