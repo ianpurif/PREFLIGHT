@@ -194,8 +194,11 @@ function snapshot(
 class FixtureReader implements ClearanceRegistryReader {
   calls = 0;
 
+  constructor(private readonly events?: string[]) {}
+
   async readExactClearance(clearance: ClearanceRecord): Promise<ClearanceRegistrySnapshot> {
     this.calls += 1;
+    this.events?.push("p5");
     if (clearance.clearanceId === revokedClearance.clearanceId) {
       return snapshot(clearance, { revoked: true });
     }
@@ -288,17 +291,21 @@ function harness(
 
 describe("P5.2 deterministic deployment-agent controller", () => {
   test("account-backed preparation requires a matching Graph context before P5", async () => {
+    const events: string[] = [];
     const graphReader: GraphClearanceReader = {
-      readClearance: async () => ({
-        source: "the-graph",
-        provider: "gateway",
-        chainId: 11_155_111,
-        registry: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
-        clearanceDigest: `0x${"12".repeat(32)}`,
-        status: "MATCHED",
-        indexedAtBlock: "11700000",
-        blockHash: `0x${"ab".repeat(32)}`,
-      }),
+      readClearance: async () => {
+        events.push("graph");
+        return {
+          source: "the-graph",
+          provider: "gateway",
+          chainId: 11_155_111,
+          registry: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
+          clearanceDigest: `0x${"12".repeat(32)}`,
+          status: "MATCHED",
+          indexedAtBlock: "11700000",
+          blockHash: `0x${"ab".repeat(32)}`,
+        };
+      },
     };
     const accountEntry = catalogEntry({
       key: "account-build-b",
@@ -323,7 +330,7 @@ describe("P5.2 deterministic deployment-agent controller", () => {
       },
       true,
     );
-    const { agent } = harness(model, new FixtureReader(), graphReader, () => accountEntry);
+    const { agent } = harness(model, new FixtureReader(events), graphReader, () => accountEntry);
     const result = await agent.run({
       request: "ignored host text",
       accountId: "account:1234567890abcdef1234567890abcdef",
@@ -332,6 +339,8 @@ describe("P5.2 deterministic deployment-agent controller", () => {
     });
     expect(result.status).toBe("LEDGER_APPROVAL_REQUIRED");
     expect(result.audit.graphContext?.status).toBe("MATCHED");
+    expect(events[0]).toBe("graph");
+    expect(events.slice(1).every((event) => event === "p5")).toBe(true);
     expect(result.audit.toolCalls.map(({ tool }) => tool)).toEqual([
       "resolveDeploymentTarget",
       "getDeploymentContext",
