@@ -6,7 +6,7 @@ import {
   parseLedgerTransportConfig,
 } from "../src/index.js";
 
-const speculosUrl = process.env.PREFLIGHT_SPECULOS_URL || "http://127.0.0.1:5000";
+const speculosUrl = process.env.ROVAULTA_SPECULOS_URL || "http://127.0.0.1:5000";
 const transport = createLedgerTransportRuntime(
   parseLedgerTransportConfig("speculos", speculosUrl, "test"),
   "test",
@@ -17,7 +17,7 @@ const adapter = new LedgerBrowserAdapter(
   createLedgerBrowserDependencies(transport),
 );
 const controller = deviceControllerClientFactory(speculosUrl, {
-  clientHeader: "preflight-p5-speculos-smoke",
+  clientHeader: "rovaulta-p5-speculos-smoke",
   timeoutMs: 5_000,
 });
 

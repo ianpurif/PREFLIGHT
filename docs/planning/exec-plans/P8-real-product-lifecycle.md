@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Replace the demo-only normal application path with an account-scoped Preflight product:
+Replace the demo-only normal application path with an account-scoped Rovaulta product:
 authenticated users create a site and private safety policy, register a robot and exact build
 declaration,
 run the existing deterministic evaluator through the API, inspect the public result, and prepare a
@@ -115,9 +115,9 @@ surface.
   persisted. The site policy envelope and blinding secret are AES-256-GCM encrypted at rest and
   never included in public API projections.
 - Normal `/app/*` pages require an authenticated API session. P7's deterministic fixture is gated
-  behind `PREFLIGHT_ENABLE_DEMO_ROUTES=true` and `/dev-fixtures/evaluate`; it is not a source of
+  behind `ROVAULTA_ENABLE_DEMO_ROUTES=true` and `/dev-fixtures/evaluate`; it is not a source of
   account data.
-- Evaluation uses the existing `@preflight/simulation-core` authority inside the API and stores a
+- Evaluation uses the existing `@rovaulta/simulation-core` authority inside the API and stores a
   public projection over the registered route declaration; it does not inspect binary artifact
   bytes or claim external provenance. Release preparation delegates to the existing P5/P5.2
   boundary and records a blocked attempt when a public P4 clearance or live release gate is

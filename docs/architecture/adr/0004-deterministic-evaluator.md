@@ -4,7 +4,7 @@
 
 ## Decision
 
-`@preflight/simulation-core` implements evaluator `evaluator-version:warehouse-rules-v1` as a pure synchronous TypeScript computation. It consumes a validated P1 request/build, the exact committed confidential envelope, a secret commitment blind, and materialized traces declaring that build metadata. It returns an unchanged P1 `EvaluationResult` inside a full `InternalEvaluationReport`.
+`@rovaulta/simulation-core` implements evaluator `evaluator-version:warehouse-rules-v1` as a pure synchronous TypeScript computation. It consumes a validated P1 request/build, the exact committed confidential envelope, a secret commitment blind, and materialized traces declaring that build metadata. It returns an unchanged P1 `EvaluationResult` inside a full `InternalEvaluationReport`.
 
 P2 `CLEAR` means only that this exact declared build binding produced zero rule violations across this exact deterministic simulated suite and envelope. It is not universal or physical-safety certification.
 
@@ -37,7 +37,7 @@ Every applicable rule is evaluated without short-circuiting. At most the earlies
 
 The complete scenario generator configuration is part of the committed confidential envelope. Templates carry stable `scenario:` IDs, base payload, and symmetric integer payload variation. Templates are normalized by scenario ID before generation.
 
-Generator `preflight.xorshift32-scenarios/v1` requires a non-zero uint32 seed and advances state exactly as follows:
+Generator `rovaulta.xorshift32-scenarios/v1` requires a non-zero uint32 seed and advances state exactly as follows:
 
 ```text
 x ^= x << 13

@@ -4,10 +4,10 @@ import { createP7DemoFixture, runP7DemoRehearsal } from "../apps/api/scripts/p7-
 import { digestRobotBuild } from "../packages/domain/src/index.ts";
 
 const repositoryRoot = resolve(import.meta.dirname, "..");
-const demoDirectory = resolve(repositoryRoot, ".data", "preflight-demo");
+const demoDirectory = resolve(repositoryRoot, ".data", "rovaulta-demo");
 const manifestPath = resolve(demoDirectory, "manifest.json");
 const runPath = resolve(demoDirectory, "last-run.json");
-const expectedRelativeDirectory = ".data/preflight-demo";
+const expectedRelativeDirectory = ".data/rovaulta-demo";
 
 function assertDemoDirectory() {
   const actual = relative(repositoryRoot, demoDirectory).replaceAll("\\", "/");
@@ -24,11 +24,11 @@ function resetDemo() {
 function publicManifest() {
   const fixture = createP7DemoFixture();
   return {
-    schemaVersion: "preflight.p7-demo-manifest/v1",
+    schemaVersion: "rovaulta.p7-demo-manifest/v1",
     fixtureVersion: "p7-p2-fixture-v1",
     executionMode: "offline deterministic rehearsal",
     demoClock: "2026-09-07T10:00:00.000Z",
-    evaluator: "@preflight/simulation-core deterministic fixture",
+    evaluator: "@rovaulta/simulation-core deterministic fixture",
     externalExecution: {
       openai: "not used",
       sepolia: "not used; local registry reader fixture",
@@ -114,7 +114,7 @@ async function prepare() {
 const command = process.argv[2] ?? "help";
 if (command === "reset") {
   resetDemo();
-  console.log("P7 demo reset: .data/preflight-demo removed (idempotent).\n");
+  console.log("P7 demo reset: .data/rovaulta-demo removed (idempotent).\n");
 } else if (command === "prepare" || command === "setup") {
   await prepare();
 } else if (command === "run" || command === "rehearse") {
@@ -124,7 +124,7 @@ if (command === "reset") {
     [
       "P7 deterministic demo commands:",
       "  bun run demo:setup   reset, seed, and run the offline rehearsal",
-      "  bun run demo:reset   remove only .data/preflight-demo (safe to repeat)",
+      "  bun run demo:reset   remove only .data/rovaulta-demo (safe to repeat)",
       "  bun run demo:run     repeat the prepared offline A/B/C rehearsal",
     ].join("\n"),
   );

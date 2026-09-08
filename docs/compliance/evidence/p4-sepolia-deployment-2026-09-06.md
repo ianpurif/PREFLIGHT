@@ -6,7 +6,7 @@
 
 **Deployment time:** 2026-09-06T02:48:00Z
 
-**Contract:** `PreflightRegistry`
+**Contract:** `RovaultaRegistry`
 
 **Source baseline:** `19296513554c48929de83087409c6ecf5cb0c3a3`
 
@@ -45,7 +45,7 @@ cast wallet address --private-key $deployerPrivateKey
 cast balance $deployer --ether --rpc-url $rpc
 cast block-number --rpc-url $rpc
 forge --version
-forge inspect PreflightRegistry metadata
+forge inspect RovaultaRegistry metadata
 ```
 
 They returned chain ID `11155111`, deployer
@@ -58,7 +58,7 @@ verification also passed.
 The unchanged chain-guarded deployment script was then broadcast once from `contracts/`:
 
 ```powershell
-forge script script/DeployPreflightRegistry.s.sol:DeployPreflightRegistry `
+forge script script/DeployRovaultaRegistry.s.sol:DeployRovaultaRegistry `
   --rpc-url $rpc --broadcast --verify
 ```
 
@@ -67,7 +67,7 @@ without another broadcast:
 
 ```powershell
 forge verify-contract 0xFB270cc222efa8B5005AA097dD512Be2558dde65 `
-  src/PreflightRegistry.sol:PreflightRegistry --chain sepolia `
+  src/RovaultaRegistry.sol:RovaultaRegistry --chain sepolia `
   --constructor-args 0x000000000000000000000000aa5768d0f2157f8781efb975cdd9aec99e7879e3 `
   --watch
 ```

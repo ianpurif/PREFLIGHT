@@ -39,12 +39,12 @@ authority, and P6 does not activate a robot.
 
 ## P7 deterministic demo reliability result
 
-`bun run demo:setup` resets only the ignored `.data/preflight-demo` directory, writes a public
+`bun run demo:setup` resets only the ignored `.data/rovaulta-demo` directory, writes a public
 manifest, and runs the fixed-clock offline rehearsal. `bun run demo:reset` is idempotent; it does
 not touch source fixtures, deployment metadata, evidence, environment files, or the normal P5
 SQLite store. `bun run demo:run` repeats the prepared rehearsal and writes the same public trace.
 
-The authoritative P7 fixture reuses `@preflight/simulation-core` for the P2 verdict and the
+The authoritative P7 fixture reuses `@rovaulta/simulation-core` for the P2 verdict and the
 existing P5.2 `DeploymentAgent` plus `ReleaseService` for the host-owned proposal boundary. A
 demo-only nonce factory, fixed registry block/timestamp, fixed attempt IDs, and fixed clock make
 the local prepared digest reproducible; the production nonce default remains cryptographically
@@ -65,8 +65,8 @@ A → reset → B/prepared handoff → reset → C → repeated C sequence witho
 
 ## Implemented authorization boundary
 
-The existing P1 deployment intent is versioned to `preflight.deployment-intent/v2` with one fixed
-`ACTIVATE_DEPLOYMENT` action. P5 builds full EIP-712 typed data under domain `Preflight`, version
+The existing P1 deployment intent is versioned to `rovaulta.deployment-intent/v2` with one fixed
+`ACTIVATE_DEPLOYMENT` action. P5 builds full EIP-712 typed data under domain `Rovaulta`, version
 `1`, Sepolia `11155111`, and the deployed P4 registry
 `0xFB270cc222efa8B5005AA097dD512Be2558dde65`. The deployment artifact is the single address/chain
 source.
@@ -181,7 +181,7 @@ The official registry Tester wrapper was run from revision
 `0318f9a51ec4fc7ba4aed6de5e315c8884d1fe38` and exited `1` with
 `Error: GATING_TOKEN environment variable not set`. The implicit direct-tester token, blind-signing
 switches, and JavaScript signer mocks were not used as evidence. The Tester also discards its
-signature, so Preflight separately lacks an application origin token plus accepted/served
+signature, so Rovaulta separately lacks an application origin token plus accepted/served
 descriptor or another official signature-preserving resolution path. Therefore the structured Clear
 Signing display and Speculos A/B/E/F are not complete.
 

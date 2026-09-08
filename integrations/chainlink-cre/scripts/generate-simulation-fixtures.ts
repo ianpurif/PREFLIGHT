@@ -4,12 +4,12 @@ import {
   parseEvaluationInputs,
   parseEvaluationRequest,
   parseUnixTimestamp,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 import {
   confidentialEnvelopeCommitmentPayload,
   createDeterministicDemoFixture,
   type DemoEvaluationCase,
-} from "@preflight/simulation-core";
+} from "@rovaulta/simulation-core";
 import {
   CRE_CONFIDENTIAL_INPUT_VERSION,
   CRE_PUBLIC_REQUEST_VERSION,
@@ -78,11 +78,11 @@ const outputs = [
   ["fixtures/corrected.public.json", `${JSON.stringify(publicInput(correctedFixture), null, 2)}\n`],
   [
     ".env.cre-valid.local",
-    `PREFLIGHT_CONFIDENTIAL_EVALUATION_INPUT_JSON='${secret(validBlind)}'\n`,
+    `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_JSON='${secret(validBlind)}'\n`,
   ],
   [
     ".env.cre-tampered.local",
-    `PREFLIGHT_CONFIDENTIAL_EVALUATION_INPUT_JSON='${secret(tamperedBlind)}'\n`,
+    `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_JSON='${secret(tamperedBlind)}'\n`,
   ],
 ] as const;
 

@@ -26,7 +26,7 @@ protocol semantics.
   `CLEARANCE_BINDING_MISMATCH` before Ledger.
 - The offline rehearsal uses a fixed clock, fixed registry snapshot, fixed attempt IDs, and
   a demo-only nonce factory. Production ReleaseService nonce generation remains random.
-- Reset removes only `.data/preflight-demo`; source fixtures, evidence, deployment metadata,
+- Reset removes only `.data/rovaulta-demo`; source fixtures, evidence, deployment metadata,
   environment files, and the normal release store are untouched.
 - Private envelope fields and confidential intermediate values never enter public rehearsal
   output, browser state, or committed logs.

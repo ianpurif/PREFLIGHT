@@ -12,7 +12,7 @@ export function ReleaseView({ demo }: { readonly demo: DemoPublicData }) {
           <p className="view-eyebrow">Releases</p>
           <h1>Prepare the release, then let a human decide.</h1>
           <p className="view-lede">
-            Preflight never treats a clear evaluation as authorization. The exact build, clearance,
+            Rovaulta never treats a clear evaluation as authorization. The exact build, clearance,
             target, and expiry must be prepared before Ledger can be presented to an operator.
           </p>
         </div>

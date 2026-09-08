@@ -2,7 +2,7 @@
 
 ## Outcome
 
-`@preflight/domain` provides the versioned, runtime-validated protocol vocabulary that P2–P8 can consume: typed identifiers, exact-binding schemas, canonical serialization, deterministic SHA-256 digests, and explicit protocol failures.
+`@rovaulta/domain` provides the versioned, runtime-validated protocol vocabulary that P2–P8 can consume: typed identifiers, exact-binding schemas, canonical serialization, deterministic SHA-256 digests, and explicit protocol failures.
 
 ## Non-goals
 

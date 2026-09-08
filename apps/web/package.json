@@ -1,5 +1,5 @@
 {
-  "name": "@preflight/web",
+  "name": "@rovaulta/web",
   "private": true,
   "version": "0.0.0",
   "scripts": {
@@ -9,9 +9,9 @@
     "test": "bun test --pass-with-no-tests"
   },
   "dependencies": {
-    "@preflight/domain": "workspace:*",
-    "@preflight/ledger-gate": "workspace:*",
-    "@preflight/simulation-core": "workspace:*",
+    "@rovaulta/domain": "workspace:*",
+    "@rovaulta/ledger-gate": "workspace:*",
+    "@rovaulta/simulation-core": "workspace:*",
     "@react-three/fiber": "9.7.0",
     "next": "16.3.4",
     "react": "19.2.8",

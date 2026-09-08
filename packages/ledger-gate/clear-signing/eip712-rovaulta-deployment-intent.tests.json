@@ -1,0 +1,150 @@
+{
+  "$schema": "https://eips.ethereum.org/assets/eip-7730/erc7730-tests.schema.json",
+  "tests": [
+    {
+      "description": "Rovaulta exact deployment intent on Sepolia",
+      "data": {
+        "types": {
+          "EIP712Domain": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "version",
+              "type": "string"
+            },
+            {
+              "name": "chainId",
+              "type": "uint256"
+            },
+            {
+              "name": "verifyingContract",
+              "type": "address"
+            }
+          ],
+          "DeploymentIntent": [
+            {
+              "name": "protocolVersion",
+              "type": "string"
+            },
+            {
+              "name": "schemaVersion",
+              "type": "string"
+            },
+            {
+              "name": "action",
+              "type": "string"
+            },
+            {
+              "name": "siteId",
+              "type": "string"
+            },
+            {
+              "name": "robotId",
+              "type": "string"
+            },
+            {
+              "name": "robotBuildId",
+              "type": "string"
+            },
+            {
+              "name": "robotBuildDigest",
+              "type": "bytes32"
+            },
+            {
+              "name": "clearanceId",
+              "type": "string"
+            },
+            {
+              "name": "clearanceDigest",
+              "type": "bytes32"
+            },
+            {
+              "name": "targetEnvironment",
+              "type": "string"
+            },
+            {
+              "name": "authorizedSigner",
+              "type": "address"
+            },
+            {
+              "name": "nonce",
+              "type": "string"
+            },
+            {
+              "name": "issuedAt",
+              "type": "uint64"
+            },
+            {
+              "name": "expiresAt",
+              "type": "uint64"
+            },
+            {
+              "name": "protocolIntentDigest",
+              "type": "bytes32"
+            }
+          ]
+        },
+        "primaryType": "DeploymentIntent",
+        "domain": {
+          "name": "Rovaulta",
+          "version": "1",
+          "chainId": 11155111,
+          "verifyingContract": "0xFB270cc222efa8B5005AA097dD512Be2558dde65"
+        },
+        "message": {
+          "protocolVersion": "rovaulta.protocol/v1",
+          "schemaVersion": "rovaulta.deployment-intent/v2",
+          "action": "ACTIVATE_DEPLOYMENT",
+          "siteId": "site:speculos-demo",
+          "robotId": "robot:speculos-demo",
+          "robotBuildId": "robot-build:speculos-demo-a",
+          "robotBuildDigest": "0x1111111111111111111111111111111111111111111111111111111111111111",
+          "clearanceId": "clearance:speculos-demo-a",
+          "clearanceDigest": "0x7e7c1fb6f8c970bea6e8963a43d3006964d0cce26c48bf98097949fbeb921421",
+          "targetEnvironment": "sepolia",
+          "authorizedSigner": "0xDad77910DbDFdE764fC21FCD4E74D71bBACA6D8D",
+          "nonce": "speculos_demo_nonce_0001",
+          "issuedAt": "1788547100",
+          "expiresAt": "1788549000",
+          "protocolIntentDigest": "0x9958368120d8000fb3b9ed1e5e337b2cf134601890288a2c8237159211215c3c"
+        }
+      },
+      "expectedTexts": [
+        "Authorize robot release",
+        "Rovaulta",
+        "Protocol",
+        "rovaulta.protocol/v1",
+        "Intent schema",
+        "rovaulta.deployment-intent/v2",
+        "Action",
+        "ACTIVATE_DEPLOYMENT",
+        "Site",
+        "site:speculos-demo",
+        "Robot",
+        "robot:speculos-demo",
+        "Build",
+        "robot-build:speculos-demo-a",
+        "Build digest",
+        "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "Clearance",
+        "clearance:speculos-demo-a",
+        "Clearance digest",
+        "0x7e7c1fb6f8c970bea6e8963a43d3006964d0cce26c48bf98097949fbeb921421",
+        "Environment",
+        "sepolia",
+        "Authorized signer",
+        "0xDad77910DbDFdE764fC21FCD4E74D71bBACA6D8D",
+        "One-time nonce",
+        "speculos_demo_nonce_0001",
+        "Issued at",
+        "2026-09-04 6:38:20 PM UTC",
+        "Expires at",
+        "2026-09-04 7:10:00 PM UTC",
+        "Intent digest",
+        "0x9958368120d8000fb3b9ed1e5e337b2cf134601890288a2c8237159211215c3c"
+      ]
+    }
+  ]
+}

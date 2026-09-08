@@ -1,13 +1,13 @@
 import { describe, expect, test } from "bun:test";
-import { parseUnixTimestamp } from "@preflight/domain";
+import { parseUnixTimestamp } from "@rovaulta/domain";
 import { decodeFunctionResult, encodeFunctionResult } from "viem";
 import {
   assertClearanceSnapshotEligible,
   type ClearanceRegistrySnapshot,
   clearanceRecordToTransport,
   identifierToBytes32,
-  PREFLIGHT_REGISTRY_ABI,
-  PREFLIGHT_SEPOLIA_DEPLOYMENT,
+  ROVAULTA_REGISTRY_ABI,
+  ROVAULTA_SEPOLIA_DEPLOYMENT,
   protocolDigestToBytes32,
   ReleaseGateError,
   type ReleaseGateErrorCode,
@@ -20,7 +20,7 @@ function exactSnapshot(): ClearanceRegistrySnapshot {
   const requested = clearanceRecordToTransport(clearanceFixture);
   return {
     chainId: 11_155_111,
-    registry: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
+    registry: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
     blockNumber: 11_700_000n,
     blockHash: `0x${"aa".repeat(32)}`,
     blockTimestamp: parseUnixTimestamp("1788548000"),
@@ -55,7 +55,7 @@ describe("P4 exact-binding transport and policy", () => {
   test("reproduces P4 digest and identifier transport rules", () => {
     const transport = clearanceRecordToTransport(clearanceFixture);
     expect(transport.clearanceDigest).toBe(
-      "0x8b193d7e9aff99cd1936ed43a9b072705a80109102a9351e99042a8fc2b31178",
+      "0xdb55bd4b99d18606e9b22f6c088a5610f5535f13bcb2c179503357f8adcc3843",
     );
     expect(transport.bindings.siteIdHash).toBe(identifierToBytes32(clearanceFixture.inputs.siteId));
     expect(protocolDigestToBytes32(clearanceFixture.inputs.robotBuildDigest)).toBe(
@@ -118,7 +118,7 @@ describe("P4 exact-binding transport and policy", () => {
     const stored = storedExactSnapshot();
     const calls: Array<{ functionName: string; blockNumber: bigint }> = [];
     const client = {
-      getChainId: async () => PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId,
+      getChainId: async () => ROVAULTA_SEPOLIA_DEPLOYMENT.chainId,
       getBlockNumber: async () => 11_700_000n,
       getBlock: async ({ blockNumber }: { blockNumber: bigint }) => ({
         hash: `0x${"aa".repeat(32)}`,
@@ -151,13 +151,13 @@ describe("P4 exact-binding transport and policy", () => {
     expect(calls.every((call) => call.blockNumber === 11_700_000n)).toBe(true);
 
     const encoded = encodeFunctionResult({
-      abi: PREFLIGHT_REGISTRY_ABI,
+      abi: ROVAULTA_REGISTRY_ABI,
       functionName: "getClearance",
       result: stored,
     });
     expect(
       decodeFunctionResult({
-        abi: PREFLIGHT_REGISTRY_ABI,
+        abi: ROVAULTA_REGISTRY_ABI,
         functionName: "getClearance",
         data: encoded,
       }),

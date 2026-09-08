@@ -6,11 +6,11 @@ import { createReleaseServiceFromEnvironment } from "../src/release/index.js";
 import { buildServer } from "../src/server.js";
 
 const SPECULOS_SIGNER = "0xDad77910DbDFdE764fC21FCD4E74D71bBACA6D8D";
-const temporaryRoot = mkdtempSync(join(tmpdir(), "preflight-p5-presign-"));
+const temporaryRoot = mkdtempSync(join(tmpdir(), "rovaulta-p5-presign-"));
 const service = createReleaseServiceFromEnvironment({
   ...process.env,
-  PREFLIGHT_AUTHORIZED_SIGNERS: SPECULOS_SIGNER,
-  PREFLIGHT_RELEASE_DB_PATH: join(temporaryRoot, "release.sqlite"),
+  ROVAULTA_AUTHORIZED_SIGNERS: SPECULOS_SIGNER,
+  ROVAULTA_RELEASE_DB_PATH: join(temporaryRoot, "release.sqlite"),
 });
 const app = buildServer({ releaseService: service });
 const exactProposal = Object.freeze({

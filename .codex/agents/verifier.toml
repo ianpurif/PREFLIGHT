@@ -1,4 +1,4 @@
-name = "preflight-verifier"
+name = "rovaulta-verifier"
 description = "Verification specialist that inspects tests and command results, identifies untested behavior, and proposes the smallest missing checks."
 sandbox_mode = "read-only"
 model_reasoning_effort = "high"

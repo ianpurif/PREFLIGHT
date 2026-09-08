@@ -14,9 +14,9 @@ import {
 } from "@ledgerhq/device-signer-kit-ethereum";
 import {
   buildDeploymentTypedData,
-  PREFLIGHT_SEPOLIA_DEPLOYMENT,
+  ROVAULTA_SEPOLIA_DEPLOYMENT,
   type PreparedLedgerSigningRequest,
-} from "@preflight/chain-client";
+} from "@rovaulta/chain-client";
 import { filter, firstValueFrom, lastValueFrom } from "rxjs";
 import { type ClearSigningAttempt, GuardedClearSigningContext } from "./clear-signing-context";
 import { failLedger, LedgerGateError, normalizeLedgerError } from "./errors";
@@ -195,7 +195,7 @@ export class LedgerBrowserAdapter {
       const addressState = await lastValueFrom(
         signer.getAddress(this.#derivationPath, {
           checkOnDevice: true,
-          chainId: PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId,
+          chainId: ROVAULTA_SEPOLIA_DEPLOYMENT.chainId,
         }).observable,
       );
       if (addressState.status === DeviceActionStatus.Error) {

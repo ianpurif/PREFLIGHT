@@ -1,7 +1,7 @@
 import { ProductApp } from "../../product-app";
 
 export const metadata = {
-  title: "Releases — Preflight",
+  title: "Releases — Rovaulta",
   description: "Prepare an exact release and hand it to a human approval gate.",
 };
 

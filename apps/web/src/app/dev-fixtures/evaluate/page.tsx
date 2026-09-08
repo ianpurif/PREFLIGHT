@@ -2,14 +2,14 @@ import { createDemoPublicData } from "../../demo-data";
 import { JudgeDashboard } from "../../judge-dashboard";
 
 export const metadata = {
-  title: "Deterministic fixture — Preflight",
+  title: "Deterministic fixture — Rovaulta",
   description: "Development-only P7 regression fixture.",
 };
 
 export default function DevelopmentEvaluatePage() {
   if (
     process.env.NODE_ENV === "production" ||
-    process.env.PREFLIGHT_ENABLE_DEMO_ROUTES !== "true"
+    process.env.ROVAULTA_ENABLE_DEMO_ROUTES !== "true"
   ) {
     return (
       <main className="fixture-disabled" id="main-content">

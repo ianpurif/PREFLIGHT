@@ -1,7 +1,7 @@
-# Preflight Attestation Registry
+# Rovaulta Attestation Registry
 
-`PreflightRegistry` records public, scoped evidence that an authorized registrar attests a
-validated P1 `ClearanceRecord`. It does not parse Preflight Canonical JSON, prove that Chainlink
+`RovaultaRegistry` records public, scoped evidence that an authorized registrar attests a
+validated P1 `ClearanceRecord`. It does not parse Rovaulta Canonical JSON, prove that Chainlink
 executed an evaluation, authorize deployment, or claim universal/physical robot safety.
 
 ## P1 transport mapping
@@ -68,7 +68,7 @@ Copy the root `.env.example` to an ignored local environment file and provide
 PowerShell deployment and verification:
 
 ```powershell
-forge script script/DeployPreflightRegistry.s.sol:DeployPreflightRegistry `
+forge script script/DeployRovaultaRegistry.s.sol:DeployRovaultaRegistry `
   --rpc-url $env:SEPOLIA_RPC_URL --broadcast --verify `
   --etherscan-api-key $env:ETHERSCAN_API_KEY
 ```

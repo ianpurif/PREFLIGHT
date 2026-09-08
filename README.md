@@ -1,8 +1,8 @@
-# Preflight [STILL IN DEVELOPMENT]
+# Rovaulta [STILL IN DEVELOPMENT]
 
 ## A confidential deployment gate for autonomous warehouse robots
 
-Preflight answers one practical question before a robot is released:
+Rovaulta answers one practical question before a robot is released:
 
 > Did this exact robot software build pass this site's private evaluation rules, and has an authorized human approved this exact release?
 
@@ -40,10 +40,10 @@ authority for a high-impact physical action.
 
 ### What did we build?
 
-We built Preflight for the moment when a robot vendor and a factory need to trust the same result
+We built Rovaulta for the moment when a robot vendor and a factory need to trust the same result
 without sharing everything with each other.
 
-Preflight creates a versioned clearance for an exact combination of:
+Rovaulta creates a versioned clearance for an exact combination of:
 
 `site + robot + build + safety-envelope commitment + evaluator version + expiry`
 
@@ -53,7 +53,7 @@ report authorization.
 
 ### Why it matters
 
-Preflight is not a robot controller, a robot marketplace, or a generic wallet agent. It is a
+Rovaulta is not a robot controller, a robot marketplace, or a generic wallet agent. It is a
 **proof-to-deploy boundary** for autonomous software entering a physical environment.
 
 The first wedge is cross-company warehouse AMR deployment. The same pattern could later support
@@ -74,7 +74,7 @@ The warehouse may not want to reveal:
 
 The vendor may not want to reveal model weights, planning logic, or controller internals.
 
-Preflight lets the evaluator use those inputs without turning the private envelope into a public
+Rovaulta lets the evaluator use those inputs without turning the private envelope into a public
 database record. It publishes only the minimum result and exact binding needed for a later release
 decision.
 
@@ -84,7 +84,7 @@ still required.
 
 ## The solution
 
-Preflight has three separate authorities:
+Rovaulta has three separate authorities:
 
 1. **Deterministic evaluator** — computes `CLEAR` or `HOLD` from versioned inputs. An LLM cannot
    change the safety verdict.
@@ -104,7 +104,7 @@ flowchart LR
   TEE[Chainlink CRE confidential handler]
   RESULT[Minimal public evaluation result]
   REGISTRAR[Authorized registrar]
-  REG[PreflightRegistry on Sepolia]
+  REG[RovaultaRegistry on Sepolia]
   OPERATOR[Operator request]
   AGENT[Bounded deployment agent]
   PREP[ReleaseService prepares exact intent]
@@ -174,7 +174,7 @@ records, or treat a visual state as authoritative.
 P6/P7 regression scenarios remain available only when the development flag is explicitly enabled:
 
 ```bash
-PREFLIGHT_ENABLE_DEMO_ROUTES=true bun run --cwd apps/web dev
+ROVAULTA_ENABLE_DEMO_ROUTES=true bun run --cwd apps/web dev
 ```
 
 Then open `/dev-fixtures/evaluate`. This route is not linked from the product and is intended for
@@ -186,10 +186,10 @@ It is not account data, a live partner execution, a clearance, or proof of physi
 
 | Feature                          | What the judge can verify                                                             | User benefit                                                       |
 | -------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Deterministic evaluation         | `@preflight/simulation-core` has fixed-unit rules and negative/property tests         | The same inputs produce the same verdict                           |
+| Deterministic evaluation         | `@rovaulta/simulation-core` has fixed-unit rules and negative/property tests         | The same inputs produce the same verdict                           |
 | Confidential evaluation boundary | CRE `handlerInTee` consumes the private envelope and returns an allowlisted result    | Parties can verify a rule without publishing the rule              |
 | Exact build binding              | Canonical digests bind site, robot, build, envelope commitment, evaluator, and expiry | A later software change cannot quietly reuse an old clearance      |
-| Public attestation               | `PreflightRegistry` stores public hashes and validity/revocation state on Sepolia     | Separate organizations have a shared verification surface          |
+| Public attestation               | `RovaultaRegistry` stores public hashes and validity/revocation state on Sepolia     | Separate organizations have a shared verification surface          |
 | Bounded deployment agent         | Host-owned tools enforce a fixed order and finite public request grammar              | AI can orchestrate and explain without receiving release authority |
 | Hardware approval                | Ledger DMK, WebHID, EIP-712, signer recovery, and one-time nonce checks               | A human approves the exact high-impact action on a device          |
 | Reliable rehearsal               | `demo:setup`, `demo:reset`, `demo:run`, and browser race tests                        | A judge can repeat the demo without stale state                    |
@@ -200,7 +200,7 @@ It is not account data, a live partner execution, a clearance, or proof of physi
 
 These partners answer different questions:
 
-| Partner       | Question                                                                    | Actual use in Preflight                                                                                                                                            | Current proof                                                                                                                                               |
+| Partner       | Question                                                                    | Actual use in Rovaulta                                                                                                                                            | Current proof                                                                                                                                               |
 | ------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Chainlink CRE | Can the site evaluate an exact build without exposing its private envelope? | The confidential workflow fetches one versioned secret inside `handlerInTee`, invokes the deterministic evaluator, and releases only the minimal result.           | Authenticated local CRE simulations for unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`. Live DON/Vault/Nitro deployment is not claimed. |
 | Ledger        | Who can authorize the exact release after it passes?                        | The browser uses Ledger DMK, WebHID or test-only Speculos, the Ethereum signer kit, and full EIP-712 intent checks. The agent stops at `LEDGER_APPROVAL_REQUIRED`. | Software and partial Speculos evidence are recorded. Physical Clear Signing and official Tester cases remain blocked by missing external access.            |
@@ -235,7 +235,7 @@ secret custody or a remote robot attestation.
 | Judge UI             | Next.js 16, React 19, React Three Fiber, Three.js                         | Shows the public evaluation projection and warehouse scene without receiving private inputs |
 | API                  | Fastify 5                                                                 | Hosts the release boundary and the narrow deployment-agent orchestration                    |
 | Domain               | Dependency-light TypeScript                                               | Keeps identifiers, schemas, canonical bytes, and digests independent of web or partner code |
-| Evaluator            | `@preflight/simulation-core`                                              | Pure deterministic rules that can run locally and inside the CRE callback                   |
+| Evaluator            | `@rovaulta/simulation-core`                                              | Pure deterministic rules that can run locally and inside the CRE callback                   |
 | Confidential compute | Chainlink CRE TypeScript SDK                                              | Provides the confidential workflow boundary for private envelope inputs                     |
 | Attestation          | Solidity, Foundry, viem, Ethereum Sepolia                                 | Stores public exact bindings without storing private facility data                          |
 | Human approval       | Ledger DMK, WebHID, Speculos test transport, Ethereum Signer Kit, EIP-712 | Keeps the release key on the device and makes the signed intent explicit                    |
@@ -273,20 +273,20 @@ bun install --frozen-lockfile
 bun run verify:scaffold
 bun run demo:setup
 # Bash/macOS/Linux:
-PREFLIGHT_ENABLE_DEMO_ROUTES=true bun run dev
+ROVAULTA_ENABLE_DEMO_ROUTES=true bun run dev
 # PowerShell:
-# $env:PREFLIGHT_ENABLE_DEMO_ROUTES="true"; bun run dev
+# $env:ROVAULTA_ENABLE_DEMO_ROUTES="true"; bun run dev
 ```
 
 Open <http://localhost:3000/dev-fixtures/evaluate> for the explicit fixture route. In another terminal:
 
 ```bash
-bun run demo:reset       # removes only .data/preflight-demo; safe to repeat
+bun run demo:reset       # removes only .data/rovaulta-demo; safe to repeat
 bun run demo:run         # repeats the public A/B/C trace
 bun run demo:rehearse   # runs the focused Playwright judge flow
 ```
 
-`bun run demo:setup` creates only ignored state under `.data/preflight-demo`. It never resets source
+`bun run demo:setup` creates only ignored state under `.data/rovaulta-demo`. It never resets source
 fixtures, deployment artifacts, evidence, environment files, or the normal release database.
 
 ### Start the normal account-backed services
@@ -311,14 +311,14 @@ envelope blinds, signatures, or confidential CRE payloads.
 | Variable                           | Used for                                                 |
 | ---------------------------------- | -------------------------------------------------------- |
 | `EVM_RPC_URL` or `SEPOLIA_RPC_URL` | Read-only Sepolia registry access                        |
-| `PREFLIGHT_AUTHORIZED_SIGNERS`     | Public Ledger signer allowlist                           |
-| `PREFLIGHT_RELEASE_DB_PATH`        | SQLite release/nonce state                               |
-| `PREFLIGHT_APP_DB_PATH`             | SQLite account/site/build/evaluation state               |
-| `PREFLIGHT_POLICY_ENCRYPTION_KEY`   | 32-byte hex key for encrypted site policies              |
-| `PREFLIGHT_POLICY_KEY_PATH`         | Local ignored key-file fallback when the key is unset    |
+| `ROVAULTA_AUTHORIZED_SIGNERS`     | Public Ledger signer allowlist                           |
+| `ROVAULTA_RELEASE_DB_PATH`        | SQLite release/nonce state                               |
+| `ROVAULTA_APP_DB_PATH`             | SQLite account/site/build/evaluation state               |
+| `ROVAULTA_POLICY_ENCRYPTION_KEY`   | 32-byte hex key for encrypted site policies              |
+| `ROVAULTA_POLICY_KEY_PATH`         | Local ignored key-file fallback when the key is unset    |
 | `OPENAI_API_KEY`                   | Optional real Responses API provider                     |
-| `PREFLIGHT_AGENT_MODEL`            | Explicit provider model name                             |
-| `PREFLIGHT_AGENT_CATALOG_PATH`     | Public deployment catalog path                           |
+| `ROVAULTA_AGENT_MODEL`            | Explicit provider model name                             |
+| `ROVAULTA_AGENT_CATALOG_PATH`     | Public deployment catalog path                           |
 | `NEXT_PUBLIC_LEDGER_TRANSPORT`     | `webhid` by default; `speculos` only in development/test |
 | `NEXT_PUBLIC_LEDGER_ORIGIN_TOKEN`  | Partner-issued signing-origin token, when available      |
 
@@ -396,7 +396,7 @@ packages/simulation-core/  Pure deterministic warehouse evaluator
 packages/chain-client/     Sepolia registry reads and EIP-712 verification
 packages/ledger-gate/      Browser Ledger DMK/WebHID/Speculos boundary
 integrations/chainlink-cre CRE workflow and confidential handler
-contracts/                 Foundry PreflightRegistry and deployment artifacts
+contracts/                 Foundry RovaultaRegistry and deployment artifacts
 scripts/                   Demo rehearsal and scaffold verification commands
 docs/                      Planning, architecture, partner, compliance, and AI-use records
 tests/e2e/                 P6/P7 regression flows plus the P8 landing/onboarding smoke path
@@ -450,7 +450,7 @@ rules onchain as part of these improvements.
 
 ## Team, credits, and license
 
-Preflight is an independent ETHGlobal From Scratch project. The repository records its AI-assisted
+Rovaulta is an independent ETHGlobal From Scratch project. The repository records its AI-assisted
 development and evidence process in [`docs/ai/AI_USAGE.md`](docs/ai/AI_USAGE.md). Chainlink CRE and
 Ledger are used through their documented SDKs and hardware/application boundaries; their names and
 marks remain the property of their respective owners.

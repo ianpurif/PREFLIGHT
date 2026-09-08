@@ -16,7 +16,7 @@ import {
   parseSafetyEnvelopeId,
   parseSiteId,
   parseUnixTimestamp,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 
 const inputs = {
   schemaVersion: EVALUATION_INPUTS_SCHEMA_VERSION,

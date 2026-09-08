@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { type ProtocolError, parseSha256Digest } from "@preflight/domain";
+import { type ProtocolError, parseSha256Digest } from "@rovaulta/domain";
 import {
   CONFIDENTIAL_EVALUATION_ENVELOPE_VERSION,
   createDeterministicDemoFixture,
@@ -35,7 +35,7 @@ describe("fixed-unit and model validation", () => {
     expectProtocolCode(
       () =>
         parseScenarioGenerationConfig({
-          generatorVersion: "preflight.xorshift32-scenarios/v1",
+          generatorVersion: "rovaulta.xorshift32-scenarios/v1",
           seed,
           templates: [
             {
@@ -51,7 +51,7 @@ describe("fixed-unit and model validation", () => {
 
   test("rejects duplicate scenario IDs and out-of-range payload variation", () => {
     const base = {
-      generatorVersion: "preflight.xorshift32-scenarios/v1",
+      generatorVersion: "rovaulta.xorshift32-scenarios/v1",
       seed: 1,
       templates: [{ scenarioId: "scenario:one", basePayloadGrams: 10, payloadVariationGrams: 0 }],
     };
@@ -168,7 +168,7 @@ describe("fixed-unit and model validation", () => {
       () =>
         parseConfidentialEvaluationEnvelope({
           ...envelope,
-          schemaVersion: "preflight.confidential-evaluation-envelope/v2",
+          schemaVersion: "rovaulta.confidential-evaluation-envelope/v2",
         }),
       "UNSUPPORTED_VERSION",
     );

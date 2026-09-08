@@ -10,9 +10,9 @@ export default defineConfig({
       env: {
         PORT: "43100",
         NODE_ENV: "test",
-        PREFLIGHT_APP_DB_PATH: ".data/preflight-e2e.sqlite",
-        PREFLIGHT_POLICY_KEY_PATH: ".data/preflight-e2e.key",
-        PREFLIGHT_ENABLE_DEMO_ROUTES: "true",
+        ROVAULTA_APP_DB_PATH: ".data/rovaulta-e2e.sqlite",
+        ROVAULTA_POLICY_KEY_PATH: ".data/rovaulta-e2e.key",
+        ROVAULTA_ENABLE_DEMO_ROUTES: "true",
         EVM_RPC_URL: "",
         SEPOLIA_RPC_URL: "",
       },
@@ -26,7 +26,7 @@ export default defineConfig({
       env: {
         NEXT_PUBLIC_P6_SIGNER_ADDRESS: "0x0000000000000000000000000000000000000001",
         NEXT_PUBLIC_API_ORIGIN: "http://localhost:43100",
-        PREFLIGHT_ENABLE_DEMO_ROUTES: "true",
+        ROVAULTA_ENABLE_DEMO_ROUTES: "true",
       },
       reuseExistingServer: false,
     },

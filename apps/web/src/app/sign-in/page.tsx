@@ -2,8 +2,8 @@ import { Suspense } from "react";
 import { AccountEntry } from "../onboarding-flow";
 
 export const metadata = {
-  title: "Sign in — Preflight",
-  description: "Sign in to your Preflight deployment workspace.",
+  title: "Sign in — Rovaulta",
+  description: "Sign in to your Rovaulta deployment workspace.",
 };
 
 export default function SignInPage() {

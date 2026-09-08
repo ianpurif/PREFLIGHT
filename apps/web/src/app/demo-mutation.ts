@@ -2,7 +2,7 @@ import {
   digestRobotBuild,
   parseRobotBuildDescriptor,
   type RobotBuildDescriptor,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 import type { DemoPublicBuild } from "./demo-data";
 
 export type MutatedDemoBuild = Omit<DemoPublicBuild, "version" | "descriptor"> & {

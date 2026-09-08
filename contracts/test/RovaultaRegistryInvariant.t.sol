@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import { PreflightRegistry } from "../src/PreflightRegistry.sol";
+import { RovaultaRegistry } from "../src/RovaultaRegistry.sol";
 import { TestBase } from "./TestBase.sol";
 
 contract RegistryHandler {
-    PreflightRegistry public immutable registry;
+    RovaultaRegistry public immutable registry;
     bytes32[] private recordedDigests;
     mapping(bytes32 digest => bool revoked) public everRevoked;
 
@@ -19,16 +19,16 @@ contract RegistryHandler {
     uint256 public overwriteUnexpectedFailure;
     bytes32 public protectedDigest;
 
-    constructor(PreflightRegistry target) {
+    constructor(RovaultaRegistry target) {
         registry = target;
     }
 
     function record(uint256 seed, uint32 lifetimeSeed) public {
         if (recordedDigests.length >= 32) return;
         uint64 lifetime = uint64(uint256(lifetimeSeed) % 2_592_000) + 1;
-        PreflightRegistry.ClearanceInput memory input = _input(seed, lifetime);
+        RovaultaRegistry.ClearanceInput memory input = _input(seed, lifetime);
         (bool success,) =
-            address(registry).call(abi.encodeCall(PreflightRegistry.recordClearance, (input)));
+            address(registry).call(abi.encodeCall(RovaultaRegistry.recordClearance, (input)));
         if (success) {
             recordedDigests.push(input.clearanceDigest);
             ++successfulRecords;
@@ -37,9 +37,9 @@ contract RegistryHandler {
 
     function recordLongLived(uint256 seed) public {
         if (recordedDigests.length >= 32) return;
-        PreflightRegistry.ClearanceInput memory input = _input(seed, 315_360_000);
+        RovaultaRegistry.ClearanceInput memory input = _input(seed, 315_360_000);
         (bool success,) =
-            address(registry).call(abi.encodeCall(PreflightRegistry.recordClearance, (input)));
+            address(registry).call(abi.encodeCall(RovaultaRegistry.recordClearance, (input)));
         if (success) {
             recordedDigests.push(input.clearanceDigest);
             if (protectedDigest == bytes32(0)) protectedDigest = input.clearanceDigest;
@@ -53,7 +53,7 @@ contract RegistryHandler {
         bytes32 digest = recordedDigests[seed % length];
         if (digest == protectedDigest) return;
         (bool success,) =
-            address(registry).call(abi.encodeCall(PreflightRegistry.revokeClearance, (digest)));
+            address(registry).call(abi.encodeCall(RovaultaRegistry.revokeClearance, (digest)));
         if (success) {
             everRevoked[digest] = true;
             ++successfulRevocations;
@@ -67,14 +67,14 @@ contract RegistryHandler {
     }
 
     function attemptNonClear(uint256 seed, bool reject) public {
-        PreflightRegistry.ClearanceInput memory input = _input(seed, 86_400);
+        RovaultaRegistry.ClearanceInput memory input = _input(seed, 86_400);
         input.verdict = reject ? bytes32("REJECT") : bytes32("HOLD");
         ++nonClearAttempts;
         (bool success, bytes memory revertData) =
-            address(registry).call(abi.encodeCall(PreflightRegistry.recordClearance, (input)));
+            address(registry).call(abi.encodeCall(RovaultaRegistry.recordClearance, (input)));
         if (success) {
             ++nonClearAccepted;
-        } else if (_selector(revertData) != PreflightRegistry.UnsupportedVerdict.selector) {
+        } else if (_selector(revertData) != RovaultaRegistry.UnsupportedVerdict.selector) {
             ++nonClearUnexpectedFailure;
         }
     }
@@ -83,14 +83,14 @@ contract RegistryHandler {
         uint256 length = recordedDigests.length;
         if (length == 0) return;
         bytes32 digest = recordedDigests[seed % length];
-        PreflightRegistry.ClearanceInput memory input = _input(seed ^ type(uint256).max, 86_400);
+        RovaultaRegistry.ClearanceInput memory input = _input(seed ^ type(uint256).max, 86_400);
         input.clearanceDigest = digest;
         ++overwriteAttempts;
         (bool success, bytes memory revertData) =
-            address(registry).call(abi.encodeCall(PreflightRegistry.recordClearance, (input)));
+            address(registry).call(abi.encodeCall(RovaultaRegistry.recordClearance, (input)));
         if (success) {
             ++overwriteAccepted;
-        } else if (_selector(revertData) != PreflightRegistry.ClearanceAlreadyExists.selector) {
+        } else if (_selector(revertData) != RovaultaRegistry.ClearanceAlreadyExists.selector) {
             ++overwriteUnexpectedFailure;
         }
     }
@@ -106,11 +106,11 @@ contract RegistryHandler {
     function _input(uint256 seed, uint64 lifetime)
         private
         view
-        returns (PreflightRegistry.ClearanceInput memory input)
+        returns (RovaultaRegistry.ClearanceInput memory input)
     {
-        bytes32 root = keccak256(abi.encode("preflight-invariant", seed));
+        bytes32 root = keccak256(abi.encode("rovaulta-invariant", seed));
         input.clearanceDigest = keccak256(abi.encode(root, "clearance-digest"));
-        input.bindings = PreflightRegistry.ClearanceBindings({
+        input.bindings = RovaultaRegistry.ClearanceBindings({
             clearanceIdHash: keccak256(abi.encode(root, "clearance-id")),
             evaluationIdHash: keccak256(abi.encode(root, "evaluation-id")),
             siteIdHash: keccak256(abi.encode(root, "site-id")),
@@ -139,7 +139,7 @@ interface VmHandler {
     function warp(uint256 newTimestamp) external;
 }
 
-contract PreflightRegistryInvariantTest is TestBase {
+contract RovaultaRegistryInvariantTest is TestBase {
     struct FuzzSelector {
         address addr;
         bytes4[] selectors;
@@ -155,14 +155,14 @@ contract PreflightRegistryInvariantTest is TestBase {
         string[] artifacts;
     }
 
-    PreflightRegistry private registry;
+    RovaultaRegistry private registry;
     RegistryHandler private handler;
     bytes32 private activeAnchor;
     address[] private invariantTargets;
 
     function setUp() public {
         vm.warp(1_800_000_000);
-        registry = new PreflightRegistry(address(this));
+        registry = new RovaultaRegistry(address(this));
         handler = new RegistryHandler(registry);
         registry.setRegistrar(address(handler), true);
 
@@ -214,7 +214,7 @@ contract PreflightRegistryInvariantTest is TestBase {
         uint256 length = handler.digestCount();
         for (uint256 index; index < length; ++index) {
             bytes32 digest = handler.digestAt(index);
-            PreflightRegistry.Clearance memory clearance = registry.getClearance(digest);
+            RovaultaRegistry.Clearance memory clearance = registry.getClearance(digest);
             assertEq(clearance.verdict, bytes32("CLEAR"));
             if (handler.everRevoked(digest) || block.timestamp >= clearance.bindings.expiresAt) {
                 assertFalse(registry.isClearanceValid(digest));
@@ -226,7 +226,7 @@ contract PreflightRegistryInvariantTest is TestBase {
         uint256 length = handler.digestCount();
         for (uint256 index; index < length; ++index) {
             bytes32 digest = handler.digestAt(index);
-            PreflightRegistry.Clearance memory clearance = registry.getClearance(digest);
+            RovaultaRegistry.Clearance memory clearance = registry.getClearance(digest);
             clearance.bindings.robotBuildDigest ^= bytes32(uint256(1));
             assertFalse(registry.isClearanceValidFor(digest, clearance.bindings));
         }

@@ -4,7 +4,7 @@ import {
   digestDeploymentIntent,
   PROTOCOL_VERSION,
   parseDeploymentIntent,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 import {
   type Address,
   getAddress,
@@ -15,14 +15,14 @@ import {
   recoverTypedDataAddress,
 } from "viem";
 import {
-  PREFLIGHT_EIP712_NAME,
-  PREFLIGHT_EIP712_VERSION,
-  PREFLIGHT_SEPOLIA_DEPLOYMENT,
+  ROVAULTA_EIP712_NAME,
+  ROVAULTA_EIP712_VERSION,
+  ROVAULTA_SEPOLIA_DEPLOYMENT,
 } from "./deployment";
 import { failRelease } from "./errors";
 import { protocolDigestToBytes32 } from "./transport";
 
-export const PREFLIGHT_DEPLOYMENT_INTENT_TYPES = Object.freeze({
+export const ROVAULTA_DEPLOYMENT_INTENT_TYPES = Object.freeze({
   DeploymentIntent: Object.freeze([
     Object.freeze({ name: "protocolVersion", type: "string" }),
     Object.freeze({ name: "schemaVersion", type: "string" }),
@@ -44,12 +44,12 @@ export const PREFLIGHT_DEPLOYMENT_INTENT_TYPES = Object.freeze({
 
 export interface PreparedDeploymentTypedData {
   readonly domain: {
-    readonly name: typeof PREFLIGHT_EIP712_NAME;
-    readonly version: typeof PREFLIGHT_EIP712_VERSION;
+    readonly name: typeof ROVAULTA_EIP712_NAME;
+    readonly version: typeof ROVAULTA_EIP712_VERSION;
     readonly chainId: 11_155_111;
     readonly verifyingContract: Address;
   };
-  readonly types: typeof PREFLIGHT_DEPLOYMENT_INTENT_TYPES;
+  readonly types: typeof ROVAULTA_DEPLOYMENT_INTENT_TYPES;
   readonly primaryType: "DeploymentIntent";
   readonly message: {
     readonly protocolVersion: typeof PROTOCOL_VERSION;
@@ -92,12 +92,12 @@ export function buildDeploymentTypedData(
   const protocolIntentDigest = digestDeploymentIntent(intent);
   const typedData: PreparedDeploymentTypedData = Object.freeze({
     domain: Object.freeze({
-      name: PREFLIGHT_EIP712_NAME,
-      version: PREFLIGHT_EIP712_VERSION,
-      chainId: PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId,
-      verifyingContract: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
+      name: ROVAULTA_EIP712_NAME,
+      version: ROVAULTA_EIP712_VERSION,
+      chainId: ROVAULTA_SEPOLIA_DEPLOYMENT.chainId,
+      verifyingContract: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
     }),
-    types: PREFLIGHT_DEPLOYMENT_INTENT_TYPES,
+    types: ROVAULTA_DEPLOYMENT_INTENT_TYPES,
     primaryType: "DeploymentIntent",
     message: Object.freeze({
       protocolVersion: PROTOCOL_VERSION,

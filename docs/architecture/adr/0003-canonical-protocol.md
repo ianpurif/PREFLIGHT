@@ -1,10 +1,10 @@
-# ADR-0003: Preflight Canonical Protocol v1
+# ADR-0003: Rovaulta Canonical Protocol v1
 
 **Status:** Accepted for P1
 
 ## Decision
 
-The shared protocol lives in `@preflight/domain` and uses exact versioned schemas, separately branded identifiers/digests, Preflight Canonical JSON v1, and SHA-256 with versioned domain separation.
+The shared protocol lives in `@rovaulta/domain` and uses exact versioned schemas, separately branded identifiers/digests, Rovaulta Canonical JSON v1, and SHA-256 with versioned domain separation.
 
 ## Identifier format
 
@@ -24,12 +24,12 @@ Prefixes are validated at runtime and types are separately branded at compile ti
 
 ## Schema version strategy
 
-- Global protocol version: `preflight.protocol/v1`.
-- Every wire object has an exact schema literal such as `preflight.evaluation-request/v1`.
+- Global protocol version: `rovaulta.protocol/v1`.
+- Every wire object has an exact schema literal such as `rovaulta.evaluation-request/v1`.
 - Parsers reject unknown fields and unsupported versions instead of silently dropping data.
 - A schema change that alters canonical meaning requires a new schema literal and, when digest framing changes, a new digest domain/version.
 
-## Preflight Canonical JSON v1
+## Rovaulta Canonical JSON v1
 
 Canonical input is limited to:
 
@@ -39,7 +39,7 @@ Canonical input is limited to:
 
 Object keys are sorted using ECMAScript UTF-16 code-unit ordering. JSON string escaping is used with no insignificant whitespace, then the result is encoded as UTF-8. Canonicalization rejects fractions, unsafe integers, non-finite numbers, `undefined`, bigint, functions, symbols, sparse/custom arrays, symbol/hidden/accessor properties, custom prototypes, typed objects, cycles, lone surrogates, and non-NFC strings. Values are capped at 64 levels and 10,000 nodes so failures remain explicit rather than becoming runtime stack/resource failures.
 
-This is a Preflight-specific format; it is not claimed to implement RFC 8785.
+This is a Rovaulta-specific format; it is not claimed to implement RFC 8785.
 
 ## Digest strategy
 

@@ -1,6 +1,6 @@
 # Ledger developer-experience feedback
 
-**Context:** Preflight P5/P5.1, DMK/WebHID production path plus Ledger Speculos official device
+**Context:** Rovaulta P5/P5.1, DMK/WebHID production path plus Ledger Speculos official device
 simulator test path, September 2026. This is implementation feedback, not a claim of partner
 acceptance.
 
@@ -8,7 +8,7 @@ acceptance.
 
 - The Ledger Agent Stack/DMK direction keeps device ownership in the browser and makes the transport
   boundary explicit. The same Ethereum Device Signer Kit can run over WebHID or Speculos without
-  changing Preflight's EIP-712, signer-recovery, registry-recheck, or replay semantics.
+  changing Rovaulta's EIP-712, signer-recovery, registry-recheck, or replay semantics.
 - `DeviceManagementKitBuilder`, transport factories, and the observable device-action states made it
   possible to detect and reject `SIGN_TYPED_DATA_LEGACY` rather than silently accepting a fallback.
 - `@ledgerhq/device-transport-kit-speculos` connected cleanly to Speculos over HTTP, and
@@ -69,14 +69,14 @@ acceptance.
 7. Provide a single WebHID ↔ Speculos transport-switch example showing that application signing and
    post-sign verification code remain shared.
 
-## Preflight-specific status
+## Rovaulta-specific status
 
 The DMK Speculos transport and actual Ethereum `1.22.3` Nano S Plus app reached address review and
 confirmation. The v2 descriptor passes `erc7730 1.0.7` with no issues. The structured display and
-P5 A/B/E/F evidence remain blocked: the Tester lacks an official `GATING_TOKEN`, and Preflight
+P5 A/B/E/F evidence remain blocked: the Tester lacks an official `GATING_TOKEN`, and Rovaulta
 separately lacks an application origin token plus accepted/served descriptor path that returns the
 signature. Real pre-sign C and invalid/unregistered D denials passed; revoked/expired D remain
-test-only. Preflight did not use the implicit test token or permit blind signing. Physical Ledger
+test-only. Rovaulta did not use the implicit test token or permit blind signing. Physical Ledger
 execution remains unperformed.
 
 ## P5.2 agent-boundary observation
@@ -86,5 +86,5 @@ capability: the agent prepares through deterministic API tools, then the existin
 owns the explicit user gesture and signing session. This makes Ledger materially load-bearing and
 avoids backend key custody. A concise official reference architecture showing “agent proposes →
 deterministic application policy → DMK browser handoff → verified result” would help teams avoid
-exposing signing as a general model tool. Preflight did not use Key Ring and did not execute an
+exposing signing as a general model tool. Rovaulta did not use Key Ring and did not execute an
 official Ledger Agent Skill; those should not be implied by using DMK itself.

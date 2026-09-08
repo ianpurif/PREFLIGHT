@@ -1,7 +1,7 @@
-import type { ClearanceRecord } from "@preflight/domain";
+import type { ClearanceRecord } from "@rovaulta/domain";
 import type { PreparedReleaseRequest, ReleaseAuthorization } from "../release/index.js";
 
-export const DEPLOYMENT_AGENT_AUDIT_SCHEMA_VERSION = "preflight.deployment-agent-audit/v1" as const;
+export const DEPLOYMENT_AGENT_AUDIT_SCHEMA_VERSION = "rovaulta.deployment-agent-audit/v1" as const;
 
 export const DEPLOYMENT_AGENT_TOOL_NAMES = Object.freeze([
   "resolveDeploymentTarget",

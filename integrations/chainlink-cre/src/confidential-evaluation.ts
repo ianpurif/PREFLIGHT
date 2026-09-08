@@ -1,6 +1,6 @@
 import type { TeeRuntime } from "@chainlink/cre-sdk";
-import { ProtocolError } from "@preflight/domain";
-import { evaluateSimulation } from "@preflight/simulation-core";
+import { ProtocolError } from "@rovaulta/domain";
+import { evaluateSimulation } from "@rovaulta/simulation-core";
 import {
   CONFIDENTIAL_INPUT_SECRET_ID,
   CRE_PUBLIC_RESULT_VERSION,

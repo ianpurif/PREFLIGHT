@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { canonicalSerialize } from "@preflight/domain";
-import { evaluateSimulation } from "@preflight/simulation-core";
+import { canonicalSerialize } from "@rovaulta/domain";
+import { evaluateSimulation } from "@rovaulta/simulation-core";
 import { evaluateInTee } from "../src/confidential-evaluation.js";
 import {
   CRE_PUBLIC_ERROR_VERSION,
@@ -72,7 +72,7 @@ describe("confidential evaluation", () => {
     const wrongBlind = makeConfidentialSecret(undefined, "ff".repeat(32));
     expect(evaluate(fixture.unsafeFixtureBuild, wrongBlind)).toEqual({
       schemaVersion: CRE_PUBLIC_ERROR_VERSION,
-      protocolVersion: "preflight.protocol/v1",
+      protocolVersion: "rovaulta.protocol/v1",
       status: "REJECT",
       code: "CONFIDENTIAL_EVALUATION_REJECTED",
     });
@@ -83,7 +83,7 @@ describe("confidential evaluation", () => {
     (speedRule as unknown as { maximumMmPerSecond: number }).maximumMmPerSecond += 1;
     expect(evaluate(fixture.unsafeFixtureBuild, makeConfidentialSecret(changedEnvelope))).toEqual({
       schemaVersion: CRE_PUBLIC_ERROR_VERSION,
-      protocolVersion: "preflight.protocol/v1",
+      protocolVersion: "rovaulta.protocol/v1",
       status: "REJECT",
       code: "CONFIDENTIAL_EVALUATION_REJECTED",
     });
@@ -160,7 +160,7 @@ describe("confidential evaluation", () => {
         }),
       ).toEqual({
         schemaVersion: CRE_PUBLIC_ERROR_VERSION,
-        protocolVersion: "preflight.protocol/v1",
+        protocolVersion: "rovaulta.protocol/v1",
         status: "REJECT",
         code: "CONFIDENTIAL_EVALUATION_REJECTED",
       });
@@ -207,7 +207,7 @@ describe("confidential evaluation", () => {
     const response = evaluate(fixture.unsafeFixtureBuild, malformedSecret);
     expect(response).toEqual({
       schemaVersion: CRE_PUBLIC_ERROR_VERSION,
-      protocolVersion: "preflight.protocol/v1",
+      protocolVersion: "rovaulta.protocol/v1",
       status: "REJECT",
       code: "MALFORMED_CONFIDENTIAL_INPUT",
     } satisfies CrePublicEvaluationFailure);

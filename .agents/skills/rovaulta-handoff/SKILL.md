@@ -1,6 +1,6 @@
 ---
-name: preflight-handoff
-description: Produce a durable handoff after a Preflight coding session so a later Codex run can continue without rereading the whole history. Use at the end of substantial implementation sessions.
+name: rovaulta-handoff
+description: Produce a durable handoff after a Rovaulta coding session so a later Codex run can continue without rereading the whole history. Use at the end of substantial implementation sessions.
 ---
 
 # Handoff

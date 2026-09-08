@@ -41,7 +41,7 @@ export function EvidenceView({ demo }: { readonly demo: DemoPublicData }) {
           <p className="view-eyebrow">Technical evidence</p>
           <h1>Proof that supports the decision.</h1>
           <p className="view-lede">
-            These records explain how Preflight protects the boundaries around evaluation,
+            These records explain how Rovaulta protects the boundaries around evaluation,
             attestation, and human approval. They are evidence—not extra authority.
           </p>
         </div>
@@ -111,7 +111,7 @@ export function EvidenceView({ demo }: { readonly demo: DemoPublicData }) {
           </details>
           <a
             className="evidence-source-link"
-            href="https://github.com/ianpurif/PREFLIGHT/blob/main/docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md"
+            href="https://github.com/ianpurif/ROVAULTA/blob/main/docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md"
             target="_blank"
             rel="noreferrer"
           >
@@ -168,7 +168,7 @@ export function EvidenceView({ demo }: { readonly demo: DemoPublicData }) {
             <span className="evidence-detail-pill tone-amber-pill">Hardware gate</span>
           </div>
           <p>
-            Preflight stops at <code>LEDGER_APPROVAL_REQUIRED</code> until the operator reviews the
+            Rovaulta stops at <code>LEDGER_APPROVAL_REQUIRED</code> until the operator reviews the
             exact EIP-712 intent on device. The browser cannot turn a clear result into
             authorization.
           </p>

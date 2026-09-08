@@ -12,26 +12,26 @@ import {
   type RobotBuildDescriptor,
   type Sha256Digest,
   type UnixTimestamp,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 import {
   type ConfidentialEvaluationEnvelope,
   parseConfidentialEvaluationEnvelope,
   parseRobotBehaviorTraceSuite,
   type RobotBehaviorTraceSuite,
   WAREHOUSE_EVALUATOR_VERSION,
-} from "@preflight/simulation-core";
+} from "@rovaulta/simulation-core";
 
-export const CRE_PUBLIC_REQUEST_VERSION = "preflight.cre-public-evaluation-request/v1" as const;
+export const CRE_PUBLIC_REQUEST_VERSION = "rovaulta.cre-public-evaluation-request/v1" as const;
 export const CRE_CONFIDENTIAL_INPUT_VERSION =
-  "preflight.cre-confidential-evaluation-input/v1" as const;
-export const CRE_PUBLIC_RESULT_VERSION = "preflight.cre-public-evaluation-result/v1" as const;
-export const CRE_PUBLIC_ERROR_VERSION = "preflight.cre-public-evaluation-error/v1" as const;
+  "rovaulta.cre-confidential-evaluation-input/v1" as const;
+export const CRE_PUBLIC_RESULT_VERSION = "rovaulta.cre-public-evaluation-result/v1" as const;
+export const CRE_PUBLIC_ERROR_VERSION = "rovaulta.cre-public-evaluation-error/v1" as const;
 export const SYNTHETIC_TRACE_PROVENANCE = "SYNTHETIC_CALLER_SUPPLIED" as const;
-export const CONFIDENTIAL_INPUT_SECRET_ID = "PREFLIGHT_CONFIDENTIAL_EVALUATION_INPUT" as const;
+export const CONFIDENTIAL_INPUT_SECRET_ID = "ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT" as const;
 export const MAX_PUBLIC_PAYLOAD_BYTES = 128 * 1024;
 export const MAX_CONFIDENTIAL_PAYLOAD_BYTES = 2 * 1024;
 
-const BEHAVIOR_INPUT_DIGEST_DOMAIN = "preflight.digest.cre-behavior-input/v1" as const;
+const BEHAVIOR_INPUT_DIGEST_DOMAIN = "rovaulta.digest.cre-behavior-input/v1" as const;
 
 export type CrePublicFailureCode =
   | "MALFORMED_PUBLIC_INPUT"

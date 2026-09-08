@@ -1,4 +1,4 @@
-# Product Brief — Preflight
+# Product Brief — Rovaulta
 
 ## One-line concept
 A confidential deployment gate for autonomous warehouse robots: prove that an exact robot software build passes a factory's private evaluation rules before a human is physically allowed to authorize that exact build for deployment.

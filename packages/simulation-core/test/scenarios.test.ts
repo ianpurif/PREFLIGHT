@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { canonicalSerialize } from "@preflight/domain";
+import { canonicalSerialize } from "@rovaulta/domain";
 import {
   createDeterministicDemoFixture,
   generateScenarioSuite,
@@ -16,8 +16,8 @@ describe("xorshift32 scenario generation", () => {
 
   test("locks the demo suite content and order", () => {
     expect(JSON.parse(JSON.stringify(createDeterministicDemoFixture().scenarioSuite))).toEqual({
-      schemaVersion: "preflight.scenario-suite/v1",
-      generatorVersion: "preflight.xorshift32-scenarios/v1",
+      schemaVersion: "rovaulta.scenario-suite/v1",
+      generatorVersion: "rovaulta.xorshift32-scenarios/v1",
       seed: 1_592_594_996,
       scenarios: [
         { scenarioId: "scenario:restricted-route", payloadGrams: 19_567 },

@@ -1,5 +1,5 @@
 {
-  "name": "@preflight/chain-client",
+  "name": "@rovaulta/chain-client",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@preflight/domain": "workspace:*",
+    "@rovaulta/domain": "workspace:*",
     "viem": "2.56.3"
   },
   "devDependencies": {

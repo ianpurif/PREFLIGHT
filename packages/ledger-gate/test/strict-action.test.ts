@@ -13,9 +13,9 @@ import {
 } from "@ledgerhq/device-signer-kit-ethereum";
 import {
   buildDeploymentTypedData,
-  PREFLIGHT_DEPLOYMENT_INTENT_TYPES,
-  PREFLIGHT_SEPOLIA_DEPLOYMENT,
-} from "@preflight/chain-client";
+  ROVAULTA_DEPLOYMENT_INTENT_TYPES,
+  ROVAULTA_SEPOLIA_DEPLOYMENT,
+} from "@rovaulta/chain-client";
 import {
   CLEARANCE_RECORD_SCHEMA_VERSION,
   createDeploymentIntent,
@@ -33,9 +33,9 @@ import {
   parseSafetyEnvelopeId,
   parseSiteId,
   parseUnixTimestamp,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 import { Observable, of } from "rxjs";
-import clearSigningDescriptor from "../clear-signing/eip712-preflight-deployment-intent.json";
+import clearSigningDescriptor from "../clear-signing/eip712-rovaulta-deployment-intent.json";
 import { GuardedClearSigningContext } from "../src/clear-signing-context.js";
 import {
   createLedgerTransportRuntime,
@@ -436,23 +436,23 @@ describe("Ledger Clear Signing descriptor candidate", () => {
 
   test("matches the exact EIP-712 domain, schema, and required display fields", () => {
     expect(clearSigningDescriptor.context.eip712.domain).toEqual({
-      name: "Preflight",
+      name: "Rovaulta",
       version: "1",
     });
     expect(clearSigningDescriptor.context.eip712.deployments).toEqual([
       {
-        chainId: PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId,
-        address: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
+        chainId: ROVAULTA_SEPOLIA_DEPLOYMENT.chainId,
+        address: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
       },
     ]);
-    const encodeType = `DeploymentIntent(${PREFLIGHT_DEPLOYMENT_INTENT_TYPES.DeploymentIntent.map(
+    const encodeType = `DeploymentIntent(${ROVAULTA_DEPLOYMENT_INTENT_TYPES.DeploymentIntent.map(
       (field) => `${field.type} ${field.name}`,
     ).join(",")})`;
     expect(Object.keys(clearSigningDescriptor.display.formats)).toEqual([encodeType]);
     const format = Object.values(clearSigningDescriptor.display.formats)[0];
     expect(format).toBeDefined();
     expect(format?.fields.map((field) => field.path)).toEqual(
-      PREFLIGHT_DEPLOYMENT_INTENT_TYPES.DeploymentIntent.map((field) => field.name),
+      ROVAULTA_DEPLOYMENT_INTENT_TYPES.DeploymentIntent.map((field) => field.name),
     );
     expect(format?.fields.every((field) => field.visible === "always")).toBe(true);
   });
@@ -492,11 +492,11 @@ describe("Ledger Clear Signing descriptor candidate", () => {
   });
 
   test("resolves only an exact runtime descriptor with all display filters", async () => {
-    const paths = PREFLIGHT_DEPLOYMENT_INTENT_TYPES.DeploymentIntent.map((field) => field.name);
+    const paths = ROVAULTA_DEPLOYMENT_INTENT_TYPES.DeploymentIntent.map((field) => field.name);
     const success: Extract<TypedDataClearSignContext, { type: "success" }> = {
       type: "success",
       messageInfo: {
-        displayName: "Preflight deployment",
+        displayName: "Rovaulta deployment",
         filtersCount: paths.length,
         signature: "00",
       },
@@ -509,11 +509,11 @@ describe("Ledger Clear Signing descriptor candidate", () => {
     };
     const context = {
       deviceModelId: "nanoSPlus",
-      verifyingContract: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
-      chainId: PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId,
+      verifyingContract: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
+      chainId: ROVAULTA_SEPOLIA_DEPLOYMENT.chainId,
       version: "v1",
       schema: {
-        DeploymentIntent: PREFLIGHT_DEPLOYMENT_INTENT_TYPES.DeploymentIntent.map((field) => ({
+        DeploymentIntent: ROVAULTA_DEPLOYMENT_INTENT_TYPES.DeploymentIntent.map((field) => ({
           ...field,
         })),
       },

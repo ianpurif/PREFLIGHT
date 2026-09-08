@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ReleaseGateError } from "@preflight/chain-client";
+import { ReleaseGateError } from "@rovaulta/chain-client";
 import { SqliteReleaseStore } from "../src/release/index.js";
 
 const row = {
@@ -19,7 +19,7 @@ const row = {
 
 describe("durable atomic nonce store", () => {
   test("consumption survives close/reopen and cannot be repeated", () => {
-    const directory = mkdtempSync(join(tmpdir(), "preflight-p5-"));
+    const directory = mkdtempSync(join(tmpdir(), "rovaulta-p5-"));
     const path = join(directory, "release.sqlite");
     try {
       const first = new SqliteReleaseStore(path);

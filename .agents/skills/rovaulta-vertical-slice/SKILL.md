@@ -1,6 +1,6 @@
 ---
-name: preflight-vertical-slice
-description: Implement one end-to-end Preflight capability without overbuilding. Use when a task should cross domain, integration, API, contract, and/or UI boundaries as one demonstrable slice.
+name: rovaulta-vertical-slice
+description: Implement one end-to-end Rovaulta capability without overbuilding. Use when a task should cross domain, integration, API, contract, and/or UI boundaries as one demonstrable slice.
 ---
 
 # Vertical Slice

@@ -23,13 +23,13 @@ bun run demo:run
 bun run demo:rehearse
 ```
 
-`demo:reset` removes only the ignored `.data/preflight-demo/` directory and is safe to repeat.
+`demo:reset` removes only the ignored `.data/rovaulta-demo/` directory and is safe to repeat.
 The public manifest and last-run trace are generated; no JSON fixture is manually edited.
 
 ## Fixed rehearsal identity
 
 - demo clock: `2026-09-07T10:00:00.000Z`
-- P2 evaluator: `@preflight/simulation-core` deterministic fixture
+- P2 evaluator: `@rovaulta/simulation-core` deterministic fixture
 - registry reader: fixed local snapshot, Sepolia-shaped metadata only
 - external calls: OpenAI **not used**; Sepolia **not used**; CRE **recorded evidence only**;
   Ledger/Speculos **not used**

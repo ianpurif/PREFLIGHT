@@ -142,14 +142,14 @@ export function JudgeDashboard({
   const [statusMessage, setStatusMessage] = useState(() =>
     initialSelection === "corrected"
       ? "Build B is loaded. This corrected build is clear, but human approval is still required."
-      : "Build A is loaded. Evaluate it to see why Preflight holds the release.",
+      : "Build A is loaded. Evaluate it to see why Rovaulta holds the release.",
   );
   const requestGeneration = useRef(0);
 
   useEffect(() => {
     // A prepared request is scoped to one explicit browser run. A fresh dashboard mount must
     // not resurrect an old handoff after reset, reload, or a different scenario.
-    window.sessionStorage.removeItem("preflight.p5.prepared");
+    window.sessionStorage.removeItem("rovaulta.p5.prepared");
   }, []);
   const mutatedBuild = useMemo(
     () => mutateBuildForDemo(demo.corrected.build),
@@ -178,7 +178,7 @@ export function JudgeDashboard({
 
   function invalidatePendingRequest() {
     requestGeneration.current += 1;
-    window.sessionStorage.removeItem("preflight.p5.prepared");
+    window.sessionStorage.removeItem("rovaulta.p5.prepared");
   }
 
   function selectBuild(next: Exclude<Selection, "mutated">) {
@@ -248,7 +248,7 @@ export function JudgeDashboard({
         return;
       }
       const preparedRecord = prepared as Record<string, unknown>;
-      window.sessionStorage.setItem("preflight.p5.prepared", JSON.stringify(preparedRecord));
+      window.sessionStorage.setItem("rovaulta.p5.prepared", JSON.stringify(preparedRecord));
       setAgent({
         phase: "prepared",
         message:

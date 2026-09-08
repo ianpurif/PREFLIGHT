@@ -1,4 +1,4 @@
-name = "preflight-explorer"
+name = "rovaulta-explorer"
 description = "Read-only explorer for locating code, dependencies, and change surfaces before implementation."
 sandbox_mode = "read-only"
 model_reasoning_effort = "medium"

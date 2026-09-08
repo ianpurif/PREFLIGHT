@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { parseDeploymentNonce, parseUnixTimestamp } from "@preflight/domain";
+import { parseDeploymentNonce, parseUnixTimestamp } from "@rovaulta/domain";
 import { hashTypedData } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import {
   assertDeploymentIntentSignature,
   buildDeploymentTypedData,
-  PREFLIGHT_DEPLOYMENT_INTENT_TYPES,
-  PREFLIGHT_SEPOLIA_DEPLOYMENT,
+  ROVAULTA_DEPLOYMENT_INTENT_TYPES,
+  ROVAULTA_SEPOLIA_DEPLOYMENT,
   ReleaseGateError,
   type ReleaseGateErrorCode,
 } from "../src/index.js";
@@ -31,13 +31,13 @@ describe("P5 EIP-712 deployment intent", () => {
   test("uses the exact deployed Sepolia domain and stable field order", () => {
     const request = buildDeploymentTypedData(intentFixture, fixtureAccount.address);
     expect(request.typedData.domain).toEqual({
-      name: "Preflight",
+      name: "Rovaulta",
       version: "1",
       chainId: 11_155_111,
       verifyingContract: "0xFB270cc222efa8B5005AA097dD512Be2558dde65",
     });
     expect(request.typedData.primaryType).toBe("DeploymentIntent");
-    expect(PREFLIGHT_DEPLOYMENT_INTENT_TYPES.DeploymentIntent.map(({ name }) => name)).toEqual([
+    expect(ROVAULTA_DEPLOYMENT_INTENT_TYPES.DeploymentIntent.map(({ name }) => name)).toEqual([
       "protocolVersion",
       "schemaVersion",
       "action",
@@ -56,7 +56,7 @@ describe("P5 EIP-712 deployment intent", () => {
     ]);
     expect(request.typedData.message.action).toBe("ACTIVATE_DEPLOYMENT");
     expect(request.typedDataDigest).toBe(
-      "0xb0db5c583e92e138345d2b1a9383cd9e4064e3002940923adb3a88a352faae58",
+      "0x946fb5f5f6b4996cefbc04a1a989dd2c2a55d12ceb08478e81a42bba1808e865",
     );
   });
 
@@ -154,7 +154,7 @@ describe("P5 EIP-712 deployment intent", () => {
     expect(() => buildDeploymentTypedData(intentFixture, "not-an-address")).toThrow(
       ReleaseGateError,
     );
-    expect(PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId).toBe(11_155_111);
+    expect(ROVAULTA_SEPOLIA_DEPLOYMENT.chainId).toBe(11_155_111);
   });
 
   test("signed expiry is immutable and protocol equality remains explicit", () => {

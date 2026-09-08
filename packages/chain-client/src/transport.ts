@@ -1,5 +1,5 @@
-import type { ClearanceRecord } from "@preflight/domain";
-import { digestClearance, parseClearanceRecord } from "@preflight/domain";
+import type { ClearanceRecord } from "@rovaulta/domain";
+import { digestClearance, parseClearanceRecord } from "@rovaulta/domain";
 import { type Hex, sha256, stringToHex, toBytes } from "viem";
 
 export const VERDICT_CLEAR_BYTES32 = stringToHex("CLEAR", { size: 32 });

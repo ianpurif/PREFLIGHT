@@ -3,7 +3,7 @@ import {
   assertEvaluationResultBindings,
   canonicalSerialize,
   ProtocolError,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 import {
   canonicalizeInternalEvaluationReport,
   createDeterministicDemoFixture,
@@ -138,7 +138,7 @@ describe("pure evaluation representation", () => {
   test("the unsafe fixture report matches its canonical golden digest", () => {
     const { input } = fixtureInput("unsafe");
     const fingerprint = fnv1a32(String(canonicalSerialize(evaluateSimulation(input))));
-    expect(fingerprint).toBe("47d968b2");
+    expect(fingerprint).toBe("9733285c");
   });
 
   test("wire-object key, rule, zone, template, and trace insertion order do not change output", () => {

@@ -28,12 +28,12 @@ export function LandingPage() {
     <main className="landing-page" id="main-content">
       <div className="landing-noise" aria-hidden="true" />
       <header className="landing-nav">
-        <Link className="brand-lockup" href="/" aria-label="Preflight home">
+        <Link className="brand-lockup" href="/" aria-label="Rovaulta home">
           <span className="brand-mark" aria-hidden="true">
             P
           </span>
           <span>
-            <strong>Preflight</strong>
+            <strong>Rovaulta</strong>
             <small>Deployment safety</small>
           </span>
         </Link>
@@ -59,7 +59,7 @@ export function LandingPage() {
             you <em>actually evaluated.</em>
           </h1>
           <p className="landing-lede">
-            Preflight checks an exact robot software build against a site&apos;s private evaluation
+            Rovaulta checks an exact robot software build against a site&apos;s private evaluation
             rules, then gives a human the final say before release.
           </p>
           <div className="landing-actions">
@@ -76,7 +76,7 @@ export function LandingPage() {
           </p>
         </div>
 
-        <div className="landing-hero-visual" role="img" aria-label="Preflight release flow preview">
+        <div className="landing-hero-visual" role="img" aria-label="Rovaulta release flow preview">
           <div className="hero-visual-topline">
             <span>RELEASE REVIEW</span>
             <span className="hero-visual-live">
@@ -161,7 +161,7 @@ export function LandingPage() {
           <p className="landing-eyebrow">A clear path to release</p>
           <h2 id="how-title">Safety evidence before a button can ship.</h2>
           <p>
-            Preflight keeps the operational question in focus: did this build pass this site&apos;s
+            Rovaulta keeps the operational question in focus: did this build pass this site&apos;s
             rules, and has the right person approved this exact release?
           </p>
         </div>
@@ -187,7 +187,7 @@ export function LandingPage() {
         </div>
         <div className="boundary-copy">
           <p>
-            Preflight can explain a result, prepare a release, and show the evidence behind it. It
+            Rovaulta can explain a result, prepare a release, and show the evidence behind it. It
             cannot see the private safety envelope, turn a hold into a clear, or sign on behalf of
             an operator.
           </p>
@@ -203,7 +203,7 @@ export function LandingPage() {
             P
           </span>
           <span>
-            <strong>Preflight</strong>
+            <strong>Rovaulta</strong>
             <small>Confidential deployment gate</small>
           </span>
         </div>

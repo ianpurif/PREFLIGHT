@@ -9,27 +9,27 @@ P3 must execute the unchanged deterministic P2 evaluator over a private site env
 
 ## Decision
 
-Use `@chainlink/cre-sdk` 1.19.1 with one authenticated HTTP trigger registered by the official `handlerInTee` API. Require Nitro in `us-west-2`. Fetch exactly `PREFLIGHT_CONFIDENTIAL_EVALUATION_INPUT` from the `main` secret namespace using a compile-time fixed selector, and make no ordinary capability calls from the handler.
+Use `@chainlink/cre-sdk` 1.19.1 with one authenticated HTTP trigger registered by the official `handlerInTee` API. Require Nitro in `us-west-2`. Fetch exactly `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT` from the `main` secret namespace using a compile-time fixed selector, and make no ordinary capability calls from the handler.
 
-The public request schema `preflight.cre-public-evaluation-request/v1` contains:
+The public request schema `rovaulta.cre-public-evaluation-request/v1` contains:
 
-- `preflight.protocol/v1`
+- `rovaulta.protocol/v1`
 - the exact P1 `EvaluationRequest`
 - exact P1 `RobotBuildDescriptor`
 - the supplied P2 `RobotBehaviorTraceSuite`
 - explicit `evaluatedAt`
 - `SYNTHETIC_CALLER_SUPPLIED` provenance
-- a `preflight.digest.cre-behavior-input/v1` SHA-256 digest
+- a `rovaulta.digest.cre-behavior-input/v1` SHA-256 digest
 
 The behavior digest uses P1 canonical UTF-8 bytes and covers the normalized wrapper version/protocol, request, build descriptor, full trace suite, provenance marker, and evaluation time. It is public-input integrity, not remote provenance.
 
 Scenario identifiers in the trace suite are public because P2 requires them to bind each trace to exact committed scenario coverage. The current synthetic demo uses readable identifiers, which disclose scenario taxonomy but no private geometry, thresholds, rule configuration, or blind. Production facilities should use opaque scenario identifiers when even that taxonomy is sensitive.
 
-One atomic confidential JSON secret uses schema `preflight.cre-confidential-evaluation-input/v1` and contains the validated full P2 `ConfidentialEvaluationEnvelope` plus exactly 32 blind bytes encoded as 64 lowercase hexadecimal characters. The handler caps this demo secret at 2 KiB before parsing.
+One atomic confidential JSON secret uses schema `rovaulta.cre-confidential-evaluation-input/v1` and contains the validated full P2 `ConfidentialEvaluationEnvelope` plus exactly 32 blind bytes encoded as 64 lowercase hexadecimal characters. The handler caps this demo secret at 2 KiB before parsing.
 
 Inside the TEE callback, strict parsing occurs before the existing `evaluateSimulation` call. P2 reconstructs and checks the blinded P1 safety-envelope commitment before generating/evaluating scenarios. The integration never duplicates rule or verdict logic.
 
-Success schema `preflight.cre-public-evaluation-result/v1` returns only:
+Success schema `rovaulta.cre-public-evaluation-result/v1` returns only:
 
 - protocol/schema version, so downstream consumers cannot confuse semantics
 - `status: EVALUATED`, separate from P1 verdicts
@@ -37,7 +37,7 @@ Success schema `preflight.cre-public-evaluation-result/v1` returns only:
 - the behavior-input digest, required to bind the response to the supplied synthetic behavior
 - the provenance marker, required to prevent stronger origin claims
 
-It omits counts, violations, scenario findings, geometry, rules, thresholds, blind, and private-evidence digests. Failure schema `preflight.cre-public-evaluation-error/v1` returns only protocol/schema version, `status: REJECT`, and a fixed broad code. The handler does not log, expose caught diagnostics, use a public/local fallback, or call `usingTheDons`/`reportFromDon`.
+It omits counts, violations, scenario findings, geometry, rules, thresholds, blind, and private-evidence digests. Failure schema `rovaulta.cre-public-evaluation-error/v1` returns only protocol/schema version, `status: REJECT`, and a fixed broad code. The handler does not log, expose caught diagnostics, use a public/local fallback, or call `usingTheDons`/`reportFromDon`.
 
 ## Consequences
 

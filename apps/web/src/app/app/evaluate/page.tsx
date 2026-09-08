@@ -1,7 +1,7 @@
 import { ProductApp } from "../../product-app";
 
 export const metadata = {
-  title: "Evaluate a build — Preflight",
+  title: "Evaluate a build — Rovaulta",
   description: "Review a robot build against the deterministic site evaluation.",
 };
 

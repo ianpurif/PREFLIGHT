@@ -1,10 +1,10 @@
 {
   "$schema": "https://eips.ethereum.org/assets/eip-7730/erc7730-v2.schema.json",
   "context": {
-    "$id": "Preflight Release Gate",
+    "$id": "Rovaulta Release Gate",
     "eip712": {
       "domain": {
-        "name": "Preflight",
+        "name": "Rovaulta",
         "version": "1"
       },
       "deployments": [
@@ -16,8 +16,8 @@
     }
   },
   "metadata": {
-    "owner": "Preflight",
-    "contractName": "Preflight Release Gate"
+    "owner": "Rovaulta",
+    "contractName": "Rovaulta Release Gate"
   },
   "display": {
     "formats": {

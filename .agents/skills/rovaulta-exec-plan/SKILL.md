@@ -1,9 +1,9 @@
 ---
-name: preflight-exec-plan
-description: Create or update an execution plan for a multi-surface Preflight implementation task before coding. Use when work spans 3+ packages, changes a trust boundary, adds a partner integration, changes contract state, or needs multiple Codex iterations.
+name: rovaulta-exec-plan
+description: Create or update an execution plan for a multi-surface Rovaulta implementation task before coding. Use when work spans 3+ packages, changes a trust boundary, adds a partner integration, changes contract state, or needs multiple Codex iterations.
 ---
 
-# Preflight Exec Plan
+# Rovaulta Exec Plan
 
 1. Read root + scoped `AGENTS.md`, `docs/planning/CURRENT.md`, product brief, relevant architecture docs, and partner docs.
 2. State the user-visible outcome and non-goals.

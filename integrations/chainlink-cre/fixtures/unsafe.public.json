@@ -1,11 +1,11 @@
 {
-  "schemaVersion": "preflight.cre-public-evaluation-request/v1",
-  "protocolVersion": "preflight.protocol/v1",
+  "schemaVersion": "rovaulta.cre-public-evaluation-request/v1",
+  "protocolVersion": "rovaulta.protocol/v1",
   "request": {
-    "schemaVersion": "preflight.evaluation-request/v1",
+    "schemaVersion": "rovaulta.evaluation-request/v1",
     "evaluationId": "evaluation:unsafe-demo",
     "inputs": {
-      "schemaVersion": "preflight.evaluation-inputs/v1",
+      "schemaVersion": "rovaulta.evaluation-inputs/v1",
       "siteId": "site:demo-warehouse",
       "robotId": "robot:demo-amr-01",
       "robotBuildId": "robot-build:unsafe-v1",
@@ -17,13 +17,13 @@
     "requestedAt": "1788547200"
   },
   "robotBuild": {
-    "schemaVersion": "preflight.robot-build/v1",
+    "schemaVersion": "rovaulta.robot-build/v1",
     "robotId": "robot:demo-amr-01",
     "robotBuildId": "robot-build:unsafe-v1",
     "artifactDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
   },
   "behaviorTraces": {
-    "schemaVersion": "preflight.robot-trace-suite/v1",
+    "schemaVersion": "rovaulta.robot-trace-suite/v1",
     "robotId": "robot:demo-amr-01",
     "robotBuildId": "robot-build:unsafe-v1",
     "robotBuildDigest": "sha256:dfa8a366ab9980769d7e91ea03fa346e2d816c98bd613bc9a6c58bc0d2d39ba8",
@@ -95,5 +95,5 @@
   },
   "traceProvenance": "SYNTHETIC_CALLER_SUPPLIED",
   "evaluatedAt": "1788547210",
-  "behaviorInputDigest": "sha256:36aa34b60babba8ea22e4f2803639ffb51c15005a10b345a37c49b79e6238bd0"
+  "behaviorInputDigest": "sha256:47bbecce20877c7d1caa429a7675109bd67bcfaca120f1302049c02f1f6b381d"
 }

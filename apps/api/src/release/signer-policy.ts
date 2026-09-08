@@ -1,4 +1,4 @@
-import { failRelease } from "@preflight/chain-client";
+import { failRelease } from "@rovaulta/chain-client";
 import { type Address, getAddress } from "viem";
 
 export class AuthorizedSignerPolicy {

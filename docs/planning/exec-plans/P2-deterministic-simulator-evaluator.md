@@ -2,7 +2,7 @@
 
 ## Outcome
 
-`@preflight/simulation-core` provides a pure, synchronous, fixed-unit warehouse evaluator. It validates a P1 evaluation request, the exact committed safety envelope, a deterministic scenario suite, and materialized robot traces carrying exact declared build metadata; then it returns the unchanged P1 `EvaluationResult` plus deterministic internal violation evidence.
+`@rovaulta/simulation-core` provides a pure, synchronous, fixed-unit warehouse evaluator. It validates a P1 evaluation request, the exact committed safety envelope, a deterministic scenario suite, and materialized robot traces carrying exact declared build metadata; then it returns the unchanged P1 `EvaluationResult` plus deterministic internal violation evidence.
 
 ## Non-goals
 

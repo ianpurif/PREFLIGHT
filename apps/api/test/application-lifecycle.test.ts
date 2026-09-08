@@ -113,11 +113,11 @@ describe("account-scoped product lifecycle", () => {
         evaluationId: evaluation.evaluationId,
         signerAddress: "0x0000000000000000000000000000000000000001",
         clearance: {
-          schemaVersion: "preflight.clearance-record/v1",
+          schemaVersion: "rovaulta.clearance-record/v1",
           clearanceId: "clearance:test-record",
           evaluationId: evaluation.evaluationId,
           inputs: {
-            schemaVersion: "preflight.evaluation-inputs/v1",
+            schemaVersion: "rovaulta.evaluation-inputs/v1",
             siteId: evaluation.siteId,
             robotId: evaluation.robotId,
             robotBuildId: evaluation.robotBuildId,
@@ -175,7 +175,7 @@ describe("account-scoped product lifecycle", () => {
     const malformedCookie = await app.inject({
       method: "GET",
       url: "/sites",
-      headers: { cookie: "preflight_session=%" },
+      headers: { cookie: "rovaulta_session=%" },
     });
     expect(malformedCookie.statusCode).toBe(401);
     const malformed = await app.inject({

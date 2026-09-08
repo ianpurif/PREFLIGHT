@@ -5,7 +5,7 @@
 
 ## Context
 
-Preflight needs an autonomous deployment-preparation workflow for the selected Ledger
+Rovaulta needs an autonomous deployment-preparation workflow for the selected Ledger
 human-in-the-loop-agent direction. P1–P5 already define the deterministic safety, clearance,
 registry, signing, replay, and authorization authorities. Giving a probabilistic model any of those
 authorities would break the exact-build invariant and make Ledger decorative.

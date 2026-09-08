@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "network": "ethereum-sepolia",
   "chainId": 11155111,
-  "contractName": "PreflightRegistry",
+  "contractName": "RovaultaRegistry",
   "verifyingContract": "0xFB270cc222efa8B5005AA097dD512Be2558dde65",
   "deploymentTransaction": "0x9dce1c53715d1a0f7b39e469d3ec350ffec2726cbb1e396432dd545f6c16d497",
   "deploymentBlock": 11644462,

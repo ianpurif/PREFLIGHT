@@ -5,7 +5,7 @@ import {
   createLedgerTransportRuntime,
   LedgerBrowserAdapter,
   parseLedgerTransportConfig,
-} from "@preflight/ledger-gate";
+} from "@rovaulta/ledger-gate";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -53,7 +53,7 @@ export default function P5LedgerOperatorPage() {
       ),
     );
     adapter.current = ledger;
-    const handoff = window.sessionStorage.getItem("preflight.p5.prepared");
+    const handoff = window.sessionStorage.getItem("rovaulta.p5.prepared");
     if (handoff !== null) {
       try {
         const preparedPayload = JSON.parse(handoff) as Record<string, unknown>;
@@ -62,7 +62,7 @@ export default function P5LedgerOperatorPage() {
           "Exact P5 request handed off from the judge view. Connect Ledger to review it; authorization has not happened.",
         );
       } catch {
-        window.sessionStorage.removeItem("preflight.p5.prepared");
+        window.sessionStorage.removeItem("rovaulta.p5.prepared");
       }
     }
     return () => {
@@ -137,12 +137,12 @@ export default function P5LedgerOperatorPage() {
   return (
     <main className="shell p5-operator" id="main-content">
       <header className="operator-topbar">
-        <Link className="brand-lockup" href="/app" aria-label="Back to Preflight workspace">
+        <Link className="brand-lockup" href="/app" aria-label="Back to Rovaulta workspace">
           <span className="brand-mark" aria-hidden="true">
             P
           </span>
           <span>
-            <strong>Preflight</strong>
+            <strong>Rovaulta</strong>
             <small>Human release gate</small>
           </span>
         </Link>

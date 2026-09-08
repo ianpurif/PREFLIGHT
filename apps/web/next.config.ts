@@ -3,10 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: [
-    "@preflight/ledger-gate",
-    "@preflight/chain-client",
-    "@preflight/domain",
-    "@preflight/simulation-core",
+    "@rovaulta/ledger-gate",
+    "@rovaulta/chain-client",
+    "@rovaulta/domain",
+    "@rovaulta/simulation-core",
   ],
 };
 

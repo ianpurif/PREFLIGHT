@@ -3,7 +3,7 @@
 **Evidence class:** CRE authenticated simulation
 **Date:** 2026-09-06
 **Environment:** Official local, single-node CRE simulator; not a live DON deployment or hardware TEE
-**Workflow:** `preflight-confidential-evaluation-staging`
+**Workflow:** `rovaulta-confidential-evaluation-staging`
 
 ## Tool and build identity
 
@@ -48,7 +48,7 @@ The `.env.cre-*.local` files are ignored local inputs. Their values were never c
 ```json
 {
   "behaviorInputDigest": "sha256:36aa34b60babba8ea22e4f2803639ffb51c15005a10b345a37c49b79e6238bd0",
-  "protocolVersion": "preflight.protocol/v1",
+  "protocolVersion": "rovaulta.protocol/v1",
   "result": {
     "evaluatedAt": "1788547210",
     "evaluationId": "evaluation:unsafe-demo",
@@ -60,13 +60,13 @@ The `.env.cre-*.local` files are ignored local inputs. Their values were never c
       "robotId": "robot:demo-amr-01",
       "safetyEnvelopeCommitment": "sha256:c0711ab58a51ae8e332a71d9abcb553a7b1345bfca180d7e9fba9d0187f7f51a",
       "safetyEnvelopeId": "safety-envelope:demo-v1",
-      "schemaVersion": "preflight.evaluation-inputs/v1",
+      "schemaVersion": "rovaulta.evaluation-inputs/v1",
       "siteId": "site:demo-warehouse"
     },
-    "schemaVersion": "preflight.evaluation-result/v1",
+    "schemaVersion": "rovaulta.evaluation-result/v1",
     "verdict": "HOLD"
   },
-  "schemaVersion": "preflight.cre-public-evaluation-result/v1",
+  "schemaVersion": "rovaulta.cre-public-evaluation-result/v1",
   "status": "EVALUATED",
   "traceProvenance": "SYNTHETIC_CALLER_SUPPLIED"
 }
@@ -82,7 +82,7 @@ The `.env.cre-*.local` files are ignored local inputs. Their values were never c
 ```json
 {
   "behaviorInputDigest": "sha256:4641dfa1ceef38b12d71cc35ffa08288cbd5f70ac32788fe844eb2b4636d76dc",
-  "protocolVersion": "preflight.protocol/v1",
+  "protocolVersion": "rovaulta.protocol/v1",
   "result": {
     "evaluatedAt": "1788547210",
     "evaluationId": "evaluation:corrected-demo",
@@ -94,13 +94,13 @@ The `.env.cre-*.local` files are ignored local inputs. Their values were never c
       "robotId": "robot:demo-amr-01",
       "safetyEnvelopeCommitment": "sha256:c0711ab58a51ae8e332a71d9abcb553a7b1345bfca180d7e9fba9d0187f7f51a",
       "safetyEnvelopeId": "safety-envelope:demo-v1",
-      "schemaVersion": "preflight.evaluation-inputs/v1",
+      "schemaVersion": "rovaulta.evaluation-inputs/v1",
       "siteId": "site:demo-warehouse"
     },
-    "schemaVersion": "preflight.evaluation-result/v1",
+    "schemaVersion": "rovaulta.evaluation-result/v1",
     "verdict": "CLEAR"
   },
-  "schemaVersion": "preflight.cre-public-evaluation-result/v1",
+  "schemaVersion": "rovaulta.cre-public-evaluation-result/v1",
   "status": "EVALUATED",
   "traceProvenance": "SYNTHETIC_CALLER_SUPPLIED"
 }
@@ -116,8 +116,8 @@ The `.env.cre-*.local` files are ignored local inputs. Their values were never c
 ```json
 {
   "code": "CONFIDENTIAL_EVALUATION_REJECTED",
-  "protocolVersion": "preflight.protocol/v1",
-  "schemaVersion": "preflight.cre-public-evaluation-error/v1",
+  "protocolVersion": "rovaulta.protocol/v1",
+  "schemaVersion": "rovaulta.cre-public-evaluation-error/v1",
   "status": "REJECT"
 }
 ```

@@ -1,6 +1,6 @@
 ---
-name: preflight-verification-loop
-description: Run the Preflight verification loop before claiming a task is complete or merge-ready. Use after implementation, bug fixes, refactors, partner integrations, or contract changes.
+name: rovaulta-verification-loop
+description: Run the Rovaulta verification loop before claiming a task is complete or merge-ready. Use after implementation, bug fixes, refactors, partner integrations, or contract changes.
 ---
 
 # Verification Loop
@@ -12,7 +12,7 @@ description: Run the Preflight verification loop before claiming a task is compl
 5. If CRE changed: run its Bun tests/typecheck and CRE simulation when available; capture evidence.
 6. If Ledger changed: run adapter tests and browser hardware smoke test when device is available; never fake hardware evidence.
 7. Run `bun run verify` for merge-ready work.
-8. Ask `preflight-verifier` or `preflight-reviewer` to inspect the diff read-only.
+8. Ask `rovaulta-verifier` or `rovaulta-reviewer` to inspect the diff read-only.
 9. Resolve findings and record any environment limitation.
 
 Never convert “not run” into “passed.”

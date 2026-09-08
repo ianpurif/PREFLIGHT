@@ -9,7 +9,7 @@ P4 proves that an authorized registrar recorded a public `CLEAR` attestation for
 
 ## Decision
 
-Use the existing P1 `DeploymentIntent`, advanced to `preflight.deployment-intent/v2` only to add fixed action `ACTIVATE_DEPLOYMENT`. The intent remains chain-neutral canonical protocol data. P5 wraps it in full EIP-712 typed data whose domain is `Preflight`, version `1`, Sepolia chain ID `11155111`, and the deployed `PreflightRegistry` address loaded from the P4 artifact.
+Use the existing P1 `DeploymentIntent`, advanced to `rovaulta.deployment-intent/v2` only to add fixed action `ACTIVATE_DEPLOYMENT`. The intent remains chain-neutral canonical protocol data. P5 wraps it in full EIP-712 typed data whose domain is `Rovaulta`, version `1`, Sepolia chain ID `11155111`, and the deployed `RovaultaRegistry` address loaded from the P4 artifact.
 
 The message repeats every human/security binding: protocol/schema, action, site, robot, build ID/digest, clearance ID/digest, target environment, authorized signer, nonce, integer issuance/expiry, and P1 deployment-intent digest. This redundancy makes the device display meaningful while cryptographically preserving the canonical P1 relationship.
 

@@ -7,7 +7,7 @@
 
 ## Scope and evidence boundary
 
-This evidence covers the P4 `PreflightRegistry` implementation and local Foundry execution. The
+This evidence covers the P4 `RovaultaRegistry` implementation and local Foundry execution. The
 registry records an authorized registrar's public attestation that a validated P1 clearance digest
 corresponds to exact public fields. It does not prove automatic Chainlink delivery, live DON/Nitro
 execution, robot-trace provenance, Ledger approval, deployment authorization, or physical robot

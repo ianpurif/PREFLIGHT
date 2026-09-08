@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "preflight",
+      "name": "rovaulta",
       "devDependencies": {
         "@biomejs/biome": "2.5.12",
         "@playwright/test": "1.62.1",
@@ -13,12 +13,12 @@
       },
     },
     "apps/api": {
-      "name": "@preflight/api",
+      "name": "@rovaulta/api",
       "version": "0.0.0",
       "dependencies": {
-        "@preflight/chain-client": "workspace:*",
-        "@preflight/domain": "workspace:*",
-        "@preflight/simulation-core": "workspace:*",
+        "@rovaulta/chain-client": "workspace:*",
+        "@rovaulta/domain": "workspace:*",
+        "@rovaulta/simulation-core": "workspace:*",
         "fastify": "5.12.1",
         "viem": "2.56.3",
       },
@@ -28,12 +28,12 @@
       },
     },
     "apps/web": {
-      "name": "@preflight/web",
+      "name": "@rovaulta/web",
       "version": "0.0.0",
       "dependencies": {
-        "@preflight/domain": "workspace:*",
-        "@preflight/ledger-gate": "workspace:*",
-        "@preflight/simulation-core": "workspace:*",
+        "@rovaulta/domain": "workspace:*",
+        "@rovaulta/ledger-gate": "workspace:*",
+        "@rovaulta/simulation-core": "workspace:*",
         "@react-three/fiber": "9.7.0",
         "next": "16.3.4",
         "react": "19.2.8",
@@ -48,13 +48,13 @@
       },
     },
     "integrations/chainlink-cre": {
-      "name": "@preflight/chainlink-cre",
+      "name": "@rovaulta/chainlink-cre",
       "version": "0.0.0",
       "dependencies": {
         "@chainlink/cre-sdk": "1.19.1",
         "@noble/hashes": "2.2.0",
-        "@preflight/domain": "workspace:*",
-        "@preflight/simulation-core": "workspace:*",
+        "@rovaulta/domain": "workspace:*",
+        "@rovaulta/simulation-core": "workspace:*",
         "viem": "2.56.3",
         "zod": "4.5.4",
       },
@@ -63,10 +63,10 @@
       },
     },
     "packages/chain-client": {
-      "name": "@preflight/chain-client",
+      "name": "@rovaulta/chain-client",
       "version": "0.0.0",
       "dependencies": {
-        "@preflight/domain": "workspace:*",
+        "@rovaulta/domain": "workspace:*",
         "viem": "2.56.3",
       },
       "devDependencies": {
@@ -74,7 +74,7 @@
       },
     },
     "packages/domain": {
-      "name": "@preflight/domain",
+      "name": "@rovaulta/domain",
       "version": "0.0.0",
       "dependencies": {
         "@noble/hashes": "2.2.0",
@@ -84,7 +84,7 @@
       },
     },
     "packages/ledger-gate": {
-      "name": "@preflight/ledger-gate",
+      "name": "@rovaulta/ledger-gate",
       "version": "0.0.0",
       "dependencies": {
         "@ledgerhq/context-module": "2.5.0",
@@ -92,8 +92,8 @@
         "@ledgerhq/device-signer-kit-ethereum": "1.18.0",
         "@ledgerhq/device-transport-kit-speculos": "1.2.1",
         "@ledgerhq/device-transport-kit-web-hid": "1.2.4",
-        "@preflight/chain-client": "workspace:*",
-        "@preflight/domain": "workspace:*",
+        "@rovaulta/chain-client": "workspace:*",
+        "@rovaulta/domain": "workspace:*",
         "rxjs": "7.8.2",
       },
       "devDependencies": {
@@ -102,10 +102,10 @@
       },
     },
     "packages/simulation-core": {
-      "name": "@preflight/simulation-core",
+      "name": "@rovaulta/simulation-core",
       "version": "0.0.0",
       "dependencies": {
-        "@preflight/domain": "workspace:*",
+        "@rovaulta/domain": "workspace:*",
       },
       "devDependencies": {
         "typescript": "5.9.2",
@@ -273,19 +273,19 @@
 
     "@playwright/test": ["@playwright/test@1.62.1", "", { "dependencies": { "playwright": "1.62.1" }, "bin": { "playwright": "cli.js" } }, "sha512-DTcUc8qii+cpHvtOwggMtBRMjKZHXYWdw8syRYu2vtzuq4Wxphqq4NfCs5Zt44L6mA8rfDfj+PHnxFc/FeK6mQ=="],
 
-    "@preflight/api": ["@preflight/api@workspace:apps/api"],
+    "@rovaulta/api": ["@rovaulta/api@workspace:apps/api"],
 
-    "@preflight/chain-client": ["@preflight/chain-client@workspace:packages/chain-client"],
+    "@rovaulta/chain-client": ["@rovaulta/chain-client@workspace:packages/chain-client"],
 
-    "@preflight/chainlink-cre": ["@preflight/chainlink-cre@workspace:integrations/chainlink-cre"],
+    "@rovaulta/chainlink-cre": ["@rovaulta/chainlink-cre@workspace:integrations/chainlink-cre"],
 
-    "@preflight/domain": ["@preflight/domain@workspace:packages/domain"],
+    "@rovaulta/domain": ["@rovaulta/domain@workspace:packages/domain"],
 
-    "@preflight/ledger-gate": ["@preflight/ledger-gate@workspace:packages/ledger-gate"],
+    "@rovaulta/ledger-gate": ["@rovaulta/ledger-gate@workspace:packages/ledger-gate"],
 
-    "@preflight/simulation-core": ["@preflight/simulation-core@workspace:packages/simulation-core"],
+    "@rovaulta/simulation-core": ["@rovaulta/simulation-core@workspace:packages/simulation-core"],
 
-    "@preflight/web": ["@preflight/web@workspace:apps/web"],
+    "@rovaulta/web": ["@rovaulta/web@workspace:apps/web"],
 
     "@react-three/fiber": ["@react-three/fiber@9.7.0", "", { "dependencies": { "@babel/runtime": "^7.17.8", "@types/webxr": "*", "base64-js": "^1.5.1", "buffer": "^6.0.3", "its-fine": "^2.0.0", "react-use-measure": "^2.1.7", "scheduler": "^0.27.0", "suspend-react": "^0.1.3", "use-sync-external-store": "^1.4.0", "zustand": "^5.0.3" }, "peerDependencies": { "expo": ">=43.0", "expo-asset": ">=8.4", "expo-file-system": ">=11.0", "expo-gl": ">=11.0", "react": ">=19 <19.3", "react-dom": ">=19 <19.3", "react-native": ">=0.78", "three": ">=0.156" }, "optionalPeers": ["expo", "expo-asset", "expo-file-system", "expo-gl", "react-dom", "react-native"] }, "sha512-EWm9FwcaOZQu/ExFW5rggoCMM1NJet5YbxVxKaOE+KSncrjU0Wx7017qSyGFvupviK89nMYGCWU3BIK4dI1clw=="],
 

@@ -10,7 +10,7 @@ import {
   type RobotId,
   type SafetyEnvelopeId,
   type SiteId,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 
 declare const zoneIdBrand: unique symbol;
 declare const ruleIdBrand: unique symbol;
@@ -27,12 +27,12 @@ export type SpeedMmPerSecond = number & { readonly [speedBrand]: "SpeedMmPerSeco
 export type PayloadGrams = number & { readonly [payloadBrand]: "PayloadGrams" };
 
 export const CONFIDENTIAL_EVALUATION_ENVELOPE_VERSION =
-  "preflight.confidential-evaluation-envelope/v1" as const;
-export const SCENARIO_GENERATOR_VERSION = "preflight.xorshift32-scenarios/v1" as const;
-export const SCENARIO_SUITE_VERSION = "preflight.scenario-suite/v1" as const;
-export const ROBOT_TRACE_SUITE_VERSION = "preflight.robot-trace-suite/v1" as const;
+  "rovaulta.confidential-evaluation-envelope/v1" as const;
+export const SCENARIO_GENERATOR_VERSION = "rovaulta.xorshift32-scenarios/v1" as const;
+export const SCENARIO_SUITE_VERSION = "rovaulta.scenario-suite/v1" as const;
+export const ROBOT_TRACE_SUITE_VERSION = "rovaulta.robot-trace-suite/v1" as const;
 export const INTERNAL_EVALUATION_REPORT_VERSION =
-  "preflight.internal-evaluation-report/v1" as const;
+  "rovaulta.internal-evaluation-report/v1" as const;
 export const WAREHOUSE_EVALUATOR_VERSION = "evaluator-version:warehouse-rules-v1" as const;
 
 export const MAX_ABS_COORDINATE_MM = 10_000_000;

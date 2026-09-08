@@ -3,12 +3,12 @@ import {
   type RobotBuildDescriptor,
   type RobotBuildDigest,
   type Sha256Digest,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 import {
   createDeterministicDemoFixture,
   evaluateSimulation,
   type RuleViolation,
-} from "@preflight/simulation-core";
+} from "@rovaulta/simulation-core";
 
 export const DEMO_REGISTRY_ADDRESS = "0xFB270cc222efa8B5005AA097dD512Be2558dde65" as const;
 export const DEMO_REGISTRY_URL =

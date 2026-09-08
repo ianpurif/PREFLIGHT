@@ -1,5 +1,5 @@
 {
-  "name": "@preflight/chainlink-cre",
+  "name": "@rovaulta/chainlink-cre",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,8 +13,8 @@
   "dependencies": {
     "@chainlink/cre-sdk": "1.19.1",
     "@noble/hashes": "2.2.0",
-    "@preflight/domain": "workspace:*",
-    "@preflight/simulation-core": "workspace:*",
+    "@rovaulta/domain": "workspace:*",
+    "@rovaulta/simulation-core": "workspace:*",
     "viem": "2.56.3",
     "zod": "4.5.4"
   },

@@ -1,8 +1,8 @@
-# Preflight Agent Instructions
+# Rovaulta Agent Instructions
 
 ## Mission
 
-Build **Preflight**, a confidential deployment gate for autonomous warehouse robots. The product must prove that an exact robot build passed a site's private evaluation envelope, then require a Ledger-backed human approval before that exact build can be released.
+Build **Rovaulta**, a confidential deployment gate for autonomous warehouse robots. The product must prove that an exact robot build passed a site's private evaluation envelope, then require a Ledger-backed human approval before that exact build can be released.
 
 This repository begins as a **boilerplate**. Do not silently implement future product behavior unless the current task explicitly asks for it.
 
@@ -46,7 +46,7 @@ Create an execution plan under `docs/planning/exec-plans/` when a task:
 - changes contract state/authorization,
 - or is expected to take multiple Codex iterations.
 
-Use the `$preflight-exec-plan` skill when available.
+Use the `$rovaulta-exec-plan` skill when available.
 
 ## Verification loop
 

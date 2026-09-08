@@ -5,8 +5,8 @@ const root = resolve(import.meta.dirname, "..");
 const required = [
   "AGENTS.md",
   ".codex/config.toml",
-  ".agents/skills/preflight-exec-plan/SKILL.md",
-  ".agents/skills/preflight-verification-loop/SKILL.md",
+  ".agents/skills/rovaulta-exec-plan/SKILL.md",
+  ".agents/skills/rovaulta-verification-loop/SKILL.md",
   "docs/planning/CURRENT.md",
   "docs/architecture/TRUST_BOUNDARIES.md",
   "docs/partners/CHAINLINK.md",
@@ -19,9 +19,9 @@ const required = [
   "integrations/chainlink-cre/AGENTS.md",
   "contracts/AGENTS.md",
   "contracts/README.md",
-  "contracts/script/DeployPreflightRegistry.s.sol",
-  "contracts/test/PreflightRegistry.t.sol",
-  "contracts/test/PreflightRegistryInvariant.t.sol",
+  "contracts/script/DeployRovaultaRegistry.s.sol",
+  "contracts/test/RovaultaRegistry.t.sol",
+  "contracts/test/RovaultaRegistryInvariant.t.sol",
   "packages/chain-client/src/eip712.ts",
   "packages/chain-client/src/registry.ts",
   "packages/chain-client/test/eip712.test.ts",
@@ -29,7 +29,7 @@ const required = [
   "packages/ledger-gate/src/clear-signing-context.ts",
   "packages/ledger-gate/src/strict-action.ts",
   "packages/ledger-gate/test/strict-action.test.ts",
-  "packages/ledger-gate/clear-signing/eip712-preflight-deployment-intent.json",
+  "packages/ledger-gate/clear-signing/eip712-rovaulta-deployment-intent.json",
   "apps/api/src/release/release-service.ts",
   "apps/api/src/release/nonce-store.ts",
   "apps/api/src/agent/deployment-agent.ts",
@@ -115,8 +115,8 @@ if (
 if (confidentialEvaluation.includes("runtime.log"))
   throw new Error("P3 confidential handler must not log from inside the TEE");
 if (
-  chainlinkPackage.dependencies?.["@preflight/domain"] !== "workspace:*" ||
-  chainlinkPackage.dependencies?.["@preflight/simulation-core"] !== "workspace:*" ||
+  chainlinkPackage.dependencies?.["@rovaulta/domain"] !== "workspace:*" ||
+  chainlinkPackage.dependencies?.["@rovaulta/simulation-core"] !== "workspace:*" ||
   chainlinkPackage.dependencies?.["@chainlink/cre-sdk"] !== "1.19.1"
 )
   throw new Error("P3 CRE package dependencies are not pinned to the shared protocol/evaluator");
@@ -129,7 +129,7 @@ for (const path of [
 ]) {
   if (!existsSync(resolve(root, path))) throw new Error(`Missing P3 CRE artifact: ${path}`);
 }
-const contract = readFileSync(resolve(root, "contracts/src/PreflightRegistry.sol"), "utf8");
+const contract = readFileSync(resolve(root, "contracts/src/RovaultaRegistry.sol"), "utf8");
 for (const requiredSurface of [
   "struct ClearanceBindings",
   "recordClearance",
@@ -238,7 +238,7 @@ for (const requiredSurface of [
   "messageInfo.filtersCount",
   "assertResolved",
   "setChain(ContextModuleChainID.Ethereum)",
-  "PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract",
+  "ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract",
 ]) {
   if (!clearSigningContext.includes(requiredSurface))
     throw new Error(`P5 exact Clear Signing context guard is missing: ${requiredSurface}`);
@@ -246,7 +246,7 @@ for (const requiredSurface of [
 if (!chainDeployment.includes("contracts/deployments/sepolia.json"))
   throw new Error("P5 must consume the authoritative Sepolia deployment artifact");
 for (const requiredSurface of [
-  "PREFLIGHT_DEPLOYMENT_INTENT_TYPES",
+  "ROVAULTA_DEPLOYMENT_INTENT_TYPES",
   "hashTypedData",
   "recoverTypedDataAddress",
   "authorizedSigner",
@@ -301,12 +301,12 @@ for (const requiredSurface of [
 }
 const turbo = JSON.parse(readFileSync(resolve(root, "turbo.json"), "utf8"));
 for (const requiredEnvironment of [
-  "PREFLIGHT_AUTHORIZED_SIGNERS",
-  "PREFLIGHT_RELEASE_DB_PATH",
+  "ROVAULTA_AUTHORIZED_SIGNERS",
+  "ROVAULTA_RELEASE_DB_PATH",
   "NEXT_PUBLIC_LEDGER_ORIGIN_TOKEN",
   "OPENAI_API_KEY",
-  "PREFLIGHT_AGENT_MODEL",
-  "PREFLIGHT_AGENT_CATALOG_PATH",
+  "ROVAULTA_AGENT_MODEL",
+  "ROVAULTA_AGENT_CATALOG_PATH",
 ]) {
   if (!turbo.tasks?.dev?.env?.includes(requiredEnvironment))
     throw new Error(`P5 Turbo dev environment is missing: ${requiredEnvironment}`);
@@ -362,7 +362,7 @@ if (
 )
   throw new Error("P8 normal workspace must use persisted data, not the fixture dashboard");
 if (
-  !fixtureRoute.includes("PREFLIGHT_ENABLE_DEMO_ROUTES") ||
+  !fixtureRoute.includes("ROVAULTA_ENABLE_DEMO_ROUTES") ||
   !fixtureRoute.includes('NODE_ENV === "production"')
 )
   throw new Error("P7 fixture route must remain explicitly environment-gated");

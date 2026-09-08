@@ -37,12 +37,12 @@ export function AccountEntry({
   return (
     <main className="onboarding-page real-account-page" id="main-content">
       <div className="onboarding-topbar">
-        <Link className="brand-lockup" href="/" aria-label="Back to Preflight home">
+        <Link className="brand-lockup" href="/" aria-label="Back to Rovaulta home">
           <span className="brand-mark" aria-hidden="true">
             P
           </span>
           <span>
-            <strong>Preflight</strong>
+            <strong>Rovaulta</strong>
             <small>Deployment safety</small>
           </span>
         </Link>
@@ -55,7 +55,7 @@ export function AccountEntry({
           <p className="landing-eyebrow">{mode === "register" ? "Create an account" : "Sign in"}</p>
           <h1 id="account-entry-title">A clear release path starts with a real workspace.</h1>
           <p>
-            Preflight keeps your sites, robots, exact build records, evaluations, and release
+            Rovaulta keeps your sites, robots, exact build records, evaluations, and release
             attempts separate from every other account.
           </p>
           <div className="onboarding-promise">

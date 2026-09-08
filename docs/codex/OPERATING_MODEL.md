@@ -24,11 +24,11 @@ Subagents are best used for bounded analysis, not for competing architectural au
 
 ## Suggested subagent sequence
 For a substantial task:
-1. `preflight-explorer` maps files and unknowns.
-2. `preflight-architect` attacks the plan if trust boundaries change.
+1. `rovaulta-explorer` maps files and unknowns.
+2. `rovaulta-architect` attacks the plan if trust boundaries change.
 3. Main agent implements or assigns isolated worktrees.
-4. `preflight-verifier` looks for missing tests.
-5. `preflight-reviewer` reviews final diff read-only.
+4. `rovaulta-verifier` looks for missing tests.
+5. `rovaulta-reviewer` reviews final diff read-only.
 6. `partner-auditor` runs when Chainlink/Ledger is touched.
 
 ## Parallelism rule

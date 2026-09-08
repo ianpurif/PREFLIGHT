@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { ViemClearanceRegistryReader } from "@preflight/chain-client";
+import { ViemClearanceRegistryReader } from "@rovaulta/chain-client";
 import type { ReleaseService } from "../release/index.js";
 import { DeploymentCatalog } from "./catalog.js";
 import { DeploymentAgent } from "./deployment-agent.js";
@@ -17,8 +17,8 @@ export function createDeploymentAgentFromEnvironment(
   environment: NodeJS.ProcessEnv = process.env,
 ): DeploymentAgent {
   const apiKey = environment.OPENAI_API_KEY;
-  const model = environment.PREFLIGHT_AGENT_MODEL;
-  const catalogPath = environment.PREFLIGHT_AGENT_CATALOG_PATH;
+  const model = environment.ROVAULTA_AGENT_MODEL;
+  const catalogPath = environment.ROVAULTA_AGENT_CATALOG_PATH;
   const rpcUrl = environment.EVM_RPC_URL || environment.SEPOLIA_RPC_URL;
   if (!apiKey || !model || !catalogPath || !rpcUrl) {
     throw new DeploymentAgentError(

@@ -21,11 +21,11 @@ import {
 } from "./schemas";
 
 export const DIGEST_DOMAINS = Object.freeze({
-  robotBuild: "preflight.digest.robot-build/v1",
-  safetyEnvelopeCommitment: "preflight.digest.safety-envelope-commitment/v1",
-  evaluationInputs: "preflight.digest.evaluation-inputs/v1",
-  clearance: "preflight.digest.clearance/v1",
-  deploymentIntent: "preflight.digest.deployment-intent/v1",
+  robotBuild: "rovaulta.digest.robot-build/v1",
+  safetyEnvelopeCommitment: "rovaulta.digest.safety-envelope-commitment/v1",
+  evaluationInputs: "rovaulta.digest.evaluation-inputs/v1",
+  clearance: "rovaulta.digest.clearance/v1",
+  deploymentIntent: "rovaulta.digest.deployment-intent/v1",
 } as const);
 
 type ProtocolDigest =

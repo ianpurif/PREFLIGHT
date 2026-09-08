@@ -6,19 +6,19 @@ P3 implements an authenticated HTTP trigger whose callback is registered with th
 
 ## Boundary
 
-Public input contains the versioned P1 request, build descriptor, synthetic trace suite, explicit evaluation timestamp, provenance label, and `preflight.digest.cre-behavior-input/v1` SHA-256 digest over P1 canonical bytes. The HTTP signer configuration is also public. Scenario IDs must be public for exact trace-to-scenario binding; the demo uses readable synthetic names, while production inputs should use opaque IDs if scenario taxonomy is sensitive.
+Public input contains the versioned P1 request, build descriptor, synthetic trace suite, explicit evaluation timestamp, provenance label, and `rovaulta.digest.cre-behavior-input/v1` SHA-256 digest over P1 canonical bytes. The HTTP signer configuration is also public. Scenario IDs must be public for exact trace-to-scenario binding; the demo uses readable synthetic names, while production inputs should use opaque IDs if scenario taxonomy is sensitive.
 
-The secret `PREFLIGHT_CONFIDENTIAL_EVALUATION_INPUT` contains the versioned full private envelope and lowercase 64-hex-character blind. It is fetched only inside the TEE callback from namespace `main`, using a compile-time fixed ID. The handler makes no ordinary capability calls.
+The secret `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT` contains the versioned full private envelope and lowercase 64-hex-character blind. It is fetched only inside the TEE callback from namespace `main`, using a compile-time fixed ID. The handler makes no ordinary capability calls.
 
 Success discloses only the unchanged P1 `EvaluationResult`, behavior-input digest, and `SYNTHETIC_CALLER_SUPPLIED` marker. It omits the envelope, geometry, rules, thresholds, blind, internal scenario evidence, violation details/count, and confidential diagnostics. Errors use fixed redacted codes. The handler has no logging or DON crossover.
 
 ## Local verification
 
 ```powershell
-bun --filter '@preflight/chainlink-cre' cre:fixtures
-bun --filter '@preflight/chainlink-cre' test
-bun --filter '@preflight/chainlink-cre' typecheck
-bun --filter '@preflight/chainlink-cre' cre:compile
+bun --filter '@rovaulta/chainlink-cre' cre:fixtures
+bun --filter '@rovaulta/chainlink-cre' test
+bun --filter '@rovaulta/chainlink-cre' typecheck
+bun --filter '@rovaulta/chainlink-cre' cre:compile
 cre -R . -T staging-settings --non-interactive workflow build .\integrations\chainlink-cre
 ```
 

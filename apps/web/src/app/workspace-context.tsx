@@ -30,7 +30,7 @@ export const DEFAULT_WORKSPACE_SETUP: WorkspaceSetup = {
   buildLabel: "Controller release candidate",
 };
 
-const STORAGE_KEY = "preflight.workspace.setup";
+const STORAGE_KEY = "rovaulta.workspace.setup";
 
 function loadWorkspaceSetup(): WorkspaceSetup {
   if (typeof window === "undefined") return DEFAULT_WORKSPACE_SETUP;

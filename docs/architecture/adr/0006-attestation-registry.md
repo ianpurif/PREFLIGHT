@@ -6,14 +6,14 @@
 ## Context
 
 P4 must make a validated P1 clearance durable without exposing the private safety envelope or
-reimplementing Preflight Canonical JSON in Solidity. P3 currently proves only authenticated local
+reimplementing Rovaulta Canonical JSON in Solidity. P3 currently proves only authenticated local
 CRE simulation; it does not deliver an attestation to an EVM contract. P5 will later add Ledger-backed
 deployment authorization and replay protection, so P4 must remain evidence storage rather than
 premature release logic.
 
 ## Decision
 
-Use one non-upgradeable `PreflightRegistry` with an immutable owner and owner-managed registrar
+Use one non-upgradeable `RovaultaRegistry` with an immutable owner and owner-managed registrar
 mapping. The owner is the initial registrar. Only a registrar may record; `issuer` is always
 `msg.sender`. The owner or original issuer may revoke. Removing a registrar stops new records but
 preserves revoke-only authority for records it issued.

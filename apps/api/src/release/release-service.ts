@@ -6,9 +6,9 @@ import {
   type ClearanceRegistrySnapshot,
   failRelease,
   hashReleaseSignature,
-  PREFLIGHT_SEPOLIA_DEPLOYMENT,
+  ROVAULTA_SEPOLIA_DEPLOYMENT,
   ReleaseGateError,
-} from "@preflight/chain-client";
+} from "@rovaulta/chain-client";
 import {
   type ClearanceRecord,
   canonicalSerialize,
@@ -23,12 +23,12 @@ import {
   parseRobotId,
   parseSiteId,
   parseUnixTimestamp,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 import type { Address, Hex } from "viem";
 import type { SqliteReleaseStore } from "./nonce-store.js";
 import type { AuthorizedSignerPolicy } from "./signer-policy.js";
 
-const RELEASE_AUTHORIZATION_SCHEMA_VERSION = "preflight.release-authorization/v1" as const;
+const RELEASE_AUTHORIZATION_SCHEMA_VERSION = "rovaulta.release-authorization/v1" as const;
 const DEFAULT_INTENT_TTL_SECONDS = 300;
 
 export interface DeploymentProposal {
@@ -132,8 +132,8 @@ function parseStoredAuthorization(
       record.protocolIntentDigest !== prepared.protocolIntentDigest ||
       record.typedDataDigest !== prepared.typedDataDigest ||
       record.action !== "ACTIVATE_DEPLOYMENT" ||
-      record.chainId !== PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId ||
-      record.registry !== PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract ||
+      record.chainId !== ROVAULTA_SEPOLIA_DEPLOYMENT.chainId ||
+      record.registry !== ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract ||
       typeof record.recoveredSigner !== "string" ||
       record.recoveredSigner.toLowerCase() !== authorizedSigner.toLowerCase() ||
       typeof record.signatureHash !== "string" ||
@@ -158,8 +158,8 @@ function parseStoredAuthorization(
       protocolIntentDigest: prepared.protocolIntentDigest,
       typedDataDigest: prepared.typedDataDigest,
       action: "ACTIVATE_DEPLOYMENT",
-      chainId: PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId,
-      registry: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
+      chainId: ROVAULTA_SEPOLIA_DEPLOYMENT.chainId,
+      registry: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
       recoveredSigner: record.recoveredSigner,
       signatureHash: record.signatureHash,
       authorizedAt,
@@ -315,8 +315,8 @@ export class ReleaseService {
       protocolIntentDigest: prepared.protocolIntentDigest,
       typedDataDigest: prepared.typedDataDigest,
       action: intent.action,
-      chainId: PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId,
-      registry: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
+      chainId: ROVAULTA_SEPOLIA_DEPLOYMENT.chainId,
+      registry: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
       recoveredSigner,
       signatureHash: hashReleaseSignature(input.signature),
       authorizedAt: postcheck.blockTimestamp,

@@ -1,5 +1,5 @@
 {
-  "name": "@preflight/ledger-gate",
+  "name": "@rovaulta/ledger-gate",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -16,8 +16,8 @@
     "@ledgerhq/device-signer-kit-ethereum": "1.18.0",
     "@ledgerhq/device-transport-kit-speculos": "1.2.1",
     "@ledgerhq/device-transport-kit-web-hid": "1.2.4",
-    "@preflight/chain-client": "workspace:*",
-    "@preflight/domain": "workspace:*",
+    "@rovaulta/chain-client": "workspace:*",
+    "@rovaulta/domain": "workspace:*",
     "rxjs": "7.8.2"
   },
   "devDependencies": {

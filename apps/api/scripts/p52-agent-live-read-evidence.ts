@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ViemClearanceRegistryReader } from "@preflight/chain-client";
+import { ViemClearanceRegistryReader } from "@rovaulta/chain-client";
 import { clearanceFixture } from "../../../packages/chain-client/test/fixtures.js";
 import {
   DeploymentAgent,
@@ -35,7 +35,7 @@ class LiveReadEvidenceModel implements DeploymentAgentModel {
 
 const rpcUrl = process.env.EVM_RPC_URL || process.env.SEPOLIA_RPC_URL;
 if (!rpcUrl) throw new Error("EVM_RPC_URL or SEPOLIA_RPC_URL is required");
-const temporaryRoot = mkdtempSync(join(tmpdir(), "preflight-p52-agent-live-read-"));
+const temporaryRoot = mkdtempSync(join(tmpdir(), "rovaulta-p52-agent-live-read-"));
 const reader = new ViemClearanceRegistryReader(rpcUrl);
 const releaseService = new ReleaseService({
   reader,

@@ -1,10 +1,10 @@
 import {
   assertClearanceSnapshotEligible,
   type ClearanceRegistryReader,
-  PREFLIGHT_SEPOLIA_DEPLOYMENT,
+  ROVAULTA_SEPOLIA_DEPLOYMENT,
   ReleaseGateError,
-} from "@preflight/chain-client";
-import { type ClearanceRecord, digestClearance } from "@preflight/domain";
+} from "@rovaulta/chain-client";
+import { type ClearanceRecord, digestClearance } from "@rovaulta/domain";
 import type { PreparedReleaseRequest, ReleaseService } from "../release/index.js";
 import type { DeploymentCatalog } from "./catalog.js";
 import { parseToolArguments, toolDefinition } from "./tools.js";
@@ -76,7 +76,7 @@ function explanation(status: DeploymentAgentFinalStatus, code: string): string {
   if (status === "LEDGER_APPROVAL_REQUIRED") {
     return "This exact build passed deterministic preparation. Human Ledger authorization is required before release.";
   }
-  return `I cannot prepare this deployment. Deterministic Preflight policy blocked it: ${code}.`;
+  return `I cannot prepare this deployment. Deterministic Rovaulta policy blocked it: ${code}.`;
 }
 
 function errorCode(error: unknown): string {
@@ -238,8 +238,8 @@ export class DeploymentAgent {
         Object.freeze({
           ...entry.target,
           action: "ACTIVATE_DEPLOYMENT",
-          chainId: PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId,
-          registry: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
+          chainId: ROVAULTA_SEPOLIA_DEPLOYMENT.chainId,
+          registry: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
         }),
       );
 

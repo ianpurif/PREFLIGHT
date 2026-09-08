@@ -2,9 +2,9 @@ import {
   type ClearanceRegistryReader,
   type ClearanceRegistrySnapshot,
   clearanceRecordToTransport,
-  PREFLIGHT_SEPOLIA_DEPLOYMENT,
+  ROVAULTA_SEPOLIA_DEPLOYMENT,
   VERDICT_CLEAR_BYTES32,
-} from "@preflight/chain-client";
+} from "@rovaulta/chain-client";
 import {
   CLEARANCE_RECORD_SCHEMA_VERSION,
   type ClearanceRecord,
@@ -16,13 +16,13 @@ import {
   parseRobotBuildDescriptor,
   parseUnixTimestamp,
   type RobotBuildDescriptor,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 import {
   createDeterministicDemoFixture,
   type DemoEvaluationCase,
   type DeterministicDemoFixture,
   evaluateSimulation,
-} from "@preflight/simulation-core";
+} from "@rovaulta/simulation-core";
 import {
   DeploymentAgent,
   type DeploymentAgentModel,
@@ -116,7 +116,7 @@ class P7DemoRegistryReader implements ClearanceRegistryReader {
     const requested = clearanceRecordToTransport(record);
     return {
       chainId: 11_155_111,
-      registry: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
+      registry: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
       blockNumber: 11_700_000n,
       blockHash: `0x${"ab".repeat(32)}`,
       blockTimestamp: parseUnixTimestamp(P7_DEMO_BLOCK_TIMESTAMP),

@@ -17,10 +17,10 @@ pending; mock results below are not hardware evidence.
 
 ## Public implementation identity
 
-- EIP-712 domain: `Preflight`, version `1`, chain `11155111`
+- EIP-712 domain: `Rovaulta`, version `1`, chain `11155111`
 - verifying contract: `0xFB270cc222efa8B5005AA097dD512Be2558dde65`
 - action: `ACTIVATE_DEPLOYMENT`
-- deployment intent schema: `preflight.deployment-intent/v2`
+- deployment intent schema: `rovaulta.deployment-intent/v2`
 - Ledger packages: DMK `1.9.0`, Context Module `2.5.0`, WebHID Transport Kit `1.2.4`, Ethereum Device Signer Kit `1.18.0`, RxJS `7.8.2`
 - typed-data golden digest: `0xb0db5c583e92e138345d2b1a9383cd9e4064e3002940923adb3a88a352faae58`
 

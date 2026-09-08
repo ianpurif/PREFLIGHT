@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { canonicalSerialize, ProtocolError } from "@preflight/domain";
+import { canonicalSerialize, ProtocolError } from "@rovaulta/domain";
 import {
   CRE_PUBLIC_REQUEST_VERSION,
   CreBoundaryError,
@@ -40,7 +40,7 @@ describe("P3 public protocol", () => {
   test("behavior input digest is deterministic and key-order independent", () => {
     const input = makePublicInput(fixture.unsafeFixtureBuild);
     expect(String(input.behaviorInputDigest)).toBe(
-      "sha256:463395ca710761ad519eacc88e3efcb0e1be3e35cf350b433c899df92d7e0b33",
+      "sha256:60eba6c223ba61903a46ab0dbe64de1930d98bc80946cbff8cca1e11bb4689c6",
     );
     const { behaviorInputDigest: _, ...payload } = input;
     const reordered = {
@@ -164,7 +164,7 @@ describe("P3 confidential protocol", () => {
       () =>
         parseConfidentialEvaluationInput(
           makeConfidentialSecret().replace(
-            "preflight.cre-confidential-evaluation-input/v1",
+            "rovaulta.cre-confidential-evaluation-input/v1",
             "future/v2",
           ),
         ),
@@ -185,7 +185,7 @@ describe("P3 confidential protocol", () => {
     expectBoundaryCode(
       () =>
         parseConfidentialEvaluationInput(
-          makeConfidentialSecret().replace("{", '{"protocolVersion":"preflight.protocol/v1",'),
+          makeConfidentialSecret().replace("{", '{"protocolVersion":"rovaulta.protocol/v1",'),
         ),
       "MALFORMED_CONFIDENTIAL_INPUT",
     );

@@ -11,7 +11,7 @@ import {
   parseSha256Digest,
   ROBOT_BUILD_SCHEMA_VERSION,
   type RobotBuildDescriptor,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 import {
   CONFIDENTIAL_EVALUATION_ENVELOPE_VERSION,
   type ConfidentialEvaluationEnvelope,

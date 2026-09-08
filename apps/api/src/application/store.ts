@@ -23,7 +23,7 @@ import {
   parseSiteId,
   ROBOT_BUILD_SCHEMA_VERSION,
   type RobotBuildDescriptor,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 import {
   CONFIDENTIAL_EVALUATION_ENVELOPE_VERSION,
   type ConfidentialEvaluationEnvelope,
@@ -35,12 +35,12 @@ import {
   type RobotBehaviorTraceSuite,
   SCENARIO_GENERATOR_VERSION,
   WAREHOUSE_EVALUATOR_VERSION,
-} from "@preflight/simulation-core";
+} from "@rovaulta/simulation-core";
 import { ApplicationError } from "./errors.js";
 
-const SESSION_COOKIE = "preflight_session";
+const SESSION_COOKIE = "rovaulta_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
-const POLICY_CIPHERTEXT_VERSION = "preflight.policy-ciphertext/v1" as const;
+const POLICY_CIPHERTEXT_VERSION = "rovaulta.policy-ciphertext/v1" as const;
 const ACCOUNT_ID_PATTERN = /^account:[a-f0-9]{32}$/;
 const MAX_PASSWORD_LENGTH = 256;
 

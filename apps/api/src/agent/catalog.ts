@@ -6,7 +6,7 @@ import {
   parseRobotBuildId,
   parseRobotId,
   parseSiteId,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 import {
   DeploymentAgentError,
   type DeploymentCatalogEntry,

@@ -4,7 +4,7 @@ import {
   parseClearanceRecord,
   parseUnixTimestamp,
   type UnixTimestamp,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 import {
   type Address,
   type Chain,
@@ -15,7 +15,7 @@ import {
   type Transport,
 } from "viem";
 import { sepolia } from "viem/chains";
-import { PREFLIGHT_SEPOLIA_DEPLOYMENT } from "./deployment";
+import { ROVAULTA_SEPOLIA_DEPLOYMENT } from "./deployment";
 import { failRelease, ReleaseGateError } from "./errors";
 import {
   type ClearanceBindingsTransport,
@@ -40,7 +40,7 @@ const CLEARANCE_BINDING_COMPONENTS = [
   { name: "expiresAt", type: "uint64" },
 ] as const;
 
-export const PREFLIGHT_REGISTRY_ABI = [
+export const ROVAULTA_REGISTRY_ABI = [
   {
     type: "function",
     name: "clearanceDigestByIdHash",
@@ -138,30 +138,30 @@ export class ViemClearanceRegistryReader implements ClearanceRegistryReader {
     const requested = clearanceRecordToTransport(clearance);
     try {
       const chainId = await this.#client.getChainId();
-      if (chainId !== PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId) {
+      if (chainId !== ROVAULTA_SEPOLIA_DEPLOYMENT.chainId) {
         return failRelease("WRONG_CHAIN", "Registry RPC is connected to the wrong chain");
       }
       const blockNumber = await this.#client.getBlockNumber();
       const [block, code] = await Promise.all([
         this.#client.getBlock({ blockNumber }),
         this.#client.getCode({
-          address: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
+          address: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
           blockNumber,
         }),
       ]);
       if (code === undefined || code === "0x") {
-        return failRelease("REGISTRY_UNAVAILABLE", "Preflight registry bytecode is unavailable");
+        return failRelease("REGISTRY_UNAVAILABLE", "Rovaulta registry bytecode is unavailable");
       }
       const registeredDigest = await this.#client.readContract({
-        address: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
-        abi: PREFLIGHT_REGISTRY_ABI,
+        address: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
+        abi: ROVAULTA_REGISTRY_ABI,
         functionName: "clearanceDigestByIdHash",
         args: [requested.bindings.clearanceIdHash],
         blockNumber,
       });
       const common = {
-        chainId: PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId,
-        registry: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
+        chainId: ROVAULTA_SEPOLIA_DEPLOYMENT.chainId,
+        registry: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
         blockNumber,
         blockHash: block.hash,
         blockTimestamp: parseUnixTimestamp(block.timestamp.toString(), "blockTimestamp"),
@@ -173,15 +173,15 @@ export class ViemClearanceRegistryReader implements ClearanceRegistryReader {
 
       const [rawStored, exactMatch] = await Promise.all([
         this.#client.readContract({
-          address: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
-          abi: PREFLIGHT_REGISTRY_ABI,
+          address: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
+          abi: ROVAULTA_REGISTRY_ABI,
           functionName: "getClearance",
           args: [requested.clearanceDigest],
           blockNumber,
         }),
         this.#client.readContract({
-          address: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
-          abi: PREFLIGHT_REGISTRY_ABI,
+          address: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
+          abi: ROVAULTA_REGISTRY_ABI,
           functionName: "isClearanceValidFor",
           args: [requested.clearanceDigest, requested.bindings],
           blockNumber,
@@ -208,10 +208,10 @@ export class ViemClearanceRegistryReader implements ClearanceRegistryReader {
 export function assertClearanceSnapshotEligible(
   snapshot: ClearanceRegistrySnapshot,
 ): ClearanceRegistrySnapshot {
-  if (snapshot.chainId !== PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId) {
+  if (snapshot.chainId !== ROVAULTA_SEPOLIA_DEPLOYMENT.chainId) {
     return failRelease("WRONG_CHAIN", "Clearance snapshot is from the wrong chain");
   }
-  if (snapshot.registry !== PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract) {
+  if (snapshot.registry !== ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract) {
     return failRelease("REGISTRY_UNAVAILABLE", "Clearance snapshot is from another registry");
   }
   if (snapshot.stored === null) {

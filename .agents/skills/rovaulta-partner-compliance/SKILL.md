@@ -1,5 +1,5 @@
 ---
-name: preflight-partner-compliance
+name: rovaulta-partner-compliance
 description: Audit a Chainlink CRE or Ledger change for partner-prize eligibility, load-bearing use, and demo evidence. Use whenever partner-facing code or submission evidence changes.
 ---
 

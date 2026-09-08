@@ -1,5 +1,5 @@
 {
-  "name": "@preflight/simulation-core",
+  "name": "@rovaulta/simulation-core",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@preflight/domain": "workspace:*"
+    "@rovaulta/domain": "workspace:*"
   },
   "devDependencies": {
     "typescript": "5.9.2"

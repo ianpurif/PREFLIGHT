@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Turn the current judge dashboard into a clear Preflight product journey: landing page, first-time
+Turn the current judge dashboard into a clear Rovaulta product journey: landing page, first-time
 setup, application navigation, build selection, deterministic evaluation, result interpretation,
 release preparation, and explicit human approval handoff.
 
@@ -90,7 +90,7 @@ Completed evidence:
 - `bun run test` — all repository package tests passed (including the web critical-path unit tests).
 - `bun run test:e2e` — 10 Playwright tests passed across P6, P7, and P8 landing, account lifecycle,
   release-boundary, and fixture-isolation flows.
-- `bun --filter '@preflight/web' typecheck` and the full typecheck stage in `bun run verify` passed.
+- `bun --filter '@rovaulta/web' typecheck` and the full typecheck stage in `bun run verify` passed.
 - `bun run lint` — passed; Biome reports non-blocking `noDescendingSpecificity` warnings in the
   existing large stylesheet, with no lint errors or disabled rules.
 - `bun run build` — all packages and the Next.js application built successfully.

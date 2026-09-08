@@ -2,9 +2,18 @@
   {
     "key": "existing-p5-unregistered-fixture",
     "aliases": {
-      "site": ["warehouse-a", "site:warehouse-a"],
-      "robot": ["picker-01", "robot:picker-01"],
-      "build": ["release-001", "robot-build:release-001"]
+      "site": [
+        "warehouse-a",
+        "site:warehouse-a"
+      ],
+      "robot": [
+        "picker-01",
+        "robot:picker-01"
+      ],
+      "build": [
+        "release-001",
+        "robot-build:release-001"
+      ]
     },
     "target": {
       "siteId": "site:warehouse-a",
@@ -17,11 +26,11 @@
       "verdict": "CLEAR"
     },
     "clearance": {
-      "schemaVersion": "preflight.clearance-record/v1",
+      "schemaVersion": "rovaulta.clearance-record/v1",
       "clearanceId": "clearance:p5-release-001",
       "evaluationId": "evaluation:p5-release-001",
       "inputs": {
-        "schemaVersion": "preflight.evaluation-inputs/v1",
+        "schemaVersion": "rovaulta.evaluation-inputs/v1",
         "siteId": "site:warehouse-a",
         "robotId": "robot:picker-01",
         "robotBuildId": "robot-build:release-001",
@@ -30,7 +39,7 @@
         "safetyEnvelopeCommitment": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
         "evaluatorVersion": "evaluator-version:deterministic-v1"
       },
-      "evaluationInputsDigest": "sha256:f2e1d9978e9ecb5bc3c45ee1f7e0f7ea271a17af77569121cd6467c5a8f1588e",
+      "evaluationInputsDigest": "sha256:16e415de12e7e0e659386decd7881308f9fe58de9ad4089c03d2026da50461e9",
       "verdict": "CLEAR",
       "issuedAt": "1788547220",
       "expiresAt": "1788550800"

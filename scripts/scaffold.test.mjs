@@ -38,7 +38,7 @@ test("P3-P8 are load-bearing and the product boundary remains non-authoritative"
     new URL("integrations/chainlink-cre/src/confidential-evaluation.ts", root),
     "utf8",
   );
-  const contract = await readFile(new URL("contracts/src/PreflightRegistry.sol", root), "utf8");
+  const contract = await readFile(new URL("contracts/src/RovaultaRegistry.sol", root), "utf8");
   const ledger = await readFile(
     new URL("packages/ledger-gate/src/browser-adapter.ts", root),
     "utf8",
@@ -149,7 +149,7 @@ test("P3-P8 are load-bearing and the product boundary remains non-authoritative"
   assert.doesNotMatch(connectBlock, /setPrepared\(null\)/);
   assert.ok(realWorkspace.includes("/releases/prepare"));
   assert.doesNotMatch(realWorkspace, /createDemoPublicData|JudgeDashboard/);
-  assert.match(fixtureRoute, /PREFLIGHT_ENABLE_DEMO_ROUTES/);
+  assert.match(fixtureRoute, /ROVAULTA_ENABLE_DEMO_ROUTES/);
   assert.match(fixtureRoute, /NODE_ENV === "production"/);
   assert.match(applicationStore, /createCipheriv/);
   assert.match(applicationStore, /account_id/);

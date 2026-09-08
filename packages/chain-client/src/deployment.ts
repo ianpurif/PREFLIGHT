@@ -2,11 +2,11 @@ import { type Address, getAddress } from "viem";
 import deploymentArtifact from "../../../contracts/deployments/sepolia.json";
 import { failRelease } from "./errors";
 
-export const PREFLIGHT_EIP712_NAME = "Preflight" as const;
-export const PREFLIGHT_EIP712_VERSION = "1" as const;
+export const ROVAULTA_EIP712_NAME = "Rovaulta" as const;
+export const ROVAULTA_EIP712_VERSION = "1" as const;
 export const SEPOLIA_CHAIN_ID = 11_155_111 as const;
 
-export interface PreflightDeployment {
+export interface RovaultaDeployment {
   readonly chainId: typeof SEPOLIA_CHAIN_ID;
   readonly network: "ethereum-sepolia";
   readonly verifyingContract: Address;
@@ -14,7 +14,7 @@ export interface PreflightDeployment {
   readonly deploymentTransaction: `0x${string}`;
 }
 
-function parseDeploymentArtifact(input: unknown): PreflightDeployment {
+function parseDeploymentArtifact(input: unknown): RovaultaDeployment {
   if (input === null || typeof input !== "object" || Array.isArray(input)) {
     return failRelease("REGISTRY_UNAVAILABLE", "Sepolia deployment metadata is malformed");
   }
@@ -50,4 +50,4 @@ function parseDeploymentArtifact(input: unknown): PreflightDeployment {
 }
 
 /** The checked-in P4 deployment artifact is the sole P5 domain source. */
-export const PREFLIGHT_SEPOLIA_DEPLOYMENT = parseDeploymentArtifact(deploymentArtifact);
+export const ROVAULTA_SEPOLIA_DEPLOYMENT = parseDeploymentArtifact(deploymentArtifact);

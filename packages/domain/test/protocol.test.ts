@@ -151,12 +151,12 @@ const intent = createDeploymentIntent(clearance, {
 });
 
 const GOLDEN_DIGESTS = {
-  robotBuild: "sha256:31a30bd81d7c1d989a977410389847925182f3c7f454bd75f8fc6612d408b5bd",
+  robotBuild: "sha256:843cd43a5a5a375351733150a611c1d9d63c6a2fc3ae9c1ebef0ea3f29b1c4b7",
   safetyEnvelopeCommitment:
-    "sha256:f5b77c919b320d9cb16f834208b1842f493672010b5fbb59f72fa865c9edbdf8",
-  evaluationInputs: "sha256:38954b9164868b33c7afa9277410520fcdead18db6b1e1b93c45f366ef5fd0d8",
-  clearance: "sha256:eae057bcdb07ac12c2b110a5bdb13ebbc30c0c0b25efc56379da2198fbce20e9",
-  deploymentIntent: "sha256:96e2cce551f25a54a15cd0a94dbab054627ff9eb57981e9bd240cf15533098e0",
+    "sha256:3cffef1ca4b0942157109c9ff2670d0ee082d264bcb9e4c2b194ee6e7ab9bd6a",
+  evaluationInputs: "sha256:84d738b5f0a56736f04bdd16415b3678112ea0b0e4223e53b3d4faf23055b80c",
+  clearance: "sha256:79d513cd15b4a24192ae7598d1037926a72df6d60eba79cd472fb9973d89ecb5",
+  deploymentIntent: "sha256:224aec1dd2eb3675886c362b50719f9479a1772e102ed3729295778f3c7b8ed9",
 } as const;
 
 describe("canonical identifiers", () => {
@@ -197,7 +197,7 @@ describe("canonical identifiers", () => {
   });
 });
 
-describe("Preflight Canonical JSON v1", () => {
+describe("Rovaulta Canonical JSON v1", () => {
   test("logical object equality and insertion order produce identical bytes", () => {
     const left = { z: 3, nested: { b: true, a: "value" }, a: [1, 2, 3] };
     const right = { a: [1, 2, 3], nested: { a: "value", b: true }, z: 3 };
@@ -322,14 +322,14 @@ describe("strict protocol schemas", () => {
 
   test("unsupported versions fail before hashing", () => {
     expectProtocolCode(
-      () => digestRobotBuild({ ...robotBuild, schemaVersion: "preflight.robot-build/v2" }),
+      () => digestRobotBuild({ ...robotBuild, schemaVersion: "rovaulta.robot-build/v2" }),
       "UNSUPPORTED_VERSION",
     );
     expectProtocolCode(
       () =>
         parseEvaluationRequest({
           ...request,
-          schemaVersion: "preflight.evaluation-request/v2",
+          schemaVersion: "rovaulta.evaluation-request/v2",
         }),
       "UNSUPPORTED_VERSION",
     );
@@ -435,7 +435,7 @@ describe("versioned domain-separated digests", () => {
   test("digest domain labels are versioned and unique", () => {
     const domains = Object.values(DIGEST_DOMAINS);
     expect(new Set(domains).size).toBe(domains.length);
-    for (const domain of domains) expect(domain).toMatch(/^preflight\.digest\..+\/v1$/);
+    for (const domain of domains) expect(domain).toMatch(/^rovaulta\.digest\..+\/v1$/);
   });
 
   test("meaningful robot-build and envelope changes alter digests", () => {

@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
-import { ReleaseGateError } from "@preflight/chain-client";
-import { parseClearanceRecord } from "@preflight/domain";
-import { evaluateSimulation } from "@preflight/simulation-core";
+import { ReleaseGateError } from "@rovaulta/chain-client";
+import { parseClearanceRecord } from "@rovaulta/domain";
+import { evaluateSimulation } from "@rovaulta/simulation-core";
 import Fastify, { type FastifyReply } from "fastify";
 import { type DeploymentAgent, DeploymentAgentError } from "./agent/index.js";
 import { ApplicationError, ApplicationStore } from "./application/index.js";
@@ -74,7 +74,7 @@ export function buildServer(
     [
       "http://localhost:3000",
       "http://127.0.0.1:3000",
-      environment.PREFLIGHT_WEB_ORIGIN,
+      environment.ROVAULTA_WEB_ORIGIN,
       environment.WEB_ORIGIN,
     ].filter((origin): origin is string => typeof origin === "string" && origin.length > 0),
   );
@@ -191,7 +191,7 @@ export function buildServer(
   ): boolean {
     if (
       environment.NODE_ENV !== "production" &&
-      environment.PREFLIGHT_ENABLE_DEMO_ROUTES === "true"
+      environment.ROVAULTA_ENABLE_DEMO_ROUTES === "true"
     ) {
       return true;
     }

@@ -9,7 +9,7 @@ flowchart LR
   SIM[Deterministic Simulation Core]
   CRE[Chainlink CRE Confidential Workflow]
   REGISTRAR[Authorized P4 Registrar]
-  REG[PreflightRegistry on Sepolia]
+  REG[RovaultaRegistry on Sepolia]
   LEDGER[Ledger DMK + Ethereum Signer]
   RELEASE[Deployment Release Gate]
 
@@ -36,7 +36,7 @@ Stable, versioned domain language and interfaces: canonical identifiers, exact p
 Pure P2 fixed-unit warehouse model, committed seeded scenario generation, materialized-trace validation, and deterministic restricted-zone/speed/payload evaluation. The internal report wraps an unchanged P1 result. No React, partner, network, filesystem, clock, or environment dependency. See ADR-0004.
 
 ### `integrations/chainlink-cre`
-P3 CRE-specific HTTP entrypoint and adapters. The real `handlerInTee` callback reads the private envelope/blind through one fixed CRE secret selector, invokes `@preflight/simulation-core`, and releases only an allowlisted P1 result plus the exact supplied-behavior binding. Authenticated evidence currently uses the local simulator's ignored environment mapping; production Vault DON custody remains unproven. The workflow compiles to the CRE WASM/QuickJS target without Node, filesystem, environment, dynamic-import, browser, or native runtime dependencies.
+P3 CRE-specific HTTP entrypoint and adapters. The real `handlerInTee` callback reads the private envelope/blind through one fixed CRE secret selector, invokes `@rovaulta/simulation-core`, and releases only an allowlisted P1 result plus the exact supplied-behavior binding. Authenticated evidence currently uses the local simulator's ignored environment mapping; production Vault DON custody remains unproven. The workflow compiles to the CRE WASM/QuickJS target without Node, filesystem, environment, dynamic-import, browser, or native runtime dependencies.
 
 ### `contracts`
 P4 public attestation registry keyed by the P1 clearance digest. It stores only fixed-size exact

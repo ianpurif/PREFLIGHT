@@ -2,11 +2,11 @@
 
 ## Outcome
 
-`PreflightRegistry` records a registrar-attested P1 clearance digest and its minimum public exact bindings, then answers whether that exact clearance exists, is unrevoked, is unexpired, and matches an expected site/robot/build/envelope/evaluator/evaluation context. It records scoped evaluation evidence; it never claims universal or physical robot safety.
+`RovaultaRegistry` records a registrar-attested P1 clearance digest and its minimum public exact bindings, then answers whether that exact clearance exists, is unrevoked, is unexpired, and matches an expected site/robot/build/envelope/evaluator/evaluation context. It records scoped evaluation evidence; it never claims universal or physical robot safety.
 
 ## Non-goals
 
-- parsing Preflight Canonical JSON or recomputing P1 SHA-256 clearance digests in Solidity
+- parsing Rovaulta Canonical JSON or recomputing P1 SHA-256 clearance digests in Solidity
 - automatic Chainlink CRE-to-contract delivery, live DON/Nitro attestation, or proof of evaluator provenance
 - P5 Ledger, EIP-712, signer authorization, nonce consumption, or deployment execution
 - P6 UI/digital twin, robotics control, tokens, payments, upgradeability, or governance frameworks
@@ -26,9 +26,9 @@
 
 ## Change surfaces
 
-- `contracts/src/PreflightRegistry.sol`: minimal owner/registrar authorization, clearance storage, revocation, events, and read/verification interface
+- `contracts/src/RovaultaRegistry.sol`: minimal owner/registrar authorization, clearance storage, revocation, events, and read/verification interface
 - `contracts/test/**`: unit, P1 compatibility, fuzz, and stateful invariant coverage without adding a contract dependency
-- `contracts/script/DeployPreflightRegistry.s.sol`: Sepolia-ready deployment using an environment-supplied private key
+- `contracts/script/DeployRovaultaRegistry.s.sol`: Sepolia-ready deployment using an environment-supplied private key
 - `.env.example` and contract documentation: non-secret deployment configuration and commands
 - `scripts/verify-scaffold.mjs` / `scripts/scaffold.test.mjs`: positive P4 structural guards while P5/P6 remain deferred
 - planning, architecture, security, compliance, verification, and AI-use documentation
@@ -110,7 +110,7 @@ Rollback is confined to P4 contract source/tests/script, P4-positive scaffold ch
 
 ### Outcome and non-goals
 
-Deploy the unchanged `PreflightRegistry` bytecode from commit `1929651` to Ethereum Sepolia, verify
+Deploy the unchanged `RovaultaRegistry` bytecode from commit `1929651` to Ethereum Sepolia, verify
 its public owner/registrar/read state through RPC, publish only non-secret deployment metadata, and
 make the resulting `chainId + verifyingContract` available to later P5 work. This does not register
 a clearance, automate CRE delivery, add EIP-712, implement Ledger signing, or begin P5.
@@ -129,7 +129,7 @@ a clearance, automate CRE delivery, add EIP-712, implement Ledger signing, or be
 
 ### Acceptance and steps
 
-- [x] Preflight: clean P4 commit, ignored `.env`, Sepolia chain ID, derived address/balance, Foundry
+- [x] Rovaulta: clean P4 commit, ignored `.env`, Sepolia chain ID, derived address/balance, Foundry
   identity, `forge fmt --check`, build/tests, and full repository verification
 - [x] Broadcast unchanged deployment script exactly once and capture public receipt metadata
 - [x] Verify source when explorer credentials/API permit; do not redeploy on verifier failure

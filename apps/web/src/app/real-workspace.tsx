@@ -37,12 +37,12 @@ const navItems: readonly Readonly<{ href: string; label: string; view: ProductVi
 
 function ProductBrand() {
   return (
-    <Link className="brand-lockup product-brand" href="/app" aria-label="Preflight workspace home">
+    <Link className="brand-lockup product-brand" href="/app" aria-label="Rovaulta workspace home">
       <span className="brand-mark" aria-hidden="true">
         P
       </span>
       <span>
-        <strong>Preflight</strong>
+        <strong>Rovaulta</strong>
         <small>Deployment safety</small>
       </span>
     </Link>
@@ -207,7 +207,7 @@ function OverviewView({ data }: { readonly data: WorkspaceData }) {
           <p className="view-eyebrow">Workspace overview</p>
           <h1>Make the next release easy to trust.</h1>
           <p className="view-lede">
-            Preflight keeps the target, exact build, evaluation result, and human handoff in one
+            Rovaulta keeps the target, exact build, evaluation result, and human handoff in one
             accountable path.
           </p>
         </div>
@@ -715,7 +715,7 @@ function SetupView({
                 required
               />
               <span className="field-help">
-                Use the digest produced by your build pipeline. Preflight records this identity; it
+                Use the digest produced by your build pipeline. Rovaulta records this identity; it
                 does not inspect the artifact bytes.
               </span>
             </label>
@@ -1096,7 +1096,7 @@ function ReleasesView({
         }),
       });
       if (response.status === "LEDGER_APPROVAL_REQUIRED" && response.prepared !== undefined) {
-        window.sessionStorage.setItem("preflight.p5.prepared", JSON.stringify(response.prepared));
+        window.sessionStorage.setItem("rovaulta.p5.prepared", JSON.stringify(response.prepared));
         setHandoffReady(true);
       }
       await refresh();
@@ -1114,7 +1114,7 @@ function ReleasesView({
           <p className="view-eyebrow">Releases</p>
           <h1>Prepare the exact handoff.</h1>
           <p className="view-lede">
-            A clear local evaluation is not an onchain clearance. Preflight will stop until the
+            A clear local evaluation is not an onchain clearance. Rovaulta will stop until the
             public record and configured release gate are available.
           </p>
         </div>
@@ -1152,7 +1152,7 @@ function ReleasesView({
             <fieldset className="real-release-clearance">
               <legend>Public P4 clearance record</legend>
               <p className="field-help">
-                Paste the public clearance issued for this exact evaluation. Preflight cannot create
+                Paste the public clearance issued for this exact evaluation. Rovaulta cannot create
                 one here, and private policy contents do not belong in this field.
               </p>
               <textarea
@@ -1162,7 +1162,7 @@ function ReleasesView({
                   setClearanceText(event.target.value);
                   setHandoffReady(false);
                 }}
-                placeholder='{"schemaVersion":"preflight.clearance-record/v1",…}'
+                placeholder='{"schemaVersion":"rovaulta.clearance-record/v1",…}'
                 spellCheck={false}
                 aria-label="Public P4 clearance record"
               />

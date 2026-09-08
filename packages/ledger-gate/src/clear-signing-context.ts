@@ -10,9 +10,9 @@ import {
   type TypedDataContext,
 } from "@ledgerhq/context-module";
 import {
-  PREFLIGHT_DEPLOYMENT_INTENT_TYPES,
-  PREFLIGHT_SEPOLIA_DEPLOYMENT,
-} from "@preflight/chain-client";
+  ROVAULTA_DEPLOYMENT_INTENT_TYPES,
+  ROVAULTA_SEPOLIA_DEPLOYMENT,
+} from "@rovaulta/chain-client";
 import { failLedger } from "./errors";
 
 export interface ClearSigningAttempt {
@@ -22,7 +22,7 @@ export interface ClearSigningAttempt {
 
 function hasExactDeploymentSchema(context: TypedDataContext): boolean {
   const actual = context.schema.DeploymentIntent;
-  const expected = PREFLIGHT_DEPLOYMENT_INTENT_TYPES.DeploymentIntent;
+  const expected = ROVAULTA_DEPLOYMENT_INTENT_TYPES.DeploymentIntent;
   return (
     actual !== undefined &&
     actual.length === expected.length &&
@@ -34,7 +34,7 @@ function hasExactDeploymentSchema(context: TypedDataContext): boolean {
 
 function hasExactDisplayFilters(result: TypedDataClearSignContext): boolean {
   if (result.type !== "success") return false;
-  const expectedPaths = PREFLIGHT_DEPLOYMENT_INTENT_TYPES.DeploymentIntent.map(
+  const expectedPaths = ROVAULTA_DEPLOYMENT_INTENT_TYPES.DeploymentIntent.map(
     (field) => field.name,
   ).sort();
   const actualPaths = Object.keys(result.filters).sort();
@@ -66,7 +66,7 @@ export class GuardedClearSigningContext implements ContextModule, ClearSigningAt
     if (!this.#resolved) {
       failLedger(
         "CLEAR_SIGNING_UNAVAILABLE",
-        "Ledger did not resolve the exact Preflight Clear Signing descriptor",
+        "Ledger did not resolve the exact Rovaulta Clear Signing descriptor",
       );
     }
   }
@@ -89,9 +89,9 @@ export class GuardedClearSigningContext implements ContextModule, ClearSigningAt
     const result = await this.#delegate.getTypedDataFilters(context);
     this.#resolved =
       hasExactDisplayFilters(result) &&
-      context.chainId === PREFLIGHT_SEPOLIA_DEPLOYMENT.chainId &&
+      context.chainId === ROVAULTA_SEPOLIA_DEPLOYMENT.chainId &&
       context.verifyingContract.toLowerCase() ===
-        PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract.toLowerCase() &&
+        ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract.toLowerCase() &&
       hasExactDeploymentSchema(context);
     return result;
   }

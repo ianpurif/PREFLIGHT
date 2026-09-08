@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { ReleaseGateError } from "@preflight/chain-client";
+import { ReleaseGateError } from "@rovaulta/chain-client";
 import type { DeploymentAgent } from "../src/agent/index.js";
 import type { ReleaseService } from "../src/release/index.js";
 import { buildServer } from "../src/server.js";
@@ -32,7 +32,7 @@ const proposal = {
 
 const TEST_FIXTURE_ENV = {
   NODE_ENV: "test",
-  PREFLIGHT_ENABLE_DEMO_ROUTES: "true",
+  ROVAULTA_ENABLE_DEMO_ROUTES: "true",
 } as NodeJS.ProcessEnv;
 
 describe("P5 release API boundary", () => {

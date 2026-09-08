@@ -1,5 +1,5 @@
 {
-  "name": "@preflight/api",
+  "name": "@rovaulta/api",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,9 +13,9 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@preflight/chain-client": "workspace:*",
-    "@preflight/domain": "workspace:*",
-    "@preflight/simulation-core": "workspace:*",
+    "@rovaulta/chain-client": "workspace:*",
+    "@rovaulta/domain": "workspace:*",
+    "@rovaulta/simulation-core": "workspace:*",
     "fastify": "5.12.1",
     "viem": "2.56.3"
   },

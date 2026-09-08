@@ -4,11 +4,11 @@ import {
   type ClearanceRegistryReader,
   type ClearanceRegistrySnapshot,
   clearanceRecordToTransport,
-  PREFLIGHT_SEPOLIA_DEPLOYMENT,
+  ROVAULTA_SEPOLIA_DEPLOYMENT,
   ReleaseGateError,
   type ReleaseGateErrorCode,
   VERDICT_CLEAR_BYTES32,
-} from "@preflight/chain-client";
+} from "@rovaulta/chain-client";
 import {
   CLEARANCE_RECORD_SCHEMA_VERSION,
   type ClearanceRecord,
@@ -25,7 +25,7 @@ import {
   parseSafetyEnvelopeId,
   parseSiteId,
   parseUnixTimestamp,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 import { privateKeyToAccount } from "viem/accounts";
 import {
   AuthorizedSignerPolicy,
@@ -63,7 +63,7 @@ function snapshot(
   const requested = clearanceRecordToTransport(record);
   return {
     chainId: 11_155_111,
-    registry: PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract,
+    registry: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
     blockNumber: 11_700_000n,
     blockHash: `0x${"aa".repeat(32)}`,
     blockTimestamp: parseUnixTimestamp("1788548000"),
@@ -173,7 +173,7 @@ describe("deterministic P5 release service", () => {
     const authorization = await gate.consume({ intent: prepared.intent, signature });
     expect(authorization.recoveredSigner).toBe(account.address);
     expect(authorization.chainId).toBe(11_155_111);
-    expect(authorization.registry).toBe(PREFLIGHT_SEPOLIA_DEPLOYMENT.verifyingContract);
+    expect(authorization.registry).toBe(ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract);
     expect(authorization.intent.robotBuildDigest).toBe(clearance.inputs.robotBuildDigest);
     expect(reader.calls).toBe(2);
     await expectCode(() => gate.consume({ intent: prepared.intent, signature }), "REPLAY_REJECTED");

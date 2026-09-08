@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Deliver one deterministic judge-facing dashboard for the existing P1–P5.2 Preflight
+Deliver one deterministic judge-facing dashboard for the existing P1–P5.2 Rovaulta
 workflow. The dashboard renders the existing P2 fixture/evaluator result, presents the
 public Chainlink/attestation/Ledger boundaries, and makes the unsafe → cleared → mutated
 build story obvious without becoming an authority.

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-/// @title PreflightRegistry
+/// @title RovaultaRegistry
 /// @notice Records scoped clearance evidence for an exact evaluated robot build.
 /// @dev The registry trusts authorized registrars to map validated P1 objects into the
 /// fixed-size transport fields below. It does not parse canonical JSON, attest CRE execution,
 /// authorize deployment, or claim that a robot is universally or physically safe.
-contract PreflightRegistry {
+contract RovaultaRegistry {
     bytes32 public constant VERDICT_CLEAR = bytes32("CLEAR");
     uint64 public constant MAX_PROTOCOL_TIMESTAMP = 253_402_300_799;
 

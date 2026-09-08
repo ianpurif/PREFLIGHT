@@ -2,7 +2,7 @@
 
 ## Outcome
 
-`@preflight/chainlink-cre` supplies a real Chainlink CRE TypeScript workflow whose HTTP-triggered handler runs through `handlerInTee`, obtains the private safety envelope and 32-byte commitment blind from CRE secrets, validates exact P1/P2 bindings, invokes the existing deterministic P2 evaluator, and releases only a versioned minimal public result or a redacted fail-closed error.
+`@rovaulta/chainlink-cre` supplies a real Chainlink CRE TypeScript workflow whose HTTP-triggered handler runs through `handlerInTee`, obtains the private safety envelope and 32-byte commitment blind from CRE secrets, validates exact P1/P2 bindings, invokes the existing deterministic P2 evaluator, and releases only a versioned minimal public result or a redacted fail-closed error.
 
 ## Non-goals
 
@@ -73,13 +73,13 @@ Rollback is limited to the Chainlink integration, P3-positive scaffold assertion
 
 - One atomic `main`-namespace secret avoids mixed envelope/blind rotation. The 1,506-character ASCII demo secret fits the integration's explicit 2 KiB input cap; maximum-size P2 envelopes are not claimed to fit CRE Vault quotas.
 - The public result omits scenario/violation counts and internal-report digests. Neither is required for exact P1 binding, and both increase confidential-rule oracle/dictionary risk.
-- `preflight.digest.cre-behavior-input/v1` covers the normalized version, P1 request, build descriptor, entire trace suite, provenance marker, and explicit evaluation time. It prevents silent substitution but is not origin attestation.
+- `rovaulta.digest.cre-behavior-input/v1` covers the normalized version, P1 request, build descriptor, entire trace suite, provenance marker, and explicit evaluation time. It prevents silent substitution but is not origin attestation.
 - The official confidential guide permits any TEE, but P3 restricts the installed SDK surface to Nitro/us-west-2 and uses one compile-time fixed secret selector with no ordinary handler capability calls.
 - CLI v1.32.0 simulation passes empty configuration to the optional pre-hook phase, so P3 follows the current official confidential TypeScript template shape without that hook. This compatibility repair does not alter the TEE handler, P1/P2 semantics, secret selector, or public projection.
 
 ## Verification evidence
 
-- `bun --filter '@preflight/chainlink-cre' test`: 25 passed, 0 failed, 343 assertions
+- `bun --filter '@rovaulta/chainlink-cre' test`: 25 passed, 0 failed, 343 assertions
 - integration source/test typecheck: passed
 - SDK `cre-compile` with no skip flag: passed; non-empty WASM generated from actual P1/P2 imports
 - checksum-verified official CRE CLI v1.32.0 authenticated `workflow simulate`: all three runs passed using CLI-reported simulation binary hash `8d8bff9fdfaf67a8db7b2fa81ea46fa351b5e8f6914b2b6ebe21e2ad4310c315` and workflow config hash `4cda450a9d236d49ccd0e3f01285ba26b15c16b0202d35c091c076b6095a3e12`

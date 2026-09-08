@@ -1,4 +1,4 @@
-name = "preflight-reviewer"
+name = "rovaulta-reviewer"
 description = "Independent read-only code reviewer for correctness, security, maintainability, and hackathon integrity."
 sandbox_mode = "read-only"
 model_reasoning_effort = "high"

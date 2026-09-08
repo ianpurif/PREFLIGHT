@@ -3,7 +3,7 @@ import { failProtocol, ProtocolError } from "./errors";
 declare const canonicalJsonBrand: unique symbol;
 
 export type CanonicalJson = string & {
-  readonly [canonicalJsonBrand]: "PreflightCanonicalJsonV1";
+  readonly [canonicalJsonBrand]: "RovaultaCanonicalJsonV1";
 };
 
 export type CanonicalValue =
@@ -161,7 +161,7 @@ function serializeValue(
   return failCanonical("Unsupported canonical value type", path);
 }
 
-/** Serializes the strict Preflight Canonical JSON v1 data subset. */
+/** Serializes the strict Rovaulta Canonical JSON v1 data subset. */
 export function canonicalSerialize(value: unknown): CanonicalJson {
   try {
     return serializeValue(

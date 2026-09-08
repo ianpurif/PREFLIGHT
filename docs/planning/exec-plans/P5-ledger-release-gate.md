@@ -14,7 +14,7 @@ claim an autonomous-agent runtime or execution demonstration.
 - P6 robot activation, digital-twin UI, visualization, or autonomous execution
 - private-key custody, backend signing, Ledger Key Ring, headless signing, or a general agent framework
 - legacy LedgerJS, hashed EIP-712, blind signing, personal signing, raw transaction signing, or fallback signing
-- changing P4 contract state/authorization semantics or claiming Ledger/Preflight proves physical robot safety
+- changing P4 contract state/authorization semantics or claiming Ledger/Rovaulta proves physical robot safety
 - replacing P1 canonical serialization/digests or creating a competing deployment-intent model
 
 ## Invariants
@@ -23,8 +23,8 @@ claim an autonomous-agent runtime or execution demonstration.
 - The signable message binds protocol/schema version, exact site/robot/build/build digest,
   clearance ID/digest, Sepolia target, authorized signer, nonce, issuance, expiry, and the canonical
   P1 deployment-intent digest.
-- The EIP-712 domain is exactly `Preflight`, version `1`, chain ID `11155111`, and the deployed
-  `PreflightRegistry` address read from `contracts/deployments/sepolia.json`.
+- The EIP-712 domain is exactly `Rovaulta`, version `1`, chain ID `11155111`, and the deployed
+  `RovaultaRegistry` address read from `contracts/deployments/sepolia.json`.
 - The deterministic policy, not an AI agent or frontend boolean, decides whether Ledger may be
   prompted. Any RPC, chain, contract, clearance, expiry, signer, persistence, or binding failure
   blocks before hardware.
@@ -112,7 +112,7 @@ separate read-only reviewer will inspect the final diff after implementation.
 
 ## Decisions / deviations
 
-- `DeploymentIntent` advances to `preflight.deployment-intent/v2` only to add the fixed canonical
+- `DeploymentIntent` advances to `rovaulta.deployment-intent/v2` only to add the fixed canonical
   action. Chain ID, registry, and authorized signer remain EIP-712/application authorization
   bindings derived from authoritative deployment and policy data, rather than contaminating P1's
   chain-neutral identifiers.

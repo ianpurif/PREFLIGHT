@@ -17,7 +17,7 @@ import {
   type RobotBuildDescriptor,
   SAFETY_ENVELOPE_METADATA_SCHEMA_VERSION,
   type UnixTimestamp,
-} from "@preflight/domain";
+} from "@rovaulta/domain";
 import {
   type ConfidentialEvaluationEnvelope,
   confidentialEnvelopeCommitmentPayload,

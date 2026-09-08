@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { failRelease, ViemClearanceRegistryReader } from "@preflight/chain-client";
+import { failRelease, ViemClearanceRegistryReader } from "@rovaulta/chain-client";
 import { SqliteReleaseStore } from "./nonce-store.js";
 import { ReleaseService } from "./release-service.js";
 import { AuthorizedSignerPolicy } from "./signer-policy.js";
@@ -17,13 +17,13 @@ export function createReleaseServiceFromEnvironment(
   }
   const storePath = resolve(
     process.cwd(),
-    environment.PREFLIGHT_RELEASE_DB_PATH || ".data/preflight-release.sqlite",
+    environment.ROVAULTA_RELEASE_DB_PATH || ".data/rovaulta-release.sqlite",
   );
-  const ttl = Number(environment.PREFLIGHT_INTENT_TTL_SECONDS || "300");
+  const ttl = Number(environment.ROVAULTA_INTENT_TTL_SECONDS || "300");
   return new ReleaseService({
     reader: new ViemClearanceRegistryReader(rpcUrl),
     store: new SqliteReleaseStore(storePath),
-    signers: AuthorizedSignerPolicy.fromEnvironment(environment.PREFLIGHT_AUTHORIZED_SIGNERS),
+    signers: AuthorizedSignerPolicy.fromEnvironment(environment.ROVAULTA_AUTHORIZED_SIGNERS),
     intentTtlSeconds: ttl,
   });
 }

@@ -34,7 +34,7 @@
 - The explicit development fixture route is a judge/regression dashboard: deployment target,
   deterministic warehouse digital twin, public evaluation, Chainlink boundary, deployment-agent
   activity, Sepolia registry, Ledger boundary, and expandable verification trail.
-- The server evaluates the existing `@preflight/simulation-core` fixture and passes only a public
+- The server evaluates the existing `@rovaulta/simulation-core` fixture and passes only a public
   projection to the browser. The confidential envelope, blind, rules, thresholds, geometry, and
   internal report never enter the client bundle or rendered output.
 - Build A is the default `HOLD` state with the existing three deterministic violation families.
@@ -87,7 +87,7 @@
 
 ## P7 deterministic demo reliability now present
 
-- `bun run demo:setup` resets only `.data/preflight-demo`, materializes a public manifest, and
+- `bun run demo:setup` resets only `.data/rovaulta-demo`, materializes a public manifest, and
   runs the deterministic A/B/C rehearsal. `bun run demo:reset` is idempotent and never removes
   source fixtures, deployment metadata, evidence, `.env`, or the normal release database.
 - The rehearsal reuses the P2 evaluator and existing P5.2 DeploymentAgent/ReleaseService with a
@@ -106,10 +106,10 @@
 ## P5 implementation now present
 
 - `DeploymentIntent` v2 adds the fixed `ACTIVATE_DEPLOYMENT` action without creating a second intent model.
-- EIP-712 signs the full exact intent under `Preflight` v1, Sepolia `11155111`, and the deployed registry from `contracts/deployments/sepolia.json`.
+- EIP-712 signs the full exact intent under `Rovaulta` v1, Sepolia `11155111`, and the deployed registry from `contracts/deployments/sepolia.json`.
 - The signed message binds protocol/schema, site, robot, build ID/digest, clearance ID/digest, environment, authorized signer, nonce, issuance, expiry, and the P1 intent digest.
 - The API reads the real P4 interface at one explicit block and rejects missing, non-`CLEAR`, revoked, expired, inexact, wrong-chain, or wrong-registry clearance state.
-- The signer address must be in the operator-controlled `PREFLIGHT_AUTHORIZED_SIGNERS` allowlist before a Ledger request is prepared and again after recovery.
+- The signer address must be in the operator-controlled `ROVAULTA_AUTHORIZED_SIGNERS` allowlist before a Ledger request is prepared and again after recovery.
 - Nonces are generated server-side, persisted in SQLite, and atomically consumed once. Invalid signatures and failed post-sign checks do not consume them.
 - Clearance is checked before signing and again before nonce consumption. Revocation or expiry between checks denies authorization.
 - The browser adapter uses pinned Ledger DMK, WebHID and Speculos Device Transport Kits, Context Module, and Ethereum Device Signer Kit packages behind an exact `webhid | speculos` selection. Both transports retain one connection/address/context/signing path; Speculos is rejected outside `development`/`test`.
@@ -123,7 +123,7 @@
 
 ## Current blocker
 
-The official Clear Signing Tester wrapper was invoked and failed closed with `Error: GATING_TOKEN environment variable not set` (exit `1`). Its direct implicit test-token fallback was not used. The Tester is also a separate display harness that discards the signature: its gating token is not a substitute for Preflight's Ledger origin token/accepted descriptor. Consequently the structured deployment-intent display and Speculos cases A/B/E/F have **not** been run. A deliberate unexpired Sepolia demo `CLEAR` record for the Speculos signer would also be required for Case A; no contract write was made.
+The official Clear Signing Tester wrapper was invoked and failed closed with `Error: GATING_TOKEN environment variable not set` (exit `1`). Its direct implicit test-token fallback was not used. The Tester is also a separate display harness that discards the signature: its gating token is not a substitute for Rovaulta's Ledger origin token/accepted descriptor. Consequently the structured deployment-intent display and Speculos cases A/B/E/F have **not** been run. A deliberate unexpired Sepolia demo `CLEAR` record for the Speculos signer would also be required for Case A; no contract write was made.
 
 Case C and the invalid/unregistered D variant were executed through the real `/release/prepare` boundary using the public Speculos test address. Build substitution returned `403 CLEARANCE_BINDING_MISMATCH`; the deliberately unregistered fixture reached the deployed Sepolia registry and returned `403 CLEARANCE_NOT_FOUND`. Both stopped before device signing. Real revoked/expired D variants remain uncaptured, although deterministic tests cover them.
 
@@ -141,7 +141,7 @@ make UI state authoritative, or turn the offline rehearsal into a live-partner c
 agent audit history may be considered later without changing P5 nonce authority.
 
 External evidence remains separately open: run the real provider adapter when an approved
-`OPENAI_API_KEY` and explicit `PREFLIGHT_AGENT_MODEL` are available; obtain legitimate Ledger
+`OPENAI_API_KEY` and explicit `ROVAULTA_AGENT_MODEL` are available; obtain legitimate Ledger
 Tester/application-origin/accepted-descriptor access for Speculos A/B/E/F; and capture physical
 Ledger cases when hardware is available. Do not fabricate these results or block deterministic P6
 UI work on claims that have already been explicitly scoped as external limitations.
@@ -150,4 +150,4 @@ UI work on claims that have already been explicitly scoped as external limitatio
 
 Bun 1.4.1 and Foundry 1.8.1 are available. P1–P4 regressions remain in scope. Native WSL2 Speculos `0.27.0`, QEMU, and the verified public Ethereum `1.22.3` Nano S Plus ELF were used for the recorded smoke run. A read-only Sepolia P5 client run on 2026-09-06 confirmed chain `11155111`, registry `0xFB270cc222efa8B5005AA097dD512Be2558dde65`, and live contract access at block `11645707`; the deliberately unregistered local fixture returned `exists=false` and `exactMatch=false`, as expected. This is reader/policy evidence, not a successful release or proof that the registry contains no other clearances.
 
-P3's authenticated CRE runs remain simulation evidence only. P4 remains an authorized registrar attestation, not automatic CRE delivery. Neither Ledger nor Preflight proves physical robot safety.
+P3's authenticated CRE runs remain simulation evidence only. P4 remains an authorized registrar attestation, not automatic CRE delivery. Neither Ledger nor Rovaulta proves physical robot safety.

@@ -73,4 +73,4 @@ Rollback is a direct revert of the configuration, formatting, script, and docume
 - `bun run verify:scaffold` — pass; scaffold checks and 3/3 Node tests.
 - `bun run contracts:test` — environment-blocked because `forge` is not installed.
 - `bun run verify` — lint/typecheck/test/build pass; aggregate exits nonzero at the unchanged Foundry gate because `forge` is unavailable.
-- Independent `preflight-reviewer` diff review — no findings.
+- Independent `rovaulta-reviewer` diff review — no findings.

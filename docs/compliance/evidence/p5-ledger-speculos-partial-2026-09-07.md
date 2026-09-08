@@ -39,18 +39,18 @@ signature or a `ReleaseAuthorization`, so it is not end-to-end P5.1 evidence.
 The official Ethereum ELF was downloaded from its public Ledger release and checked before use:
 
 ```text
-/opt/preflight-speculos/app-ethereum-1.22.3-nanos2.elf: OK
+/opt/rovaulta-speculos/app-ethereum-1.22.3-nanos2.elf: OK
 ```
 
 The actual emulator command was:
 
 ```sh
-/opt/preflight-speculos/venv/bin/speculos \
+/opt/rovaulta-speculos/venv/bin/speculos \
   --display headless \
   --model nanosp \
   --api-port 5000 \
   --apdu-port 9999 \
-  /opt/preflight-speculos/app-ethereum-1.22.3-nanos2.elf
+  /opt/rovaulta-speculos/app-ethereum-1.22.3-nanos2.elf
 ```
 
 Startup reported the detected API level and actual application identity:
@@ -100,7 +100,7 @@ seed, private key, PIN, origin/gating token, RPC credential, confidential envelo
 
 The address is derived from Speculos's deterministic simulator seed and is therefore public test
 identity, not custody evidence. It must never remain in a production
-`PREFLIGHT_AUTHORIZED_SIGNERS` allowlist. Any clearance or nonce database created for it must be
+`ROVAULTA_AUTHORIZED_SIGNERS` allowlist. Any clearance or nonce database created for it must be
 explicitly test-only and discarded after use. The application rejects `speculos` when
 `NODE_ENV` is not `development` or `test`; loopback URL filtering is only an additional direct
 configuration constraint, not remote-attestation or anti-proxy protection.
@@ -111,13 +111,13 @@ Equivalent reproducible command (the recorded run used a checksum-verified `uv 0
 at a temporary absolute Windows path):
 
 ```powershell
-uv tool run --python 3.12 --from "erc7730==1.0.7" erc7730 lint packages/ledger-gate/clear-signing/eip712-preflight-deployment-intent.json
+uv tool run --python 3.12 --from "erc7730==1.0.7" erc7730 lint packages/ledger-gate/clear-signing/eip712-rovaulta-deployment-intent.json
 ```
 
 Result after migration to the active v2 schema and correction of all warnings:
 
 ```text
-checking packages\ledger-gate\clear-signing\eip712-preflight-deployment-intent.json…
+checking packages\ledger-gate\clear-signing\eip712-rovaulta-deployment-intent.json…
 no issue found
 checked 1 v2 descriptor files, no errors found
 ```
@@ -133,10 +133,10 @@ The official registry wrapper was invoked from registry revision
 
 ```powershell
 wsl.exe -u root -- bash -lc \
-  'cd /mnt/c/Users/IAN/AppData/Local/Temp/preflight-erc7730-lf-af0f0bf7516d45ce8d340b66fbfbcd80 && \
+  'cd /mnt/c/Users/IAN/AppData/Local/Temp/rovaulta-erc7730-lf-af0f0bf7516d45ce8d340b66fbfbcd80 && \
   env -u GATING_TOKEN bash tools/tester/run-test.sh \
-  /mnt/c/Users/IAN/OneDrive/Desktop/professional/hackathon/ETH/preflight/packages/ledger-gate/clear-signing/eip712-preflight-deployment-intent.json \
-  /mnt/c/Users/IAN/OneDrive/Desktop/professional/hackathon/ETH/preflight/packages/ledger-gate/clear-signing/eip712-preflight-deployment-intent.tests.json \
+  /mnt/c/Users/IAN/OneDrive/Desktop/professional/hackathon/ETH/rovaulta/packages/ledger-gate/clear-signing/eip712-rovaulta-deployment-intent.json \
+  /mnt/c/Users/IAN/OneDrive/Desktop/professional/hackathon/ETH/rovaulta/packages/ledger-gate/clear-signing/eip712-rovaulta-deployment-intent.tests.json \
   nanosp debug'
 ```
 
@@ -152,8 +152,8 @@ was not used. No blind-signing option, origin-token bypass, unsigned filter inje
 or fabricated screenshot was used.
 
 The official Tester validates/renders the descriptor in its own harness and discards the signing
-result; its `GATING_TOKEN` cannot be passed into Preflight's Context Module as an application origin
-token. Completing Preflight A/B/E/F additionally requires a Ledger-issued origin token and evidence
+result; its `GATING_TOKEN` cannot be passed into Rovaulta's Context Module as an application origin
+token. Completing Rovaulta A/B/E/F additionally requires a Ledger-issued origin token and evidence
 that the candidate descriptor is accepted and served for that origin, or another officially
 documented Speculos descriptor-resolution path that preserves the exact runtime guard and returns
 the real device signature. Those prerequisites are independently unavailable in this environment.

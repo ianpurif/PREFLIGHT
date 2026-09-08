@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import { PreflightRegistry } from "../src/PreflightRegistry.sol";
+import { RovaultaRegistry } from "../src/RovaultaRegistry.sol";
 import { TestBase } from "./TestBase.sol";
 
-contract PreflightRegistryTest is TestBase {
+contract RovaultaRegistryTest is TestBase {
     uint64 private constant NOW = 1_788_547_220;
     address private constant OWNER = address(0xA11CE);
     address private constant REGISTRAR = address(0xB0B);
     address private constant OTHER = address(0xCAFE);
 
     bytes32 private constant CLEARANCE_DIGEST =
-        0xeae057bcdb07ac12c2b110a5bdb13ebbc30c0c0b25efc56379da2198fbce20e9;
+        0x79d513cd15b4a24192ae7598d1037926a72df6d60eba79cd472fb9973d89ecb5;
     bytes32 private constant CLEARANCE_ID_HASH =
         0xa0ef25021e44a8596e028db416da632ff6c02581f26d62ad88d5684aa9bea180;
     bytes32 private constant EVALUATION_ID_HASH =
@@ -23,15 +23,15 @@ contract PreflightRegistryTest is TestBase {
     bytes32 private constant ROBOT_BUILD_ID_HASH =
         0x0650ab8ea1d001a7847d0a837f66653123cacf4467697f121c77291585f30145;
     bytes32 private constant ROBOT_BUILD_DIGEST =
-        0x31a30bd81d7c1d989a977410389847925182f3c7f454bd75f8fc6612d408b5bd;
+        0x843cd43a5a5a375351733150a611c1d9d63c6a2fc3ae9c1ebef0ea3f29b1c4b7;
     bytes32 private constant ENVELOPE_ID_HASH =
         0x613b9b12ba109178d9e5c52cd507865c653cffaa1cc4ce7f7e8270fe97944907;
     bytes32 private constant ENVELOPE_COMMITMENT =
-        0xf5b77c919b320d9cb16f834208b1842f493672010b5fbb59f72fa865c9edbdf8;
+        0x3cffef1ca4b0942157109c9ff2670d0ee082d264bcb9e4c2b194ee6e7ab9bd6a;
     bytes32 private constant EVALUATOR_VERSION_HASH =
         0x2a98346e1b17b6b4d0d0122841da247723c15c5fd0efa5b1e5b91275eab2b070;
     bytes32 private constant EVALUATION_INPUTS_DIGEST =
-        0x38954b9164868b33c7afa9277410520fcdead18db6b1e1b93c45f366ef5fd0d8;
+        0x84d738b5f0a56736f04bdd16415b3678112ea0b0e4223e53b3d4faf23055b80c;
 
     event ClearanceRecorded(
         bytes32 indexed clearanceDigest,
@@ -57,17 +57,17 @@ contract PreflightRegistryTest is TestBase {
         bytes32 indexed clearanceDigest, address indexed actor, uint256 revokedAt
     );
 
-    PreflightRegistry private registry;
+    RovaultaRegistry private registry;
 
     function setUp() public {
         vm.warp(NOW);
-        registry = new PreflightRegistry(OWNER);
+        registry = new RovaultaRegistry(OWNER);
         vm.prank(OWNER);
         registry.setRegistrar(REGISTRAR, true);
     }
 
     function testAuthorizedRegistrarRecordsP1ClearanceAndEmitsPublicBindings() public {
-        PreflightRegistry.ClearanceInput memory input = _input();
+        RovaultaRegistry.ClearanceInput memory input = _input();
 
         vm.expectEmit(true, true, true, true);
         emit ClearanceRecorded(
@@ -93,7 +93,7 @@ contract PreflightRegistryTest is TestBase {
         );
         _recordAs(REGISTRAR, input);
 
-        PreflightRegistry.Clearance memory stored = registry.getClearance(CLEARANCE_DIGEST);
+        RovaultaRegistry.Clearance memory stored = registry.getClearance(CLEARANCE_DIGEST);
         assertEq(stored.clearanceDigest, CLEARANCE_DIGEST);
         assertEq(stored.issuer, REGISTRAR);
         assertEq(stored.verdict, bytes32("CLEAR"));
@@ -111,13 +111,13 @@ contract PreflightRegistryTest is TestBase {
 
     function testUnauthorizedRegistrarCannotRecord() public {
         vm.expectRevert(
-            abi.encodeWithSelector(PreflightRegistry.UnauthorizedRegistrar.selector, OTHER)
+            abi.encodeWithSelector(RovaultaRegistry.UnauthorizedRegistrar.selector, OTHER)
         );
         _recordAs(OTHER, _input());
     }
 
     function testOnlyOwnerCanManageRegistrars() public {
-        vm.expectRevert(abi.encodeWithSelector(PreflightRegistry.UnauthorizedOwner.selector, OTHER));
+        vm.expectRevert(abi.encodeWithSelector(RovaultaRegistry.UnauthorizedOwner.selector, OTHER));
         vm.prank(OTHER);
         registry.setRegistrar(OTHER, true);
 
@@ -126,16 +126,16 @@ contract PreflightRegistryTest is TestBase {
         assertFalse(registry.registrars(REGISTRAR));
 
         vm.expectRevert(
-            abi.encodeWithSelector(PreflightRegistry.UnauthorizedRegistrar.selector, REGISTRAR)
+            abi.encodeWithSelector(RovaultaRegistry.UnauthorizedRegistrar.selector, REGISTRAR)
         );
         _recordAs(REGISTRAR, _input());
     }
 
     function testZeroOwnerAndRegistrarReject() public {
-        vm.expectRevert(PreflightRegistry.ZeroAddress.selector);
-        new PreflightRegistry(address(0));
+        vm.expectRevert(RovaultaRegistry.ZeroAddress.selector);
+        new RovaultaRegistry(address(0));
 
-        vm.expectRevert(PreflightRegistry.ZeroAddress.selector);
+        vm.expectRevert(RovaultaRegistry.ZeroAddress.selector);
         vm.prank(OWNER);
         registry.setRegistrar(address(0), true);
     }
@@ -143,7 +143,7 @@ contract PreflightRegistryTest is TestBase {
     function testUnchangedRegistrarStatusRejects() public {
         vm.expectRevert(
             abi.encodeWithSelector(
-                PreflightRegistry.RegistrarStatusUnchanged.selector, REGISTRAR, true
+                RovaultaRegistry.RegistrarStatusUnchanged.selector, REGISTRAR, true
             )
         );
         vm.prank(OWNER);
@@ -152,9 +152,9 @@ contract PreflightRegistryTest is TestBase {
 
     function testEveryZeroCriticalBindingRejects() public {
         for (uint256 field; field < 11; ++field) {
-            PreflightRegistry.ClearanceInput memory candidate = _input();
+            RovaultaRegistry.ClearanceInput memory candidate = _input();
             _zeroField(candidate, field);
-            vm.expectPartialRevert(PreflightRegistry.ZeroBinding.selector);
+            vm.expectPartialRevert(RovaultaRegistry.ZeroBinding.selector);
             _recordAs(REGISTRAR, candidate);
         }
     }
@@ -162,11 +162,11 @@ contract PreflightRegistryTest is TestBase {
     function testNonClearVerdictsReject() public {
         bytes32[3] memory verdicts = [bytes32("HOLD"), bytes32("REJECT"), bytes32("UNKNOWN")];
         for (uint256 index; index < verdicts.length; ++index) {
-            PreflightRegistry.ClearanceInput memory candidate = _input();
+            RovaultaRegistry.ClearanceInput memory candidate = _input();
             candidate.verdict = verdicts[index];
             vm.expectRevert(
                 abi.encodeWithSelector(
-                    PreflightRegistry.UnsupportedVerdict.selector, verdicts[index]
+                    RovaultaRegistry.UnsupportedVerdict.selector, verdicts[index]
                 )
             );
             _recordAs(REGISTRAR, candidate);
@@ -174,27 +174,27 @@ contract PreflightRegistryTest is TestBase {
     }
 
     function testMalformedTimesReject() public {
-        PreflightRegistry.ClearanceInput memory candidate = _input();
+        RovaultaRegistry.ClearanceInput memory candidate = _input();
         candidate.bindings.issuedAt = NOW + 1;
-        vm.expectPartialRevert(PreflightRegistry.InvalidIssuedAt.selector);
+        vm.expectPartialRevert(RovaultaRegistry.InvalidIssuedAt.selector);
         _recordAs(REGISTRAR, candidate);
 
         candidate = _input();
         candidate.bindings.expiresAt = candidate.bindings.issuedAt;
-        vm.expectPartialRevert(PreflightRegistry.InvalidExpiry.selector);
+        vm.expectPartialRevert(RovaultaRegistry.InvalidExpiry.selector);
         _recordAs(REGISTRAR, candidate);
 
         candidate = _input();
         candidate.bindings.issuedAt = NOW - 2;
         candidate.bindings.expiresAt = NOW;
-        vm.expectPartialRevert(PreflightRegistry.InvalidExpiry.selector);
+        vm.expectPartialRevert(RovaultaRegistry.InvalidExpiry.selector);
         _recordAs(REGISTRAR, candidate);
     }
 
     function testP1TimestampMaximumIsEnforced() public {
         uint64 maximum = registry.MAX_PROTOCOL_TIMESTAMP();
         vm.warp(uint256(maximum) - 1);
-        PreflightRegistry.ClearanceInput memory candidate = _input();
+        RovaultaRegistry.ClearanceInput memory candidate = _input();
         candidate.bindings.issuedAt = maximum - 1;
         candidate.bindings.expiresAt = maximum;
         _recordAs(REGISTRAR, candidate);
@@ -203,39 +203,39 @@ contract PreflightRegistryTest is TestBase {
         setUp();
         candidate = _input();
         candidate.bindings.expiresAt = maximum + 1;
-        vm.expectPartialRevert(PreflightRegistry.TimestampOutOfRange.selector);
+        vm.expectPartialRevert(RovaultaRegistry.TimestampOutOfRange.selector);
         _recordAs(REGISTRAR, candidate);
     }
 
     function testDuplicateDigestAndClearanceIdCannotOverwrite() public {
-        PreflightRegistry.ClearanceInput memory input = _input();
+        RovaultaRegistry.ClearanceInput memory input = _input();
         _recordAs(REGISTRAR, input);
 
-        PreflightRegistry.ClearanceInput memory sameDigest = _differentInput();
+        RovaultaRegistry.ClearanceInput memory sameDigest = _differentInput();
         sameDigest.clearanceDigest = input.clearanceDigest;
         vm.expectRevert(
             abi.encodeWithSelector(
-                PreflightRegistry.ClearanceAlreadyExists.selector, input.clearanceDigest
+                RovaultaRegistry.ClearanceAlreadyExists.selector, input.clearanceDigest
             )
         );
         _recordAs(REGISTRAR, sameDigest);
 
-        PreflightRegistry.ClearanceInput memory sameId = _differentInput();
+        RovaultaRegistry.ClearanceInput memory sameId = _differentInput();
         sameId.bindings.clearanceIdHash = input.bindings.clearanceIdHash;
-        vm.expectPartialRevert(PreflightRegistry.ClearanceIdAlreadyUsed.selector);
+        vm.expectPartialRevert(RovaultaRegistry.ClearanceIdAlreadyUsed.selector);
         _recordAs(REGISTRAR, sameId);
 
-        PreflightRegistry.Clearance memory stored = registry.getClearance(input.clearanceDigest);
+        RovaultaRegistry.Clearance memory stored = registry.getClearance(input.clearanceDigest);
         assertEq(stored.bindings.robotBuildDigest, input.bindings.robotBuildDigest);
         assertEq(stored.bindings.safetyEnvelopeCommitment, input.bindings.safetyEnvelopeCommitment);
     }
 
     function testEveryExactBindingMutationFails() public {
-        PreflightRegistry.ClearanceInput memory input = _input();
+        RovaultaRegistry.ClearanceInput memory input = _input();
         _recordAs(REGISTRAR, input);
 
         for (uint256 field; field < 12; ++field) {
-            PreflightRegistry.ClearanceBindings memory expected = input.bindings;
+            RovaultaRegistry.ClearanceBindings memory expected = input.bindings;
             _mutateBinding(expected, field, bytes32(uint256(1)));
             assertFalse(registry.isClearanceValidFor(input.clearanceDigest, expected));
         }
@@ -244,10 +244,10 @@ contract PreflightRegistryTest is TestBase {
     }
 
     function testTypeConfusedBindingsFailClosed() public {
-        PreflightRegistry.ClearanceInput memory input = _input();
+        RovaultaRegistry.ClearanceInput memory input = _input();
         _recordAs(REGISTRAR, input);
 
-        PreflightRegistry.ClearanceBindings memory expected = input.bindings;
+        RovaultaRegistry.ClearanceBindings memory expected = input.bindings;
         (expected.siteIdHash, expected.robotIdHash) = (expected.robotIdHash, expected.siteIdHash);
         assertFalse(registry.isClearanceValidFor(input.clearanceDigest, expected));
 
@@ -258,7 +258,7 @@ contract PreflightRegistryTest is TestBase {
     }
 
     function testExpiryBoundaryBeforeAtAndAfter() public {
-        PreflightRegistry.ClearanceInput memory input = _input();
+        RovaultaRegistry.ClearanceInput memory input = _input();
         _recordAs(REGISTRAR, input);
 
         vm.warp(uint256(input.bindings.expiresAt) - 1);
@@ -270,7 +270,7 @@ contract PreflightRegistryTest is TestBase {
     }
 
     function testIssuerRevocationIsImmediatePermanentAndEmits() public {
-        PreflightRegistry.ClearanceInput memory input = _input();
+        RovaultaRegistry.ClearanceInput memory input = _input();
         _recordAs(REGISTRAR, input);
 
         vm.expectEmit(true, true, false, true);
@@ -282,7 +282,7 @@ contract PreflightRegistryTest is TestBase {
 
         vm.expectRevert(
             abi.encodeWithSelector(
-                PreflightRegistry.ClearanceAlreadyRevoked.selector, input.clearanceDigest
+                RovaultaRegistry.ClearanceAlreadyRevoked.selector, input.clearanceDigest
             )
         );
         vm.prank(REGISTRAR);
@@ -290,19 +290,19 @@ contract PreflightRegistryTest is TestBase {
 
         vm.expectRevert(
             abi.encodeWithSelector(
-                PreflightRegistry.ClearanceAlreadyExists.selector, input.clearanceDigest
+                RovaultaRegistry.ClearanceAlreadyExists.selector, input.clearanceDigest
             )
         );
         _recordAs(REGISTRAR, input);
     }
 
     function testOwnerMayRevokeAndUnrelatedPartyCannot() public {
-        PreflightRegistry.ClearanceInput memory input = _input();
+        RovaultaRegistry.ClearanceInput memory input = _input();
         _recordAs(REGISTRAR, input);
 
         vm.expectRevert(
             abi.encodeWithSelector(
-                PreflightRegistry.UnauthorizedRevocation.selector, OTHER, input.clearanceDigest
+                RovaultaRegistry.UnauthorizedRevocation.selector, OTHER, input.clearanceDigest
             )
         );
         vm.prank(OTHER);
@@ -314,7 +314,7 @@ contract PreflightRegistryTest is TestBase {
     }
 
     function testRemovedIssuerRetainsRevokeOnlyAuthority() public {
-        PreflightRegistry.ClearanceInput memory input = _input();
+        RovaultaRegistry.ClearanceInput memory input = _input();
         _recordAs(REGISTRAR, input);
         vm.prank(OWNER);
         registry.setRegistrar(REGISTRAR, false);
@@ -324,7 +324,7 @@ contract PreflightRegistryTest is TestBase {
         assertFalse(registry.isClearanceValid(input.clearanceDigest));
 
         vm.expectRevert(
-            abi.encodeWithSelector(PreflightRegistry.UnauthorizedRegistrar.selector, REGISTRAR)
+            abi.encodeWithSelector(RovaultaRegistry.UnauthorizedRegistrar.selector, REGISTRAR)
         );
         _recordAs(REGISTRAR, _differentInput());
     }
@@ -332,11 +332,11 @@ contract PreflightRegistryTest is TestBase {
     function testUnknownClearanceReadsAndRevocationAreExplicit() public {
         assertFalse(registry.isClearanceValid(CLEARANCE_DIGEST));
         vm.expectRevert(
-            abi.encodeWithSelector(PreflightRegistry.ClearanceNotFound.selector, CLEARANCE_DIGEST)
+            abi.encodeWithSelector(RovaultaRegistry.ClearanceNotFound.selector, CLEARANCE_DIGEST)
         );
         registry.getClearance(CLEARANCE_DIGEST);
         vm.expectRevert(
-            abi.encodeWithSelector(PreflightRegistry.ClearanceNotFound.selector, CLEARANCE_DIGEST)
+            abi.encodeWithSelector(RovaultaRegistry.ClearanceNotFound.selector, CLEARANCE_DIGEST)
         );
         vm.prank(OWNER);
         registry.revokeClearance(CLEARANCE_DIGEST);
@@ -362,9 +362,9 @@ contract PreflightRegistryTest is TestBase {
     }
 
     function testFuzzMutatedBindingDoesNotValidate(uint8 field, bytes32 delta) public {
-        PreflightRegistry.ClearanceInput memory input = _input();
+        RovaultaRegistry.ClearanceInput memory input = _input();
         _recordAs(REGISTRAR, input);
-        PreflightRegistry.ClearanceBindings memory expected = input.bindings;
+        RovaultaRegistry.ClearanceBindings memory expected = input.bindings;
         bytes32 nonZeroDelta = delta == bytes32(0) ? bytes32(uint256(1)) : delta;
         _mutateBinding(expected, uint256(field) % 12, nonZeroDelta);
         assertFalse(registry.isClearanceValidFor(input.clearanceDigest, expected));
@@ -373,19 +373,19 @@ contract PreflightRegistryTest is TestBase {
     function testFuzzUnauthorizedAddressCannotRecord(address caller) public {
         vm.assume(caller != OWNER && caller != REGISTRAR);
         vm.expectRevert(
-            abi.encodeWithSelector(PreflightRegistry.UnauthorizedRegistrar.selector, caller)
+            abi.encodeWithSelector(RovaultaRegistry.UnauthorizedRegistrar.selector, caller)
         );
         _recordAs(caller, _input());
     }
 
     function testFuzzDuplicateIdCannotOverwrite(bytes32 otherDigest) public {
-        PreflightRegistry.ClearanceInput memory input = _input();
+        RovaultaRegistry.ClearanceInput memory input = _input();
         _recordAs(REGISTRAR, input);
         vm.assume(otherDigest != bytes32(0) && otherDigest != input.clearanceDigest);
-        PreflightRegistry.ClearanceInput memory duplicateId = _differentInput();
+        RovaultaRegistry.ClearanceInput memory duplicateId = _differentInput();
         duplicateId.clearanceDigest = otherDigest;
         duplicateId.bindings.clearanceIdHash = input.bindings.clearanceIdHash;
-        vm.expectPartialRevert(PreflightRegistry.ClearanceIdAlreadyUsed.selector);
+        vm.expectPartialRevert(RovaultaRegistry.ClearanceIdAlreadyUsed.selector);
         _recordAs(REGISTRAR, duplicateId);
         assertEq(
             registry.clearanceDigestByIdHash(input.bindings.clearanceIdHash), input.clearanceDigest
@@ -394,7 +394,7 @@ contract PreflightRegistryTest is TestBase {
 
     function testFuzzExpiryBoundary(uint32 lifetimeSeed) public {
         uint64 lifetime = uint64(uint256(lifetimeSeed) % 1_000_000) + 1;
-        PreflightRegistry.ClearanceInput memory input = _input();
+        RovaultaRegistry.ClearanceInput memory input = _input();
         input.bindings.expiresAt = NOW + lifetime;
         _recordAs(REGISTRAR, input);
         vm.warp(uint256(input.bindings.expiresAt) - 1);
@@ -403,9 +403,9 @@ contract PreflightRegistryTest is TestBase {
         assertFalse(registry.isClearanceValid(input.clearanceDigest));
     }
 
-    function _input() private pure returns (PreflightRegistry.ClearanceInput memory input) {
+    function _input() private pure returns (RovaultaRegistry.ClearanceInput memory input) {
         input.clearanceDigest = CLEARANCE_DIGEST;
-        input.bindings = PreflightRegistry.ClearanceBindings({
+        input.bindings = RovaultaRegistry.ClearanceBindings({
             clearanceIdHash: CLEARANCE_ID_HASH,
             evaluationIdHash: EVALUATION_ID_HASH,
             siteIdHash: SITE_ID_HASH,
@@ -422,11 +422,7 @@ contract PreflightRegistryTest is TestBase {
         input.verdict = bytes32("CLEAR");
     }
 
-    function _differentInput()
-        private
-        pure
-        returns (PreflightRegistry.ClearanceInput memory input)
-    {
+    function _differentInput() private pure returns (RovaultaRegistry.ClearanceInput memory input) {
         input = _input();
         input.clearanceDigest = bytes32(uint256(CLEARANCE_DIGEST) ^ 1);
         input.bindings.clearanceIdHash = bytes32(uint256(CLEARANCE_ID_HASH) ^ 1);
@@ -434,12 +430,12 @@ contract PreflightRegistryTest is TestBase {
         input.bindings.robotBuildDigest = bytes32(uint256(ROBOT_BUILD_DIGEST) ^ 1);
     }
 
-    function _recordAs(address registrar, PreflightRegistry.ClearanceInput memory input) private {
+    function _recordAs(address registrar, RovaultaRegistry.ClearanceInput memory input) private {
         vm.prank(registrar);
         registry.recordClearance(input);
     }
 
-    function _zeroField(PreflightRegistry.ClearanceInput memory input, uint256 field) private pure {
+    function _zeroField(RovaultaRegistry.ClearanceInput memory input, uint256 field) private pure {
         if (field == 0) input.clearanceDigest = bytes32(0);
         else if (field == 1) input.bindings.clearanceIdHash = bytes32(0);
         else if (field == 2) input.bindings.evaluationIdHash = bytes32(0);
@@ -454,7 +450,7 @@ contract PreflightRegistryTest is TestBase {
     }
 
     function _mutateBinding(
-        PreflightRegistry.ClearanceBindings memory bindings,
+        RovaultaRegistry.ClearanceBindings memory bindings,
         uint256 field,
         bytes32 delta
     ) private pure {

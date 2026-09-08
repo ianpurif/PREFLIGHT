@@ -5,12 +5,12 @@ import { ApplicationError } from "./errors.js";
 import { ApplicationStore } from "./store.js";
 
 function keyFromEnvironment(environment: NodeJS.ProcessEnv): Uint8Array {
-  const configured = environment.PREFLIGHT_POLICY_ENCRYPTION_KEY?.trim();
+  const configured = environment.ROVAULTA_POLICY_ENCRYPTION_KEY?.trim();
   if (configured !== undefined && configured !== "") {
     if (!/^[a-f0-9]{64}$/i.test(configured)) {
       throw new ApplicationError(
         "POLICY_UNAVAILABLE",
-        "PREFLIGHT_POLICY_ENCRYPTION_KEY must be 32-byte hex",
+        "ROVAULTA_POLICY_ENCRYPTION_KEY must be 32-byte hex",
       );
     }
     return Uint8Array.from(Buffer.from(configured, "hex"));
@@ -18,7 +18,7 @@ function keyFromEnvironment(environment: NodeJS.ProcessEnv): Uint8Array {
 
   const keyPath = resolve(
     process.cwd(),
-    environment.PREFLIGHT_POLICY_KEY_PATH || ".data/preflight-policy.key",
+    environment.ROVAULTA_POLICY_KEY_PATH || ".data/rovaulta-policy.key",
   );
   try {
     if (existsSync(keyPath)) {
@@ -40,7 +40,7 @@ export function createApplicationStoreFromEnvironment(
 ): ApplicationStore {
   const dbPath = resolve(
     process.cwd(),
-    environment.PREFLIGHT_APP_DB_PATH || ".data/preflight-app.sqlite",
+    environment.ROVAULTA_APP_DB_PATH || ".data/rovaulta-app.sqlite",
   );
   return new ApplicationStore({ dbPath, policyKey: keyFromEnvironment(environment) });
 }

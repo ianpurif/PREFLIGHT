@@ -1,4 +1,4 @@
-# Preflight API
+# Rovaulta API
 
 ## P5.2 deployment agent
 
@@ -7,10 +7,10 @@ environment values:
 
 ```text
 OPENAI_API_KEY=<local secret>
-PREFLIGHT_AGENT_MODEL=<explicit Responses API model>
-PREFLIGHT_AGENT_CATALOG_PATH=<path to public deployment catalog JSON>
+ROVAULTA_AGENT_MODEL=<explicit Responses API model>
+ROVAULTA_AGENT_CATALOG_PATH=<path to public deployment catalog JSON>
 EVM_RPC_URL=<Sepolia RPC>
-PREFLIGHT_AUTHORIZED_SIGNERS=<operator Ledger address allowlist>
+ROVAULTA_AUTHORIZED_SIGNERS=<operator Ledger address allowlist>
 ```
 
 The catalog format is shown in `config/deployment-catalog.example.json`. It contains complete public

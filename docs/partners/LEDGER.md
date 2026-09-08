@@ -4,7 +4,7 @@
 
 **Intended AI Agents x Ledger direction: human-in-the-loop autonomous-agent authorization.**
 
-> An orchestration client can prepare an exact robot release request, but release authorization requires a cryptographically valid, one-time Ledger-backed human approval bound to the exact cleared build and deployed Preflight registry.
+> An orchestration client can prepare an exact robot release request, but release authorization requires a cryptographically valid, one-time Ledger-backed human approval bound to the exact cleared build and deployed Rovaulta registry.
 
 P5.2 now implements the narrow autonomous deployment-agent half: a real strict tool-calling provider
 adapter plus a host-owned deterministic controller can resolve a public request, inspect evaluation
@@ -20,7 +20,7 @@ Operator asks AI deployment agent
       ↓
 Agent inspects public evaluation + Sepolia clearance
       ↓
-Preflight deterministic policy filters
+Rovaulta deterministic policy filters
       ↓
 Human reviews and approves on device
       ↓
@@ -72,11 +72,11 @@ Key Ring is intentionally not used for this direction.
 
 ## Exact authorization
 
-The domain is `Preflight`, version `1`, chain ID `11155111`, verifying contract `0xFB270cc222efa8B5005AA097dD512Be2558dde65`. The address and chain come from `contracts/deployments/sepolia.json`.
+The domain is `Rovaulta`, version `1`, chain ID `11155111`, verifying contract `0xFB270cc222efa8B5005AA097dD512Be2558dde65`. The address and chain come from `contracts/deployments/sepolia.json`.
 
 `DeploymentIntent` signs protocol/schema version, fixed `ACTIVATE_DEPLOYMENT`, exact site, robot, build ID/digest, clearance ID/digest, `sepolia`, authorized signer, server nonce, integer `issuedAt`/`expiresAt`, and the P1 canonical intent digest. Any field or domain change invalidates the signature.
 
-Authorized signers are a strict public-address allowlist controlled by the API operator through `PREFLIGHT_AUTHORIZED_SIGNERS`. The connected device address is confirmed on-device and checked before signing; recovered signer authorization is checked again during consumption. The backend never receives a private key.
+Authorized signers are a strict public-address allowlist controlled by the API operator through `ROVAULTA_AUTHORIZED_SIGNERS`. The connected device address is confirmed on-device and checked before signing; recovered signer authorization is checked again during consumption. The backend never receives a private key.
 
 ## Replay and TOCTOU boundaries
 
@@ -94,9 +94,9 @@ The official Context Module is fixed to Ethereum. Before `SIGN_TYPED_DATA` may c
 
 The Ledger Speculos official device simulator ran Speculos `0.27.0` with the checksum-verified public Ethereum `1.22.3` Nano S Plus ELF. DMK `1.9.0` discovered it and actual emulator address review/confirmation returned the public signer `0xDad77910DbDFdE764fC21FCD4E74D71bBACA6D8D`. This is transport/app/UI smoke evidence only.
 
-That signer comes from Speculos's deterministic test seed. It is public test identity, must never be retained in a production `PREFLIGHT_AUTHORIZED_SIGNERS` allowlist, and any clearance/nonce database created for it must be test-only.
+That signer comes from Speculos's deterministic test seed. It is public test identity, must never be retained in a production `ROVAULTA_AUTHORIZED_SIGNERS` allowlist, and any clearance/nonce database created for it must be test-only.
 
-The official ERC-7730 Tester wrapper exited `1` because `GATING_TOKEN` was not set. The direct implicit test token was not used. The Tester also discards its signature, so completing Preflight A/B/E/F separately requires an application origin token plus an accepted/served descriptor or another official descriptor-resolution path that returns the real signature. Real `/release/prepare` runs already prove C (`CLEARANCE_BINDING_MISMATCH`) and invalid/unregistered D (`CLEARANCE_NOT_FOUND`) before signer invocation. Physical evidence is not captured; there is no connected physical-device model, firmware, approval, or rejection evidence.
+The official ERC-7730 Tester wrapper exited `1` because `GATING_TOKEN` was not set. The direct implicit test token was not used. The Tester also discards its signature, so completing Rovaulta A/B/E/F separately requires an application origin token plus an accepted/served descriptor or another official descriptor-resolution path that returns the real signature. Real `/release/prepare` runs already prove C (`CLEARANCE_BINDING_MISMATCH`) and invalid/unregistered D (`CLEARANCE_NOT_FOUND`) before signer invocation. Physical evidence is not captured; there is no connected physical-device model, firmware, approval, or rejection evidence.
 
 Remaining Speculos closure cases are valid approval, emulator refusal, consumed-signature replay rejection, and post-sign field tampering rejection. Physical A–F remain separate. Evidence may include only public fields/signature hash and must never expose PIN, recovery phrase, private key, origin token, or credentials.
 

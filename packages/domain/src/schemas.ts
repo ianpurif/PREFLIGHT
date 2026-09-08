@@ -39,17 +39,17 @@ export type DeploymentNonce = string & {
   readonly [deploymentNonceBrand]: "DeploymentNonce";
 };
 
-export const PROTOCOL_VERSION = "preflight.protocol/v1" as const;
-export const ROBOT_BUILD_SCHEMA_VERSION = "preflight.robot-build/v1" as const;
+export const PROTOCOL_VERSION = "rovaulta.protocol/v1" as const;
+export const ROBOT_BUILD_SCHEMA_VERSION = "rovaulta.robot-build/v1" as const;
 export const SAFETY_ENVELOPE_METADATA_SCHEMA_VERSION =
-  "preflight.safety-envelope-metadata/v1" as const;
-export const EVALUATION_INPUTS_SCHEMA_VERSION = "preflight.evaluation-inputs/v1" as const;
-export const EVALUATION_REQUEST_SCHEMA_VERSION = "preflight.evaluation-request/v1" as const;
-export const EVALUATION_RESULT_SCHEMA_VERSION = "preflight.evaluation-result/v1" as const;
-export const CLEARANCE_RECORD_SCHEMA_VERSION = "preflight.clearance-record/v1" as const;
-export const DEPLOYMENT_INTENT_SCHEMA_VERSION = "preflight.deployment-intent/v2" as const;
+  "rovaulta.safety-envelope-metadata/v1" as const;
+export const EVALUATION_INPUTS_SCHEMA_VERSION = "rovaulta.evaluation-inputs/v1" as const;
+export const EVALUATION_REQUEST_SCHEMA_VERSION = "rovaulta.evaluation-request/v1" as const;
+export const EVALUATION_RESULT_SCHEMA_VERSION = "rovaulta.evaluation-result/v1" as const;
+export const CLEARANCE_RECORD_SCHEMA_VERSION = "rovaulta.clearance-record/v1" as const;
+export const DEPLOYMENT_INTENT_SCHEMA_VERSION = "rovaulta.deployment-intent/v2" as const;
 export const SAFETY_ENVELOPE_COMMITMENT_SCHEMA_VERSION =
-  "preflight.safety-envelope-commitment/v1" as const;
+  "rovaulta.safety-envelope-commitment/v1" as const;
 
 export const DEPLOYMENT_TARGETS = Object.freeze(["sepolia"] as const);
 export type DeploymentTarget = (typeof DEPLOYMENT_TARGETS)[number];
@@ -130,7 +130,7 @@ export interface DeploymentIntent {
 }
 
 /** Compatibility view retained for existing scaffold consumers. */
-export type PreflightIdentifiers = Omit<EvaluationInputs, "schemaVersion">;
+export type RovaultaIdentifiers = Omit<EvaluationInputs, "schemaVersion">;
 
 /** Minimal typed clearance reference for ports that do not need the full record. */
 export type ClearanceReference = Pick<

@@ -4,7 +4,7 @@
 
 **Tool:** OpenAI Codex-oriented ChatGPT workflow.
 
-**Human direction:** The user supplied the event constraints, selected product concept (Preflight), selected partners (Chainlink + Ledger), and explicitly requested a development boilerplate/agentic harness without product implementation.
+**Human direction:** The user supplied the event constraints, selected product concept (Rovaulta), selected partners (Chainlink + Ledger), and explicitly requested a development boilerplate/agentic harness without product implementation.
 
 **AI-assisted output:** Repository structure, stack recommendation, `AGENTS.md` hierarchy, project-local skills, Codex subagent profiles, architecture/planning/compliance docs, app/integration/contract scaffolds, CI, verification scripts, and worktree workflow.
 
@@ -24,21 +24,21 @@ Add future material AI-assisted changes as dated entries. Do not claim fully hum
 
 ## 2026-09-05 — P1 domain and protocol foundation
 
-**Tool:** OpenAI Codex with read-only Preflight architecture, exploration, verification, and review specialists.
+**Tool:** OpenAI Codex with read-only Rovaulta architecture, exploration, verification, and review specialists.
 
 **Human direction:** Implement only P1: canonical identifiers, minimum protocol schemas, deterministic canonical serialization and digests, runtime validation/failures, exact clearance/deployment bindings, tests, and protocol documentation.
 
-**AI-assisted output:** `@preflight/domain` implementation and tests, type-only consumer alignment, ADR-0003, planning/security/evidence updates, adversarial review, and command-based verification.
+**AI-assisted output:** `@rovaulta/domain` implementation and tests, type-only consumer alignment, ADR-0003, planning/security/evidence updates, adversarial review, and command-based verification.
 
 **Not implemented:** P2 evaluation logic, P3 CRE/TEE behavior, P4 contract state, P5 Ledger/EIP-712 behavior, P6 UI, AI agents, or additional partners.
 
 ## 2026-09-05 — P2 deterministic simulator/evaluator
 
-**Tool:** OpenAI Codex with read-only Preflight architecture, portability, test, verification, and adversarial-review specialists.
+**Tool:** OpenAI Codex with read-only Rovaulta architecture, portability, test, verification, and adversarial-review specialists.
 
 **Human direction:** Implement only P2: a pure fixed-unit warehouse model, committed deterministic scenarios, structured restricted-zone/speed/payload rules, build-declared materialized traces, deterministic evidence/verdicts, demo fixtures, tests, and documentation.
 
-**AI-assisted output:** `@preflight/simulation-core` implementation and tests, ADR-0004, execution plan, security/risk/evidence updates, adversarial review, and command-based verification.
+**AI-assisted output:** `@rovaulta/simulation-core` implementation and tests, ADR-0004, execution plan, security/risk/evidence updates, adversarial review, and command-based verification.
 
 **Not implemented:** Chainlink CRE/TEE behavior or filtering, contract logic, Ledger/EIP-712 behavior, API/UI/digital twin, robotics middleware/hardware, AI models, or additional partners.
 
@@ -64,14 +64,14 @@ Add future material AI-assisted changes as dated entries. Do not claim fully hum
 
 ## 2026-09-06 — P4 attestation registry
 
-**Tool:** OpenAI Codex with read-only Preflight architecture, contract-surface, test-gap, verification,
+**Tool:** OpenAI Codex with read-only Rovaulta architecture, contract-surface, test-gap, verification,
 and adversarial-review specialists.
 
 **Human direction:** Implement only P4: a minimal public Solidity registry for exact P1 clearance
 bindings, authorized registration, strict expiry, monotonic revocation, stable reads, extensive
 Foundry coverage, Sepolia deployment readiness, and truthful separation from P3 simulation.
 
-**AI-assisted output:** `PreflightRegistry`, dependency-free Foundry test harness, unit/fuzz/stateful
+**AI-assisted output:** `RovaultaRegistry`, dependency-free Foundry test harness, unit/fuzz/stateful
 invariant tests, P1-to-EVM golden vectors, Sepolia chain-guarded deployment script, scaffold-phase
 transition, ADR-0006, planning/security/evidence updates, and command-based verification.
 
@@ -141,7 +141,7 @@ denials; scaffold regressions;
 Ledger DX feedback; and planning/compliance/evidence updates.
 
 **Evidence boundary:** The official Tester wrapper failed closed because `GATING_TOKEN` was absent,
-and its display harness cannot supply Preflight's separate application origin/accepted-descriptor
+and its display harness cannot supply Rovaulta's separate application origin/accepted-descriptor
 context or preserve the signature. The implicit direct-tester token and blind signing were not used.
 Case C and invalid/unregistered D passed before signer invocation; revoked/expired D remain
 test-only. No deployment-intent signature, `ReleaseAuthorization`,
@@ -180,7 +180,7 @@ only the existing cryptographic P5 consume result can produce `AUTHORIZED`.
 **Evidence boundary:** Positive Build B evidence uses a clearly labeled deterministic registry
 fixture; the live Sepolia agent trace is read-only and blocks the existing unregistered fixture.
 No external model execution was captured because `OPENAI_API_KEY` and
-`PREFLIGHT_AGENT_MODEL` were unavailable. No Speculos signature, physical Ledger/Secure Element,
+`ROVAULTA_AGENT_MODEL` were unavailable. No Speculos signature, physical Ledger/Secure Element,
 accepted Clear Signing descriptor, robot activation, confidential value, credential, or P6 behavior
 is claimed.
 
@@ -207,7 +207,7 @@ alter evaluator semantics.
 
 ## 2026-09-07 — P7 deterministic demo reliability
 
-**Tool:** OpenAI Codex using the Preflight execution-plan and verification-loop skills plus
+**Tool:** OpenAI Codex using the Rovaulta execution-plan and verification-loop skills plus
 read-only architecture and test-gap reviewers.
 
 **Human direction:** Make the existing P6 judge path reproducible and resettable without starting
@@ -226,7 +226,7 @@ consumption, registry write, authorization, confidential envelope, or robot acti
 
 ## 2026-09-08 — P8 real product lifecycle and UI correction
 
-**Tool:** OpenAI Codex using the Preflight execution-plan and verification-loop skills plus the
+**Tool:** OpenAI Codex using the Rovaulta execution-plan and verification-loop skills plus the
 Next.js documentation and a required read-only final review.
 
 **Human direction:** Replace the demo-only normal application path with a truthful product flow:
@@ -248,7 +248,7 @@ signature, AI authorization, robot activation, or P2+ feature was added.
 
 ## 2026-09-08 — P8 adversarial product-boundary correction
 
-**Tool:** OpenAI Codex with a required read-only Preflight reviewer.
+**Tool:** OpenAI Codex with a required read-only Rovaulta reviewer.
 
 **Human direction:** Continue P8 until the normal flow is a real account-backed product rather than
 a demo, and resolve any security or truthfulness gaps without starting P9 or changing P1–P5.2.

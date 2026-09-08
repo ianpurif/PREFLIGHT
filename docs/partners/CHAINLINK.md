@@ -7,11 +7,11 @@
 - CRE SDK 1.19.1 registers an authenticated HTTP trigger with the real TypeScript `handlerInTee` API.
 - The handler requires Nitro/us-west-2, fetches exactly one compile-time fixed `main` secret, and makes zero ordinary capability calls.
 - The full P2 private safety envelope and 32-byte commitment blind are decoded from that secret inside the callback and materially determine the result.
-- The callback invokes the existing `@preflight/simulation-core` evaluator; it does not duplicate verdict logic.
+- The callback invokes the existing `@rovaulta/simulation-core` evaluator; it does not duplicate verdict logic.
 - The internal report remains TEE-local. Only the P1 result, canonical behavior-input digest, and synthetic-provenance marker leave the callback; errors are fixed and redacted.
 - SDK compilation and CRE CLI v1.32.0 `workflow build` succeed. Authenticated `workflow simulate` produces unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT` with one CLI-reported simulation binary/config identity.
 
-## Preflight-specific load-bearing role
+## Rovaulta-specific load-bearing role
 The facility's private safety envelope is the sensitive input. The public result must reveal the minimum useful clearance artifact, not the envelope.
 
 ## Engineering constraints
