@@ -916,7 +916,10 @@ function EvaluateView({
     setBusy(true);
     setError(null);
     try {
-      await apiFetch<{ evaluation: Evaluation }>("/evaluations", {
+      const response = await apiFetch<
+        | { readonly evaluation: Evaluation }
+        | { readonly status: "PENDING"; readonly evaluationId: string }
+      >("/evaluations", {
         method: "POST",
         body: jsonBody({
           siteId: selected.siteId,
@@ -924,6 +927,30 @@ function EvaluateView({
           buildId: selected.id,
         }),
       });
+      if ("status" in response && response.status === "PENDING") {
+        setError("CRE accepted the evaluation. Waiting for the confidential result…");
+        let completed = false;
+        for (let attempt = 0; attempt < 10; attempt += 1) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          try {
+            const status = await apiFetch<
+              | { readonly evaluation: Evaluation }
+              | { readonly status: "PENDING"; readonly evaluationId: string }
+            >(`/evaluations/${response.evaluationId}`);
+            if ("evaluation" in status) {
+              completed = true;
+              break;
+            }
+          } catch {
+            break;
+          }
+        }
+        if (!completed) {
+          setError("CRE accepted the evaluation, but the completed result is not available yet.");
+        } else {
+          setError(null);
+        }
+      }
       await refresh();
     } catch (reason) {
       if (reason instanceof ApiError && reason.code === "CRE_EVALUATION_PENDING") {
