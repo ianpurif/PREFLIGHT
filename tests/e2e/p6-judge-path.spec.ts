@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.describe("P6 judge path", () => {
   test("starts with an unsafe Build A hold and public reasons", async ({ page }) => {
-    await page.goto("/app/evaluate");
+    await page.goto("/__dev__/evaluate");
 
     await expect(page.getByRole("heading", { name: "Warehouse digital twin" })).toBeVisible();
     await expect(page.getByTestId("evaluation-card")).toContainText("HOLD");
@@ -14,7 +14,7 @@ test.describe("P6 judge path", () => {
   });
 
   test("switches to corrected Build B and keeps the Ledger boundary honest", async ({ page }) => {
-    await page.goto("/app/evaluate");
+    await page.goto("/__dev__/evaluate");
     await page.getByRole("button", { name: "Switch to Cleared Build B" }).click();
 
     await expect(page.getByTestId("evaluation-card")).toContainText("CLEAR");
@@ -45,7 +45,7 @@ test.describe("P6 judge path", () => {
   });
 
   test("mutating Build B changes identity and blocks before Ledger", async ({ page }) => {
-    await page.goto("/app/evaluate");
+    await page.goto("/__dev__/evaluate");
     await page.getByRole("button", { name: "Switch to Cleared Build B" }).click();
     await page.getByRole("button", { name: "Mutate Build" }).click();
 
@@ -73,7 +73,7 @@ test.describe("P6 judge path", () => {
         body: JSON.stringify({ error: "PROVIDER_UNAVAILABLE" }),
       });
     });
-    await page.goto("/app/evaluate");
+    await page.goto("/__dev__/evaluate");
     await page.getByRole("button", { name: "Switch to Cleared Build B" }).click();
     await page.getByRole("button", { name: "Request Ledger Approval" }).click();
 
@@ -122,7 +122,7 @@ test.describe("P6 judge path", () => {
       });
     });
 
-    await page.goto("/app/evaluate");
+    await page.goto("/__dev__/evaluate");
     await page.getByRole("button", { name: "Switch to Cleared Build B" }).click();
     await page.getByRole("button", { name: "Request Ledger Approval" }).click();
 
