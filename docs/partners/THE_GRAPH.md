@@ -33,6 +33,12 @@ bindings, verdict, revocation state, expiry, chain, registry, and block metadata
   static P7 catalog. The static catalog remains available only for the explicit development fixture
   route.
 
+The subgraph toolchain is pinned to `@graphprotocol/graph-cli@0.98.1` and
+`@graphprotocol/graph-ts@0.38.2`. `bun run --cwd integrations/the-graph build` reproduces codegen
+and WASM compilation locally; `integrations/the-graph/scripts/deploy.mjs` is the operator-only
+Subgraph Studio deployment path. Generated code and build output are ignored and are not treated as
+application source.
+
 The indexed entity contains only public P4 registry fields: exact P1 binding hashes, the verdict,
 issuer, timestamps, revocation state, and the indexing block identity. Private safety envelopes,
 blinds, rules, thresholds, behavior traces, credentials, and model output are never indexed or sent
