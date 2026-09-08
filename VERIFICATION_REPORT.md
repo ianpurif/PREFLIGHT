@@ -3,9 +3,9 @@
 **Date:** 2026-09-09 (P9 implementation began 2026-09-08; earlier evidence dates remain attached to their artifacts)
 
 **Scope:** P5 software, partial P5.1 Speculos evidence, P5.2 AI deployment-agent closure, P6
-judge-facing digital twin, P7 deterministic demo reliability, P8 account product flow, and P9
-Chainlink/The Graph partner boundaries, and P10 asynchronous CRE result completion; P1–P4
-regression-checked.
+judge-facing digital twin, P7 deterministic demo reliability, P8 account product flow, P9
+Chainlink boundaries, P10 asynchronous CRE result completion, and P11 The Graph qualification;
+P1–P4 regression-checked.
 
 **Status:** P10 code and targeted tests are complete, but external qualification evidence remains open.
 The normal account path now fails closed unless a deployed CRE gateway/result transport, request-scoped
@@ -251,6 +251,26 @@ signature, binding mismatch, canonical serialization, and private-field leakage.
 transport evidence only: no deployed workflow, callback URL, request-scoped site secret, or live
 account-created result exists in this environment.
 
+## P11 The Graph qualification result
+
+The Graph integration now has a reproducible Sepolia subgraph under
+`integrations/the-graph/subgraph/`, pinned Graph CLI/AssemblyScript tooling, and an operator-only
+deployment/query path. The manifest indexes only public `RovaultaRegistry` clearance and revocation
+events. The API sends the exact clearance digest to the Graph Gateway and validates public entity
+identity, exact site/robot/build/evaluation/safety/evaluator bindings, verdict, issuer, expiry,
+revocation, chain/registry identity, and block metadata. Private envelopes, blinds, rules,
+thresholds, traces, credentials, and model output never enter the subgraph or browser projection.
+
+For an authenticated account target, the deployment agent requires `MATCHED` Graph context before
+the existing direct P5 Sepolia check and Ledger-required handoff. `NOT_FOUND`, `REVOKED`, `EXPIRED`,
+`MISMATCH`, malformed data, provider errors, missing credentials, and missing subgraph configuration
+all fail closed. The focused Graph/provider and agent tests pass with injected responses, but those
+tests are local validation rather than provider evidence. `THE_GRAPH_API_KEY`,
+`THE_GRAPH_SUBGRAPH_ID`, and `ROVAULTA_P11_ACCOUNT_ID` are unset in this environment, so no hosted
+subgraph identity, live Gateway response, or account-created trace is claimed. Start Fresh pool
+eligibility also remains unverified; see
+`docs/compliance/evidence/p11-the-graph-qualification-2026-09-09.md`.
+
 ## Verification results
 
 - Ledger gate: 18/18 tests, including adapter lifecycle, exact transport selection/discovery,
@@ -260,19 +280,20 @@ account-created result exists in this environment.
 - Chain client: 12/12 tests for deployed-domain EIP-712, all field/domain mutations, signature
   recovery, exact P4 transport, positive pinned-block reader/ABI behavior, chain/registry, verdict,
   revocation, and expiry boundaries.
-- API: 47/47 tests across 10 files, including the account lifecycle/CRE fail-closed path, Graph
+- API: 50/50 tests across 10 files, including the account lifecycle/CRE fail-closed path, Graph
   provider binding and outage cases, P5/P5.2 authority boundaries, provider schema failures, and
   deterministic P7 fixture regression.
 - Domain: 31/31; simulation core: 60/60; Chainlink CRE: 31/31; chain client: 12/12; Ledger gate:
   18/18; web: 2/2.
-- Full TypeScript total: 201 tests, 2,946 assertions, zero failures.
+- Full TypeScript total: 204 tests, 2,956 assertions, zero failures.
 - `bun run lint`: pass; Biome checks 161 files with 27 existing CSS specificity warnings and no
   errors.
 - `bun run typecheck`: pass; 7/7 Turbo tasks.
 - `bun run test`: pass; 12/12 Turbo tasks.
 - `bunx turbo test --force`: pass; uncached 12/12 tasks, confirming 201 tests and 2,946
   assertions after the P10 callback/selector fixes.
-- `bun run build`: pass; 7/7 tasks; Next.js production build includes static `/` and `/p5-ledger`.
+- `bun run build`: pass; 8/8 tasks including the pinned The Graph subgraph build; Next.js
+  production build includes static `/` and `/p5-ledger`.
 - `bun run --cwd apps/web test`: pass; 2 P6 projection/mutation tests, 9 assertions.
 - `bun run test:e2e`: pass; 10 browser tests, including the five P6 states, the account flow's
   truthful CRE-unavailable stop, and the P7 clean startup → reset → A → reset → B/prepared handoff

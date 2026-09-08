@@ -52,12 +52,12 @@ implemented code from external deployment/provider evidence.
 ## Steps
 
 - [x] Explore current P9/P10 Graph provider, subgraph, account resolver, and agent boundary.
-- [ ] Implement smallest reproducible subgraph/deployment tooling.
-- [ ] Harden/extend live provider and account-agent critical path.
-- [ ] Add focused tests and redacted evidence hooks.
-- [ ] Run targeted and full verification.
+- [x] Implement smallest reproducible subgraph/deployment tooling.
+- [x] Harden/extend live provider and account-agent critical path.
+- [x] Add focused tests and redacted evidence hooks.
+- [x] Run targeted and full verification.
 - [ ] Request independent read-only review and resolve findings.
-- [ ] Update docs, evidence, CURRENT, TASKS, and AI usage records.
+- [x] Update docs, evidence, CURRENT, TASKS, and AI usage records.
 
 ## Parallel work / worktrees
 
@@ -81,5 +81,17 @@ avoid conflicting edits across the API, subgraph, and documentation surfaces.
 
 ## Verification evidence
 
-To be filled with commit hashes, targeted test counts, `bun run verify`, subgraph compile/deploy
-output if credentials exist, and a strict final PASS/PARTIAL/FAIL/BLOCKED qualification table.
+- Implementation commits: `0f6536d`, `d1b09f3`, `2958f86`, `d394008`, `df3e79a`, `f0cd22a`,
+  `17eeff7`.
+- `bun run --cwd integrations/the-graph build`: pass; pinned Graph CLI code generation and
+  AssemblyScript/WASM compilation completed.
+- `bun test apps/api/test/graph-provider.test.ts apps/api/test/deployment-agent.test.ts`: pass;
+  18 tests and 114 assertions.
+- `bun run test`: pass; 204 tests, 2,956 assertions, zero failures across 12 Turbo tasks.
+- `bun run verify`: pass; lint, typecheck, package tests, all builds (including the Graph
+  subgraph), Foundry contracts, and scaffold verification completed successfully.
+- `bun run --cwd integrations/the-graph evidence:live`: expected fail-closed blocker because
+  `THE_GRAPH_API_KEY` is unset; no live response was collected.
+- Hosted subgraph identity, live Gateway response, account-created trace, and Start Fresh pool
+  eligibility remain external/unverified. The qualification artifact preserves these as
+  `BLOCKED`, not as evidence.
