@@ -1,6 +1,7 @@
 import { resolve } from "node:path";
 import {
   digestSafetyEnvelopeCommitment,
+  LEGACY_CONFIDENTIAL_INPUT_ENV_NAME,
   PROTOCOL_VERSION,
   parseEvaluationInputs,
   parseEvaluationRequest,
@@ -84,8 +85,13 @@ function secret(
   });
 }
 
-function envFile(value: string): string {
-  return `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_JSON='${value}'\n`;
+export function renderSimulationEnvironmentFile(value: string): string {
+  const serializedValue = JSON.stringify(value);
+  return [
+    `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_JSON=${serializedValue}`,
+    `${LEGACY_CONFIDENTIAL_INPUT_ENV_NAME}=${serializedValue}`,
+    "",
+  ].join("\n");
 }
 
 export async function createSimulationFixtureFiles(
@@ -118,8 +124,11 @@ export async function createSimulationFixtureFiles(
     correctedPayloadPath,
     `${JSON.stringify(publicInput(correctedFixture), null, 2)}\n`,
   );
-  await Bun.write(validEnvironmentPath, envFile(secretValue));
-  await Bun.write(tamperedEnvironmentPath, envFile(secret(tamperedBlind, fixture)));
+  await Bun.write(validEnvironmentPath, renderSimulationEnvironmentFile(secretValue));
+  await Bun.write(
+    tamperedEnvironmentPath,
+    renderSimulationEnvironmentFile(secret(tamperedBlind, fixture)),
+  );
 
   return Object.freeze({
     root,
