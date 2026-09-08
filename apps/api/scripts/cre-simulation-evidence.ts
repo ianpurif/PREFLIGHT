@@ -33,17 +33,15 @@ const CONFIDENTIAL_OUTPUT_MARKERS = Object.freeze([
   "minYmm",
   "maxXmm",
   "maxYmm",
-  "zones",
-  "rules",
-  "bounds",
+  '"zones"',
+  '"rules"',
+  '"bounds"',
   "scenarioGeneration",
   "maximumMmPerSecond",
   "payloadGreaterThanGrams",
   "restricted-zone",
   "zone-speed-limit",
   "payload-zone-restriction",
-  "ruleId",
-  "zoneId",
 ]);
 
 type JsonRecord = { readonly [key: string]: unknown };
@@ -270,13 +268,29 @@ function executionId(output: string, jsonValues: readonly unknown[]): string | n
   return candidate;
 }
 
-function confidentialMarkers(environmentPath: string): readonly string[] {
+function confidentialSecretValue(environmentPath: string): string {
   const environment = readFileSync(environmentPath, "utf8").trim();
-  const prefix = "ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_JSON='";
-  if (!environment.startsWith(prefix) || !environment.endsWith("'")) {
+  const line = environment
+    .split(/\r?\n/)
+    .find((candidate) => candidate.startsWith("ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_JSON="));
+  if (line === undefined) {
     throw new Error("the generated CRE confidential environment file was malformed");
   }
-  const serializedSecret = environment.slice(prefix.length, -1);
+  const rawValue = line.slice("ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_JSON=".length);
+  if (rawValue.startsWith("'") && rawValue.endsWith("'")) {
+    return rawValue.slice(1, -1);
+  }
+  try {
+    const parsed = JSON.parse(rawValue) as unknown;
+    if (typeof parsed === "string") return parsed;
+  } catch {
+    // Fall through to the redacted malformed-file error below.
+  }
+  throw new Error("the generated CRE confidential environment file was malformed");
+}
+
+function confidentialMarkers(environmentPath: string): readonly string[] {
+  const serializedSecret = confidentialSecretValue(environmentPath);
   let confidentialInput: unknown;
   try {
     confidentialInput = JSON.parse(serializedSecret) as unknown;
@@ -285,10 +299,29 @@ function confidentialMarkers(environmentPath: string): readonly string[] {
   }
   const markers = new Set<string>([...CONFIDENTIAL_OUTPUT_MARKERS, serializedSecret]);
   if (confidentialInput !== null && typeof confidentialInput === "object") {
-    const blind = (confidentialInput as JsonRecord).envelopeBlindingSecretHex;
+    const inputRecord = confidentialInput as JsonRecord;
+    const blind = inputRecord.envelopeBlindingSecretHex;
     if (typeof blind === "string" && blind.length > 0) markers.add(blind);
+
+    const envelope = inputRecord.confidentialEnvelope;
+    if (envelope !== null && typeof envelope === "object") {
+      for (const privateField of ["warehouseBounds", "zones", "rules", "scenarioGeneration"]) {
+        addStringLeafMarkers((envelope as JsonRecord)[privateField], markers);
+      }
+    }
   }
   return [...markers];
+}
+
+function addStringLeafMarkers(value: unknown, markers: Set<string>): void {
+  if (typeof value === "string") {
+    if (value.length > 0) markers.add(value);
+    return;
+  }
+  if (value === null || typeof value !== "object") return;
+  for (const child of Array.isArray(value) ? value : Object.values(value as JsonRecord)) {
+    addStringLeafMarkers(child, markers);
+  }
 }
 
 function redactCliText(text: string, markers: readonly string[]): string {
@@ -369,7 +402,6 @@ function commandFor(
   files: SimulationFixtureFiles,
 ): readonly string[] {
   return [
-    "-v",
     "-R",
     ".",
     "-T",
