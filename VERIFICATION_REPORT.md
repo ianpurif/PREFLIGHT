@@ -336,6 +336,33 @@ The Speculos signer is deterministically derived public test identity, not custo
 rejects the Speculos transport, and this address plus any related clearance/nonce state must never
 be retained in production policy.
 
+## P13 account-created CRE evaluation
+
+The P13 operator command is:
+
+```text
+bun run --cwd apps/api p13:account-evaluation
+```
+
+It requires operator-only `ROVAULTA_P13_EMAIL`, `ROVAULTA_P13_PASSWORD`, and an ignored
+`ROVAULTA_P13_SETUP_PATH`. It composes the existing authenticated HTTP routes and never opens the
+application database or calls the local P2 evaluator. A completed response is projected through an
+allowlist before optional evidence output.
+
+The command was run in this environment and failed closed before creating any account/resource:
+
+```json
+{"status":"BLOCKED","error":"ROVAULTA_P13_EMAIL is required"}
+```
+
+The environment also lacks `CHAINLINK_CRE_WORKFLOW_ID`, `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY`,
+`ROVAULTA_CRE_RESULT_CALLBACK_SECRET`, the deployed CRE gateway/result callback, and a
+request-scoped site secret. The official `cre` CLI is not installed. Consequently there is no
+real evaluation ID, public `CLEAR`, callback, execution identifier, or P13 evidence artifact to
+report. The next operator action is to provision the deployed/activated workflow, exact site
+secret selector, callback HMAC/HTTPS delivery, and server-only gateway credentials, then run the
+normal account setup and P13 command. A local P2-injected test is not acceptable evidence.
+
 ## Dependency and secret review
 
 The final dependency graph contains no `@ledgerhq/hw-app-*` or `@ledgerhq/hw-transport-*` package.

@@ -41,11 +41,11 @@ completes the request.
 
 ## Steps
 - [x] Explore account/evaluation/CRE boundaries and current environment.
-- [ ] Implement the smallest operator-facing vertical slice, only where the existing API needs it.
-- [ ] Targeted verification.
+- [x] Implement the smallest operator-facing vertical slice, only where the existing API needs it.
+- [x] Targeted verification.
 - [ ] Full verification.
 - [ ] Independent review.
-- [ ] Docs/evidence/handoff.
+- [x] Docs/evidence/handoff (blocker recorded; no evidence artifact created).
 
 ## Parallel work / worktrees
 
@@ -71,3 +71,10 @@ No parallel write work. A separate read-only reviewer will inspect the final dif
 
 To be filled with commands actually run. External CRE execution IDs and evaluation IDs must be
 recorded only when an authenticated workflow has completed and the public response is available.
+
+- `bun run --cwd apps/api typecheck` passed after the runner was added.
+- `bun run --cwd apps/api p13:account-evaluation` failed closed before any API call because
+  `ROVAULTA_P13_EMAIL` is not configured.
+- Current `.env` inspection found empty `CHAINLINK_CRE_WORKFLOW_ID`,
+  `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY`, and `ROVAULTA_CRE_RESULT_CALLBACK_SECRET`; the `cre`
+  executable is unavailable. No real account/evaluation was created.

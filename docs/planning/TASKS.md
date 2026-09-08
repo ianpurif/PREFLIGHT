@@ -141,3 +141,12 @@
 - [x] operator runbook and public-only output contract
 - [ ] create one real account-backed Sepolia clearance and capture transaction evidence
 - [ ] wait for The Graph entity and capture the exact live Gateway `MATCHED` response
+
+## P13 — First real account-created CRE evaluation
+- [x] normal account/site/robot/build/evaluation HTTP path is reused without a production P2 fallback
+- [x] fail-closed operator runner with public-only polling/output
+- [x] ignored setup-file contract and CRE/site-secret/callback runbook
+- [ ] deploy/activate the authenticated CRE workflow and provision its Vault secrets
+- [ ] create one normal account-backed evaluation through the deployed CRE path
+- [ ] capture redacted public `CLEAR` result and CRE execution evidence
+- [ ] verify the resulting evaluation is consumable by the existing P12 command

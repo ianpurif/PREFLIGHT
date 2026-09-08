@@ -348,3 +348,22 @@ README, partner, architecture, planning, evidence, and environment documentation
 submission proof. No live Graph provider response, subgraph deployment, account-agent trace, or
 qualification claim was generated. No private policy, envelope, blind, credential, signature, or
 API key was committed.
+
+## 2026-09-09 — P13 first real account-created CRE evaluation
+
+**Tool:** OpenAI Codex using the Rovaulta execution-plan, partner-compliance, and verification-loop
+skills plus the official CRE secret/workflow guidance.
+
+**Human direction:** Complete only the normal account-created CRE evaluation path; do not create
+fake database rows, bypass CRE, promote P2/P7 fixtures, fabricate a result/clearance, or expose
+private policy material.
+
+**AI-assisted output:** A thin HTTP-only `apps/api` operator runner that registers/signs in an
+account, creates site/robot/build records through the existing routes, submits the existing
+CRE-backed evaluation, polls the owning account result, and optionally writes an allowlisted public
+projection. The runner has no SQLite, P2, P7, browser-verdict, or signing authority.
+
+**Evidence boundary:** The current environment has no CRE CLI, deployed gateway/workflow ID,
+trigger signer, request-scoped Vault secret, reachable HTTPS callback, or callback HMAC. The runner
+fails closed before creating records when its operator inputs are absent. No account-created
+evaluation ID, `CLEAR`, CRE execution evidence, clearance, or confidential value was fabricated.

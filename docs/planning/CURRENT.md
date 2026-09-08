@@ -48,6 +48,32 @@ fields and can write a public-only clearance JSON for P5/P11. The hosted `rovaul
 subgraph is operator-reported as fully indexed with zero entities before this first transaction; no
 real account-created CLEAR or live Graph `MATCHED` response has been captured in this checkout.**
 
+**P13 adds a normal account-flow operator runner, but the first real account-created CRE result is
+still externally blocked:** `apps/api/scripts/p13-account-evaluation.ts` composes the existing
+registration, site, robot, build, evaluation, and account-scoped polling routes over HTTP. It never
+opens SQLite, invokes P2, imports P7 fixtures, or writes a result; missing CRE configuration fails
+closed. The current `.env` has no workflow ID, trigger signer, callback secret, or deployed gateway,
+and the CRE CLI is not installed in this environment. A real run additionally needs the exact
+site-bound Vault secret, a reachable HTTPS callback, and a deployed/activated workflow. No P13
+evaluation ID, `CLEAR`, or evidence artifact is claimed.**
+
+## P13 first real account-created CRE evaluation
+
+- `apps/api/scripts/p13-account-evaluation.ts` is the only operator helper. It uses the normal
+  account HTTP boundary, creates a site/robot/build from an ignored setup file, submits the existing
+  CRE-backed `/evaluations` route, and polls the owning account's result. It has no SQLite, P2, P7,
+  browser-verdict, or fabricated-result path.
+- The setup file may contain the facility's private policy and must remain under ignored `.data/`.
+  The runner prints and optionally writes only an allowlisted public evaluation projection.
+- A deployed workflow must fetch `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_site_<base32-site-id>`
+  and `ROVAULTA_CONFIDENTIAL_EVALUATION_RESULT_CALLBACK_SECRET` from CRE `main`; the API must
+  configure the matching callback HMAC, gateway URL, workflow ID, and trigger signer. The repository
+  does not expose a policy-export route, so secret provisioning remains an approved facility-operator
+  action.
+- Local runner preflight: `bun run --cwd apps/api p13:account-evaluation` fails closed with the
+  missing `ROVAULTA_P13_EMAIL` requirement before creating any records. No authenticated CRE
+  execution was possible here.
+
 ## P11 The Graph qualification implementation
 
 - `integrations/the-graph` pins `@graphprotocol/graph-cli@0.98.1` and
