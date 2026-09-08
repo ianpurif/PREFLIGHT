@@ -847,6 +847,18 @@ export class ApplicationStore {
   ): OperatorConfidentialEvaluationSecret {
     const site = this.#siteRow(accountId, siteId);
     const policy = decryptPolicy(site.policy_ciphertext, this.#policyKey);
+    const commitment = digestSafetyEnvelopeCommitment(
+      parseSiteId(site.id),
+      parseSafetyEnvelopeId(site.safety_envelope_id),
+      confidentialEnvelopeCommitmentPayload(policy.envelope),
+      policy.blind,
+    );
+    if (commitment !== site.safety_envelope_commitment) {
+      throw new ApplicationError(
+        "CONFLICT",
+        "Stored site policy does not match the public safety-envelope commitment",
+      );
+    }
     return Object.freeze({
       selector: siteSecretId(site.id),
       value: canonicalSerialize({
