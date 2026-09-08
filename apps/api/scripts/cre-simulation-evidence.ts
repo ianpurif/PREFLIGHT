@@ -17,17 +17,25 @@ import {
   type SimulationFixtureFiles,
 } from "../../../integrations/chainlink-cre/scripts/simulation-fixtures.js";
 
-const REPOSITORY_ROOT = resolve(import.meta.dir, "../..");
+const REPOSITORY_ROOT = resolve(import.meta.dir, "../../..");
 const WORKFLOW_PATH = "integrations/chainlink-cre";
 const TARGET = "staging-settings";
 const TRIGGER_INDEX = "0";
 const ANSI_ESCAPE_CHARACTER = String.fromCharCode(27);
+const MAX_DIAGNOSTIC_TEXT_LENGTH = 32 * 1024;
 const SAFE_EXECUTION_ID = /^[A-Za-z0-9._:-]{1,256}$/;
 const CONFIDENTIAL_OUTPUT_MARKERS = Object.freeze([
   "confidentialEnvelope",
   "envelopeBlindingSecret",
   "envelopeBlindingSecretHex",
   "warehouseBounds",
+  "minXmm",
+  "minYmm",
+  "maxXmm",
+  "maxYmm",
+  "zones",
+  "rules",
+  "bounds",
   "scenarioGeneration",
   "maximumMmPerSecond",
   "payloadGreaterThanGrams",
@@ -41,8 +49,36 @@ const CONFIDENTIAL_OUTPUT_MARKERS = Object.freeze([
 type JsonRecord = { readonly [key: string]: unknown };
 
 interface CliRun {
+  readonly stdout: string;
+  readonly stderr: string;
   readonly output: string;
   readonly exitCode: number;
+}
+
+class WorkflowSimulationError extends Error {
+  readonly details: Readonly<Record<string, unknown>>;
+
+  constructor(
+    definition: SimulationCaseDefinition,
+    args: readonly string[],
+    run: CliRun,
+    files: SimulationFixtureFiles,
+  ) {
+    super(`CRE ${definition.name} simulation failed with exit code ${run.exitCode}`);
+    const markers = confidentialMarkers(files[definition.environmentPath]);
+    this.details = Object.freeze({
+      status: "BLOCKED",
+      error: this.message,
+      command: redactCliText([cliExecutable(), ...args].map(quote).join(" "), markers),
+      exitCode: run.exitCode,
+      stdout: redactCliText(run.stdout, markers),
+      stderr: redactCliText(run.stderr, markers),
+      workingDirectory: REPOSITORY_ROOT,
+      workflowPath: WORKFLOW_PATH,
+      target: TARGET,
+      triggerIndex: Number(TRIGGER_INDEX),
+    });
+  }
 }
 
 interface SimulationCaseDefinition {
@@ -109,6 +145,8 @@ function runCli(args: readonly string[]): CliRun {
   const stdout = typeof result.stdout === "string" ? result.stdout : "";
   const stderr = typeof result.stderr === "string" ? result.stderr : "";
   return Object.freeze({
+    stdout: stdout.replaceAll(ANSI_ESCAPE_CHARACTER, ""),
+    stderr: stderr.replaceAll(ANSI_ESCAPE_CHARACTER, ""),
     output: `${stdout}\n${stderr}`.replaceAll(ANSI_ESCAPE_CHARACTER, ""),
     exitCode: result.status ?? 1,
   });
@@ -253,6 +291,19 @@ function confidentialMarkers(environmentPath: string): readonly string[] {
   return [...markers];
 }
 
+function redactCliText(text: string, markers: readonly string[]): string {
+  const redacted = text
+    .split(/\r?\n/)
+    .map((line) =>
+      markers.some((marker) => marker.length > 0 && line.includes(marker))
+        ? "[REDACTED confidential CLI output]"
+        : line,
+    )
+    .join("\n");
+  if (redacted.length <= MAX_DIAGNOSTIC_TEXT_LENGTH) return redacted;
+  return `${redacted.slice(0, MAX_DIAGNOSTIC_TEXT_LENGTH)}\n[diagnostic output truncated]`;
+}
+
 function assertNoConfidentialOutput(
   output: string,
   environmentPath: string,
@@ -358,7 +409,7 @@ async function main(): Promise<void> {
       const args = commandFor(definition, files);
       const run = runCli(args);
       if (run.exitCode !== 0) {
-        throw new Error(`CRE ${definition.name} simulation failed with exit code ${run.exitCode}`);
+        throw new WorkflowSimulationError(definition, args, run, files);
       }
       assertNoConfidentialOutput(run.output, files[definition.environmentPath], files.secretValue);
       const publicInput = JSON.parse(
@@ -431,10 +482,12 @@ if (import.meta.main) {
   } catch (error) {
     console.error(
       JSON.stringify(
-        {
-          status: "BLOCKED",
-          error: error instanceof Error ? error.message : "CRE simulation evidence failed",
-        },
+        error instanceof WorkflowSimulationError
+          ? error.details
+          : {
+              status: "BLOCKED",
+              error: error instanceof Error ? error.message : "CRE simulation evidence failed",
+            },
         null,
         2,
       ),
