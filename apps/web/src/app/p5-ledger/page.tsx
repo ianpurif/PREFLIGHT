@@ -75,7 +75,6 @@ export default function P5LedgerOperatorPage() {
       setStatus("Waiting for Ledger connection and address confirmation…");
       const connected = await adapter.current?.connect();
       setSession(connected ? { ...connected } : null);
-      setPrepared(null);
       setSignature(null);
       setResult(null);
       setStatus("Ledger connected. Paste a public P1 clearance record to run the pre-sign gate.");
