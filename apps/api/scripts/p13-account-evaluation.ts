@@ -37,12 +37,6 @@ type PublicEvaluation = {
   readonly evaluatedAt: string;
 };
 
-type PublicResult = {
-  readonly status: "COMPLETED" | "PENDING";
-  readonly evaluationId: string;
-  readonly evaluation?: PublicEvaluation;
-};
-
 const DEFAULT_API_ORIGIN = "http://localhost:4000";
 const DEFAULT_WEB_ORIGIN = "http://localhost:3000";
 const DEFAULT_POLL_ATTEMPTS = 30;
