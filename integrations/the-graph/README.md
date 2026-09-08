@@ -36,6 +36,10 @@ that a hosted deployment exists.
    bun run --cwd integrations/the-graph deploy
    ```
 
+   The wrapper resolves the pinned workspace CLI directly (including Bun's Windows
+   `graph.exe` launcher) and explicitly deploys `subgraph/subgraph.yaml`; it does not depend on a
+   global `graph.cmd` being present on `PATH`.
+
 3. Wait for the deployment to index the Sepolia registry, then record the hosted subgraph ID and
    a redacted query response. Publishing to the decentralized network is not required for the
    provider-backed qualification proof; do not label a Studio deployment as a live DON.
