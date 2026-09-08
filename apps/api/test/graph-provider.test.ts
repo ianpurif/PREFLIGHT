@@ -73,8 +73,27 @@ describe("The Graph clearance provider", () => {
         status: "REVOKED",
       },
     );
+    const expired = parseClearanceRecord({ ...clearance, expiresAt: "1788600000" });
+    const expiredTransport = clearanceRecordToTransport(expired);
     await expect(
-      reader(entity({ expiresAt: "1787999999" })).readClearance(clearance),
+      new TheGraphClearanceReader({
+        apiKey: "graph-test-key",
+        subgraphId: "graph-test-subgraph",
+        now: () => 1_788_600_000,
+        fetch: async () =>
+          response({
+            id: expiredTransport.clearanceDigest,
+            clearanceDigest: expiredTransport.clearanceDigest,
+            ...expiredTransport.bindings,
+            issuedAt: expiredTransport.bindings.issuedAt.toString(),
+            expiresAt: expiredTransport.bindings.expiresAt.toString(),
+            verdict: expiredTransport.verdict,
+            issuer: `0x${"11".repeat(20)}`,
+            revoked: false,
+            blockNumber: "100",
+            blockHash: `0x${"22".repeat(32)}`,
+          }),
+      }).readClearance(expired),
     ).resolves.toMatchObject({ status: "EXPIRED" });
     await expect(
       reader(entity({ robotBuildDigest: `0x${"ff".repeat(32)}` })).readClearance(clearance),
