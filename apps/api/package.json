@@ -9,6 +9,7 @@
     "evidence:p52-agent": "bun scripts/p52-agent-evidence.ts",
     "evidence:p52-agent:live-read": "bun run --env-file ../../.env scripts/p52-agent-live-read-evidence.ts",
     "evidence:p11-graph": "bun run --env-file ../../.env scripts/p11-graph-live-evidence.ts",
+    "evidence:cre-simulation": "bun scripts/cre-simulation-evidence.ts",
     "p13:account-evaluation": "bun run --env-file ../../.env scripts/p13-account-evaluation.ts",
     "p13:provision-site-secret": "bun run --env-file ../../.env scripts/p13-provision-site-secret.ts",
     "record:sepolia-clearance": "bun run --env-file ../../.env scripts/record-sepolia-clearance.ts",

@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
     "test": "bun test",
     "cre:compile": "cre-compile src/main.ts dist/workflow.wasm",
-    "cre:fixtures": "bun scripts/generate-simulation-fixtures.ts"
+    "cre:fixtures": "bun scripts/generate-simulation-fixtures.ts",
+    "cre:simulate:evidence": "bun ../../apps/api/scripts/cre-simulation-evidence.ts"
   },
   "dependencies": {
     "@chainlink/cre-sdk": "1.19.1",
