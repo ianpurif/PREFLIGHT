@@ -80,7 +80,7 @@ export class ApiError extends Error {
   }
 }
 
-const API_ORIGIN = process.env.NEXT_PUBLIC_PREFLIGHT_API_URL ?? "http://localhost:4000";
+const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN ?? "http://localhost:4000";
 
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
