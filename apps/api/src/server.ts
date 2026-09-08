@@ -78,6 +78,30 @@ export function buildServer(
       environment.WEB_ORIGIN,
     ].filter((origin): origin is string => typeof origin === "string" && origin.length > 0),
   );
+  function isTrustedMutationOrigin(request: {
+    readonly headers: {
+      readonly origin?: string | undefined;
+      readonly referer?: string | undefined;
+    };
+  }): boolean {
+    const origin = request.headers.origin;
+    if (origin !== undefined) return allowedOrigins.has(origin);
+    const referer = request.headers.referer;
+    if (referer !== undefined) {
+      try {
+        return allowedOrigins.has(new URL(referer).origin);
+      } catch {
+        return false;
+      }
+    }
+    return true;
+  }
+  app.addHook("preHandler", async (request, reply) => {
+    if (request.method !== "POST" || isTrustedMutationOrigin(request)) return;
+    return reply
+      .code(403)
+      .send({ error: "CSRF_ORIGIN_REJECTED", message: "Request origin is not allowed" });
+  });
   app.addHook("onSend", async (request, reply, payload) => {
     const origin = request.headers.origin;
     if (origin !== undefined && allowedOrigins.has(origin)) {
@@ -158,6 +182,19 @@ export function buildServer(
       return null;
     }
     return account.id;
+  }
+
+  function requireLegacyAccess(
+    request: { readonly headers: { readonly cookie?: string | undefined } },
+    reply: FastifyReply,
+  ): boolean {
+    if (
+      applicationStore === undefined ||
+      (environment.NODE_ENV !== "production" && environment.PREFLIGHT_ENABLE_DEMO_ROUTES === "true")
+    ) {
+      return true;
+    }
+    return requireAccount(request, reply) !== null;
   }
 
   app.post("/auth/register", async (request, reply) => {
@@ -425,6 +462,7 @@ export function buildServer(
     }
   });
   app.post("/agent/deployment/prepare", async (request, reply) => {
+    if (!requireLegacyAccess(request, reply)) return undefined;
     if (deploymentAgent === undefined) {
       throw new DeploymentAgentError("PROVIDER_UNAVAILABLE", "Deployment agent is not configured");
     }
@@ -439,6 +477,7 @@ export function buildServer(
     return deploymentAgent.run({ request: body.request, signerAddress: body.signerAddress });
   });
   app.post("/agent/deployment/status", async (request, reply) => {
+    if (!requireLegacyAccess(request, reply)) return undefined;
     if (deploymentAgent === undefined) {
       throw new DeploymentAgentError("PROVIDER_UNAVAILABLE", "Deployment agent is not configured");
     }
@@ -447,6 +486,7 @@ export function buildServer(
     return deploymentAgent.getAuthorizationStatus(body.attemptId);
   });
   app.post("/release/prepare", async (request, reply) => {
+    if (!requireLegacyAccess(request, reply)) return undefined;
     if (releaseService === undefined) {
       throw new ReleaseGateError("PERSISTENCE_UNAVAILABLE", "Release gate is not configured");
     }
@@ -469,6 +509,7 @@ export function buildServer(
     });
   });
   app.post("/release/consume", async (request, reply) => {
+    if (!requireLegacyAccess(request, reply)) return undefined;
     if (releaseService === undefined) {
       throw new ReleaseGateError("PERSISTENCE_UNAVAILABLE", "Release gate is not configured");
     }

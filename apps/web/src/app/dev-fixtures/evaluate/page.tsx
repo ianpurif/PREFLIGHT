@@ -7,7 +7,10 @@ export const metadata = {
 };
 
 export default function DevelopmentEvaluatePage() {
-  if (process.env.PREFLIGHT_ENABLE_DEMO_ROUTES !== "true") {
+  if (
+    process.env.NODE_ENV === "production" ||
+    process.env.PREFLIGHT_ENABLE_DEMO_ROUTES !== "true"
+  ) {
     return (
       <main className="fixture-disabled" id="main-content">
         <h1>Development fixture disabled</h1>

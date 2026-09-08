@@ -12,6 +12,7 @@ export default defineConfig({
         NODE_ENV: "test",
         PREFLIGHT_APP_DB_PATH: ".data/preflight-e2e.sqlite",
         PREFLIGHT_POLICY_KEY_PATH: ".data/preflight-e2e.key",
+        PREFLIGHT_ENABLE_DEMO_ROUTES: "true",
         EVM_RPC_URL: "",
         SEPOLIA_RPC_URL: "",
       },

@@ -354,7 +354,10 @@ if (
   /createDemoPublicData|JudgeDashboard/.test(realWorkspace)
 )
   throw new Error("P8 normal workspace must use persisted data, not the fixture dashboard");
-if (!fixtureRoute.includes("PREFLIGHT_ENABLE_DEMO_ROUTES"))
+if (
+  !fixtureRoute.includes("PREFLIGHT_ENABLE_DEMO_ROUTES") ||
+  !fixtureRoute.includes('NODE_ENV === "production"')
+)
   throw new Error("P7 fixture route must remain explicitly environment-gated");
 if (!applicationStore.includes("createCipheriv") || !applicationStore.includes("account_id"))
   throw new Error("P8 application store must encrypt policy data and scope records by account");

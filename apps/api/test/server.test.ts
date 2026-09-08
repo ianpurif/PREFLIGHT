@@ -122,11 +122,11 @@ describe("P5 release API boundary", () => {
       headers: { origin: "https://attacker.example" },
       payload: { ...proposal, ledgerApproved: true },
     });
-    expect(forged.statusCode).toBe(400);
+    expect(forged.statusCode).toBe(403);
     expect(forged.headers["access-control-allow-origin"]).toBeUndefined();
     expect(JSON.parse(forged.body)).toEqual({
-      error: "MALFORMED_REQUEST",
-      message: "Request body is malformed",
+      error: "CSRF_ORIGIN_REJECTED",
+      message: "Request origin is not allowed",
     });
     expect(prepared).toHaveLength(1);
     await app.close();

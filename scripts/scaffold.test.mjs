@@ -143,6 +143,7 @@ test("P3-P8 are load-bearing and the product boundary remains non-authoritative"
   assert.ok(realWorkspace.includes("/releases/prepare"));
   assert.doesNotMatch(realWorkspace, /createDemoPublicData|JudgeDashboard/);
   assert.match(fixtureRoute, /PREFLIGHT_ENABLE_DEMO_ROUTES/);
+  assert.match(fixtureRoute, /NODE_ENV === "production"/);
   assert.match(applicationStore, /createCipheriv/);
   assert.match(applicationStore, /account_id/);
   assert.match(applicationLifecycle, /isolates resources between accounts/);

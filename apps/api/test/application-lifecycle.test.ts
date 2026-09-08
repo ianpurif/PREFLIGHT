@@ -176,4 +176,35 @@ describe("account-scoped product lifecycle", () => {
     expect(malformed.statusCode).toBe(400);
     await app.close();
   });
+
+  test("rejects cross-origin mutations and unauthenticated legacy authority routes", async () => {
+    const store = new ApplicationStore({ dbPath: ":memory:", policyKey: KEY });
+    const app = buildServer({ applicationStore: store });
+    const session = await register(app, "csrf@example.test");
+    const csrfResponse = await app.inject({
+      method: "POST",
+      url: "/sites",
+      headers: { cookie: session, origin: "https://attacker.example" },
+      payload: { name: "Blocked site", location: "Manila", policy },
+    });
+    expect(csrfResponse.statusCode).toBe(403);
+    expect(JSON.parse(csrfResponse.body).error).toBe("CSRF_ORIGIN_REJECTED");
+
+    const legacyResponse = await app.inject({
+      method: "POST",
+      url: "/release/consume",
+      payload: { intent: {}, signature: "0x00" },
+    });
+    expect(legacyResponse.statusCode).toBe(401);
+    expect(JSON.parse(legacyResponse.body).error).toBe("AUTH_REQUIRED");
+
+    const authenticatedLegacyResponse = await app.inject({
+      method: "POST",
+      url: "/release/consume",
+      headers: { cookie: session },
+      payload: { intent: {}, signature: "0x00" },
+    });
+    expect(authenticatedLegacyResponse.statusCode).toBe(503);
+    await app.close();
+  });
 });
