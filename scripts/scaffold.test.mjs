@@ -144,7 +144,7 @@ test("P3-P8 are load-bearing and the product boundary remains non-authoritative"
   assert.match(ledgerPage, /credentials: "include"/);
   const connectBlock =
     ledgerPage.match(
-      /async function connect\(\) \{[\s\S]*?\n  \}\n\n  async function prepare/,
+      /async function connect\(\) \{[\s\S]*?\n\x20{2}\}\n\n\x20{2}async function prepare/,
     )?.[0] ?? "";
   assert.doesNotMatch(connectBlock, /setPrepared\(null\)/);
   assert.ok(realWorkspace.includes("/releases/prepare"));

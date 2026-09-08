@@ -352,7 +352,7 @@ if (!onboarding.includes("auth/register") || !apiClient.includes('credentials: "
   throw new Error("P8 account entry must use authenticated API sessions");
 const connectBlock =
   ledgerPage.match(
-    /async function connect\(\) \{[\s\S]*?\n  \}\n\n  async function prepare/,
+    /async function connect\(\) \{[\s\S]*?\n\x20{2}\}\n\n\x20{2}async function prepare/,
   )?.[0] ?? "";
 if (!ledgerPage.includes('credentials: "include"') || /setPrepared\(null\)/.test(connectBlock))
   throw new Error("P5 Ledger handoff must preserve the prepared request across connect");
