@@ -18,7 +18,6 @@ import {
   EVALUATION_REQUEST_SCHEMA_VERSION,
   parseClearanceRecord,
   parseEvaluationRequest,
-  parseEvaluationResult,
   parseEvaluatorVersionId,
   parseRobotBuildDescriptor,
   parseSafetyEnvelopeId,
