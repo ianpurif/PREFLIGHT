@@ -42,6 +42,11 @@ const required = [
   "apps/web/src/app/page.tsx",
   "apps/web/src/app/landing-page.tsx",
   "apps/web/src/app/onboarding-flow.tsx",
+  "apps/web/src/app/api-client.ts",
+  "apps/web/src/app/real-workspace.tsx",
+  "apps/web/src/app/dev-fixtures/evaluate/page.tsx",
+  "apps/api/src/application/store.ts",
+  "apps/api/test/application-lifecycle.test.ts",
   "apps/web/src/app/workspace-context.tsx",
   "apps/web/src/app/product-app.tsx",
   "apps/web/src/app/workspace-views.tsx",
@@ -319,8 +324,16 @@ for (const forbidden of [
 }
 const webPage = readFileSync(resolve(root, "apps/web/src/app/page.tsx"), "utf8");
 const landingPage = readFileSync(resolve(root, "apps/web/src/app/landing-page.tsx"), "utf8");
-const workspaceContext = readFileSync(
-  resolve(root, "apps/web/src/app/workspace-context.tsx"),
+const onboarding = readFileSync(resolve(root, "apps/web/src/app/onboarding-flow.tsx"), "utf8");
+const apiClient = readFileSync(resolve(root, "apps/web/src/app/api-client.ts"), "utf8");
+const realWorkspace = readFileSync(resolve(root, "apps/web/src/app/real-workspace.tsx"), "utf8");
+const fixtureRoute = readFileSync(
+  resolve(root, "apps/web/src/app/dev-fixtures/evaluate/page.tsx"),
+  "utf8",
+);
+const applicationStore = readFileSync(resolve(root, "apps/api/src/application/store.ts"), "utf8");
+const applicationLifecycle = readFileSync(
+  resolve(root, "apps/api/test/application-lifecycle.test.ts"),
   "utf8",
 );
 const productApp = readFileSync(resolve(root, "apps/web/src/app/product-app.tsx"), "utf8");
@@ -334,10 +347,21 @@ const p7DemoScript = readFileSync(resolve(root, "scripts/p7-demo.mjs"), "utf8");
 const p7Fixture = readFileSync(resolve(root, "apps/api/scripts/p7-demo-fixture.ts"), "utf8");
 if (!webPage.includes("LandingPage") || !landingPage.includes("Get started"))
   throw new Error("P8 root route must render the product landing page");
-if (!workspaceContext.includes("preflight.workspace.setup"))
-  throw new Error("P8 workspace context must retain setup values in the browser session");
-if (!productApp.includes("ProductApp") || !evaluatePage.includes("JudgeDashboard"))
-  throw new Error("P6 evaluator must remain available inside the product workspace");
+if (!onboarding.includes("auth/register") || !apiClient.includes('credentials: "include"'))
+  throw new Error("P8 account entry must use authenticated API sessions");
+if (
+  !realWorkspace.includes("/releases/prepare") ||
+  /createDemoPublicData|JudgeDashboard/.test(realWorkspace)
+)
+  throw new Error("P8 normal workspace must use persisted data, not the fixture dashboard");
+if (!fixtureRoute.includes("PREFLIGHT_ENABLE_DEMO_ROUTES"))
+  throw new Error("P7 fixture route must remain explicitly environment-gated");
+if (!applicationStore.includes("createCipheriv") || !applicationStore.includes("account_id"))
+  throw new Error("P8 application store must encrypt policy data and scope records by account");
+if (!applicationLifecycle.includes("isolates resources between accounts"))
+  throw new Error("P8 lifecycle tests must cover account isolation");
+if (!productApp.includes("ProductApp") || !evaluatePage.includes("ProductApp"))
+  throw new Error("P8 evaluator page must remain inside the authenticated product workspace");
 for (const requiredSurface of [
   "CLEARANCE_BINDING_MISMATCH",
   "CRE authenticated simulation evidence",
@@ -407,7 +431,7 @@ if (rootAgentsBytes > 16 * 1024)
 
 console.log("✓ scaffold structure present");
 console.log("✓ JSON manifests parse");
-console.log("✓ P1-P7 implementation and verification guardrails present");
+console.log("✓ P1-P8 implementation and verification guardrails present");
 console.log("✓ .env.example has no obvious secret material");
 console.log("✓ root AGENTS.md remains context-efficient");
 

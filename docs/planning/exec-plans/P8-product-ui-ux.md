@@ -27,16 +27,19 @@ release preparation, and explicit human approval handoff.
 
 - `apps/web/src/app/page.tsx` and new landing/onboarding components/routes.
 - New `/app` product shell and focused setup/build/evaluation/release/evidence views.
-- Existing judge dashboard embedded as the evaluation workspace with the same API and demo state.
+- Existing judge dashboard retained only as an explicit development/test fixture; normal evaluation
+  uses authenticated account data and the existing server-side evaluator.
 - `apps/web/src/app/globals.css` for the industrial product visual system and responsive states.
-- Critical Playwright paths updated to enter through `/app/evaluate` after the new landing flow.
+- Critical Playwright paths cover both the authenticated `/app` lifecycle and the explicit fixture
+  route; normal `/app/evaluate` never loads fixture selectors.
 - Current-state documentation updated after verification.
 
 ## Acceptance checks
 
 - A first-time visitor sees a clear landing page and can reach onboarding without knowing the
   architecture.
-- Onboarding captures site, robot, and build context locally and hands off to the workspace.
+- Onboarding creates an account and persists site, private policy, robot, and exact build records
+  through the API.
 - Workspace navigation exposes Setup, Builds, Evaluate, Releases, and Evidence without making
   technical partner labels the primary UX.
 - Evaluation view preserves unsafe `HOLD`, corrected `CLEAR`, mutated `BLOCKED`, and live-agent
@@ -72,16 +75,19 @@ read-only review will inspect the final diff before completion.
 ## Decisions / deviations
 
 - The product shell uses URL routes for major views so a refresh has a stable entry point.
-- Setup is intentionally local/demo-scoped; it does not invent persistence or backend CRUD.
-- The existing P6 dashboard remains the authoritative demo workspace and is visually embedded,
-  rather than reimplemented in a second state model.
+- The original local/demo setup decision is superseded by `P8-real-product-lifecycle.md`: normal
+  routes require an authenticated account and API persistence. No browser-only account or product
+  record is treated as authoritative.
+- The existing P6 dashboard remains available only as an explicit, env-gated development fixture;
+  it is not imported by the normal product shell.
 
 ## Verification evidence
 
 Completed evidence:
 
 - `bun run test` — all repository package tests passed (including the web critical-path unit tests).
-- `bun run test:e2e` — 9 Playwright tests passed across P6, P7, and P8 landing/onboarding flows.
+- `bun run test:e2e` — 10 Playwright tests passed across P6, P7, and P8 landing, account lifecycle,
+  release-boundary, and fixture-isolation flows.
 - `bun --filter '@preflight/web' typecheck` and the full typecheck stage in `bun run verify` passed.
 - `bun run lint` — Biome clean with no warnings or errors.
 - `bun run build` — all packages and the Next.js application built successfully.

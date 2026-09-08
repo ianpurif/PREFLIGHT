@@ -11,13 +11,14 @@ publish its private safety envelope, and the deployment agent cannot approve a r
 
 **Built for ETHGlobal From Scratch with Chainlink CRE and Ledger as load-bearing integrations.**
 
-> **Current status:** P1–P7 software is implemented and the product UI flow is now present: landing,
-> onboarding, workspace setup, build selection, evaluation, release preparation, evidence, and the
-> human Ledger handoff. The Sepolia registry, deterministic evaluator, authenticated CRE simulation
-> path, bounded deployment agent, and offline rehearsal remain in place. Physical Ledger/Clear
-> Signing evidence, a live DON run, an external model run, and P8 submission assets remain open.
+> **Current status:** P1–P7 software is implemented and P8 now has a real account-backed product
+> flow: landing, sign-in, persisted site/policy/robot/build setup, server-side evaluation, release
+> preparation, evidence, and the human Ledger handoff. The Sepolia registry, deterministic
+> evaluator, authenticated CRE simulation path, bounded deployment agent, and offline fixture
+> rehearsal remain in place. Physical Ledger/Clear Signing evidence, a live DON run, an external
+> model run, and submission assets remain open.
 
-[Judge path](#try-the-judge-demo) · [How it works](#how-it-works) · [Partner proof](#partner-integrations) · [Testing](#testing) · [Known limits](#current-status-and-known-limits)
+[Product path](#use-the-product) · [How it works](#how-it-works) · [Partner proof](#partner-integrations) · [Testing](#testing) · [Known limits](#current-status-and-known-limits)
 
 ## In one minute
 
@@ -148,39 +149,36 @@ flowchart LR
 | Sepolia registry         | Public hashes, exact bindings, `CLEAR`, issuer, timestamps, and revocation state     | No private rules or confidential payloads                                      |
 | Ledger release           | Full deployment intent, including exact build, clearance, signer, nonce, and expiry  | Human confirms on hardware; backend never holds the key                        |
 
-## The four-minute judge demo
+## Use the product
 
-Open `/` after starting the web app. The landing page explains the product and links to **Get
-started** for a short target setup. The workspace then guides the user through `/app/setup`,
-`/app/builds`, `/app/evaluate`, `/app/releases`, and `/app/evidence`. The evaluator is an
-explanatory view over the existing deterministic core; it is not a second safety authority.
+Open `/` after starting the web and API services. Select **Get started** to create an account or
+sign in. The authenticated workspace then guides the operator through `/app/setup`, `/app/builds`,
+`/app/evaluate`, `/app/releases`, and `/app/evidence`:
 
-For a direct judge path, open `/app/evaluate` or use **View the deterministic demo** on the landing
-page. The existing P6/P7 A/B/C scenarios remain available there.
+1. Create a site and enter its private safety policy. The policy is encrypted at rest and is opened
+   only inside the API evaluation boundary.
+2. Register a robot and the exact build artifact digest and declared route.
+3. Run the existing deterministic evaluator. Only its public result projection reaches the browser.
+4. Review a `HOLD` or `CLEAR` result, then prepare a release only when a public P4 clearance and the
+   configured P5 gate are available.
+5. `LEDGER_APPROVAL_REQUIRED` means the exact request is waiting for a human Ledger action; it is
+   not authorization. Missing clearance or gate configuration remains `BLOCKED`.
 
-### A — Unsafe build
+The normal workspace is account-backed. It does not load the P7 A/B/C fixture, create browser-only
+records, or treat a visual state as authoritative.
 
-Build A starts in `HOLD`. The digital twin shows the route conflict and the release panel says that
-no Ledger request was created.
+### Development-only deterministic fixture
 
-### B — Corrected build
+P6/P7 regression scenarios remain available only when the development flag is explicitly enabled:
 
-Switch to Build B. The same envelope returns `CLEAR`. When the provider, RPC, catalog, and matching
-clearance are configured, the real agent path can prepare an exact P5 request, which ends at
-`LEDGER_APPROVAL_REQUIRED` and opens the existing `/p5-ledger` harness. It does not show
-`AUTHORIZED` without the real Ledger/P5 flow.
+```bash
+PREFLIGHT_ENABLE_DEMO_ROUTES=true bun run --cwd apps/web dev
+```
 
-### C — Mutated build
-
-Click **Mutate Build**. The build ID and digest change. The previous clearance is rejected as
-`CLEARANCE_BINDING_MISMATCH`, before another Ledger request is created.
-
-Use **Reset demo** between runs. The offline rehearsal also covers the same A/B/C sequence with
-fixed time, attempt IDs, registry metadata, and a demo-only nonce.
-
-The UI keeps the brief-facing `487 scenarios` headline, but the authoritative checked-in P2 fixture
-contains three committed templates. The source note in the dashboard makes that distinction visible;
-the headline does not change evaluator semantics.
+Then open `/dev-fixtures/evaluate`. This route is not linked from the product and is intended for
+development/regression tests only. It uses the checked-in P2/P7 fixture and may show the unsafe A
+(`HOLD`), corrected B (`CLEAR`), and mutated C (`BLOCKED / CLEARANCE_BINDING_MISMATCH`) rehearsal.
+It is not account data, a live partner execution, a clearance, or proof of physical robot safety.
 
 ## Key features
 
@@ -254,7 +252,7 @@ The current public registry identity is:
 The contract does not contain private envelope data, parse canonical JSON, prove that CRE ran, or
 authorize a deployment by itself.
 
-## Try the judge demo
+## Run locally
 
 ### Prerequisites
 
@@ -263,7 +261,7 @@ authorize a deployment by itself.
 - Chromium/Chrome for browser tests and optional WebHID work
 - Foundry (`forge`, `anvil`, `cast`) for contract tests
 
-### Offline, repeatable path
+### Development fixture rehearsal
 
 This path does not call OpenAI, Sepolia, CRE, Ledger, or Speculos. It uses the checked-in P2
 fixture, a local registry reader, the existing P5.2 controller, and a demo-only fixed nonce.
@@ -272,10 +270,13 @@ fixture, a local registry reader, the existing P5.2 controller, and a demo-only 
 bun install --frozen-lockfile
 bun run verify:scaffold
 bun run demo:setup
-bun run dev
+# Bash/macOS/Linux:
+PREFLIGHT_ENABLE_DEMO_ROUTES=true bun run dev
+# PowerShell:
+# $env:PREFLIGHT_ENABLE_DEMO_ROUTES="true"; bun run dev
 ```
 
-Open <http://localhost:3000> and use **Reset demo** between judge runs. In another terminal:
+Open <http://localhost:3000/dev-fixtures/evaluate> for the explicit fixture route. In another terminal:
 
 ```bash
 bun run demo:reset       # removes only .data/preflight-demo; safe to repeat
@@ -286,7 +287,7 @@ bun run demo:rehearse   # runs the focused Playwright judge flow
 `bun run demo:setup` creates only ignored state under `.data/preflight-demo`. It never resets source
 fixtures, deployment artifacts, evidence, environment files, or the normal release database.
 
-### Start the normal development services
+### Start the normal account-backed services
 
 ```bash
 cp .env.example .env.local
@@ -295,9 +296,10 @@ bun install
 bun run dev
 ```
 
-The web shell is useful without live provider configuration. The API correctly reports the release
-agent as unavailable until its real RPC, signer, catalog, and provider configuration are present; it
-does not substitute the offline scripted rehearsal as a production result.
+The product creates an account-backed local store under `.data/` by default. The web shell is useful
+without live provider configuration; the API correctly reports the release agent as unavailable
+until its real RPC, signer, catalog, and provider configuration are present. It does not substitute
+the offline scripted rehearsal as a product result.
 
 ### Optional live API configuration
 
@@ -309,6 +311,9 @@ envelope blinds, signatures, or confidential CRE payloads.
 | `EVM_RPC_URL` or `SEPOLIA_RPC_URL` | Read-only Sepolia registry access                        |
 | `PREFLIGHT_AUTHORIZED_SIGNERS`     | Public Ledger signer allowlist                           |
 | `PREFLIGHT_RELEASE_DB_PATH`        | SQLite release/nonce state                               |
+| `PREFLIGHT_APP_DB_PATH`             | SQLite account/site/build/evaluation state               |
+| `PREFLIGHT_POLICY_ENCRYPTION_KEY`   | 32-byte hex key for encrypted site policies              |
+| `PREFLIGHT_POLICY_KEY_PATH`         | Local ignored key-file fallback when the key is unset    |
 | `OPENAI_API_KEY`                   | Optional real Responses API provider                     |
 | `PREFLIGHT_AGENT_MODEL`            | Explicit provider model name                             |
 | `PREFLIGHT_AGENT_CATALOG_PATH`     | Public deployment catalog path                           |
@@ -341,10 +346,9 @@ bun run verify:scaffold
 bun run verify
 ```
 
-The current verification report records 172 TypeScript tests across the domain, evaluator,
-Chainlink, API, chain-client, Ledger, and web packages, plus contract fuzz/invariant coverage and
-nine browser tests. On the authoring host, a later aggregate rerun hit a host-level `spawn EPERM`
-while creating Next/Node subprocesses; the earlier clean build and browser runs passed. See
+The current verification report records TypeScript tests across the domain, evaluator, Chainlink,
+API, chain-client, Ledger, and web packages, plus contract fuzz/invariant coverage and ten browser
+tests covering the normal account lifecycle and the isolated P6/P7 fixture. See
 [`VERIFICATION_REPORT.md`](VERIFICATION_REPORT.md) for the exact boundary and current evidence.
 
 Partner-specific checks are documented here:

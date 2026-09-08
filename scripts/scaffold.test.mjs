@@ -29,7 +29,7 @@ test("P5 uses pinned current Ledger packages without legacy LedgerJS", async () 
   assert.doesNotMatch(parsed.scripts.test, /pass-with-no-tests/);
 });
 
-test("P3-P7 are load-bearing and the judge boundary remains non-authoritative", async () => {
+test("P3-P8 are load-bearing and the product boundary remains non-authoritative", async () => {
   const workflow = await readFile(
     new URL("integrations/chainlink-cre/src/workflow.ts", root),
     "utf8",
@@ -62,8 +62,21 @@ test("P3-P7 are load-bearing and the judge boundary remains non-authoritative", 
   const web = await readFile(new URL("apps/web/src/app/page.tsx", root), "utf8");
   const landing = await readFile(new URL("apps/web/src/app/landing-page.tsx", root), "utf8");
   const onboarding = await readFile(new URL("apps/web/src/app/onboarding-flow.tsx", root), "utf8");
-  const workspaceContext = await readFile(
-    new URL("apps/web/src/app/workspace-context.tsx", root),
+  const apiClient = await readFile(new URL("apps/web/src/app/api-client.ts", root), "utf8");
+  const realWorkspace = await readFile(
+    new URL("apps/web/src/app/real-workspace.tsx", root),
+    "utf8",
+  );
+  const fixtureRoute = await readFile(
+    new URL("apps/web/src/app/dev-fixtures/evaluate/page.tsx", root),
+    "utf8",
+  );
+  const applicationStore = await readFile(
+    new URL("apps/api/src/application/store.ts", root),
+    "utf8",
+  );
+  const applicationLifecycle = await readFile(
+    new URL("apps/api/test/application-lifecycle.test.ts", root),
     "utf8",
   );
   const productApp = await readFile(new URL("apps/web/src/app/product-app.tsx", root), "utf8");
@@ -125,10 +138,16 @@ test("P3-P7 are load-bearing and the judge boundary remains non-authoritative", 
   );
   assert.match(web, /LandingPage/);
   assert.match(landing, /Get started/);
-  assert.match(onboarding, /WORKSPACE_SETUP_STORAGE_KEY/);
-  assert.match(workspaceContext, /preflight\.workspace\.setup/);
+  assert.match(onboarding, /auth\/register/);
+  assert.match(apiClient, /credentials: "include"/);
+  assert.ok(realWorkspace.includes("/releases/prepare"));
+  assert.doesNotMatch(realWorkspace, /createDemoPublicData|JudgeDashboard/);
+  assert.match(fixtureRoute, /PREFLIGHT_ENABLE_DEMO_ROUTES/);
+  assert.match(applicationStore, /createCipheriv/);
+  assert.match(applicationStore, /account_id/);
+  assert.match(applicationLifecycle, /isolates resources between accounts/);
   assert.match(productApp, /ProductApp/);
-  assert.match(evaluatePage, /JudgeDashboard/);
+  assert.match(evaluatePage, /ProductApp/);
   assert.match(judge, /CLEARANCE_BINDING_MISMATCH/);
   assert.match(judge, /Physical device: not demonstrated/);
   assert.match(judge, /CRE authenticated simulation evidence/);

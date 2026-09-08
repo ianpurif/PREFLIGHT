@@ -8,4 +8,5 @@ Applies to `apps/api/**`.
 - Do not log private envelope values or TEE-only material.
 - Validate all external identifiers at boundaries once schemas exist.
 - Prefer Fastify injection tests over starting real ports for unit/integration tests.
-- Keep `/health` trivial; product routes require explicit implementation tasks.
+- Keep `/health` trivial; product routes must retain account scoping, trust-boundary validation, and
+  truthful unavailable/error states.

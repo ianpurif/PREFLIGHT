@@ -6,7 +6,9 @@ Applies to `apps/web/**`.
 - Keep WebHID/Ledger code client-only and behind `packages/ledger-gate`.
 - Never hard-code a “pass” merely to make the demo animation work.
 - A visible signed/approved intent must correspond to the exact payload sent for signing.
-- Prefer deterministic demo state and explicit loading/error states over animation complexity.
+- Normal `/app` routes must render authenticated API state; deterministic demo state belongs only to
+  explicit development/test fixture routes. Keep loading/error states explicit over animation
+  complexity.
 - Accessibility and a 4-minute judge path matter more than visual ornament.
 - Do not add product functionality until the active task requests it.
 

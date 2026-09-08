@@ -91,16 +91,26 @@ binding, signs exact site/robot/build/clearance values under a chain/contract do
 authorization, and consumes a one-time nonce. A P4 clearance or Ledger signature alone is not a
 release authorization.
 
-## Boundary G — Judge UI projection
+## Boundary G — Product UI projection
 
-P6 is a presentation boundary, not a new authority. The root dashboard receives a server-side
-projection of the existing deterministic P2 fixture and recorded public P3/P5.2 evidence. It may
-show verdicts, generic violation labels, public digests, route illustrations, the deployed Sepolia
-registry identity, and the Ledger human-approval boundary. It must not receive or render the
+The normal P8 product UI is a presentation and session boundary, not a new authority. Authenticated
+pages receive account-scoped sites, robots, builds, public evaluation results, and release-attempt
+projections from the API. They may show verdicts, generic reason families, public digests, route
+metadata, commitments, and the human-approval boundary. They must not receive or render the
 confidential envelope/blind, private rules or thresholds, restricted geometry, internal report, raw
 CRE payload, model output, credentials, signatures, or a fabricated transaction.
 
-`CLEAR` in the dashboard remains an evaluation result only. The browser cannot construct a
+The API persists only an opaque session token hash. Passwords are scrypt-hashed, and site policy
+envelopes/blinds are encrypted at rest with AES-256-GCM. Every resource query includes the
+authenticated account id; a caller-supplied account id is not accepted as an authorization input.
+The local SQLite store is a single-node implementation boundary and is not presented as production
+multi-instance persistence.
+
+The deterministic P6/P7 dashboard remains a separate, explicitly env-gated development fixture at
+`/dev-fixtures/evaluate`. It is not imported by normal `/app` routes and regression tests are the
+only supported consumer of its scenario selectors.
+
+`CLEAR` in either the product UI or fixture dashboard remains an evaluation result only. The browser cannot construct a
 clearance, call `/release/prepare` directly, mark a request prepared, or report `AUTHORIZED`. A
 real public `LEDGER_APPROVAL_REQUIRED` response from the existing P5.2 API is required before an
 exact prepared request is handed to `/p5-ledger`; the user gesture and existing Ledger/consume path

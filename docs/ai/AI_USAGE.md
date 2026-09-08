@@ -223,3 +223,25 @@ documentation.
 not live OpenAI, Sepolia, Chainlink CRE, Ledger, or Speculos execution. B stops at
 `LEDGER_APPROVAL_REQUIRED` and C stops at `CLEARANCE_BINDING_MISMATCH`; no signature, nonce
 consumption, registry write, authorization, confidential envelope, or robot activation is produced.
+
+## 2026-09-08 — P8 real product lifecycle and UI correction
+
+**Tool:** OpenAI Codex using the Preflight execution-plan and verification-loop skills plus the
+Next.js documentation and a required read-only final review.
+
+**Human direction:** Replace the demo-only normal application path with a truthful product flow:
+real account/session handling, account-scoped persisted site/robot/build/evaluation/release data,
+private policy handling, server-side evaluation, and a release boundary that cannot be bypassed by
+frontend state. Keep P7 fixtures development/test-only and do not add later-phase functionality.
+
+**AI-assisted output:** Bun SQLite application store, scrypt password hashing, opaque HTTP-only
+sessions, AES-256-GCM policy-at-rest encryption, authenticated Fastify resource routes, the existing
+P2 evaluator wired server-side, account-isolation tests, real onboarding/workspace/evaluation/release
+views, an explicit `/dev-fixtures/evaluate` regression route, critical Playwright coverage, and
+product/architecture/planning documentation updates.
+
+**Boundary:** User-created evaluations are public projections of the existing deterministic core;
+they are not proof of physical robot safety. A local `CLEAR` result does not create a P4 clearance,
+and release preparation records `BLOCKED` until the existing P5/P5.2 boundary has the required
+public clearance and configuration. No confidential policy, blind, credential, raw CRE payload,
+signature, AI authorization, robot activation, or P2+ feature was added.

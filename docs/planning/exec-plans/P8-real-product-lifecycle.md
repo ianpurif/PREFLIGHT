@@ -94,8 +94,23 @@ surface.
 ## Status
 
 - [x] Plan and boundaries
-- [ ] Persistence/auth store
-- [ ] Account-scoped API and evaluation boundary
-- [ ] Real authenticated web lifecycle
-- [ ] Fixture isolation and critical tests
-- [ ] Documentation and verification
+- [x] Persistence/auth store
+- [x] Account-scoped API and evaluation boundary
+- [x] Real authenticated web lifecycle
+- [x] Fixture isolation and critical tests
+- [ ] Documentation and full verification (in progress)
+
+## Implemented boundary notes
+
+- The local product store is intentionally single-node Bun SQLite. It persists account, session,
+  site, robot, build, evaluation, and release-attempt records and is replaceable through the
+  application-store boundary; it is not presented as a managed production database.
+- Passwords are scrypt-hashed. Sessions are opaque HTTP-only cookies with only a SHA-256 token hash
+  persisted. The site policy envelope and blinding secret are AES-256-GCM encrypted at rest and
+  never included in public API projections.
+- Normal `/app/*` pages require an authenticated API session. P7's deterministic fixture is gated
+  behind `PREFLIGHT_ENABLE_DEMO_ROUTES=true` and `/dev-fixtures/evaluate`; it is not a source of
+  account data.
+- Evaluation uses the existing `@preflight/simulation-core` authority inside the API and stores a
+  public projection. Release preparation delegates to the existing P5/P5.2 boundary and records a
+  blocked attempt when a public P4 clearance or live release gate is unavailable.

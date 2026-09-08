@@ -2,27 +2,36 @@
 
 ## Phase
 
-**P1–P7 software is implemented. P5.2 adds the narrow AI deployment-agent workflow, deterministic tool/capability boundary, public audit projection, local positive/adversarial evidence, and a live read-only Sepolia blocked-state trace. P6 adds the deterministic digital twin over a server-side public projection of the existing P2/P3 fixture. P7 adds an offline fixed-clock A/B/C rehearsal, demo-owned idempotent reset, stale-browser protection, and reliable Playwright flow coverage. The product UI pass now adds a landing page, first-time onboarding, workspace navigation, target/build views, evaluation/release/evidence views, and a polished Ledger handoff without changing authority. The real provider adapter is implemented but no external model call was captured because provider credentials/model are absent. P5.1 has official Speculos transport, actual Ethereum app/address UI smoke, ERC-7730 v2 validation, real pre-sign C, and invalid/unregistered D. Authenticated Clear Signing A/B/E/F and physical Ledger evidence remain externally blocked. P8 submission evidence/assets remain open.**
+**P1–P7 software is implemented. P5.2 adds the narrow AI deployment-agent workflow, deterministic tool/capability boundary, public audit projection, local positive/adversarial evidence, and a live read-only Sepolia blocked-state trace. P6 adds the deterministic digital twin over a server-side public projection of the existing P2/P3 fixture. P7 adds an offline fixed-clock A/B/C rehearsal, demo-owned idempotent reset, stale-browser protection, and reliable Playwright flow coverage. P8 now provides an account-backed product lifecycle: authenticated onboarding, persisted site/robot/build/evaluation/release records, encrypted private policy storage, server-side evaluation, and a truthful P5/P5.2 release boundary. P7 fixtures are development/test-only and are not normal account data. The real provider adapter is implemented but no external model call was captured because provider credentials/model are absent. P5.1 has official Speculos transport, actual Ethereum app/address UI smoke, ERC-7730 v2 validation, real pre-sign C, and invalid/unregistered D. Authenticated Clear Signing A/B/E/F and physical Ledger evidence remain externally blocked. Submission evidence/assets remain open.**
 
-## Product UI/UX pass now present
+## P8 real product lifecycle now present
 
-- `/` is a plain-language landing page for warehouse safety engineers and robot integrators.
-- `/start` captures only public/demo workspace context (site, robot, and build labels) and stores it
-  in the browser session; it does not invent backend persistence or authority.
-- `/app` is the workspace overview. `/app/setup`, `/app/builds`, `/app/evaluate`, `/app/releases`,
-  and `/app/evidence` are focused product views with simple navigation.
-- The existing deterministic P6/P7 evaluator remains at `/app/evaluate`; Build A, Build B, mutated
-  build, reset, stale-response handling, and the real P5 preparation boundary remain unchanged.
+- `/` is a plain-language landing page. `/start` creates or signs into an account; it does not
+  create a browser-only demo session.
+- `/app/setup` creates an account-scoped site and constrained private safety policy, then registers
+  a robot and exact build through the API. Policy contents are encrypted at rest and only opened
+  inside the API evaluation boundary.
+- `/app`, `/app/builds`, `/app/evaluate`, `/app/releases`, and `/app/evidence` load authenticated,
+  persisted records. All resource queries are scoped by the session account; the browser never
+  chooses an account id.
+- The existing P2 evaluator is invoked server-side for user-created builds. The browser receives a
+  public projection only: bindings, verdict, counts, reason families, and commitments.
+- Release preparation calls the existing P5 boundary when configured and otherwise records a
+  truthful `BLOCKED` attempt. A local `CLEAR` result is not presented as a P4 clearance or human
+  approval.
+- The P7 unsafe/corrected/mutated fixture is available only at the explicit, env-gated
+  `/dev-fixtures/evaluate` development route used by regression tests. It is not imported by the
+  normal `/app` product path.
 - The UI distinguishes `HOLD`, `CLEAR`, `BLOCKED`, and `LEDGER_APPROVAL_REQUIRED`. Technical CRE,
-  Sepolia, and Ledger details live behind the Evidence view rather than leading the workflow.
+  Sepolia, and Ledger details support the workflow in Evidence rather than replacing it.
 - Private envelope inputs, blinds, restricted geometry, thresholds, internal reports, credentials,
   and raw model/CRE payloads remain outside the browser projection.
 
 ## P6 implementation now present
 
-- The root route is a single judge-facing dashboard: deployment target, deterministic warehouse
-  digital twin, public evaluation, Chainlink boundary, deployment-agent activity, Sepolia registry,
-  Ledger boundary, and expandable verification trail.
+- The explicit development fixture route is a judge/regression dashboard: deployment target,
+  deterministic warehouse digital twin, public evaluation, Chainlink boundary, deployment-agent
+  activity, Sepolia registry, Ledger boundary, and expandable verification trail.
 - The server evaluates the existing `@preflight/simulation-core` fixture and passes only a public
   projection to the browser. The confidential envelope, blind, rules, thresholds, geometry, and
   internal report never enter the client bundle or rendered output.
@@ -123,9 +132,11 @@ P5 therefore does not yet prove either a complete official Speculos Clear Signin
 ## Next exact task
 
 P8 submission evidence may address the partner matrix, architecture diagram, AI attribution, and
-showcase assets. Do not add robot activation, make UI state authoritative, or turn the offline
-rehearsal into a live-partner claim. Persisting agent audit history may be considered later without
-changing P5 nonce authority.
+showcase assets. For the product path, the next safe evolution is replacing the local SQLite
+single-node store with an explicitly configured managed persistence layer and adding operator
+account recovery; neither is required for this local product baseline. Do not add robot activation,
+make UI state authoritative, or turn the offline rehearsal into a live-partner claim. Persisting
+agent audit history may be considered later without changing P5 nonce authority.
 
 External evidence remains separately open: run the real provider adapter when an approved
 `OPENAI_API_KEY` and explicit `PREFLIGHT_AGENT_MODEL` are available; obtain legitimate Ledger

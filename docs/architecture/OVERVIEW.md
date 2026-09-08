@@ -4,7 +4,7 @@
 flowchart LR
   HUMAN[Operator deployment request]
   AGENT[P5.2 AI Deployment Agent]
-  UI[Next.js Demo UI / R3F Digital Twin]
+  UI[Next.js product UI / fixture dashboard]
   API[Fastify Orchestrator]
   SIM[Deterministic Simulation Core]
   CRE[Chainlink CRE Confidential Workflow]
@@ -73,20 +73,28 @@ state, and invokes only the existing preparation authority. The model has no sig
 registry-write, arbitrary network, chain, signer, nonce, or payload capability. Model prose never
 controls status; see ADR-0008.
 
+The application boundary also owns authenticated account sessions and account-scoped site, robot,
+build, evaluation, and release-attempt records. Site policy envelopes are AES-256-GCM encrypted at
+rest and opened only inside the API evaluation call; public routes return commitments and public
+result projections, never policy contents or blinds. The local store is a replaceable single-node
+SQLite boundary, not a claim of managed production persistence.
+
 The release service enforces the signer allowlist, checks exact live P4
 state before and after signing, persists public request data and atomic one-time nonces in SQLite,
 and emits a `ReleaseAuthorization` only after verification. This is an offchain single-node replay
 boundary, not an onchain authorization claim. The API and agent never sign or receive private keys.
 
 ### `apps/web`
-The root route is a product landing page. `/start` provides a short first-time setup for public site,
-robot, and build labels, and `/app` provides the workspace shell with setup, build, evaluation,
-release, and evidence views. `/app/evaluate` embeds the P6 deterministic warehouse digital twin,
-public P2/P3 evaluation projection, public Sepolia registry identity, P5.2 activity boundary, and
-Ledger human-approval state. The server computes the existing fixture projection; the browser never
-receives the confidential envelope, blind, private rule data, or internal report. The digital twin
-is explanatory and cannot decide clearance or authorization. A real prepared response from the
-existing P5.2 API is required before the evaluation view hands the exact request to `/p5-ledger`.
+The root route is a product landing page. `/start` creates or signs into an account, and `/app`
+provides the authenticated workspace shell with setup, build, evaluation, release, and evidence
+views. These views load account-scoped API records and never use the P7 fixture as normal data.
+`/app/evaluate` invokes the existing server-side deterministic evaluator for a persisted build and
+renders only its public result projection. The browser never receives the confidential envelope,
+blind, private rule data, or internal report. Release preparation delegates to the existing P5/P5.2
+boundary and remains blocked when a public P4 clearance or live gate is unavailable.
+
+The P6/P7 dashboard is retained at the explicit, env-gated `/dev-fixtures/evaluate` route for
+development and regression tests only. It is not linked from the normal product navigation.
 
 The `/p5-ledger` route remains the separate minimal operator/evidence harness. It defaults to WebHID
 and can select the loopback Ledger Speculos official device simulator only in development/test

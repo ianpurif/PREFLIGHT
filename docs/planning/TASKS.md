@@ -76,7 +76,17 @@
 - [x] offline-safe visual fallback that does not fake partner execution
 - [x] 4-minute timing rehearsal (repeatable offline rehearsal path; no live partner execution claimed)
 
-## P8 — Submission evidence
+## P8 — Product UI/UX and real lifecycle
+- [x] plain-language landing page and account entry
+- [x] authenticated onboarding for site, private policy, robot, and exact build
+- [x] account-scoped persistence and session isolation
+- [x] server-side evaluation using the existing deterministic evaluator
+- [x] public result UX for `HOLD`, `CLEAR`, `BLOCKED`, and `LEDGER_APPROVAL_REQUIRED`
+- [x] truthful release preparation through the existing P5/P5.2 boundary
+- [x] explicit development-only P7 fixture route and regression coverage
+- [x] responsive, loading, error, disabled, and accessibility states for critical flow
+
+### Remaining submission evidence
 - [ ] partner evidence matrix complete
 - [ ] architecture diagram final
 - [ ] README judge path
