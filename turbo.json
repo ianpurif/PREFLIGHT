@@ -26,7 +26,13 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "outputs": [
+        "dist/**",
+        "build/**",
+        "subgraph/generated/**",
+        ".next/**",
+        "!.next/cache/**"
+      ],
       "env": [
         "NEXT_PUBLIC_API_ORIGIN",
         "NEXT_PUBLIC_LEDGER_ORIGIN_TOKEN",
