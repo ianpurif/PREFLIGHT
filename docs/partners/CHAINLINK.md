@@ -36,19 +36,24 @@ The facility's private safety envelope is the sensitive input. The public result
 - source/config/tests and exact confidential-handler path: locally verified
 - SDK compiler and official CRE CLI build: passed
 - unsafe/corrected/tampered CRE simulations: authenticated, executed, and redacted evidence captured
+- `apps/api/scripts/cre-simulation-evidence.ts` reproduces those three cases, validates only the
+  public result with Rovaulta's strict parser, and fails closed when the CLI/auth context is absent
 - live workflow deployment, DON/Vault/Nitro execution, and attestation: not claimed
 
 Evidence: [`chainlink-cre-p3-authenticated-simulation-2026-09-06.md`](../compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md).
 
 The trace suite is explicitly synthetic and caller-supplied. Its canonical digest binds output to input but does not authenticate a robot, software artifact, or model execution.
 
-Normal account evaluation therefore has two separate operator requirements: provision each site's
-versioned secret in the CRE `main` namespace using the selector emitted by the API, provision the
-callback HMAC secret as `ROVAULTA_CONFIDENTIAL_EVALUATION_RESULT_CALLBACK_SECRET`, and configure
-the workflow's HTTPS `resultDeliveryUrl` (plus `ROVAULTA_CRE_RESULT_CALLBACK_SECRET` on the API).
-The current environment has neither a deployed workflow gateway configuration nor result-delivery
-evidence, so the normal account path remains explicitly pending/unavailable rather than claiming a
-completed live evaluation.
+The selected Chainlink qualification path is the authenticated official CRE CLI simulation. It runs
+the real `handlerInTee` workflow against the Rovaulta unsafe, corrected, and tampered protected-input
+cases, then validates the public response through the same versioned protocol boundary used by the
+application. The committed evidence records `HOLD`, `CLEAR`, and `REJECT` without private envelope,
+blind, credentials, or internal report data. Live deployment is not required and is not claimed.
+
+The normal account gateway remains a separate optional upgrade. It requires each site's versioned
+secret in CRE `main`, the callback HMAC secret, an HTTPS result-delivery URL, and API gateway/workflow
+signer configuration. Missing live configuration keeps that path explicitly unavailable; it does not
+weaken or block the simulation qualification path.
 
 P13 adds a two-phase operator path. First, `bun run --cwd apps/api p13:account-evaluation` with
 `ROVAULTA_P13_SETUP_ONLY=true` uses only the normal authenticated HTTP routes and prints public
@@ -58,10 +63,8 @@ and supplies the exact versioned site envelope/blind to the official CRE CLI in 
 is never sent over HTTP, logged, or written to evidence; the temporary mapping is removed. The
 final account-evaluation run reuses those IDs, submits the existing CRE-backed route, and writes
 an allowlisted public result only if the signed callback completes. It does not create a second
-evaluation authority. A real run remains blocked until the operator deploys/activates the workflow,
-provisions both site/callback secrets, exposes the HTTPS callback, and supplies the API
-gateway/workflow/signer environment. No P13 account-created `CLEAR` evidence is claimed in this
-checkout.
+evaluation authority. This account path is not used as Chainlink prize evidence; the authenticated
+CLI simulation artifact above is the qualification record.
 
 The captured runtime blind was generated fresh into ignored local files and is not the source-visible P2 unit-test blind. The demo envelope itself is synthetic source-visible test data, so this is confidential-path/non-disclosure evidence rather than proof that repository readers could not know the demo rules.
 

@@ -139,6 +139,22 @@ allowlisted public projection and no policy, envelope, blind, secret, credential
 report. If the gateway returns a bounded public workflow execution identifier, it is carried through
 as `creExecutionId`; no raw gateway response is retained.
 
+## Chainlink simulation qualification
+
+The Chainlink prize uses the authenticated official CRE CLI simulation path; a live CRE deployment is
+not required or claimed. From a clean checkout, run:
+
+```powershell
+bun run --cwd apps/api evidence:cre-simulation
+```
+
+This creates fresh ignored public payloads and local simulation secrets, runs unsafe `HOLD`, corrected
+`CLEAR`, and tampered-input `REJECT` against the existing `handlerInTee` workflow, then validates each
+public result with the same strict Rovaulta protocol boundary used by the application. The generated
+artifact contains only public bindings, verdict/error, execution identity when reported, and leakage
+checks. If the official `cre` executable or authenticated CLI context is missing, the command fails
+closed; it never substitutes P2 or writes a success artifact.
+
 Before running the command, an operator must deploy/activate the workflow, provision the exact
 site selector `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_site_<base32-site-id>` and the callback HMAC
 secret in the CRE `main` namespace, configure the workflow's HTTPS `resultDeliveryUrl` to the

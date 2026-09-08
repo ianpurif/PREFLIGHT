@@ -22,7 +22,7 @@ bun --filter '@rovaulta/chainlink-cre' cre:compile
 cre -R . -T staging-settings --non-interactive workflow build .\integrations\chainlink-cre
 ```
 
-The fixture command creates a fresh random local simulation blind, rebinds two public payloads to its commitment, and writes two ignored local env files. Never commit those env files or replace them with real secrets in source control. Regenerating intentionally changes the public commitment, so evidence must be recaptured after each generation. The synthetic envelope is source-visible test data, not a production secret. Replace the demo-only authorized address in `config.staging.json` before any deployment.
+The fixture command creates a fresh random local simulation blind, rebinds two public payloads to its commitment, includes the exact site-bound selector, and writes two ignored local env files. Never commit those env files or replace them with real secrets in source control. Regenerating intentionally changes the public commitment, so evidence must be recaptured after each generation. The synthetic envelope is source-visible test data, not a production secret.
 
 Authenticated simulations are:
 
@@ -32,9 +32,19 @@ cre -R . -T staging-settings -e .\integrations\chainlink-cre\.env.cre-valid.loca
 cre -R . -T staging-settings -e .\integrations\chainlink-cre\.env.cre-tampered.local --non-interactive workflow simulate .\integrations\chainlink-cre --trigger-index 0 --http-payload .\integrations\chainlink-cre\fixtures\unsafe.public.json
 ```
 
-All three commands completed through the authenticated official simulator: unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`. See the [redacted evidence](../../docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md).
+All three commands completed through the authenticated official simulator: unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`. See the [redacted evidence](../../docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md). That committed artifact is the Chainlink qualification evidence; it is explicitly simulation-only.
 
 These are local, single-node CRE simulations—not deployment, a hardware TEE, live DON consensus, production Vault custody, or remote robot attestation. The behavior digest binds supplied data; it cannot prove which artifact or physical robot produced it.
+
+### Reproducible redacted evidence runner
+
+The operator runner regenerates ignored payloads/secrets, runs the same workflow three times, extracts only the public response from each real CLI execution, validates it through the Rovaulta request/callback parsers and exact P1 bindings, and writes a redacted `evidence.json`. It never stores raw CLI output or confidential values. The official CLI must already be installed and authenticated with `cre login`; missing CLI/authentication fails closed.
+
+```powershell
+bun run --cwd apps/api evidence:cre-simulation
+```
+
+The runner records the command, CLI version, execution identifier and workflow/binary identity when the CLI reports them, public bindings, `HOLD`/`CLEAR`/`REJECT`, and the validation projection. Its default artifact is under ignored `.data/cre-simulation/`; set `ROVAULTA_CRE_SIMULATION_OUTPUT_DIR` to an explicitly reviewed path when preparing a submission artifact. Do not copy generated env files or raw terminal output into Git.
 
 ## Account application boundary
 
@@ -49,10 +59,14 @@ result only through `/internal/cre/evaluation-result`, authenticated with the HM
 current implementation intentionally has no local-evaluator fallback when these settings, the
 request-scoped site secret, or the HTTPS callback transport are missing.
 
+This account-facing gateway path is an optional live upgrade; it is not required for the Chainlink
+prize because the authenticated CRE CLI simulation path above is the selected qualification path.
+
 For a real account-created evaluation, the account API first creates the site and returns only its
 public identifier/commitment. The facility operator must provision the matching private envelope
 and blind under the exact selector emitted by `siteSecretId(siteId)` using the approved CRE Vault
 process; the repository does not expose a policy-export route. The callback URL must be reachable
 from CRE, and the HMAC value in `ROVAULTA_CONFIDENTIAL_EVALUATION_RESULT_CALLBACK_SECRET` must
 match the API's `ROVAULTA_CRE_RESULT_CALLBACK_SECRET`. A missing selector, callback, workflow ID,
-or trigger signer is an explicit blocker, never a reason to use the local P2 evaluator.
+or trigger signer blocks only this optional live account path, never the selected simulation
+qualification path and never a reason to use the local P2 evaluator for production requests.

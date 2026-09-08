@@ -96,7 +96,7 @@
 - [x] normal release preparation routed through the account-backed agent boundary
 - [x] negative tests for CRE fallback/network failures, Graph outage/mismatch, account mismatch,
   and agent authority boundaries
-- [ ] provision request-scoped CRE secrets and capture a completed account-created CRE result
+- [ ] provision request-scoped CRE secrets and capture a completed account-created CRE result (optional live path; not required for Chainlink simulation qualification)
 - [ ] deploy/index the Rovaulta Sepolia subgraph and capture live Graph-provider evidence
 - [ ] run a real account-backed Graph `MATCHED` preparation through P5/Ledger handoff
 - [ ] obtain external OpenAI model execution evidence (provider key/model unavailable locally)
@@ -108,7 +108,7 @@
 - [x] deliver the minimal result from the TEE through the official HTTP capability when configured
 - [x] expose explicit pending state and bounded browser polling in the normal workspace
 - [x] document Chainlink, Graph, and Ledger qualification boundaries without fabricated evidence
-- [ ] provision deployed CRE site/callback secrets and capture account-created completion
+- [ ] provision deployed CRE site/callback secrets and capture account-created completion (optional live path; not required for Chainlink simulation qualification)
 - [ ] deploy/index the Sepolia subgraph and capture live Gateway `MATCHED` evidence
 - [ ] capture account-backed Graph `MATCHED` → P5/Ledger-required execution
 - [ ] capture external OpenAI execution if required by the selected submission
@@ -142,12 +142,15 @@
 - [ ] create one real account-backed Sepolia clearance and capture transaction evidence
 - [ ] wait for The Graph entity and capture the exact live Gateway `MATCHED` response
 
-## P13 — First real account-created CRE evaluation
+## P13 — CRE simulation qualification and account boundary
 - [x] normal account/site/robot/build/evaluation HTTP path is reused without a production P2 fallback
 - [x] fail-closed operator runner with public-only polling/output
 - [x] two-phase setup, exact resource reuse, and secure local CRE site-secret provisioning handoff
 - [x] ignored setup-file contract and CRE/site-secret/callback runbook
-- [ ] deploy/activate the authenticated CRE workflow and provision its Vault secrets
-- [ ] create one normal account-backed evaluation through the deployed CRE path
-- [ ] capture redacted public `CLEAR` result and CRE execution evidence
-- [ ] verify the resulting evaluation is consumable by the existing P12 command
+- [x] clean-checkout fixture generation with the exact site-bound selector
+- [x] official CRE CLI simulation runner with strict public-result/binding validation
+- [x] authenticated simulation evidence for unsafe `HOLD`, corrected `CLEAR`, and tampered `REJECT`
+- [x] redacted evidence contract and no-secret leakage checks
+- [x] simulation selected as the Chainlink qualification path; live deployment explicitly not claimed
+- [ ] create one normal account-backed evaluation through an optional deployed CRE gateway
+- [ ] verify an account-created evaluation is consumable by the existing P12 command (optional live path)

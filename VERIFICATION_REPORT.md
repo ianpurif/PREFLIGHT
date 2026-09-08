@@ -4,14 +4,14 @@
 
 **Scope:** P5 software, partial P5.1 Speculos evidence, P5.2 AI deployment-agent closure, P6
 judge-facing digital twin, P7 deterministic demo reliability, P8 account product flow, P9
-Chainlink boundaries, P10 asynchronous CRE result completion, and P11 The Graph qualification;
-P1–P4 regression-checked.
+Chainlink boundaries, P10 asynchronous CRE result completion, P11 The Graph qualification, and P13
+authenticated CRE simulation qualification; P1–P4 regression-checked.
 
-**Status:** P10 code and targeted tests are complete, but external qualification evidence remains open.
-The normal account path now fails closed unless a deployed CRE gateway/result transport, request-scoped
-CRE secrets, a hosted The Graph subgraph/provider, and an external provider/model are configured.
-No completed account-created CRE evaluation, live Graph response, external model execution,
-authenticated Clear Signing A/B/E/F, or physical Ledger evidence is claimed.
+**Status:** The Chainlink qualification path is complete through committed authenticated CRE CLI
+simulation evidence. The optional normal account gateway still fails closed unless deployed CRE
+gateway/result transport and request-scoped secrets are configured. The Graph live response,
+external model execution, authenticated Clear Signing A/B/E/F, and physical Ledger evidence remain
+unclaimed.
 
 ## P6 judge-facing dashboard result
 
@@ -250,6 +250,35 @@ binding returns `409 CONFLICT`. Tests cover pending state, callback completion, 
 signature, binding mismatch, canonical serialization, and private-field leakage. This is local
 transport evidence only: no deployed workflow, callback URL, request-scoped site secret, or live
 account-created result exists in this environment.
+
+## P13 authenticated CRE simulation qualification
+
+The selected Chainlink qualification path is the official authenticated CRE CLI simulator, not a live
+DON deployment. The committed artifact
+[`chainlink-cre-p3-authenticated-simulation-2026-09-06.md`](docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md)
+records three real executions of the existing Rovaulta workflow: unsafe `HOLD`, corrected `CLEAR`,
+and tampered confidential input `REJECT`. The workflow uses the real `handlerInTee` registration,
+fetches the site-bound confidential envelope/blind inside the confidential callback, calls the
+existing deterministic evaluator, and emits only the bounded public result.
+
+`apps/api/scripts/cre-simulation-evidence.ts` is now the reproducible operator path. It regenerates
+ignored site-bound inputs, runs all three official CLI commands, extracts only the public response,
+validates it with the strict Rovaulta request/callback parsers and exact bindings, checks that the
+confidential value is absent from CLI output, and writes only a redacted evidence JSON. The command
+fails closed when the official CLI or authenticated context is missing; it never substitutes P2 or
+creates a success artifact. The current environment has no `cre` executable, so a fresh rerun here
+was not possible; that limitation does not change the already committed authenticated simulation
+record. Live workflow deployment, DON consensus, production Vault custody, and hardware TEE
+attestation are not claimed.
+
+Focused checks for this change:
+
+```text
+bun --filter '@rovaulta/chainlink-cre' test
+bun --filter '@rovaulta/chainlink-cre' typecheck
+bun --filter '@rovaulta/api' test -- cre-simulation-evidence.test.ts
+bun run --cwd apps/api evidence:cre-simulation  # fails closed here: CRE CLI unavailable
+```
 
 ## P11 The Graph qualification result
 

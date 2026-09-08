@@ -371,3 +371,23 @@ trigger signer, request-scoped Vault secret, reachable HTTPS callback, or callba
 runner fails closed before creating records when its operator inputs are absent, and the provisioning
 command cannot run without an account/site ID and the official CLI. No account-created evaluation
 ID, `CLEAR`, CRE execution evidence, clearance, or confidential value was fabricated.
+
+## 2026-09-09 — P13 authenticated CRE simulation qualification path
+
+**Tool:** OpenAI Codex using the Rovaulta execution-plan, partner-compliance, and verification-loop
+skills plus the official CRE CLI simulation contract already recorded in the repository.
+
+**Human direction:** Stop treating live CRE deployment as a Chainlink qualification dependency.
+Preserve the P9/P10 confidentiality and callback boundaries, make the official simulation path
+reproducible, and never fabricate a simulation result or expose a secret.
+
+**AI-assisted output:** A clean-checkout site-selector fixture generator, the redacted
+`apps/api/scripts/cre-simulation-evidence.ts` runner, strict public-response/exact-binding parsing,
+CLI-output leakage checks, critical parser tests, and updated partner/planning/evidence documentation.
+The runner invokes the existing `handlerInTee` workflow three times and records only safe public
+evidence; it has no P2 fallback, live deployment, or signing path.
+
+**Evidence boundary:** The committed P3 artifact remains the actual authenticated CRE CLI evidence
+(`HOLD`, `CLEAR`, `REJECT`). The current environment lacks the `cre` executable, so the new runner
+fails closed when invoked here and no fresh artifact was fabricated. Live DON/Vault/Nitro execution
+and account-created gateway completion remain unclaimed optional upgrades.

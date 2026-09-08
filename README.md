@@ -11,15 +11,16 @@ publish its private safety envelope, and the deployment agent cannot approve a r
 
 **Built for ETHGlobal with Chainlink CRE, The Graph, and Ledger as load-bearing integrations.**
 
-  > **Current status:** P1–P8 software is implemented and P9–P11 now wire the normal account-backed
-> lifecycle through the partner boundaries: an official CRE gateway adapter for evaluation, a live
-> The Graph registry context check for account-backed agent preparation, and the existing P5/Ledger
-  > human handoff. The Sepolia registry, deterministic evaluator, authenticated CRE simulation path,
+  > **Current status:** P1–P8 software is implemented and P9–P13 now wire the normal account-backed
+  > lifecycle through the partner boundaries: an official CRE gateway adapter for evaluation, a live
+  > The Graph registry context check for account-backed agent preparation, the existing P5/Ledger
+  > human handoff, and a reproducible authenticated CRE CLI simulation runner. The Sepolia registry,
+  > deterministic evaluator, authenticated unsafe/corrected/tampered CRE simulation evidence,
   > pinned/buildable public registry subgraph, bounded deployment agent, and offline fixture rehearsal
-  > remain in place. This checkout has no deployed CRE result transport, request-scoped CRE secret
-  > provisioning, hosted Graph subgraph/API key, live account Graph trace, external model run,
-  > physical Ledger/Clear Signing evidence, or final submission assets, so those states fail closed
-  > and are not presented as completed partner proof. Start Fresh pool eligibility is not claimed.
+  > remain in place. This checkout has no live CRE gateway result transport, hosted Graph API key/live
+  > account trace, external model run, physical Ledger/Clear Signing evidence, or final submission
+  > assets, so those optional/live states fail closed and are not presented as completed proof. Start
+  > Fresh pool eligibility is not claimed.
 
 [Product path](#use-the-product) · [How it works](#how-it-works) · [Partner proof](#partner-integrations) · [Testing](#testing) · [Known limits](#current-status-and-known-limits)
 
@@ -239,7 +240,7 @@ secret custody or a remote robot attestation.
 | P4    | Exact-binding Solidity registry, fuzz/invariant tests, and Sepolia deployment/source verification                          | Implemented; registrar attestation remains explicit and manual |
 | P5    | EIP-712 intent, exact registry checks, durable nonce, Ledger DMK/WebHID/Speculos adapter, and fail-closed signing boundary | Software implemented; hardware evidence incomplete             |
 | P5.2  | Strict OpenAI Responses adapter, host-owned tool state machine, catalog resolution, and Ledger-required handoff            | Local evidence complete; no external model call captured       |
-| P9    | CRE application boundary, The Graph public-context adapter/subgraph, and account-backed agent preparation                    | Code/tests complete; live CRE result, Graph provider, and external model evidence remain open |
+| P9    | CRE application boundary, The Graph public-context adapter/subgraph, and account-backed agent preparation                    | Code/tests complete; Chainlink simulation qualification evidenced; live account/Graph/model evidence remains open |
 | P6    | Judge dashboard and deterministic React Three Fiber digital twin                                                           | Implemented and browser-tested                                 |
 | P7    | Fixed-clock offline A/B/C rehearsal, demo reset, stale-response protection, and Playwright flow                            | Implemented and locally rehearsed                              |
 | UI    | Landing, first-time onboarding, workspace navigation, setup/build/evaluate/release/evidence views, and Ledger handoff UX  | Implemented and browser-smoke-tested                          |
@@ -498,7 +499,7 @@ Implemented and locally verified:
 
 Not yet proven or intentionally not implemented:
 
-- a live Chainlink DON/Vault/Nitro deployment or automatic CRE-to-EVM attestation;
+- a live Chainlink DON/Vault/Nitro deployment or automatic CRE-to-EVM attestation (not required for the selected simulation qualification path);
 - a completed account-created CRE gateway result (the deployed gateway is asynchronous and no result
   transport is configured in this checkout);
 - a hosted Rovaulta subgraph and live Graph Gateway `MATCHED` response;
