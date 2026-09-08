@@ -1,10 +1,16 @@
-# P5–P7 Ledger, AI Deployment Agent + Deterministic Judge Demo Verification Report
+# P5–P9 Ledger, Partner Agent + Product Qualification Verification Report
 
-**Date:** 2026-09-07 (implementation and live read began 2026-09-06)
+**Date:** 2026-09-08 (P9 implementation began 2026-09-08; earlier evidence dates remain attached to their artifacts)
 
-**Scope:** P5 software, partial P5.1 Speculos evidence, P5.2 AI deployment-agent closure, P6 judge-facing digital twin, and P7 deterministic demo reliability; P1–P4 regression-checked; P8 not started
+**Scope:** P5 software, partial P5.1 Speculos evidence, P5.2 AI deployment-agent closure, P6
+judge-facing digital twin, P7 deterministic demo reliability, P8 account product flow, and P9
+Chainlink/The Graph partner boundaries; P1–P4 regression-checked.
 
-**Status:** P5.2 agent software/local adversarial evidence, P6 browser flow, P7 offline A/B/C rehearsal, live read-only Sepolia blocking, and the latest aggregate verification pass. P5 official Speculos transport/app/address UI smoke, real pre-sign C, and invalid/unregistered D pass. External model execution, authenticated Clear Signing A/B/E/F, and physical Ledger evidence remain unavailable and are not claimed.
+**Status:** P9 code and targeted tests are complete, but external qualification evidence remains open.
+The normal account path now fails closed unless a deployed CRE gateway/result transport, request-scoped
+CRE secrets, a hosted The Graph subgraph/provider, and an external provider/model are configured.
+No completed account-created CRE evaluation, live Graph response, external model execution,
+authenticated Clear Signing A/B/E/F, or physical Ledger evidence is claimed.
 
 ## P6 judge-facing dashboard result
 
@@ -190,6 +196,42 @@ temporary test-only policy/state. C returned HTTP `403 CLEARANCE_BINDING_MISMATC
 invalid/unregistered D variant queried the deployed Sepolia registry and returned HTTP `403
 CLEARANCE_NOT_FOUND`. Neither invoked signing. Revoked/expired D remain deterministic test evidence
 only.
+
+## P9 partner qualification slice
+
+The normal account path now uses the partner boundaries rather than a fixture-only shortcut:
+
+- `POST /evaluations` receives the private policy only inside the API boundary, builds a public
+  versioned request, and calls `CreHttpEvaluationClient`. The client signs the official
+  `workflows.execute` JSON-RPC/JWT request, includes a request-scoped site secret selector, sends no
+  envelope or blind, validates the completed public result and exact bindings, and turns network,
+  rejection, malformed-result, and asynchronous `ACCEPTED` responses into explicit fail-closed
+  errors. `buildServer` has no implicit P2 evaluator fallback.
+- `integrations/the-graph/subgraph` contains a from-scratch Sepolia `RovaultaRegistry` event index.
+  `TheGraphClearanceReader` queries only public fields by the exact clearance digest and checks the
+  chain, registry, every binding, verdict, revocation, expiry, block number, and block hash.
+- Account-backed `DeploymentAgent` resolution comes from the authenticated `ApplicationStore`
+  evaluation/clearance pair. Its fixed tool order includes `getGraphContext`; unavailable,
+  missing, revoked, expired, mismatched, or malformed Graph data blocks before the direct P5
+  registry check. A `MATCHED` result is context only; P5 remains the final signer/nonce/authorization
+  authority.
+- The static catalog and local deterministic registry reader remain available only to the explicit
+  development fixture path and tests. No browser-provided Graph response or model claim can select a
+  different account target or authorize a release.
+
+The focused local checks for this slice are:
+
+```text
+bun --cwd apps/api typecheck
+bun --cwd apps/api test test/application-lifecycle.test.ts test/server.test.ts test/deployment-agent.test.ts test/graph-provider.test.ts test/cre-client.test.ts
+```
+
+Those tests use injected Graph/CRE responses and are not live partner evidence. The current
+environment has no `ROVAULTA_CRE_GATEWAY_URL`, `CHAINLINK_CRE_WORKFLOW_ID`,
+`CHAINLINK_CRE_TRIGGER_PRIVATE_KEY`, `THE_GRAPH_API_KEY`, `THE_GRAPH_SUBGRAPH_ID`, RPC endpoint, or
+OpenAI provider/model. The required next external steps are documented in
+`docs/partners/THE_GRAPH.md`, `docs/partners/CHAINLINK.md`, and
+`docs/planning/exec-plans/P9-partner-bounty-qualification.md`.
 
 ## Verification results
 

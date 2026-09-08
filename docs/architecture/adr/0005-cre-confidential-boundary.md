@@ -9,7 +9,11 @@ P3 must execute the unchanged deterministic P2 evaluator over a private site env
 
 ## Decision
 
-Use `@chainlink/cre-sdk` 1.19.1 with one authenticated HTTP trigger registered by the official `handlerInTee` API. Require Nitro in `us-west-2`. Fetch exactly `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT` from the `main` secret namespace using a compile-time fixed selector, and make no ordinary capability calls from the handler.
+Use `@chainlink/cre-sdk` 1.19.1 with one authenticated HTTP trigger registered by the official
+`handlerInTee` API. Require Nitro in `us-west-2`. Fetch exactly one site-bound secret from the
+`main` namespace using the request's selector, and make no ordinary capability calls from the
+handler. A request-scoped selector never falls back to another site's secret; the legacy fixed
+selector is retained only for old simulation payloads that omit the selector.
 
 The public request schema `rovaulta.cre-public-evaluation-request/v1` contains:
 

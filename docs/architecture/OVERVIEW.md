@@ -10,6 +10,7 @@ flowchart LR
   CRE[Chainlink CRE Confidential Workflow]
   REGISTRAR[Authorized P4 Registrar]
   REG[RovaultaRegistry on Sepolia]
+  GRAPH[The Graph public registry subgraph]
   LEDGER[Ledger DMK + Ethereum Signer]
   RELEASE[Deployment Release Gate]
 
@@ -20,6 +21,8 @@ flowchart LR
   CRE --> SIM
   CRE -. inspected simulation evidence .-> REGISTRAR
   REGISTRAR --> REG
+  REG --> GRAPH
+  GRAPH --> AGENT
   HUMAN --> UI
   UI --> LEDGER
   LEDGER --> RELEASE
@@ -36,7 +39,14 @@ Stable, versioned domain language and interfaces: canonical identifiers, exact p
 Pure P2 fixed-unit warehouse model, committed seeded scenario generation, materialized-trace validation, and deterministic restricted-zone/speed/payload evaluation. The internal report wraps an unchanged P1 result. No React, partner, network, filesystem, clock, or environment dependency. See ADR-0004.
 
 ### `integrations/chainlink-cre`
-P3 CRE-specific HTTP entrypoint and adapters. The real `handlerInTee` callback reads the private envelope/blind through one fixed CRE secret selector, invokes `@rovaulta/simulation-core`, and releases only an allowlisted P1 result plus the exact supplied-behavior binding. Authenticated evidence currently uses the local simulator's ignored environment mapping; production Vault DON custody remains unproven. The workflow compiles to the CRE WASM/QuickJS target without Node, filesystem, environment, dynamic-import, browser, or native runtime dependencies.
+P3 CRE-specific HTTP entrypoint and adapters. The real `handlerInTee` callback reads the private
+envelope/blind through a site-bound CRE secret selector, invokes `@rovaulta/simulation-core`, and
+releases only an allowlisted P1 result plus the exact supplied-behavior binding. Authenticated
+evidence currently uses the local simulator's ignored environment mapping; production Vault DON
+custody remains unproven. The workflow compiles to the CRE WASM/QuickJS target without Node,
+filesystem, environment, dynamic-import, browser, or native runtime dependencies. The account API
+uses an official JSON-RPC/JWT gateway adapter and fails closed on the gateway's asynchronous
+`ACCEPTED` response until a completed-result transport exists.
 
 ### `contracts`
 P4 public attestation registry keyed by the P1 clearance digest. It stores only fixed-size exact
@@ -68,16 +78,18 @@ fixed EIP-712 domain/message, and verifies recovered signatures.
 P5 deterministic prepare/consume authority plus the P5.2 narrow tool-calling deployment agent. The
 agent accepts only a finite catalog-generated public request grammar, discards raw input locally,
 and sends a host-generated canonical public request to its strict provider abstraction. The
-host-owned state machine locks canonical identifiers, inspects public evaluation/live registry
-state, and invokes only the existing preparation authority. The model has no signing, consumption,
+host-owned state machine locks canonical identifiers, inspects public evaluation, queries the live
+The Graph registry subgraph for account-backed clearances, then performs the direct P5 registry
+check and invokes only the existing preparation authority. The model has no signing, consumption,
 registry-write, arbitrary network, chain, signer, nonce, or payload capability. Model prose never
-controls status; see ADR-0008.
+controls status; see ADR-0008 and the The Graph integration contract.
 
 The application boundary also owns authenticated account sessions and account-scoped site, robot,
 build, evaluation, and release-attempt records. Site policy envelopes are AES-256-GCM encrypted at
 rest and opened only inside the API evaluation call; public routes return commitments and public
 result projections, never policy contents or blinds. The local store is a replaceable single-node
-SQLite boundary, not a claim of managed production persistence.
+SQLite boundary, not a claim of managed production persistence. The Graph API key and subgraph ID
+remain server-only configuration; public Graph context is included in the non-secret agent audit.
 
 The release service enforces the signer allowlist, checks exact live P4
 state before and after signing, persists public request data and atomic one-time nonces in SQLite,
@@ -88,10 +100,10 @@ boundary, not an onchain authorization claim. The API and agent never sign or re
 The root route is a product landing page. `/start` creates or signs into an account, and `/app`
 provides the authenticated workspace shell with setup, build, evaluation, release, and evidence
 views. These views load account-scoped API records and never use the P7 fixture as normal data.
-`/app/evaluate` invokes the existing server-side deterministic evaluator for a persisted build
-declaration and renders only its public result projection. The declared route is the simulation
-input; the artifact digest is an identity supplied by the operator, not binary provenance. The
-browser never receives the confidential envelope, blind, private rule data, or internal report.
+`/app/evaluate` submits a persisted build declaration to the configured CRE evaluation boundary and
+renders only its public result projection. The declared route is the supplied behavior input; the
+artifact digest is an identity supplied by the operator, not binary provenance. The browser never
+receives the confidential envelope, blind, private rule data, internal report, or raw CRE payload.
 Release preparation delegates to the existing P5/P5.2 boundary and remains blocked when a public
 P4 clearance or live gate is unavailable. A public P4 clearance can be supplied for the exact
 evaluation to reach the existing Ledger handoff; the product never creates one.

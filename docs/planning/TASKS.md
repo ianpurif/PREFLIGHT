@@ -80,11 +80,26 @@
 - [x] plain-language landing page and account entry
 - [x] authenticated onboarding for site, private policy, robot, and exact build
 - [x] account-scoped persistence and session isolation
-- [x] server-side evaluation using the existing deterministic evaluator
+- [x] server-side evaluation through the configured confidential evaluation boundary
 - [x] public result UX for `HOLD`, `CLEAR`, `BLOCKED`, and `LEDGER_APPROVAL_REQUIRED`
 - [x] truthful release preparation through the existing P5/P5.2 boundary
 - [x] explicit development-only P7 fixture route and regression coverage
 - [x] responsive, loading, error, disabled, and accessibility states for critical flow
+
+## P9 — Partner bounty qualification slice
+- [x] official CRE gateway client boundary with request-scoped site secret binding
+- [x] fail-closed CRE request/rejection/pending/network semantics and public-result validation
+- [x] Sepolia RovaultaRegistry subgraph schema, manifest, ABI, and event mappings
+- [x] server-only The Graph Gateway adapter with exact binding/revocation/expiry checks
+- [x] account-backed agent resolution from authenticated evaluation/clearance records
+- [x] load-bearing `getGraphContext` step before the existing P5 preparation authority
+- [x] normal release preparation routed through the account-backed agent boundary
+- [x] negative tests for CRE fallback/network failures, Graph outage/mismatch, account mismatch,
+  and agent authority boundaries
+- [ ] provision request-scoped CRE secrets and capture a completed account-created CRE result
+- [ ] deploy/index the Rovaulta Sepolia subgraph and capture live Graph-provider evidence
+- [ ] run a real account-backed Graph `MATCHED` preparation through P5/Ledger handoff
+- [ ] obtain external OpenAI model execution evidence (provider key/model unavailable locally)
 
 ### Remaining submission evidence
 - [ ] partner evidence matrix complete

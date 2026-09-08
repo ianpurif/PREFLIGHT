@@ -4,6 +4,36 @@
 
 **P1–P7 software is implemented. P5.2 adds the narrow AI deployment-agent workflow, deterministic tool/capability boundary, public audit projection, local positive/adversarial evidence, and a live read-only Sepolia blocked-state trace. P6 adds the deterministic digital twin over a server-side public projection of the existing P2/P3 fixture. P7 adds an offline fixed-clock A/B/C rehearsal, demo-owned idempotent reset, stale-browser protection, and reliable Playwright flow coverage. P8 now provides an account-backed product lifecycle: authenticated onboarding, persisted site/robot/build/evaluation/release records, encrypted private policy storage, server-side evaluation, and a truthful P5/P5.2 release boundary. P7 fixtures are development/test-only and are not normal account data. The real provider adapter is implemented but no external model call was captured because provider credentials/model are absent. P5.1 has official Speculos transport, actual Ethereum app/address UI smoke, ERC-7730 v2 validation, real pre-sign C, and invalid/unregistered D. Authenticated Clear Signing A/B/E/F and physical Ledger evidence remain externally blocked. Submission evidence/assets remain open.**
 
+**P9 partner qualification slice is implemented in code but not externally evidenced:** the normal
+account evaluation boundary now uses an official Chainlink CRE HTTP JSON-RPC/JWT client and never
+falls back to the in-process evaluator; a request-scoped site secret selector is bound into the
+public CRE request. The production gateway returns asynchronous `ACCEPTED` executions, so the API
+fails closed with an explicit pending/unavailable error until a completed CRE result transport and
+site-secret provisioning are configured. Account-backed release preparation resolves the exact
+authenticated evaluation/clearance, requires a live The Graph registry context, then delegates to
+the existing P5 authority; the static catalog remains only for the explicit development fixture
+route. The Graph subgraph/provider artifacts, unit tests, and redacted public audit projection are
+present, but no live Graph response or account-created CRE completion is captured in this
+environment.**
+
+## P9 partner qualification slice
+
+- `POST /evaluations` invokes the configured CRE transport and returns only the existing public
+  evaluation projection. Missing CRE configuration, rejected requests, network failures, and
+  asynchronous gateway acceptance are explicit 503 failures; no local P2 fallback is used by the
+  normal API entrypoint.
+- Each account site maps to a request-scoped CRE secret selector. Operators must provision that
+  selector in the CRE `main` namespace with the private envelope/blind and deploy a result-delivery
+  mechanism before a real account evaluation can complete.
+- `integrations/the-graph/subgraph` indexes only public Sepolia `RovaultaRegistry` events. The API
+  Graph Gateway adapter validates exact public bindings, chain/registry, block identity, verdict,
+  revocation, and expiry. Account-backed agent preparation blocks unless Graph returns `MATCHED`.
+- Normal `/releases/prepare` and the non-fixture agent route use account records and the Graph
+  context step before the existing P5 read/prepare authority. The model still cannot sign, consume,
+  write registry state, or authorize a release.
+- Local Graph/provider and CRE transport tests use injected responses only; they are not live partner
+  evidence. The P3 authenticated CLI simulation remains the accepted Chainlink simulation evidence.
+
 ## Rovaulta repository identity migration
 
 The repository now emits Rovaulta package scopes, protocol labels, deployment metadata, environment
@@ -25,9 +55,11 @@ identities and require an intentional redeploy when their configured workflow na
 - `/app`, `/app/builds`, `/app/evaluate`, `/app/releases`, and `/app/evidence` load authenticated,
   persisted records. All resource queries are scoped by the session account; the browser never
   chooses an account id.
-- The existing P2 evaluator is invoked server-side for user-created build declarations. The browser
-  receives a public projection only: bindings, verdict, counts, reason families, and commitments.
-  The result is not evidence that artifact bytes were inspected.
+- User-created build declarations are submitted through the configured CRE evaluation boundary. The
+  browser receives a public projection only: bindings, verdict, counts, reason families, and
+  commitments. Without a deployed CRE gateway/result transport the request fails closed; the normal
+  path does not silently invoke P2 locally. The result is not evidence that artifact bytes were
+  inspected.
 - Release preparation calls the existing P5 boundary when configured and otherwise records a
   truthful `BLOCKED` attempt. A local `CLEAR` result is not presented as a P4 clearance or human
   approval.

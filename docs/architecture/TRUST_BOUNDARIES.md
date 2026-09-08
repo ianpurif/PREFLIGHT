@@ -3,7 +3,14 @@
 ## Boundary A — Facility secrets → Chainlink CRE TEE
 Private envelope values, hidden scenario parameters, restricted geometry, and confidential intermediate evaluation state must not be logged or returned to the public workflow.
 
-P3 implements this boundary with an SDK 1.19.1 `handlerInTee` callback restricted to Nitro in `us-west-2`. The callback fetches one atomic, versioned secret from the `main` namespace using a compile-time fixed ID. The handler makes no ordinary capability calls, does not log or call `usingTheDons`/`reportFromDon`, and constructs its public response field by field. CRE CLI v1.32.0 authenticated simulations exercise this path; the CLI explicitly states that simulation is not a real TEE.
+P3 implements this boundary with an SDK 1.19.1 `handlerInTee` callback restricted to Nitro in
+`us-west-2`. The callback fetches one atomic, versioned site secret from the `main` namespace using
+the request's selector. A selector supplied by an application request never falls back to another
+site; the legacy fixed selector is simulation compatibility only. The handler makes no ordinary
+capability calls, does not log or call `usingTheDons`/`reportFromDon`, and constructs its public
+response field by field. CRE CLI v1.32.0 authenticated simulations exercise this path; the CLI
+explicitly states that simulation is not a real TEE. The account API signs the official gateway
+request and treats an asynchronous `ACCEPTED` response as pending/unavailable rather than a verdict.
 
 ## Boundary B — Deterministic evaluator
 The clearance decision must be reproducible from declared evaluator version + allowed inputs. An LLM may orchestrate/explain but cannot decide `CLEAR`, `HOLD`, or `ESCALATE`.
@@ -64,8 +71,16 @@ release-consumption capability. `ReleaseService.prepare()` remains the sole elig
 Unknown, skipped, repeated, reordered, malformed, oversized, or provider-failed calls stop before
 Ledger. Tool text is data and model prose cannot set the final status.
 
+For an authenticated account target, the bounded sequence includes a server-side `getGraphContext`
+step. The adapter queries only public P4 registry fields by the exact clearance digest; no fixture
+or browser-supplied Graph result is accepted. Missing, stale, revoked, expired, mismatched, or
+unavailable Graph data blocks before P5. A matching Graph result permits the direct P5 registry read,
+but never replaces it.
+
 Provider context and the public audit omit raw submitted request text, raw model output, signatures,
-credentials, private envelope/blind values, CRE payloads, and private evaluator findings.
+credentials, private envelope/blind values, CRE payloads, and private evaluator findings. The audit
+may include the redacted Graph source/chain/registry/digest/status/block identity because those are
+public registry facts.
 `AUTHORIZED` can appear only after a read of the exact P5 nonce finds an internally stored, validated
 `ReleaseAuthorization`. The process-local P5.2 attempt/audit map is not durable; persistence is a
 P6 operational concern, not a substitute for P5's durable nonce authority. See ADR-0008.

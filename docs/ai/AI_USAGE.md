@@ -266,3 +266,26 @@ remains a truthful `BLOCKED` state.
 The post-fix review also required preserving a prepared P5 request when Ledger connection fails or
 is retried, rejecting cookie mutations with missing origin provenance, and making the reusable API
 server fail closed unless its explicit non-production fixture boundary is enabled.
+
+## 2026-09-08 — P9 partner bounty qualification slice
+
+**Tool:** OpenAI Codex using the Rovaulta execution-plan, vertical-slice, partner-compliance, and
+verification-loop skills plus official Chainlink CRE and The Graph documentation.
+
+**Human direction:** Continue the product path so the three targeted partner integrations are
+load-bearing in normal account flows: CRE for confidential evaluation, The Graph for public registry
+context, and the existing Ledger/P5 boundary for human authorization. Preserve fail-closed behavior,
+keep P7 fixtures development-only, and do not claim unavailable external execution.
+
+**AI-assisted output:** A request-scoped CRE secret selector and official gateway JSON-RPC/JWT
+adapter; public-result, binding, asynchronous-acceptance, network, and no-local-fallback tests; a
+from-scratch Sepolia RovaultaRegistry subgraph schema/manifest/ABI/mapping; a server-only Graph
+Gateway adapter with exact binding/revocation/expiry checks; account-backed agent target resolution;
+the load-bearing Graph context tool/state step; normal release preparation routing through the
+account-backed agent; and synchronized architecture, partner, planning, and evidence documentation.
+
+**Evidence boundary:** Local tests use injected provider responses. The current environment has no
+deployed CRE gateway/workflow result transport, request-scoped CRE secrets, Graph API key/subgraph
+ID, or OpenAI provider/model configuration. Therefore no completed account-created CRE result, live
+Graph response, or external model execution is claimed. The existing authenticated CRE CLI
+simulation remains simulation evidence only.

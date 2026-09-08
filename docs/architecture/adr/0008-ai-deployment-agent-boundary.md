@@ -33,9 +33,10 @@ The API host owns a bounded state machine and grants the model exactly one next 
 1. `resolveDeploymentTarget`
 2. `getDeploymentContext`
 3. `getEvaluationStatus`
-4. `getClearance`
-5. `prepareDeploymentIntent`
-6. `getLedgerAuthorizationStatus`
+4. `getGraphContext` (account-backed production path)
+5. `getClearance`
+6. `prepareDeploymentIntent`
+7. `getLedgerAuthorizationStatus`
 
 Only the first call accepts arguments, and its aliases must resolve to the same entry the host
 already resolved from the bounded public form. A strict public catalog locks one immutable
@@ -55,9 +56,11 @@ consume path has recovered the Ledger signer, repeated the registry check, and a
 a valid `ReleaseAuthorization`. Model prose cannot write or override status.
 
 The public audit projection records the host-generated canonical request/target, ordered tool
-results, public clearance and block identity, policy code, intent digests, Ledger-boundary status,
-and final status. It omits raw submitted request text, raw model output, signatures, credentials,
-private envelopes/blinds, CRE payloads, and private evaluator findings.
+results, public Graph and clearance context, policy code, intent digests, Ledger-boundary status, and
+final status. It omits raw submitted request text, raw model output, signatures, credentials,
+private envelopes/blinds, CRE payloads, and private evaluator findings. The Graph context is a
+public-input prerequisite for authenticated account targets; it never replaces the direct P5
+registry check.
 
 ## Consequences
 

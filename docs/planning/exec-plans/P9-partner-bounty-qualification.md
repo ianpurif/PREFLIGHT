@@ -68,15 +68,17 @@ Graph while P5 remains the final exact-binding and authorization authority.
 ## Steps
 
 - [x] Explore current architecture, partner requirements, and evidence gaps
-- [ ] Add the smallest CRE application adapter and targeted account-path tests
-- [ ] Add the minimal RovaultaRegistry Sepolia Subgraph artifacts and live provider adapter
-- [ ] Add account-backed Graph context to the bounded agent
-- [ ] Route normal release preparation through the account-backed agent boundary
-- [ ] Add negative tests for missing/revoked/mismatched Graph state and authority attempts
+- [x] Add the smallest CRE application adapter and targeted account-path tests
+- [x] Add the minimal RovaultaRegistry Sepolia Subgraph artifacts and live provider adapter
+- [x] Add account-backed Graph context to the bounded agent
+- [x] Route normal release preparation through the account-backed agent boundary
+- [x] Add negative tests for missing/revoked/mismatched Graph state and authority attempts
 - [ ] Capture live Graph evidence and update partner documentation
-- [ ] Run targeted verification and the full verification loop
+- [x] Run targeted verification for the implemented boundaries
+- [ ] Run the full verification loop
 - [ ] Obtain independent read-only review and resolve findings
-- [ ] Update task state, evidence matrix, README, and handoff
+- [x] Update task state, evidence matrix, README, and partner/architecture documentation
+- [ ] Capture a completed account-created CRE result and a live Graph `MATCHED` result
 
 ## Parallel work / worktrees
 
@@ -104,5 +106,15 @@ and is sequenced by dependency: protocol/adapters â†’ Graph provider/subgraph â†
 
 ## Verification evidence
 
-To be filled with targeted test commands, live Graph query identity, CRE simulation evidence,
-redacted agent traces, full `bun run verify`, and independent review findings.
+Targeted local validation currently passes:
+
+```text
+bun --cwd apps/api typecheck
+bun --cwd apps/api test test/application-lifecycle.test.ts test/server.test.ts test/deployment-agent.test.ts test/graph-provider.test.ts test/cre-client.test.ts
+```
+
+The P3 authenticated CRE simulation evidence remains in
+`docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md`. A live Graph
+query identity, a completed account-created CRE result, and the full `bun run verify` result remain
+open. The current environment has no CRE gateway/workflow/private key, Graph API key/subgraph ID,
+RPC, or OpenAI provider/model configuration; no live partner claim is made.

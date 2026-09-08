@@ -11,12 +11,14 @@ publish its private safety envelope, and the deployment agent cannot approve a r
 
 **Built for ETHGlobal From Scratch with Chainlink CRE and Ledger as load-bearing integrations.**
 
-> **Current status:** P1–P7 software is implemented and P8 now has a real account-backed product
-> flow: landing, sign-in, persisted site/policy/robot/build setup, server-side evaluation, release
-> preparation, evidence, and the human Ledger handoff. The Sepolia registry, deterministic
-> evaluator, authenticated CRE simulation path, bounded deployment agent, and offline fixture
-> rehearsal remain in place. Physical Ledger/Clear Signing evidence, a live DON run, an external
-> model run, and submission assets remain open.
+> **Current status:** P1–P8 software is implemented and P9 now wires the normal account-backed
+> lifecycle through the partner boundaries: an official CRE gateway adapter for evaluation, a live
+> The Graph registry context check for account-backed agent preparation, and the existing P5/Ledger
+> human handoff. The Sepolia registry, deterministic evaluator, authenticated CRE simulation path,
+> bounded deployment agent, and offline fixture rehearsal remain in place. This checkout has no
+> deployed CRE result transport, request-scoped CRE secret provisioning, Graph API key/subgraph
+> deployment, external model run, physical Ledger/Clear Signing evidence, or final submission assets,
+> so those states fail closed and are not presented as completed partner proof.
 
 [Product path](#use-the-product) · [How it works](#how-it-works) · [Partner proof](#partner-integrations) · [Testing](#testing) · [Known limits](#current-status-and-known-limits)
 
@@ -105,6 +107,7 @@ flowchart LR
   RESULT[Minimal public evaluation result]
   REGISTRAR[Authorized registrar]
   REG[RovaultaRegistry on Sepolia]
+  GRAPH[The Graph public registry subgraph]
   OPERATOR[Operator request]
   AGENT[Bounded deployment agent]
   PREP[ReleaseService prepares exact intent]
@@ -116,7 +119,9 @@ flowchart LR
   TEE --> RESULT
   RESULT -. inspected public evidence .-> REGISTRAR
   REGISTRAR --> REG
+  REG --> GRAPH
   OPERATOR --> AGENT
+  GRAPH --> AGENT
   AGENT --> PREP
   REG --> PREP
   PREP --> LEDGER
@@ -129,12 +134,15 @@ flowchart LR
 1. The site defines a versioned safety envelope. Its rules, geometry, thresholds, and commitment
    blind are private inputs.
 2. The vendor identifies one exact robot build and supplies the behavior needed for the evaluation.
-3. The Chainlink CRE workflow reads the confidential envelope inside its `handlerInTee` callback and
-   calls the deterministic simulation core.
+3. The configured Chainlink CRE workflow reads the confidential envelope inside its `handlerInTee`
+   callback and calls the deterministic simulation core. The normal API fails closed when a deployed
+   gateway, site secret, or completed result transport is missing; it never substitutes a local
+   evaluator result.
 4. Only a minimal result leaves the confidential boundary. An authorized registrar can attest the
    public binding in the Sepolia registry; the current implementation does not claim automatic
    CRE-to-EVM delivery.
-5. The deployment agent reads public evaluation and clearance state and calls the existing
+5. For an authenticated account target, the deployment agent queries the public clearance through
+   The Graph and then performs the direct P5 registry check before calling the existing
    `ReleaseService.prepare()` authority. It cannot sign, consume, write the registry, or invent a
    clearance.
 6. Ledger displays and signs the exact deployment intent on the human operator's device.
@@ -160,10 +168,13 @@ sign in. The authenticated workspace then guides the operator through `/app/setu
 2. Register a robot and an exact build declaration: the artifact digest identifies the candidate,
    while the declared route is the deterministic simulation input. The local workflow does not
    inspect binary artifact bytes or claim external provenance.
-3. Run the existing deterministic evaluator. Only its public result projection reaches the browser.
+3. Submit the build to the configured CRE evaluation boundary. Only its public result projection
+   reaches the browser; a missing or asynchronous CRE result is shown as an unavailable/pending
+   state.
 4. Review a `HOLD` or `CLEAR` result, paste the public P4 clearance for that exact evaluation when
    available, then prepare a release through the configured P5 gate.
-5. `LEDGER_APPROVAL_REQUIRED` means the exact request is waiting for a human Ledger action; it is
+5. The agent requires a live public The Graph match before the P5 check. `LEDGER_APPROVAL_REQUIRED`
+   means the exact request is waiting for a human Ledger action; it is
    not authorization. Missing clearance or gate configuration remains `BLOCKED`.
 
 The normal workspace is account-backed. It does not load the P7 A/B/C fixture, create browser-only
@@ -191,23 +202,26 @@ It is not account data, a live partner execution, a clearance, or proof of physi
 | Exact build binding              | Canonical digests bind site, robot, build, envelope commitment, evaluator, and expiry | A later software change cannot quietly reuse an old clearance      |
 | Public attestation               | `RovaultaRegistry` stores public hashes and validity/revocation state on Sepolia     | Separate organizations have a shared verification surface          |
 | Bounded deployment agent         | Host-owned tools enforce a fixed order and finite public request grammar              | AI can orchestrate and explain without receiving release authority |
+| Live registry context            | The Graph indexes public RovaultaRegistry events; account preparation requires an exact match | AI decisions use current public chain context without indexing private site data |
 | Hardware approval                | Ledger DMK, WebHID, EIP-712, signer recovery, and one-time nonce checks               | A human approves the exact high-impact action on a device          |
 | Reliable rehearsal               | `demo:setup`, `demo:reset`, `demo:run`, and browser race tests                        | A judge can repeat the demo without stale state                    |
 
 ## Partner integrations
 
-### Why Chainlink and Ledger are necessary
+### Why Chainlink, The Graph, and Ledger are necessary
 
 These partners answer different questions:
 
 | Partner       | Question                                                                    | Actual use in Rovaulta                                                                                                                                            | Current proof                                                                                                                                               |
 | ------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Chainlink CRE | Can the site evaluate an exact build without exposing its private envelope? | The confidential workflow fetches one versioned secret inside `handlerInTee`, invokes the deterministic evaluator, and releases only the minimal result.           | Authenticated local CRE simulations for unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`. Live DON/Vault/Nitro deployment is not claimed. |
+| Chainlink CRE | Can the site evaluate an exact build without exposing its private envelope? | The confidential workflow fetches a site-bound secret inside `handlerInTee`, invokes the deterministic evaluator, and releases only the minimal result. The account API uses the official gateway request boundary. | Authenticated local CRE simulations for unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`; deployed account completion remains unconfigured. |
+| The Graph    | Can the agent use current public registry context before preparing a release? | A from-scratch Sepolia subgraph indexes public `RovaultaRegistry` events. The account-backed agent requires an exact `MATCHED` Graph context before P5. | Adapter/unit evidence is present; hosted subgraph, API key, and live `MATCHED` response remain unconfigured. |
 | Ledger        | Who can authorize the exact release after it passes?                        | The browser uses Ledger DMK, WebHID or test-only Speculos, the Ethereum signer kit, and full EIP-712 intent checks. The agent stops at `LEDGER_APPROVAL_REQUIRED`. | Software and partial Speculos evidence are recorded. Physical Clear Signing and official Tester cases remain blocked by missing external access.            |
 
 Without Chainlink's confidential execution, the site would need to hand its private rules to the
-party running the evaluator. Without Ledger, the deployment agent could prepare a release but there
-would be no hardware trust boundary for the final human decision.
+party running the evaluator. Without The Graph, the agent would have no indexed public registry
+context to inform its account-backed preparation. Without Ledger, the deployment agent could prepare
+a release but there would be no hardware trust boundary for the final human decision.
 
 The checked-in demo envelope and traces are synthetic, source-visible test data. The current P3
 evidence proves the confidential code path and public-output redaction; it does not claim production
@@ -223,6 +237,7 @@ secret custody or a remote robot attestation.
 | P4    | Exact-binding Solidity registry, fuzz/invariant tests, and Sepolia deployment/source verification                          | Implemented; registrar attestation remains explicit and manual |
 | P5    | EIP-712 intent, exact registry checks, durable nonce, Ledger DMK/WebHID/Speculos adapter, and fail-closed signing boundary | Software implemented; hardware evidence incomplete             |
 | P5.2  | Strict OpenAI Responses adapter, host-owned tool state machine, catalog resolution, and Ledger-required handoff            | Local evidence complete; no external model call captured       |
+| P9    | CRE application boundary, The Graph public-context adapter/subgraph, and account-backed agent preparation                    | Code/tests complete; live CRE result, Graph provider, and external model evidence remain open |
 | P6    | Judge dashboard and deterministic React Three Fiber digital twin                                                           | Implemented and browser-tested                                 |
 | P7    | Fixed-clock offline A/B/C rehearsal, demo reset, stale-response protection, and Playwright flow                            | Implemented and locally rehearsed                              |
 | UI    | Landing, first-time onboarding, workspace navigation, setup/build/evaluate/release/evidence views, and Ledger handoff UX  | Implemented and browser-smoke-tested                          |
@@ -239,6 +254,7 @@ secret custody or a remote robot attestation.
 | Confidential compute | Chainlink CRE TypeScript SDK                                              | Provides the confidential workflow boundary for private envelope inputs                     |
 | Attestation          | Solidity, Foundry, viem, Ethereum Sepolia                                 | Stores public exact bindings without storing private facility data                          |
 | Human approval       | Ledger DMK, WebHID, Speculos test transport, Ethereum Signer Kit, EIP-712 | Keeps the release key on the device and makes the signed intent explicit                    |
+| Public registry context | The Graph Gateway + Sepolia RovaultaRegistry subgraph                     | Gives the bounded agent current public clearance context before the final P5 check           |
 | Persistence          | Bun SQLite with WAL and atomic nonce consumption                          | Provides a single-node replay boundary for the release service                              |
 | Quality              | Biome, Bun test, Playwright, Foundry, GitHub Actions                      | Covers formatting, unit tests, browser flow, contracts, and scaffold checks                 |
 
@@ -319,6 +335,12 @@ envelope blinds, signatures, or confidential CRE payloads.
 | `OPENAI_API_KEY`                   | Optional real Responses API provider                     |
 | `ROVAULTA_AGENT_MODEL`            | Explicit provider model name                             |
 | `ROVAULTA_AGENT_CATALOG_PATH`     | Public deployment catalog path                           |
+| `ROVAULTA_CRE_GATEWAY_URL`       | Deployed CRE HTTP gateway URL (server-only)              |
+| `CHAINLINK_CRE_WORKFLOW_ID`      | Deployed CRE workflow ID (server-only)                   |
+| `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY` | Authorized CRE HTTP trigger key (server-only)         |
+| `THE_GRAPH_API_KEY`               | The Graph Gateway API key (server-only)                  |
+| `THE_GRAPH_SUBGRAPH_ID`           | Hosted Rovaulta Sepolia subgraph ID (server-only)        |
+| `THE_GRAPH_API_URL`               | Optional Graph Gateway base URL                          |
 | `NEXT_PUBLIC_LEDGER_TRANSPORT`     | `webhid` by default; `speculos` only in development/test |
 | `NEXT_PUBLIC_LEDGER_ORIGIN_TOKEN`  | Partner-issued signing-origin token, when available      |
 
@@ -357,6 +379,7 @@ Partner-specific checks are documented here:
 
 - [Chainlink CRE integration](integrations/chainlink-cre/README.md)
 - [Ledger integration](docs/partners/LEDGER.md)
+- [The Graph integration](docs/partners/THE_GRAPH.md)
 - [Attestation registry](contracts/README.md)
 
 ## Proof and evidence
@@ -375,6 +398,8 @@ These artifacts are intentionally separated by trust boundary:
   — bounded orchestration and Ledger-required handoff.
 - [P7 deterministic rehearsal](docs/compliance/evidence/p7-deterministic-demo-2026-09-07.md)
   — repeatable public A/B/C trace and reset/race coverage.
+- [The Graph integration contract](docs/partners/THE_GRAPH.md)
+  — public registry subgraph design, load-bearing agent context, and live-evidence boundary.
 - [Evidence matrix](docs/compliance/EVIDENCE_MATRIX.md) — judge-facing map of claims to artifacts.
 
 ### Existing Ledger emulator screenshots
@@ -417,12 +442,16 @@ Implemented and locally verified:
 - exact-binding Sepolia registry and read policy;
 - Ledger release-intent software boundary and replay protection;
 - bounded deployment-agent orchestration;
+- account-backed CRE/Graph partner boundaries with fail-closed provider handling;
 - product landing, onboarding, workspace navigation, digital twin, reset flow, and deterministic
   rehearsal.
 
 Not yet proven or intentionally not implemented:
 
 - a live Chainlink DON/Vault/Nitro deployment or automatic CRE-to-EVM attestation;
+- a completed account-created CRE gateway result (the deployed gateway is asynchronous and no result
+  transport is configured in this checkout);
+- a hosted Rovaulta subgraph and live Graph Gateway `MATCHED` response;
 - a live external OpenAI model execution in the repository evidence;
 - official Ledger Clear Signing Tester A/B/E/F access and complete Speculos signing captures;
 - physical Ledger approval evidence;
@@ -439,9 +468,10 @@ The next work should stay narrow:
 
 1. Capture legitimate Ledger origin/descriptor and physical-device evidence.
 2. Run the real provider adapter only with approved credentials and an explicit model.
-3. Move the confidential secret and workflow from local simulation into the supported CRE deployment
-   path, then document the real DON/Vault boundaries.
-4. Add stronger remote artifact or inference-endpoint attestation before treating a model service as
+3. Provision request-scoped CRE secrets, deploy the workflow/result transport, and document the real
+   DON/Vault boundaries.
+4. Deploy the Rovaulta Sepolia subgraph and capture a live provider-backed account trace.
+5. Add stronger remote artifact or inference-endpoint attestation before treating a model service as
    the evaluated build.
 5. Add physical commissioning evidence and the final P8 submission materials.
 

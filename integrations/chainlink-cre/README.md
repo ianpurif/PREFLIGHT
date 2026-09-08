@@ -2,13 +2,13 @@
 
 This package is isolated because CRE TypeScript compiles to a constrained WASM/QuickJS runtime.
 
-P3 implements an authenticated HTTP trigger whose callback is registered with the official SDK's `handlerInTee`. The callback fetches one atomic secret containing the private P2 safety envelope and its 32-byte commitment blind, verifies the P1 bindings through the unchanged P2 evaluator, and emits only the P1 result plus a digest binding it to the exact supplied synthetic behavior.
+P3 implements an authenticated HTTP trigger whose callback is registered with the official SDK's `handlerInTee`. The callback fetches one atomic, site-bound secret containing the private P2 safety envelope and its 32-byte commitment blind, verifies the P1 bindings through the unchanged P2 evaluator, and emits only the P1 result plus a digest binding it to the exact supplied synthetic behavior.
 
 ## Boundary
 
 Public input contains the versioned P1 request, build descriptor, synthetic trace suite, explicit evaluation timestamp, provenance label, and `rovaulta.digest.cre-behavior-input/v1` SHA-256 digest over P1 canonical bytes. The HTTP signer configuration is also public. Scenario IDs must be public for exact trace-to-scenario binding; the demo uses readable synthetic names, while production inputs should use opaque IDs if scenario taxonomy is sensitive.
 
-The secret `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT` contains the versioned full private envelope and lowercase 64-hex-character blind. It is fetched only inside the TEE callback from namespace `main`, using a compile-time fixed ID. The handler makes no ordinary capability calls.
+The secret selector is a request-scoped value of the form `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_<site>`. Each selector must be provisioned by the operator in the CRE `main` namespace with the versioned full private envelope and lowercase 64-hex-character blind. It is fetched only inside the TEE callback. A request-scoped lookup never falls back to another selector; the legacy fixed selector is retained only for old simulation payloads that omit the new field. The handler makes no ordinary capability calls.
 
 Success discloses only the unchanged P1 `EvaluationResult`, behavior-input digest, and `SYNTHETIC_CALLER_SUPPLIED` marker. It omits the envelope, geometry, rules, thresholds, blind, internal scenario evidence, violation details/count, and confidential diagnostics. Errors use fixed redacted codes. The handler has no logging or DON crossover.
 
@@ -35,3 +35,13 @@ cre -R . -T staging-settings -e .\integrations\chainlink-cre\.env.cre-tampered.l
 All three commands completed through the authenticated official simulator: unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`. See the [redacted evidence](../../docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md).
 
 These are local, single-node CRE simulations—not deployment, a hardware TEE, live DON consensus, production Vault custody, or remote robot attestation. The behavior digest binds supplied data; it cannot prove which artifact or physical robot produced it.
+
+## Account application boundary
+
+`apps/api/src/evaluation/cre-client.ts` is the server-side application adapter. It signs the
+official `workflows.execute` JSON-RPC request, sends only public request data plus the site selector,
+and rejects an asynchronous `ACCEPTED` response as `CRE_EVALUATION_PENDING` rather than pretending
+that an evaluation is complete. Configure `ROVAULTA_CRE_GATEWAY_URL`,
+`CHAINLINK_CRE_WORKFLOW_ID`, and `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY` only on the API server. The
+current implementation intentionally has no local-evaluator fallback when these settings or a
+completed result transport are missing.
