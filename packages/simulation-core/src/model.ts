@@ -31,8 +31,7 @@ export const CONFIDENTIAL_EVALUATION_ENVELOPE_VERSION =
 export const SCENARIO_GENERATOR_VERSION = "rovaulta.xorshift32-scenarios/v1" as const;
 export const SCENARIO_SUITE_VERSION = "rovaulta.scenario-suite/v1" as const;
 export const ROBOT_TRACE_SUITE_VERSION = "rovaulta.robot-trace-suite/v1" as const;
-export const INTERNAL_EVALUATION_REPORT_VERSION =
-  "rovaulta.internal-evaluation-report/v1" as const;
+export const INTERNAL_EVALUATION_REPORT_VERSION = "rovaulta.internal-evaluation-report/v1" as const;
 export const WAREHOUSE_EVALUATOR_VERSION = "evaluator-version:warehouse-rules-v1" as const;
 
 export const MAX_ABS_COORDINATE_MM = 10_000_000;

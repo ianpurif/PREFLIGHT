@@ -2,18 +2,9 @@
   {
     "key": "existing-p5-unregistered-fixture",
     "aliases": {
-      "site": [
-        "warehouse-a",
-        "site:warehouse-a"
-      ],
-      "robot": [
-        "picker-01",
-        "robot:picker-01"
-      ],
-      "build": [
-        "release-001",
-        "robot-build:release-001"
-      ]
+      "site": ["warehouse-a", "site:warehouse-a"],
+      "robot": ["picker-01", "robot:picker-01"],
+      "build": ["release-001", "robot-build:release-001"]
     },
     "target": {
       "siteId": "site:warehouse-a",

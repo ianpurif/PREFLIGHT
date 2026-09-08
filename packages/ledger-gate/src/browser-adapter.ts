@@ -14,8 +14,8 @@ import {
 } from "@ledgerhq/device-signer-kit-ethereum";
 import {
   buildDeploymentTypedData,
-  ROVAULTA_SEPOLIA_DEPLOYMENT,
   type PreparedLedgerSigningRequest,
+  ROVAULTA_SEPOLIA_DEPLOYMENT,
 } from "@rovaulta/chain-client";
 import { filter, firstValueFrom, lastValueFrom } from "rxjs";
 import { type ClearSigningAttempt, GuardedClearSigningContext } from "./clear-signing-context";

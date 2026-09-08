@@ -4,9 +4,9 @@ import {
   type ClearanceRegistryReader,
   type ClearanceRegistrySnapshot,
   clearanceRecordToTransport,
-  ROVAULTA_SEPOLIA_DEPLOYMENT,
   ReleaseGateError,
   type ReleaseGateErrorCode,
+  ROVAULTA_SEPOLIA_DEPLOYMENT,
   VERDICT_CLEAR_BYTES32,
 } from "@rovaulta/chain-client";
 import {

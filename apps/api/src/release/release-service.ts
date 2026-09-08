@@ -6,8 +6,8 @@ import {
   type ClearanceRegistrySnapshot,
   failRelease,
   hashReleaseSignature,
-  ROVAULTA_SEPOLIA_DEPLOYMENT,
   ReleaseGateError,
+  ROVAULTA_SEPOLIA_DEPLOYMENT,
 } from "@rovaulta/chain-client";
 import {
   type ClearanceRecord,

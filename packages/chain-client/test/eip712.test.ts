@@ -5,10 +5,10 @@ import { privateKeyToAccount } from "viem/accounts";
 import {
   assertDeploymentIntentSignature,
   buildDeploymentTypedData,
-  ROVAULTA_DEPLOYMENT_INTENT_TYPES,
-  ROVAULTA_SEPOLIA_DEPLOYMENT,
   ReleaseGateError,
   type ReleaseGateErrorCode,
+  ROVAULTA_DEPLOYMENT_INTENT_TYPES,
+  ROVAULTA_SEPOLIA_DEPLOYMENT,
 } from "../src/index.js";
 import { intentFixture } from "./fixtures.js";
 

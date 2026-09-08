@@ -76,10 +76,7 @@ const correctedFixture = bindRuntimeBlind(fixture.correctedFixtureBuild, validBl
 const outputs = [
   ["fixtures/unsafe.public.json", `${JSON.stringify(publicInput(unsafeFixture), null, 2)}\n`],
   ["fixtures/corrected.public.json", `${JSON.stringify(publicInput(correctedFixture), null, 2)}\n`],
-  [
-    ".env.cre-valid.local",
-    `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_JSON='${secret(validBlind)}'\n`,
-  ],
+  [".env.cre-valid.local", `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_JSON='${secret(validBlind)}'\n`],
   [
     ".env.cre-tampered.local",
     `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_JSON='${secret(tamperedBlind)}'\n`,

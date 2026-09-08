@@ -1,8 +1,8 @@
 import {
   assertClearanceSnapshotEligible,
   type ClearanceRegistryReader,
-  ROVAULTA_SEPOLIA_DEPLOYMENT,
   ReleaseGateError,
+  ROVAULTA_SEPOLIA_DEPLOYMENT,
 } from "@rovaulta/chain-client";
 import { type ClearanceRecord, digestClearance } from "@rovaulta/domain";
 import type { PreparedReleaseRequest, ReleaseService } from "../release/index.js";

@@ -6,11 +6,11 @@ import {
   type ClearanceRegistrySnapshot,
   clearanceRecordToTransport,
   identifierToBytes32,
-  ROVAULTA_REGISTRY_ABI,
-  ROVAULTA_SEPOLIA_DEPLOYMENT,
   protocolDigestToBytes32,
   ReleaseGateError,
   type ReleaseGateErrorCode,
+  ROVAULTA_REGISTRY_ABI,
+  ROVAULTA_SEPOLIA_DEPLOYMENT,
   VERDICT_CLEAR_BYTES32,
   ViemClearanceRegistryReader,
 } from "../src/index.js";

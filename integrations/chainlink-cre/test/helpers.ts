@@ -1,9 +1,6 @@
 import type { TeeRuntime } from "@chainlink/cre-sdk";
 import { PROTOCOL_VERSION, parseUnixTimestamp } from "@rovaulta/domain";
-import {
-  createDeterministicDemoFixture,
-  type DemoEvaluationCase,
-} from "@rovaulta/simulation-core";
+import { createDeterministicDemoFixture, type DemoEvaluationCase } from "@rovaulta/simulation-core";
 import type { WorkflowConfig } from "../src/confidential-evaluation.js";
 import {
   CONFIDENTIAL_INPUT_SECRET_ID,
