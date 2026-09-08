@@ -2,6 +2,8 @@ import {
   type DEPLOYMENT_ACTION,
   type DeploymentIntent,
   digestDeploymentIntent,
+  isLegacyVersion,
+  LEGACY_PROTOCOL_VERSION,
   PROTOCOL_VERSION,
   parseDeploymentIntent,
 } from "@rovaulta/domain";
@@ -15,6 +17,7 @@ import {
   recoverTypedDataAddress,
 } from "viem";
 import {
+  COMPATIBILITY_EIP712_NAME,
   ROVAULTA_EIP712_NAME,
   ROVAULTA_EIP712_VERSION,
   ROVAULTA_SEPOLIA_DEPLOYMENT,
@@ -44,7 +47,7 @@ export const ROVAULTA_DEPLOYMENT_INTENT_TYPES = Object.freeze({
 
 export interface PreparedDeploymentTypedData {
   readonly domain: {
-    readonly name: typeof ROVAULTA_EIP712_NAME;
+    readonly name: typeof ROVAULTA_EIP712_NAME | typeof COMPATIBILITY_EIP712_NAME;
     readonly version: typeof ROVAULTA_EIP712_VERSION;
     readonly chainId: 11_155_111;
     readonly verifyingContract: Address;
@@ -52,7 +55,7 @@ export interface PreparedDeploymentTypedData {
   readonly types: typeof ROVAULTA_DEPLOYMENT_INTENT_TYPES;
   readonly primaryType: "DeploymentIntent";
   readonly message: {
-    readonly protocolVersion: typeof PROTOCOL_VERSION;
+    readonly protocolVersion: string;
     readonly schemaVersion: string;
     readonly action: typeof DEPLOYMENT_ACTION;
     readonly siteId: string;
@@ -90,9 +93,10 @@ export function buildDeploymentTypedData(
     return failRelease("UNAUTHORIZED_SIGNER", "Authorized signer address is malformed");
   }
   const protocolIntentDigest = digestDeploymentIntent(intent);
+  const compatibilityDialect = isLegacyVersion(intent.schemaVersion);
   const typedData: PreparedDeploymentTypedData = Object.freeze({
     domain: Object.freeze({
-      name: ROVAULTA_EIP712_NAME,
+      name: compatibilityDialect ? COMPATIBILITY_EIP712_NAME : ROVAULTA_EIP712_NAME,
       version: ROVAULTA_EIP712_VERSION,
       chainId: ROVAULTA_SEPOLIA_DEPLOYMENT.chainId,
       verifyingContract: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
@@ -100,7 +104,7 @@ export function buildDeploymentTypedData(
     types: ROVAULTA_DEPLOYMENT_INTENT_TYPES,
     primaryType: "DeploymentIntent",
     message: Object.freeze({
-      protocolVersion: PROTOCOL_VERSION,
+      protocolVersion: compatibilityDialect ? LEGACY_PROTOCOL_VERSION : PROTOCOL_VERSION,
       schemaVersion: intent.schemaVersion,
       action: intent.action,
       siteId: intent.siteId,

@@ -1,10 +1,17 @@
 import { describe, expect, test } from "bun:test";
-import { parseDeploymentNonce, parseUnixTimestamp } from "@rovaulta/domain";
+import {
+  LEGACY_PROTOCOL_VERSION,
+  LEGACY_SCHEMA_VERSIONS,
+  parseDeploymentIntent,
+  parseDeploymentNonce,
+  parseUnixTimestamp,
+} from "@rovaulta/domain";
 import { hashTypedData } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import {
   assertDeploymentIntentSignature,
   buildDeploymentTypedData,
+  COMPATIBILITY_EIP712_NAME,
   ReleaseGateError,
   type ReleaseGateErrorCode,
   ROVAULTA_DEPLOYMENT_INTENT_TYPES,
@@ -58,6 +65,17 @@ describe("P5 EIP-712 deployment intent", () => {
     expect(request.typedDataDigest).toBe(
       "0x946fb5f5f6b4996cefbc04a1a989dd2c2a55d12ceb08478e81a42bba1808e865",
     );
+  });
+
+  test("keeps legacy wire intents verifiable during the namespace migration", () => {
+    const legacyIntent = parseDeploymentIntent({
+      ...intentFixture,
+      schemaVersion: LEGACY_SCHEMA_VERSIONS.deploymentIntent,
+    });
+    const request = buildDeploymentTypedData(legacyIntent, fixtureAccount.address);
+    expect(request.typedData.domain.name).toBe(COMPATIBILITY_EIP712_NAME);
+    expect(request.typedData.message.protocolVersion).toBe(LEGACY_PROTOCOL_VERSION);
+    expect(request.typedData.message.schemaVersion).toBe(LEGACY_SCHEMA_VERSIONS.deploymentIntent);
   });
 
   test("is deterministic and does not retain mutable caller aliases", () => {

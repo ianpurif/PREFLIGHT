@@ -1,6 +1,12 @@
 import { sha256 } from "@noble/hashes/sha2.js";
 import { canonicalBytes } from "./canonical";
 import {
+  isLegacyVersion,
+  LEGACY_DIGEST_DOMAINS,
+  LEGACY_PROTOCOL_VERSION,
+  LEGACY_SCHEMA_VERSIONS,
+} from "./compatibility";
+import {
   type ClearanceDigest,
   type DeploymentIntentDigest,
   type EvaluationInputsDigest,
@@ -45,19 +51,34 @@ function bytesToHex(bytes: Uint8Array): string {
   return output;
 }
 
-function digestFrame(domain: string, payload: unknown) {
+function digestFrame(domain: string, protocolVersion: string, payload: unknown) {
   const frame = {
     domain,
-    protocolVersion: PROTOCOL_VERSION,
+    protocolVersion,
     payload,
   };
   const encoded = canonicalBytes(frame);
   return parseSha256Digest(`sha256:${bytesToHex(sha256(encoded))}`);
 }
 
+function digestDialect(input: { readonly schemaVersion?: unknown }): "current" | "legacy" {
+  return isLegacyVersion(input.schemaVersion) ? "legacy" : "current";
+}
+
+function digestDomain(key: keyof typeof DIGEST_DOMAINS, dialect: "current" | "legacy"): string {
+  return dialect === "legacy" ? LEGACY_DIGEST_DOMAINS[key] : DIGEST_DOMAINS[key];
+}
+
+function digestProtocolVersion(dialect: "current" | "legacy"): string {
+  return dialect === "legacy" ? LEGACY_PROTOCOL_VERSION : PROTOCOL_VERSION;
+}
+
 export function digestRobotBuild(input: unknown): RobotBuildDigest {
   const descriptor = parseRobotBuildDescriptor(input);
-  return brandProtocolDigest<RobotBuildDigest>(digestFrame(DIGEST_DOMAINS.robotBuild, descriptor));
+  const dialect = digestDialect(descriptor);
+  return brandProtocolDigest<RobotBuildDigest>(
+    digestFrame(digestDomain("robotBuild", dialect), digestProtocolVersion(dialect), descriptor),
+  );
 }
 
 /**
@@ -79,21 +100,35 @@ export function digestSafetyEnvelopeCommitment(
   }
 
   const payload = {
-    schemaVersion: SAFETY_ENVELOPE_COMMITMENT_SCHEMA_VERSION,
+    schemaVersion: isLegacyVersion(
+      (confidentialPayload as { readonly schemaVersion?: unknown })?.schemaVersion,
+    )
+      ? LEGACY_SCHEMA_VERSIONS.safetyEnvelopeCommitment
+      : SAFETY_ENVELOPE_COMMITMENT_SCHEMA_VERSION,
     siteId: parseSiteId(siteIdInput),
     safetyEnvelopeId: parseSafetyEnvelopeId(safetyEnvelopeIdInput),
     confidentialPayload,
     blindingSecret: bytesToHex(blindingSecret),
   };
+  const dialect = isLegacyVersion(payload.schemaVersion) ? "legacy" : "current";
   return brandProtocolDigest<SafetyEnvelopeCommitment>(
-    digestFrame(DIGEST_DOMAINS.safetyEnvelopeCommitment, payload),
+    digestFrame(
+      digestDomain("safetyEnvelopeCommitment", dialect),
+      digestProtocolVersion(dialect),
+      payload,
+    ),
   );
 }
 
 export function digestEvaluationInputs(input: unknown): EvaluationInputsDigest {
   const evaluationInputs = parseEvaluationInputs(input);
+  const dialect = digestDialect(evaluationInputs);
   return brandProtocolDigest<EvaluationInputsDigest>(
-    digestFrame(DIGEST_DOMAINS.evaluationInputs, evaluationInputs),
+    digestFrame(
+      digestDomain("evaluationInputs", dialect),
+      digestProtocolVersion(dialect),
+      evaluationInputs,
+    ),
   );
 }
 
@@ -106,12 +141,16 @@ export function digestClearance(input: unknown): ClearanceDigest {
       "evaluationInputsDigest",
     );
   }
-  return brandProtocolDigest<ClearanceDigest>(digestFrame(DIGEST_DOMAINS.clearance, clearance));
+  const dialect = digestDialect(clearance);
+  return brandProtocolDigest<ClearanceDigest>(
+    digestFrame(digestDomain("clearance", dialect), digestProtocolVersion(dialect), clearance),
+  );
 }
 
 export function digestDeploymentIntent(input: unknown): DeploymentIntentDigest {
   const intent = parseDeploymentIntent(input);
+  const dialect = digestDialect(intent);
   return brandProtocolDigest<DeploymentIntentDigest>(
-    digestFrame(DIGEST_DOMAINS.deploymentIntent, intent),
+    digestFrame(digestDomain("deploymentIntent", dialect), digestProtocolVersion(dialect), intent),
   );
 }

@@ -1,9 +1,12 @@
+import { LEGACY_EIP712_NAME } from "@rovaulta/domain";
 import { type Address, getAddress } from "viem";
 import deploymentArtifact from "../../../contracts/deployments/sepolia.json";
 import { failRelease } from "./errors";
 
 export const ROVAULTA_EIP712_NAME = "Rovaulta" as const;
 export const ROVAULTA_EIP712_VERSION = "1" as const;
+/** EIP-712 display identity retained for signatures created before the rename. */
+export const COMPATIBILITY_EIP712_NAME = LEGACY_EIP712_NAME;
 export const SEPOLIA_CHAIN_ID = 11_155_111 as const;
 
 export interface RovaultaDeployment {

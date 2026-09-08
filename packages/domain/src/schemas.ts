@@ -1,3 +1,4 @@
+import { LEGACY_SCHEMA_VERSIONS, type ProtocolDialect, resolveVersion } from "./compatibility";
 import {
   type ClearanceDigest,
   type EvaluationInputsDigest,
@@ -63,21 +64,21 @@ export type EvaluationVerdict = (typeof EVALUATION_VERDICTS)[number];
 export type ClearanceVerdict = EvaluationVerdict;
 
 export interface RobotBuildDescriptor {
-  readonly schemaVersion: typeof ROBOT_BUILD_SCHEMA_VERSION;
+  readonly schemaVersion: string;
   readonly robotId: RobotId;
   readonly robotBuildId: RobotBuildId;
   readonly artifactDigest: Sha256Digest;
 }
 
 export interface SafetyEnvelopeMetadata {
-  readonly schemaVersion: typeof SAFETY_ENVELOPE_METADATA_SCHEMA_VERSION;
+  readonly schemaVersion: string;
   readonly siteId: SiteId;
   readonly safetyEnvelopeId: SafetyEnvelopeId;
   readonly safetyEnvelopeCommitment: SafetyEnvelopeCommitment;
 }
 
 export interface EvaluationInputs {
-  readonly schemaVersion: typeof EVALUATION_INPUTS_SCHEMA_VERSION;
+  readonly schemaVersion: string;
   readonly siteId: SiteId;
   readonly robotId: RobotId;
   readonly robotBuildId: RobotBuildId;
@@ -88,14 +89,14 @@ export interface EvaluationInputs {
 }
 
 export interface EvaluationRequest {
-  readonly schemaVersion: typeof EVALUATION_REQUEST_SCHEMA_VERSION;
+  readonly schemaVersion: string;
   readonly evaluationId: EvaluationId;
   readonly inputs: EvaluationInputs;
   readonly requestedAt: UnixTimestamp;
 }
 
 export interface EvaluationResult {
-  readonly schemaVersion: typeof EVALUATION_RESULT_SCHEMA_VERSION;
+  readonly schemaVersion: string;
   readonly evaluationId: EvaluationId;
   readonly inputs: EvaluationInputs;
   readonly evaluationInputsDigest: EvaluationInputsDigest;
@@ -104,7 +105,7 @@ export interface EvaluationResult {
 }
 
 export interface ClearanceRecord {
-  readonly schemaVersion: typeof CLEARANCE_RECORD_SCHEMA_VERSION;
+  readonly schemaVersion: string;
   readonly clearanceId: ClearanceId;
   readonly evaluationId: EvaluationId;
   readonly inputs: EvaluationInputs;
@@ -115,7 +116,7 @@ export interface ClearanceRecord {
 }
 
 export interface DeploymentIntent {
-  readonly schemaVersion: typeof DEPLOYMENT_INTENT_SCHEMA_VERSION;
+  readonly schemaVersion: string;
   readonly action: DeploymentAction;
   readonly siteId: SiteId;
   readonly robotId: RobotId;
@@ -168,14 +169,16 @@ function expectExactSchema(
   input: unknown,
   schemaName: string,
   schemaVersion: string,
+  legacySchemaVersion: string,
   requiredKeys: readonly string[],
   bindingKeys: ReadonlySet<string>,
-): PlainRecord {
+): { readonly record: PlainRecord; readonly dialect: ProtocolDialect } {
   const record = expectDataObject(input, schemaName);
   if (!Object.hasOwn(record, "schemaVersion")) {
     return failProtocol("MALFORMED_OBJECT", `${schemaName} is missing schemaVersion`);
   }
-  if (record.schemaVersion !== schemaVersion) {
+  const dialect = resolveVersion(record.schemaVersion, schemaVersion, legacySchemaVersion);
+  if (dialect === undefined) {
     return failProtocol("UNSUPPORTED_VERSION", `${schemaName} schemaVersion is unsupported`);
   }
 
@@ -191,7 +194,7 @@ function expectExactSchema(
       return failProtocol(code, `${schemaName} is missing a required field`, key);
     }
   }
-  return record;
+  return Object.freeze({ record, dialect });
 }
 
 function parseEvaluationVerdict(input: unknown, path: string): EvaluationVerdict {
@@ -254,14 +257,16 @@ export function parseRobotBuildDescriptor(input: unknown): RobotBuildDescriptor 
     input,
     "RobotBuildDescriptor",
     ROBOT_BUILD_SCHEMA_VERSION,
+    LEGACY_SCHEMA_VERSIONS.robotBuild,
     ["robotId", "robotBuildId", "artifactDigest"],
     new Set(["robotId", "robotBuildId", "artifactDigest"]),
   );
   return Object.freeze({
-    schemaVersion: ROBOT_BUILD_SCHEMA_VERSION,
-    robotId: parseRobotId(record.robotId),
-    robotBuildId: parseRobotBuildId(record.robotBuildId),
-    artifactDigest: parseSha256Digest(record.artifactDigest, "artifactDigest"),
+    schemaVersion:
+      record.dialect === "legacy" ? LEGACY_SCHEMA_VERSIONS.robotBuild : ROBOT_BUILD_SCHEMA_VERSION,
+    robotId: parseRobotId(record.record.robotId),
+    robotBuildId: parseRobotBuildId(record.record.robotBuildId),
+    artifactDigest: parseSha256Digest(record.record.artifactDigest, "artifactDigest"),
   });
 }
 
@@ -270,15 +275,19 @@ export function parseSafetyEnvelopeMetadata(input: unknown): SafetyEnvelopeMetad
     input,
     "SafetyEnvelopeMetadata",
     SAFETY_ENVELOPE_METADATA_SCHEMA_VERSION,
+    LEGACY_SCHEMA_VERSIONS.safetyEnvelopeMetadata,
     ["siteId", "safetyEnvelopeId", "safetyEnvelopeCommitment"],
     new Set(["siteId", "safetyEnvelopeId", "safetyEnvelopeCommitment"]),
   );
   return Object.freeze({
-    schemaVersion: SAFETY_ENVELOPE_METADATA_SCHEMA_VERSION,
-    siteId: parseSiteId(record.siteId),
-    safetyEnvelopeId: parseSafetyEnvelopeId(record.safetyEnvelopeId),
+    schemaVersion:
+      record.dialect === "legacy"
+        ? LEGACY_SCHEMA_VERSIONS.safetyEnvelopeMetadata
+        : SAFETY_ENVELOPE_METADATA_SCHEMA_VERSION,
+    siteId: parseSiteId(record.record.siteId),
+    safetyEnvelopeId: parseSafetyEnvelopeId(record.record.safetyEnvelopeId),
     safetyEnvelopeCommitment: parseSafetyEnvelopeCommitment(
-      record.safetyEnvelopeCommitment,
+      record.record.safetyEnvelopeCommitment,
       "safetyEnvelopeCommitment",
     ),
   });
@@ -298,18 +307,22 @@ export function parseEvaluationInputs(input: unknown): EvaluationInputs {
     input,
     "EvaluationInputs",
     EVALUATION_INPUTS_SCHEMA_VERSION,
+    LEGACY_SCHEMA_VERSIONS.evaluationInputs,
     bindings,
     new Set(bindings),
   );
   return Object.freeze({
-    schemaVersion: EVALUATION_INPUTS_SCHEMA_VERSION,
-    siteId: parseSiteId(record.siteId),
-    robotId: parseRobotId(record.robotId),
-    robotBuildId: parseRobotBuildId(record.robotBuildId),
-    robotBuildDigest: parseRobotBuildDigest(record.robotBuildDigest),
-    safetyEnvelopeId: parseSafetyEnvelopeId(record.safetyEnvelopeId),
-    safetyEnvelopeCommitment: parseSafetyEnvelopeCommitment(record.safetyEnvelopeCommitment),
-    evaluatorVersion: parseEvaluatorVersionId(record.evaluatorVersion),
+    schemaVersion:
+      record.dialect === "legacy"
+        ? LEGACY_SCHEMA_VERSIONS.evaluationInputs
+        : EVALUATION_INPUTS_SCHEMA_VERSION,
+    siteId: parseSiteId(record.record.siteId),
+    robotId: parseRobotId(record.record.robotId),
+    robotBuildId: parseRobotBuildId(record.record.robotBuildId),
+    robotBuildDigest: parseRobotBuildDigest(record.record.robotBuildDigest),
+    safetyEnvelopeId: parseSafetyEnvelopeId(record.record.safetyEnvelopeId),
+    safetyEnvelopeCommitment: parseSafetyEnvelopeCommitment(record.record.safetyEnvelopeCommitment),
+    evaluatorVersion: parseEvaluatorVersionId(record.record.evaluatorVersion),
   });
 }
 
@@ -318,14 +331,18 @@ export function parseEvaluationRequest(input: unknown): EvaluationRequest {
     input,
     "EvaluationRequest",
     EVALUATION_REQUEST_SCHEMA_VERSION,
+    LEGACY_SCHEMA_VERSIONS.evaluationRequest,
     ["evaluationId", "inputs", "requestedAt"],
     new Set(["evaluationId", "inputs"]),
   );
   return Object.freeze({
-    schemaVersion: EVALUATION_REQUEST_SCHEMA_VERSION,
-    evaluationId: parseEvaluationId(record.evaluationId),
-    inputs: parseEvaluationInputs(record.inputs),
-    requestedAt: parseUnixTimestamp(record.requestedAt, "requestedAt"),
+    schemaVersion:
+      record.dialect === "legacy"
+        ? LEGACY_SCHEMA_VERSIONS.evaluationRequest
+        : EVALUATION_REQUEST_SCHEMA_VERSION,
+    evaluationId: parseEvaluationId(record.record.evaluationId),
+    inputs: parseEvaluationInputs(record.record.inputs),
+    requestedAt: parseUnixTimestamp(record.record.requestedAt, "requestedAt"),
   });
 }
 
@@ -334,16 +351,20 @@ export function parseEvaluationResult(input: unknown): EvaluationResult {
     input,
     "EvaluationResult",
     EVALUATION_RESULT_SCHEMA_VERSION,
+    LEGACY_SCHEMA_VERSIONS.evaluationResult,
     ["evaluationId", "inputs", "evaluationInputsDigest", "verdict", "evaluatedAt"],
     new Set(["evaluationId", "inputs", "evaluationInputsDigest", "verdict"]),
   );
   return Object.freeze({
-    schemaVersion: EVALUATION_RESULT_SCHEMA_VERSION,
-    evaluationId: parseEvaluationId(record.evaluationId),
-    inputs: parseEvaluationInputs(record.inputs),
-    evaluationInputsDigest: parseEvaluationInputsDigest(record.evaluationInputsDigest),
-    verdict: parseEvaluationVerdict(record.verdict, "verdict"),
-    evaluatedAt: parseUnixTimestamp(record.evaluatedAt, "evaluatedAt"),
+    schemaVersion:
+      record.dialect === "legacy"
+        ? LEGACY_SCHEMA_VERSIONS.evaluationResult
+        : EVALUATION_RESULT_SCHEMA_VERSION,
+    evaluationId: parseEvaluationId(record.record.evaluationId),
+    inputs: parseEvaluationInputs(record.record.inputs),
+    evaluationInputsDigest: parseEvaluationInputsDigest(record.record.evaluationInputsDigest),
+    verdict: parseEvaluationVerdict(record.record.verdict, "verdict"),
+    evaluatedAt: parseUnixTimestamp(record.record.evaluatedAt, "evaluatedAt"),
   });
 }
 
@@ -352,6 +373,7 @@ export function parseClearanceRecord(input: unknown): ClearanceRecord {
     input,
     "ClearanceRecord",
     CLEARANCE_RECORD_SCHEMA_VERSION,
+    LEGACY_SCHEMA_VERSIONS.clearanceRecord,
     [
       "clearanceId",
       "evaluationId",
@@ -370,19 +392,22 @@ export function parseClearanceRecord(input: unknown): ClearanceRecord {
       "expiresAt",
     ]),
   );
-  if (record.verdict !== "CLEAR") {
+  if (record.record.verdict !== "CLEAR") {
     return failProtocol("MALFORMED_OBJECT", "ClearanceRecord verdict must be CLEAR", "verdict");
   }
-  const issuedAt = parseUnixTimestamp(record.issuedAt, "issuedAt");
+  const issuedAt = parseUnixTimestamp(record.record.issuedAt, "issuedAt");
   return Object.freeze({
-    schemaVersion: CLEARANCE_RECORD_SCHEMA_VERSION,
-    clearanceId: parseClearanceId(record.clearanceId),
-    evaluationId: parseEvaluationId(record.evaluationId),
-    inputs: parseEvaluationInputs(record.inputs),
-    evaluationInputsDigest: parseEvaluationInputsDigest(record.evaluationInputsDigest),
+    schemaVersion:
+      record.dialect === "legacy"
+        ? LEGACY_SCHEMA_VERSIONS.clearanceRecord
+        : CLEARANCE_RECORD_SCHEMA_VERSION,
+    clearanceId: parseClearanceId(record.record.clearanceId),
+    evaluationId: parseEvaluationId(record.record.evaluationId),
+    inputs: parseEvaluationInputs(record.record.inputs),
+    evaluationInputsDigest: parseEvaluationInputsDigest(record.record.evaluationInputsDigest),
     verdict: "CLEAR",
     issuedAt,
-    expiresAt: parseExpiry(record.expiresAt, issuedAt, "expiresAt"),
+    expiresAt: parseExpiry(record.record.expiresAt, issuedAt, "expiresAt"),
   });
 }
 
@@ -400,36 +425,40 @@ export function parseDeploymentIntent(input: unknown): DeploymentIntent {
     input,
     "DeploymentIntent",
     DEPLOYMENT_INTENT_SCHEMA_VERSION,
+    LEGACY_SCHEMA_VERSIONS.deploymentIntent,
     [...bindingKeys, "targetEnvironment", "nonce", "issuedAt", "expiresAt"],
     new Set(bindingKeys),
   );
-  if (record.action !== DEPLOYMENT_ACTION) {
+  if (record.record.action !== DEPLOYMENT_ACTION) {
     return failProtocol(
       "MALFORMED_OBJECT",
       "DeploymentIntent action must be ACTIVATE_DEPLOYMENT",
       "action",
     );
   }
-  if (record.targetEnvironment !== "sepolia") {
+  if (record.record.targetEnvironment !== "sepolia") {
     return failProtocol(
       "MALFORMED_OBJECT",
       "DeploymentIntent targetEnvironment must be sepolia in protocol v1",
       "targetEnvironment",
     );
   }
-  const issuedAt = parseUnixTimestamp(record.issuedAt, "issuedAt");
+  const issuedAt = parseUnixTimestamp(record.record.issuedAt, "issuedAt");
   return Object.freeze({
-    schemaVersion: DEPLOYMENT_INTENT_SCHEMA_VERSION,
+    schemaVersion:
+      record.dialect === "legacy"
+        ? LEGACY_SCHEMA_VERSIONS.deploymentIntent
+        : DEPLOYMENT_INTENT_SCHEMA_VERSION,
     action: DEPLOYMENT_ACTION,
-    siteId: parseSiteId(record.siteId),
-    robotId: parseRobotId(record.robotId),
-    robotBuildId: parseRobotBuildId(record.robotBuildId),
-    robotBuildDigest: parseRobotBuildDigest(record.robotBuildDigest),
-    clearanceId: parseClearanceId(record.clearanceId),
-    clearanceDigest: parseClearanceDigest(record.clearanceDigest),
+    siteId: parseSiteId(record.record.siteId),
+    robotId: parseRobotId(record.record.robotId),
+    robotBuildId: parseRobotBuildId(record.record.robotBuildId),
+    robotBuildDigest: parseRobotBuildDigest(record.record.robotBuildDigest),
+    clearanceId: parseClearanceId(record.record.clearanceId),
+    clearanceDigest: parseClearanceDigest(record.record.clearanceDigest),
     targetEnvironment: "sepolia",
-    nonce: parseDeploymentNonce(record.nonce),
+    nonce: parseDeploymentNonce(record.record.nonce),
     issuedAt,
-    expiresAt: parseExpiry(record.expiresAt, issuedAt, "expiresAt"),
+    expiresAt: parseExpiry(record.record.expiresAt, issuedAt, "expiresAt"),
   });
 }

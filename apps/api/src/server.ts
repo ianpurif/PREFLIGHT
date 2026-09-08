@@ -5,6 +5,7 @@ import { evaluateSimulation } from "@rovaulta/simulation-core";
 import Fastify, { type FastifyReply } from "fastify";
 import { type DeploymentAgent, DeploymentAgentError } from "./agent/index.js";
 import { ApplicationError, ApplicationStore } from "./application/index.js";
+import { readEnvironment } from "./environment.js";
 import type { ReleaseService } from "./release/index.js";
 
 function rejectMalformed(reply: FastifyReply) {
@@ -74,7 +75,7 @@ export function buildServer(
     [
       "http://localhost:3000",
       "http://127.0.0.1:3000",
-      environment.ROVAULTA_WEB_ORIGIN,
+      readEnvironment(environment, "ROVAULTA_WEB_ORIGIN"),
       environment.WEB_ORIGIN,
     ].filter((origin): origin is string => typeof origin === "string" && origin.length > 0),
   );
@@ -191,7 +192,7 @@ export function buildServer(
   ): boolean {
     if (
       environment.NODE_ENV !== "production" &&
-      environment.ROVAULTA_ENABLE_DEMO_ROUTES === "true"
+      readEnvironment(environment, "ROVAULTA_ENABLE_DEMO_ROUTES") === "true"
     ) {
       return true;
     }

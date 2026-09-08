@@ -4,6 +4,11 @@ import {
   digestRobotBuild,
   type EvaluationRequest,
   type EvaluationResult,
+  isLegacyVersion,
+  LEGACY_CONFIDENTIAL_INPUT_SECRET_ID,
+  LEGACY_DIGEST_DOMAINS,
+  LEGACY_PROTOCOL_VERSION,
+  LEGACY_SCHEMA_VERSIONS,
   PROTOCOL_VERSION,
   parseEvaluationRequest,
   parseRobotBuildDescriptor,
@@ -28,6 +33,7 @@ export const CRE_PUBLIC_RESULT_VERSION = "rovaulta.cre-public-evaluation-result/
 export const CRE_PUBLIC_ERROR_VERSION = "rovaulta.cre-public-evaluation-error/v1" as const;
 export const SYNTHETIC_TRACE_PROVENANCE = "SYNTHETIC_CALLER_SUPPLIED" as const;
 export const CONFIDENTIAL_INPUT_SECRET_ID = "ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT" as const;
+export const COMPATIBILITY_CONFIDENTIAL_INPUT_SECRET_ID = LEGACY_CONFIDENTIAL_INPUT_SECRET_ID;
 export const MAX_PUBLIC_PAYLOAD_BYTES = 128 * 1024;
 export const MAX_CONFIDENTIAL_PAYLOAD_BYTES = 2 * 1024;
 
@@ -42,8 +48,8 @@ export type CrePublicFailureCode =
   | "CONFIDENTIAL_HANDLER_FAILURE";
 
 export interface CrePublicEvaluationRequest {
-  readonly schemaVersion: typeof CRE_PUBLIC_REQUEST_VERSION;
-  readonly protocolVersion: typeof PROTOCOL_VERSION;
+  readonly schemaVersion: string;
+  readonly protocolVersion: string;
   readonly request: EvaluationRequest;
   readonly robotBuild: RobotBuildDescriptor;
   readonly behaviorTraces: RobotBehaviorTraceSuite;
@@ -53,15 +59,15 @@ export interface CrePublicEvaluationRequest {
 }
 
 export interface CreConfidentialEvaluationInput {
-  readonly schemaVersion: typeof CRE_CONFIDENTIAL_INPUT_VERSION;
-  readonly protocolVersion: typeof PROTOCOL_VERSION;
+  readonly schemaVersion: string;
+  readonly protocolVersion: string;
   readonly confidentialEnvelope: ConfidentialEvaluationEnvelope;
   readonly envelopeBlindingSecret: Uint8Array;
 }
 
 export interface CrePublicEvaluationSuccess {
-  readonly schemaVersion: typeof CRE_PUBLIC_RESULT_VERSION;
-  readonly protocolVersion: typeof PROTOCOL_VERSION;
+  readonly schemaVersion: string;
+  readonly protocolVersion: string;
   readonly status: "EVALUATED";
   readonly result: EvaluationResult;
   readonly behaviorInputDigest: Sha256Digest;
@@ -69,8 +75,8 @@ export interface CrePublicEvaluationSuccess {
 }
 
 export interface CrePublicEvaluationFailure {
-  readonly schemaVersion: typeof CRE_PUBLIC_ERROR_VERSION;
-  readonly protocolVersion: typeof PROTOCOL_VERSION;
+  readonly schemaVersion: string;
+  readonly protocolVersion: string;
   readonly status: "REJECT";
   readonly code: CrePublicFailureCode;
 }
@@ -122,8 +128,8 @@ function bytesToHex(bytes: Uint8Array): string {
 }
 
 function behaviorDigestPayload(input: {
-  readonly schemaVersion: typeof CRE_PUBLIC_REQUEST_VERSION;
-  readonly protocolVersion: typeof PROTOCOL_VERSION;
+  readonly schemaVersion: string;
+  readonly protocolVersion: string;
   readonly request: EvaluationRequest;
   readonly robotBuild: RobotBuildDescriptor;
   readonly behaviorTraces: RobotBehaviorTraceSuite;
@@ -134,8 +140,8 @@ function behaviorDigestPayload(input: {
 }
 
 export function digestBehaviorInput(input: {
-  readonly schemaVersion: typeof CRE_PUBLIC_REQUEST_VERSION;
-  readonly protocolVersion: typeof PROTOCOL_VERSION;
+  readonly schemaVersion: string;
+  readonly protocolVersion: string;
   readonly request: EvaluationRequest;
   readonly robotBuild: RobotBuildDescriptor;
   readonly behaviorTraces: RobotBehaviorTraceSuite;
@@ -143,8 +149,12 @@ export function digestBehaviorInput(input: {
   readonly evaluatedAt: UnixTimestamp;
 }): Sha256Digest {
   const bytes = canonicalBytes({
-    domain: BEHAVIOR_INPUT_DIGEST_DOMAIN,
-    protocolVersion: PROTOCOL_VERSION,
+    domain: isLegacyVersion(input.schemaVersion)
+      ? LEGACY_DIGEST_DOMAINS.behaviorInput
+      : BEHAVIOR_INPUT_DIGEST_DOMAIN,
+    protocolVersion: isLegacyVersion(input.protocolVersion)
+      ? LEGACY_PROTOCOL_VERSION
+      : PROTOCOL_VERSION,
     payload: behaviorDigestPayload(input),
   });
   return parseSha256Digest(`sha256:${bytesToHex(sha256(bytes))}`);
@@ -287,8 +297,12 @@ export function parsePublicEvaluationRequest(input: unknown): CrePublicEvaluatio
     "MALFORMED_PUBLIC_INPUT",
   );
   if (
-    record.schemaVersion !== CRE_PUBLIC_REQUEST_VERSION ||
-    record.protocolVersion !== PROTOCOL_VERSION
+    !(
+      (record.schemaVersion === CRE_PUBLIC_REQUEST_VERSION &&
+        record.protocolVersion === PROTOCOL_VERSION) ||
+      (record.schemaVersion === LEGACY_SCHEMA_VERSIONS.crePublicRequest &&
+        record.protocolVersion === LEGACY_PROTOCOL_VERSION)
+    )
   ) {
     return reject("UNSUPPORTED_VERSION");
   }
@@ -327,8 +341,8 @@ export function parsePublicEvaluationRequest(input: unknown): CrePublicEvaluatio
     }
 
     const normalized = Object.freeze({
-      schemaVersion: CRE_PUBLIC_REQUEST_VERSION,
-      protocolVersion: PROTOCOL_VERSION,
+      schemaVersion: String(record.schemaVersion),
+      protocolVersion: String(record.protocolVersion),
       request,
       robotBuild,
       behaviorTraces,
@@ -366,15 +380,19 @@ export function parseConfidentialEvaluationInput(
     "MALFORMED_CONFIDENTIAL_INPUT",
   );
   if (
-    record.schemaVersion !== CRE_CONFIDENTIAL_INPUT_VERSION ||
-    record.protocolVersion !== PROTOCOL_VERSION
+    !(
+      (record.schemaVersion === CRE_CONFIDENTIAL_INPUT_VERSION &&
+        record.protocolVersion === PROTOCOL_VERSION) ||
+      (record.schemaVersion === LEGACY_SCHEMA_VERSIONS.creConfidentialInput &&
+        record.protocolVersion === LEGACY_PROTOCOL_VERSION)
+    )
   ) {
     return reject("UNSUPPORTED_VERSION");
   }
   try {
     return Object.freeze({
-      schemaVersion: CRE_CONFIDENTIAL_INPUT_VERSION,
-      protocolVersion: PROTOCOL_VERSION,
+      schemaVersion: String(record.schemaVersion),
+      protocolVersion: String(record.protocolVersion),
       confidentialEnvelope: parseConfidentialEvaluationEnvelope(record.confidentialEnvelope),
       envelopeBlindingSecret: parseBlindingSecretHex(record.envelopeBlindingSecretHex),
     });
@@ -385,9 +403,17 @@ export function parseConfidentialEvaluationInput(
 }
 
 export function makePublicFailure(code: CrePublicFailureCode): CrePublicEvaluationFailure {
+  return makePublicFailureForProtocol(code, PROTOCOL_VERSION);
+}
+
+export function makePublicFailureForProtocol(
+  code: CrePublicFailureCode,
+  protocolVersion: string,
+): CrePublicEvaluationFailure {
+  const legacy = isLegacyVersion(protocolVersion);
   return Object.freeze({
-    schemaVersion: CRE_PUBLIC_ERROR_VERSION,
-    protocolVersion: PROTOCOL_VERSION,
+    schemaVersion: legacy ? LEGACY_SCHEMA_VERSIONS.crePublicError : CRE_PUBLIC_ERROR_VERSION,
+    protocolVersion: legacy ? LEGACY_PROTOCOL_VERSION : PROTOCOL_VERSION,
     status: "REJECT",
     code,
   });

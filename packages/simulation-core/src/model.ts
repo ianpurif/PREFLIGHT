@@ -1,5 +1,7 @@
 import {
   failProtocol,
+  LEGACY_SCHEMA_VERSIONS,
+  type ProtocolDialect,
   parseRobotBuildDigest,
   parseRobotBuildId,
   parseRobotId,
@@ -8,6 +10,7 @@ import {
   type RobotBuildDigest,
   type RobotBuildId,
   type RobotId,
+  resolveVersion,
   type SafetyEnvelopeId,
   type SiteId,
 } from "@rovaulta/domain";
@@ -172,10 +175,18 @@ function expectInteger(input: unknown, minimum: number, maximum: number, path: s
   return input;
 }
 
-function expectVersion(input: unknown, expected: string, name: string, path: string): void {
-  if (input !== expected) {
+function expectVersion(
+  input: unknown,
+  expected: string,
+  compatibility: string,
+  name: string,
+  path: string,
+): ProtocolDialect {
+  const dialect = resolveVersion(input, expected, compatibility);
+  if (dialect === undefined) {
     failProtocol("UNSUPPORTED_VERSION", `${name} version is unsupported`, path);
   }
+  return dialect;
 }
 
 export interface PointMm {
@@ -234,13 +245,13 @@ export interface ScenarioTemplate {
 }
 
 export interface ScenarioGenerationConfig {
-  readonly generatorVersion: typeof SCENARIO_GENERATOR_VERSION;
+  readonly generatorVersion: string;
   readonly seed: number;
   readonly templates: readonly ScenarioTemplate[];
 }
 
 export interface ConfidentialEvaluationEnvelope {
-  readonly schemaVersion: typeof CONFIDENTIAL_EVALUATION_ENVELOPE_VERSION;
+  readonly schemaVersion: string;
   readonly siteId: SiteId;
   readonly safetyEnvelopeId: SafetyEnvelopeId;
   readonly warehouseBounds: RectangleMm;
@@ -255,8 +266,8 @@ export interface GeneratedScenario {
 }
 
 export interface ScenarioSuite {
-  readonly schemaVersion: typeof SCENARIO_SUITE_VERSION;
-  readonly generatorVersion: typeof SCENARIO_GENERATOR_VERSION;
+  readonly schemaVersion: string;
+  readonly generatorVersion: string;
   readonly seed: number;
   readonly scenarios: readonly GeneratedScenario[];
 }
@@ -274,7 +285,7 @@ export interface RobotBehaviorTrace {
 
 /** Materialized fixture/model output. P2 validates this data but does not prove its provenance. */
 export interface RobotBehaviorTraceSuite {
-  readonly schemaVersion: typeof ROBOT_TRACE_SUITE_VERSION;
+  readonly schemaVersion: string;
   readonly robotId: RobotId;
   readonly robotBuildId: RobotBuildId;
   readonly robotBuildDigest: RobotBuildDigest;
@@ -448,6 +459,7 @@ function assertUniqueIds(values: readonly string[], name: string, path: string):
 export function parseScenarioGenerationConfig(
   input: unknown,
   path = "scenarioGeneration",
+  expectedDialect?: ProtocolDialect,
 ): ScenarioGenerationConfig {
   const record = expectExactObject(
     input,
@@ -455,12 +467,20 @@ export function parseScenarioGenerationConfig(
     ["generatorVersion", "seed", "templates"],
     path,
   );
-  expectVersion(
+  const dialect = expectVersion(
     record.generatorVersion,
     SCENARIO_GENERATOR_VERSION,
+    LEGACY_SCHEMA_VERSIONS.scenarioGenerator,
     "Scenario generator",
     `${path}.generatorVersion`,
   );
+  if (expectedDialect !== undefined && dialect !== expectedDialect) {
+    return failProtocol(
+      "UNSUPPORTED_VERSION",
+      "Scenario generator dialect does not match its envelope",
+      `${path}.generatorVersion`,
+    );
+  }
   const templates = expectArray(
     record.templates,
     "Scenario templates",
@@ -475,7 +495,8 @@ export function parseScenarioGenerationConfig(
     `${path}.templates`,
   );
   return Object.freeze({
-    generatorVersion: SCENARIO_GENERATOR_VERSION,
+    generatorVersion:
+      dialect === "legacy" ? LEGACY_SCHEMA_VERSIONS.scenarioGenerator : SCENARIO_GENERATOR_VERSION,
     seed: expectInteger(record.seed, 1, 0xffffffff, `${path}.seed`),
     templates: Object.freeze(templates),
   });
@@ -499,9 +520,10 @@ export function parseConfidentialEvaluationEnvelope(
     ],
     path,
   );
-  expectVersion(
+  const dialect = expectVersion(
     record.schemaVersion,
     CONFIDENTIAL_EVALUATION_ENVELOPE_VERSION,
+    LEGACY_SCHEMA_VERSIONS.confidentialEvaluationEnvelope,
     "Confidential evaluation envelope",
     `${path}.schemaVersion`,
   );
@@ -547,13 +569,20 @@ export function parseConfidentialEvaluationEnvelope(
   }
 
   return Object.freeze({
-    schemaVersion: CONFIDENTIAL_EVALUATION_ENVELOPE_VERSION,
+    schemaVersion:
+      dialect === "legacy"
+        ? LEGACY_SCHEMA_VERSIONS.confidentialEvaluationEnvelope
+        : CONFIDENTIAL_EVALUATION_ENVELOPE_VERSION,
     siteId: parseSiteId(record.siteId),
     safetyEnvelopeId: parseSafetyEnvelopeId(record.safetyEnvelopeId),
     warehouseBounds,
     zones: Object.freeze(zones),
     rules: Object.freeze(rules),
-    scenarioGeneration: parseScenarioGenerationConfig(record.scenarioGeneration),
+    scenarioGeneration: parseScenarioGenerationConfig(
+      record.scenarioGeneration,
+      "scenarioGeneration",
+      dialect,
+    ),
   });
 }
 
@@ -591,18 +620,27 @@ export function parseScenarioSuite(input: unknown): ScenarioSuite {
     ["schemaVersion", "generatorVersion", "seed", "scenarios"],
     path,
   );
-  expectVersion(
+  const schemaDialect = expectVersion(
     record.schemaVersion,
     SCENARIO_SUITE_VERSION,
+    LEGACY_SCHEMA_VERSIONS.scenarioSuite,
     "Scenario suite",
     `${path}.schemaVersion`,
   );
-  expectVersion(
+  const generatorDialect = expectVersion(
     record.generatorVersion,
     SCENARIO_GENERATOR_VERSION,
+    LEGACY_SCHEMA_VERSIONS.scenarioGenerator,
     "Scenario generator",
     `${path}.generatorVersion`,
   );
+  if (schemaDialect !== generatorDialect) {
+    return failProtocol(
+      "UNSUPPORTED_VERSION",
+      "Scenario suite and generator dialects must match",
+      `${path}.generatorVersion`,
+    );
+  }
   const scenarios = expectArray(
     record.scenarios,
     "Generated scenarios",
@@ -615,8 +653,12 @@ export function parseScenarioSuite(input: unknown): ScenarioSuite {
     `${path}.scenarios`,
   );
   return Object.freeze({
-    schemaVersion: SCENARIO_SUITE_VERSION,
-    generatorVersion: SCENARIO_GENERATOR_VERSION,
+    schemaVersion:
+      schemaDialect === "legacy" ? LEGACY_SCHEMA_VERSIONS.scenarioSuite : SCENARIO_SUITE_VERSION,
+    generatorVersion:
+      generatorDialect === "legacy"
+        ? LEGACY_SCHEMA_VERSIONS.scenarioGenerator
+        : SCENARIO_GENERATOR_VERSION,
     seed: expectInteger(record.seed, 1, 0xffffffff, `${path}.seed`),
     scenarios: Object.freeze(scenarios),
   });
@@ -683,15 +725,17 @@ export function parseRobotBehaviorTraceSuite(input: unknown): RobotBehaviorTrace
     ["schemaVersion", "robotId", "robotBuildId", "robotBuildDigest", "traces"],
     path,
   );
-  expectVersion(
+  const dialect = expectVersion(
     record.schemaVersion,
     ROBOT_TRACE_SUITE_VERSION,
+    LEGACY_SCHEMA_VERSIONS.robotTraceSuite,
     "Robot trace suite",
     `${path}.schemaVersion`,
   );
   const traces = parseRobotBehaviorTraces(record.traces, `${path}.traces`);
   return Object.freeze({
-    schemaVersion: ROBOT_TRACE_SUITE_VERSION,
+    schemaVersion:
+      dialect === "legacy" ? LEGACY_SCHEMA_VERSIONS.robotTraceSuite : ROBOT_TRACE_SUITE_VERSION,
     robotId: parseRobotId(record.robotId),
     robotBuildId: parseRobotBuildId(record.robotBuildId),
     robotBuildDigest: parseRobotBuildDigest(record.robotBuildDigest),

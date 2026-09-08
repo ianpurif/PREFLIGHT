@@ -1,11 +1,12 @@
 import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { readEnvironment } from "../environment.js";
 import { ApplicationError } from "./errors.js";
 import { ApplicationStore } from "./store.js";
 
 function keyFromEnvironment(environment: NodeJS.ProcessEnv): Uint8Array {
-  const configured = environment.ROVAULTA_POLICY_ENCRYPTION_KEY?.trim();
+  const configured = readEnvironment(environment, "ROVAULTA_POLICY_ENCRYPTION_KEY")?.trim();
   if (configured !== undefined && configured !== "") {
     if (!/^[a-f0-9]{64}$/i.test(configured)) {
       throw new ApplicationError(
@@ -18,7 +19,7 @@ function keyFromEnvironment(environment: NodeJS.ProcessEnv): Uint8Array {
 
   const keyPath = resolve(
     process.cwd(),
-    environment.ROVAULTA_POLICY_KEY_PATH || ".data/rovaulta-policy.key",
+    readEnvironment(environment, "ROVAULTA_POLICY_KEY_PATH") || ".data/rovaulta-policy.key",
   );
   try {
     if (existsSync(keyPath)) {
@@ -40,7 +41,7 @@ export function createApplicationStoreFromEnvironment(
 ): ApplicationStore {
   const dbPath = resolve(
     process.cwd(),
-    environment.ROVAULTA_APP_DB_PATH || ".data/rovaulta-app.sqlite",
+    readEnvironment(environment, "ROVAULTA_APP_DB_PATH") || ".data/rovaulta-app.sqlite",
   );
   return new ApplicationStore({ dbPath, policyKey: keyFromEnvironment(environment) });
 }

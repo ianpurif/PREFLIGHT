@@ -4,6 +4,16 @@
 
 **P1–P7 software is implemented. P5.2 adds the narrow AI deployment-agent workflow, deterministic tool/capability boundary, public audit projection, local positive/adversarial evidence, and a live read-only Sepolia blocked-state trace. P6 adds the deterministic digital twin over a server-side public projection of the existing P2/P3 fixture. P7 adds an offline fixed-clock A/B/C rehearsal, demo-owned idempotent reset, stale-browser protection, and reliable Playwright flow coverage. P8 now provides an account-backed product lifecycle: authenticated onboarding, persisted site/robot/build/evaluation/release records, encrypted private policy storage, server-side evaluation, and a truthful P5/P5.2 release boundary. P7 fixtures are development/test-only and are not normal account data. The real provider adapter is implemented but no external model call was captured because provider credentials/model are absent. P5.1 has official Speculos transport, actual Ethereum app/address UI smoke, ERC-7730 v2 validation, real pre-sign C, and invalid/unregistered D. Authenticated Clear Signing A/B/E/F and physical Ledger evidence remain externally blocked. Submission evidence/assets remain open.**
 
+## Rovaulta repository identity migration
+
+The repository now emits Rovaulta package scopes, protocol labels, deployment metadata, environment
+keys, workflow configuration, UI copy, contract names, paths, and documentation. New protocol and
+EIP-712 outputs use the Rovaulta namespace. Opaque compatibility readers preserve verification of
+persisted wire records, release authorizations, environment keys, and the confidential workflow
+secret selector created before the migration; compatibility values are not exposed in public
+responses or source text. Existing external CRE workflow registrations remain operator-managed
+identities and require an intentional redeploy when their configured workflow name changes.
+
 ## P8 real product lifecycle now present
 
 - `/` is a plain-language landing page. `/start` creates or signs into an account; it does not

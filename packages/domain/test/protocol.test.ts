@@ -20,6 +20,7 @@ import {
   EVALUATION_REQUEST_SCHEMA_VERSION,
   EVALUATION_RESULT_SCHEMA_VERSION,
   EVALUATION_VERDICTS,
+  LEGACY_SCHEMA_VERSIONS,
   PROTOCOL_ERROR_CODES,
   type ProtocolError,
   parseClearanceId,
@@ -430,6 +431,47 @@ describe("versioned domain-separated digests", () => {
       expect(digestClearance({ ...clearance })).toBe(digestClearance(clearance));
       expect(digestDeploymentIntent({ ...intent })).toBe(digestDeploymentIntent(intent));
     }
+  });
+
+  test("accepts pre-brand wire identities without changing their digest semantics", () => {
+    const legacyBuild = parseRobotBuildDescriptor({
+      ...robotBuild,
+      schemaVersion: LEGACY_SCHEMA_VERSIONS.robotBuild,
+    });
+    const legacyEnvelope = {
+      ...confidentialEnvelope,
+      schemaVersion: LEGACY_SCHEMA_VERSIONS.confidentialEvaluationEnvelope,
+    };
+    const legacyCommitment = digestSafetyEnvelopeCommitment(
+      siteId,
+      safetyEnvelopeId,
+      legacyEnvelope,
+      blindingSecret,
+    );
+    const legacyInputs = parseEvaluationInputs({
+      ...inputs,
+      schemaVersion: LEGACY_SCHEMA_VERSIONS.evaluationInputs,
+      robotBuildDigest: digestRobotBuild(legacyBuild),
+      safetyEnvelopeCommitment: legacyCommitment,
+    });
+    const legacyClearance = parseClearanceRecord({
+      ...clearance,
+      schemaVersion: LEGACY_SCHEMA_VERSIONS.clearanceRecord,
+      inputs: legacyInputs,
+      evaluationInputsDigest: digestEvaluationInputs(legacyInputs),
+    });
+    const legacyIntent = parseDeploymentIntent({
+      ...intent,
+      schemaVersion: LEGACY_SCHEMA_VERSIONS.deploymentIntent,
+      robotBuildDigest: legacyInputs.robotBuildDigest,
+      clearanceDigest: digestClearance(legacyClearance),
+    });
+
+    expect(legacyBuild.schemaVersion).toBe(LEGACY_SCHEMA_VERSIONS.robotBuild);
+    expect(digestRobotBuild(legacyBuild)).not.toBe(digestRobotBuild(robotBuild));
+    expect(digestClearance(legacyClearance)).not.toBe(digestClearance(clearance));
+    expect(digestDeploymentIntent(legacyIntent)).not.toBe(digestDeploymentIntent(intent));
+    expect(legacyIntent.schemaVersion).toBe(LEGACY_SCHEMA_VERSIONS.deploymentIntent);
   });
 
   test("digest domain labels are versioned and unique", () => {

@@ -15,6 +15,7 @@ import {
   compareUnixTimestamps,
   createDeploymentIntent,
   type DeploymentIntent,
+  LEGACY_SCHEMA_VERSIONS,
   parseClearanceRecord,
   parseDeploymentIntent,
   parseDeploymentNonce,
@@ -53,7 +54,7 @@ export interface PreparedReleaseRequest {
 }
 
 export interface ReleaseAuthorization {
-  readonly schemaVersion: typeof RELEASE_AUTHORIZATION_SCHEMA_VERSION;
+  readonly schemaVersion: string;
   readonly intent: DeploymentIntent;
   readonly protocolIntentDigest: string;
   readonly typedDataDigest: Hex;
@@ -127,7 +128,8 @@ function parseStoredAuthorization(
     const authorizedAt = parseUnixTimestamp(record.authorizedAt, "authorizedAt");
     const expiresAt = parseUnixTimestamp(record.expiresAt, "expiresAt");
     if (
-      record.schemaVersion !== RELEASE_AUTHORIZATION_SCHEMA_VERSION ||
+      (record.schemaVersion !== RELEASE_AUTHORIZATION_SCHEMA_VERSION &&
+        record.schemaVersion !== LEGACY_SCHEMA_VERSIONS.releaseAuthorization) ||
       canonicalSerialize(intent) !== canonicalSerialize(prepared.intent) ||
       record.protocolIntentDigest !== prepared.protocolIntentDigest ||
       record.typedDataDigest !== prepared.typedDataDigest ||
@@ -153,7 +155,7 @@ function parseStoredAuthorization(
       throw new Error();
     }
     return Object.freeze({
-      schemaVersion: RELEASE_AUTHORIZATION_SCHEMA_VERSION,
+      schemaVersion: String(record.schemaVersion),
       intent,
       protocolIntentDigest: prepared.protocolIntentDigest,
       typedDataDigest: prepared.typedDataDigest,

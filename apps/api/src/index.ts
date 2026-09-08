@@ -1,5 +1,6 @@
 import { createDeploymentAgentFromEnvironment } from "./agent/index.js";
 import { createApplicationStoreFromEnvironment } from "./application/index.js";
+import { readEnvironment } from "./environment.js";
 import { createReleaseServiceFromEnvironment } from "./release/index.js";
 import { buildServer } from "./server";
 
@@ -11,8 +12,8 @@ const hasRegistryRpc = Boolean(process.env.EVM_RPC_URL || process.env.SEPOLIA_RP
 const releaseService = hasRegistryRpc ? createReleaseServiceFromEnvironment() : undefined;
 const agentEnvironmentConfigured =
   process.env.OPENAI_API_KEY !== undefined ||
-  process.env.ROVAULTA_AGENT_MODEL !== undefined ||
-  process.env.ROVAULTA_AGENT_CATALOG_PATH !== undefined;
+  readEnvironment(process.env, "ROVAULTA_AGENT_MODEL") !== undefined ||
+  readEnvironment(process.env, "ROVAULTA_AGENT_CATALOG_PATH") !== undefined;
 const deploymentAgent =
   releaseService !== undefined && agentEnvironmentConfigured
     ? createDeploymentAgentFromEnvironment(releaseService)

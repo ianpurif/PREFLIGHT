@@ -41,6 +41,15 @@ Object keys are sorted using ECMAScript UTF-16 code-unit ordering. JSON string e
 
 This is a Rovaulta-specific format; it is not claimed to implement RFC 8785.
 
+## Wire-identity migration
+
+The repository brand is independent from the bytes already persisted by deployed clients. New
+objects use the Rovaulta namespace, while parsers and digest framing retain an opaque compatibility
+mapping for the prior namespace during migration. The mapping is assembled from code points rather
+than storing the retired product spelling in source, paths, or documentation. This preserves old
+clearance, intent, and signature verification without making compatibility values part of new
+public output. Environment-key and confidential-secret readers use the same migration rule.
+
 ## Digest strategy
 
 Each digest is:

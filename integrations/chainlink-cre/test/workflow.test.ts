@@ -2,7 +2,10 @@ import { expect, test } from "bun:test";
 import type { TeeRuntime } from "@chainlink/cre-sdk";
 import { test as creTest, newTestRuntime, type Secrets } from "@chainlink/cre-sdk/test";
 import { evaluateInTee, type WorkflowConfig } from "../src/confidential-evaluation.js";
-import { CONFIDENTIAL_INPUT_SECRET_ID } from "../src/protocol.js";
+import {
+  COMPATIBILITY_CONFIDENTIAL_INPUT_SECRET_ID,
+  CONFIDENTIAL_INPUT_SECRET_ID,
+} from "../src/protocol.js";
 import { initWorkflow } from "../src/workflow.js";
 import { encodePublicInput, fixture, makeConfidentialSecret, makePublicInput } from "./helpers.js";
 
@@ -45,4 +48,22 @@ creTest("SDK test runtime supplies the confidential value to the TEE callback", 
   if (response.status !== "EVALUATED") throw new Error("expected evaluated result");
   expect(response.result.verdict).toBe("CLEAR");
   expect(runtime.getLogs()).toEqual([]);
+});
+
+test("TEE callback can read the compatibility secret selector during migration", () => {
+  const runtime = {
+    getSecret(request: { readonly id?: string; readonly namespace?: string }) {
+      if (request.namespace !== "main" || request.id === CONFIDENTIAL_INPUT_SECRET_ID) {
+        throw new Error("current selector intentionally unavailable");
+      }
+      if (request.id !== COMPATIBILITY_CONFIDENTIAL_INPUT_SECRET_ID) {
+        throw new Error("unexpected secret selector");
+      }
+      return { result: () => ({ value: makeConfidentialSecret() }) };
+    },
+  } as unknown as TeeRuntime<WorkflowConfig>;
+  const response = evaluateInTee(runtime, {
+    input: encodePublicInput(makePublicInput(fixture.correctedFixtureBuild)),
+  });
+  expect(response.status).toBe("EVALUATED");
 });

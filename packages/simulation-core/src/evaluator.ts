@@ -9,6 +9,8 @@ import {
   EVALUATION_RESULT_SCHEMA_VERSION,
   type EvaluationResult,
   failProtocol,
+  isLegacyVersion,
+  LEGACY_SCHEMA_VERSIONS,
   parseEvaluationRequest,
   parseEvaluationResult,
   parseRobotBuildDescriptor,
@@ -101,7 +103,7 @@ export interface ScenarioEvaluationSummary {
 
 /** Full P2 evidence. P3 must keep this inside its confidential boundary and filter separately. */
 export interface InternalEvaluationReport {
-  readonly schemaVersion: typeof INTERNAL_EVALUATION_REPORT_VERSION;
+  readonly schemaVersion: string;
   readonly result: EvaluationResult;
   readonly scenarioCount: number;
   readonly violationCount: number;
@@ -487,7 +489,9 @@ export function evaluateSimulation(input: unknown): InternalEvaluationReport {
   const verdict = violations.length === 0 ? "CLEAR" : "HOLD";
   const result = assertEvaluationResultBindings(
     parseEvaluationResult({
-      schemaVersion: EVALUATION_RESULT_SCHEMA_VERSION,
+      schemaVersion: isLegacyVersion(request.schemaVersion)
+        ? LEGACY_SCHEMA_VERSIONS.evaluationResult
+        : EVALUATION_RESULT_SCHEMA_VERSION,
       evaluationId: request.evaluationId,
       inputs: request.inputs,
       evaluationInputsDigest: digestEvaluationInputs(request.inputs),
@@ -498,7 +502,9 @@ export function evaluateSimulation(input: unknown): InternalEvaluationReport {
   );
 
   return Object.freeze({
-    schemaVersion: INTERNAL_EVALUATION_REPORT_VERSION,
+    schemaVersion: isLegacyVersion(request.schemaVersion)
+      ? LEGACY_SCHEMA_VERSIONS.internalEvaluationReport
+      : INTERNAL_EVALUATION_REPORT_VERSION,
     result,
     scenarioCount: suite.scenarios.length,
     violationCount: violations.length,

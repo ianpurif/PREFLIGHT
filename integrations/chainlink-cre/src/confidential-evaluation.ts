@@ -1,7 +1,8 @@
 import type { TeeRuntime } from "@chainlink/cre-sdk";
-import { ProtocolError } from "@rovaulta/domain";
+import { isLegacyVersion, LEGACY_SCHEMA_VERSIONS, ProtocolError } from "@rovaulta/domain";
 import { evaluateSimulation } from "@rovaulta/simulation-core";
 import {
+  COMPATIBILITY_CONFIDENTIAL_INPUT_SECRET_ID,
   CONFIDENTIAL_INPUT_SECRET_ID,
   CRE_PUBLIC_RESULT_VERSION,
   CreBoundaryError,
@@ -9,6 +10,7 @@ import {
   type CrePublicEvaluationResponse,
   decodePublicPayload,
   makePublicFailure,
+  makePublicFailureForProtocol,
   parseConfidentialEvaluationInput,
   parsePublicEvaluationRequest,
 } from "./protocol.js";
@@ -40,7 +42,16 @@ export function evaluateInTee(
       .getSecret({ id: CONFIDENTIAL_INPUT_SECRET_ID, namespace: "main" })
       .result().value;
   } catch {
-    return makePublicFailure("CONFIDENTIAL_INPUT_UNAVAILABLE");
+    try {
+      secretValue = runtime
+        .getSecret({ id: COMPATIBILITY_CONFIDENTIAL_INPUT_SECRET_ID, namespace: "main" })
+        .result().value;
+    } catch {
+      return makePublicFailureForProtocol(
+        "CONFIDENTIAL_INPUT_UNAVAILABLE",
+        publicInput.protocolVersion,
+      );
+    }
   }
 
   try {
@@ -55,7 +66,9 @@ export function evaluateInTee(
     });
 
     return Object.freeze({
-      schemaVersion: CRE_PUBLIC_RESULT_VERSION,
+      schemaVersion: isLegacyVersion(publicInput.protocolVersion)
+        ? LEGACY_SCHEMA_VERSIONS.crePublicResult
+        : CRE_PUBLIC_RESULT_VERSION,
       protocolVersion: publicInput.protocolVersion,
       status: "EVALUATED",
       result: internalReport.result,
@@ -63,11 +76,21 @@ export function evaluateInTee(
       traceProvenance: publicInput.traceProvenance,
     });
   } catch (error) {
-    if (error instanceof CreBoundaryError) return makePublicFailure(error.publicCode);
-    if (error instanceof ProtocolError) {
-      if (error.code === "UNSUPPORTED_VERSION") return makePublicFailure("UNSUPPORTED_VERSION");
-      return makePublicFailure("CONFIDENTIAL_EVALUATION_REJECTED");
+    if (error instanceof CreBoundaryError) {
+      return makePublicFailureForProtocol(error.publicCode, publicInput.protocolVersion);
     }
-    return makePublicFailure("CONFIDENTIAL_HANDLER_FAILURE");
+    if (error instanceof ProtocolError) {
+      if (error.code === "UNSUPPORTED_VERSION") {
+        return makePublicFailureForProtocol("UNSUPPORTED_VERSION", publicInput.protocolVersion);
+      }
+      return makePublicFailureForProtocol(
+        "CONFIDENTIAL_EVALUATION_REJECTED",
+        publicInput.protocolVersion,
+      );
+    }
+    return makePublicFailureForProtocol(
+      "CONFIDENTIAL_HANDLER_FAILURE",
+      publicInput.protocolVersion,
+    );
   }
 }

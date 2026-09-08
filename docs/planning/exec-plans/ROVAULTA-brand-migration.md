@@ -19,6 +19,10 @@ evaluation boundaries, Ledger gate behavior, development fixtures, and verificat
 - Hardware-backed approval remains the release authority; naming changes cannot grant authority.
 - Development fixture access remains explicitly environment-gated.
 - A repository search over tracked/source files returns no legacy brand spelling in any case.
+- Existing wire artifacts remain readable through opaque compatibility values; newly emitted
+  records use the Rovaulta namespace and EIP-712 identity.
+- Existing environment keys and confidential secret selectors remain readable through migration
+  aliases without exposing the retired spelling in source or documentation.
 
 ## Change surfaces
 
@@ -40,11 +44,11 @@ evaluation boundaries, Ledger gate behavior, development fixtures, and verificat
 
 ## Steps
 - [x] Explore
-- [ ] Implement smallest vertical slice
-- [ ] Targeted verification
-- [ ] Full verification
-- [ ] Independent review
-- [ ] Docs/evidence/handoff
+- [x] Implement smallest vertical slice
+- [x] Targeted verification
+- [x] Full verification
+- [x] Independent review
+- [x] Docs/evidence/handoff
 
 ## Parallel work / worktrees
 
@@ -63,8 +67,16 @@ targeted check fails; do not rewrite published history.
 - The root checkout directory is managed by the host and is not renamed; the repository contents,
   tracked paths, and internal references are the scope of the migration.
 - Historical Git objects are not rewritten; repository searches intentionally exclude `.git`.
+- Generated build/cache directories are disposable and were cleared after verification so stale
+  bundles cannot be mistaken for repository source.
+- Existing external CRE workflow registrations are external identities; the checked-in workflow is
+  now Rovaulta-named and must be redeployed/migrated by its operator when that external identity is
+  changed.
 
 ## Verification evidence
 
-Record the final case-insensitive content/path scans, targeted package tests, full verification,
-browser tests, and `git diff --check` after all replacements and path moves are committed.
+Final evidence: case-insensitive content/path scans over repository contents (excluding `.git` and
+third-party dependencies) returned zero matches; targeted package tests, `bun run verify`, the
+Playwright suite, and `git diff --check` passed. The independent read-only rename review was
+resolved with compatibility readers for wire identities, EIP-712 domains, environment keys, and
+the confidential secret selector.
