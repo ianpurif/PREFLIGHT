@@ -217,7 +217,7 @@ These partners answer different questions:
 
 | Partner       | Question                                                                    | Actual use in Rovaulta                                                                                                                                            | Current proof                                                                                                                                               |
 | ------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Chainlink CRE | Can the site evaluate an exact build without exposing its private envelope? | The confidential workflow fetches a site-bound secret inside `handlerInTee`, invokes the deterministic evaluator, and releases only the minimal result. The account API uses the official gateway request boundary. | Authenticated local CRE simulations for unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`; deployed account completion remains unconfigured. |
+| Chainlink CRE | Can the site evaluate an exact build without exposing its private envelope? | The confidential workflow fetches a site-bound secret inside `handlerInTee`, invokes the deterministic evaluator, and releases only the minimal result. The account API uses the official gateway request boundary. | Historical authenticated local CRE simulations for unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`; current-source recapture is blocked by the unavailable CLI, and deployed account completion remains unconfigured. |
 | The Graph    | Can the agent use current public registry context before preparing a release? | A pinned, buildable Sepolia subgraph indexes public `RovaultaRegistry` events. The account-backed agent requires an exact live `MATCHED` Graph context before P5. | Hosted subgraph/API key, live account trace, public demo, and Start Fresh eligibility remain unverified. |
 | Ledger        | Who can authorize the exact release after it passes?                        | The browser uses Ledger DMK, WebHID or test-only Speculos, the Ethereum signer kit, and full EIP-712 intent checks. The agent stops at `LEDGER_APPROVAL_REQUIRED`. | Software and partial Speculos evidence are recorded. Physical Clear Signing and official Tester cases remain blocked by missing external access.            |
 
@@ -435,7 +435,7 @@ Partner-specific checks are documented here:
 These artifacts are intentionally separated by trust boundary:
 
 - [P3 authenticated CRE simulation](docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md)
-  — unsafe `HOLD`, corrected `CLEAR`, tampered commitment `REJECT`; simulation only.
+  — historical unsafe `HOLD`, corrected `CLEAR`, tampered commitment `REJECT`; simulation only.
 - [P4 Sepolia deployment](docs/compliance/evidence/p4-sepolia-deployment-2026-09-06.md)
   — public registry identity and source verification.
 - [P5 software evidence](docs/compliance/evidence/p5-ledger-release-gate-software-2026-09-06.md)

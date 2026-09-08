@@ -32,7 +32,12 @@ cre -R . -T staging-settings -e .\integrations\chainlink-cre\.env.cre-valid.loca
 cre -R . -T staging-settings -e .\integrations\chainlink-cre\.env.cre-tampered.local --non-interactive workflow simulate .\integrations\chainlink-cre --trigger-index 0 --http-payload .\integrations\chainlink-cre\fixtures\unsafe.public.json
 ```
 
-All three commands completed through the authenticated official simulator: unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`. See the [redacted evidence](../../docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md). That committed artifact is the Chainlink qualification evidence; it is explicitly simulation-only.
+The committed 2026-09-06 artifact records all three commands completing through the authenticated
+official simulator: unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`. See the
+[redacted evidence](../../docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md).
+That artifact is the historical Chainlink qualification evidence and is explicitly simulation-only.
+The current source additionally requires the exact site-bound selector; recapture current-source
+evidence with the runner below after installing/authenticating the official CLI.
 
 These are local, single-node CRE simulations—not deployment, a hardware TEE, live DON consensus, production Vault custody, or remote robot attestation. The behavior digest binds supplied data; it cannot prove which artifact or physical robot produced it.
 
@@ -44,7 +49,7 @@ The operator runner regenerates ignored payloads/secrets, runs the same workflow
 bun run --cwd apps/api evidence:cre-simulation
 ```
 
-The runner records the command, CLI version, execution identifier and workflow/binary identity when the CLI reports them, public bindings, `HOLD`/`CLEAR`/`REJECT`, and the validation projection. Its default artifact is under ignored `.data/cre-simulation/`; set `ROVAULTA_CRE_SIMULATION_OUTPUT_DIR` to an explicitly reviewed path when preparing a submission artifact. Do not copy generated env files or raw terminal output into Git.
+The runner records the command, CLI version, execution identifier and workflow/binary identity when the CLI reports them, public bindings, `HOLD`/`CLEAR`/`REJECT`, and the validation projection. Its default artifact is under ignored `.data/cre-simulation/`; set `ROVAULTA_CRE_SIMULATION_OUTPUT_DIR` to an explicitly reviewed path when preparing a submission artifact. Confidential environment files are created in a private temporary directory outside that artifact and deleted after the run. Do not copy generated env files or raw terminal output into Git.
 
 ## Account application boundary
 

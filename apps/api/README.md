@@ -148,18 +148,16 @@ not required or claimed. From a clean checkout, run:
 bun run --cwd apps/api evidence:cre-simulation
 ```
 
-This creates fresh ignored public payloads and local simulation secrets, runs unsafe `HOLD`, corrected
-`CLEAR`, and tampered-input `REJECT` against the existing `handlerInTee` workflow, then validates each
-public result with the same strict Rovaulta protocol boundary used by the application. The generated
-artifact contains only public bindings, verdict/error, execution identity when reported, and leakage
-checks. If the official `cre` executable or authenticated CLI context is missing, the command fails
-closed; it never substitutes P2 or writes a success artifact.
+This creates fresh ignored public payloads and temporary local simulation secrets, runs unsafe `HOLD`,
+corrected `CLEAR`, and tampered-input `REJECT` against the existing `handlerInTee` workflow, then
+validates each public result with the same strict Rovaulta protocol boundary used by the application.
+The generated artifact contains only public bindings, verdict/error, execution identity when reported,
+and leakage checks. Confidential environment files are deleted after the run. If the official `cre`
+executable or authenticated CLI context is missing, the command fails closed; it never substitutes P2
+or writes a success artifact.
 
-Before running the command, an operator must deploy/activate the workflow, provision the exact
-site selector `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_site_<base32-site-id>` and the callback HMAC
-secret in the CRE `main` namespace, configure the workflow's HTTPS `resultDeliveryUrl` to the
-reachable API callback, and set the matching server-only `ROVAULTA_CRE_GATEWAY_URL`,
-`CHAINLINK_CRE_WORKFLOW_ID`, `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY`, and
-`ROVAULTA_CRE_RESULT_CALLBACK_SECRET`. The application does not expose the encrypted site policy
-or blind over HTTP; the provisioning helper is the approved local handoff. Do not treat a local
-P2-injected test as P13 evidence.
+The simulation path needs the official CLI authenticated with `cre login`, the checked-in
+`staging-settings` workflow configuration, and the CLI environment mapping used by the workflow. It
+does not require a deployed workflow, gateway callback, account credentials, or live DON access. The
+separate account-backed gateway path still requires the site selector, callback HMAC, HTTPS callback,
+workflow ID, and trigger signer described below. Do not treat a local P2-injected test as P13 evidence.

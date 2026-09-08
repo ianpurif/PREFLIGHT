@@ -54,8 +54,10 @@ runs the existing `handlerInTee` workflow for unsafe/corrected/tampered cases, e
 minimal public result, validates it with Rovaulta's strict callback/binding parsers, and writes a
 redacted evidence artifact. The committed P3 artifact is the actual authenticated simulation record
 (`HOLD`, `CLEAR`, `REJECT`); live DON deployment, Vault, callback, and Early Access are not claimed or
-required. The normal account runner and encrypted site-secret provisioning helper remain available
-as an optional live gateway path and still fail closed when its external configuration is absent.**
+required. That historical artifact predates the current mandatory site-selector boundary, so a fresh
+current-source artifact is not claimed until the new runner executes with the official CLI. The normal
+account runner and encrypted site-secret provisioning helper remain available as an optional live
+gateway path and still fail closed when its external configuration is absent.**
 
 ## P13 CRE simulation qualification and account boundary
 
