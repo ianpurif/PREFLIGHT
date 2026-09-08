@@ -343,6 +343,53 @@ describe("P5.2 deterministic deployment-agent controller", () => {
     ]);
   });
 
+  test("account-backed preparation fails closed for every non-matched Graph state", async () => {
+    const accountEntry = catalogEntry({
+      key: "account-build-b",
+      buildAlias: "account-build-b",
+      buildId: buildBClearance.inputs.robotBuildId,
+      buildDigest: buildBClearance.inputs.robotBuildDigest,
+      verdict: "CLEAR",
+      evaluationId: buildBClearance.evaluationId,
+      clearance: buildBClearance,
+    });
+    const cases = [
+      ["NOT_FOUND", "CLEARANCE_NOT_INDEXED"],
+      ["REVOKED", "CLEARANCE_REVOKED"],
+      ["EXPIRED", "CLEARANCE_EXPIRED"],
+      ["MISMATCH", "CLEARANCE_BINDING_MISMATCH"],
+    ] as const;
+    for (const [status, reason] of cases) {
+      const model = new ScriptedModel("account-build-b", {}, true);
+      const graphReader: GraphClearanceReader = {
+        readClearance: async () => ({
+          source: "the-graph",
+          provider: "gateway",
+          chainId: 11_155_111,
+          registry: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
+          clearanceDigest: `0x${"12".repeat(32)}`,
+          status,
+          reason,
+        }),
+      };
+      const { agent } = harness(model, new FixtureReader(), graphReader, () => accountEntry);
+      const result = await agent.run({
+        request: "ignored host text",
+        accountId: "account:1234567890abcdef1234567890abcdef",
+        clearance: buildBClearance,
+        signerAddress: account.address,
+      });
+      expect(result.status).toBe("BLOCKED");
+      expect(result.audit.policyResult).toBe(`GRAPH_${reason}`);
+      expect(result.audit.toolCalls.at(-1)).toMatchObject({
+        tool: "getGraphContext",
+        result: status,
+        code: reason,
+      });
+      expect(result.prepared).toBeUndefined();
+    }
+  });
+
   test("maps natural language to exact bindings and reaches the Ledger boundary in fixed tool order", async () => {
     const model = new ScriptedModel("v4.7.21");
     const { agent, reader } = harness(model);

@@ -19,6 +19,9 @@ export interface GraphClearanceContext {
   readonly registry: `0x${string}`;
   readonly clearanceDigest: `0x${string}`;
   readonly status: GraphClearanceStatus;
+  readonly issuer?: `0x${string}`;
+  readonly issuedAt?: string;
+  readonly expiresAt?: string;
   readonly indexedAtBlock?: string;
   readonly blockHash?: `0x${string}`;
   readonly reason?: string;
@@ -78,8 +81,15 @@ function hex32(value: unknown, label: string): `0x${string}` {
   return value.toLowerCase() as `0x${string}`;
 }
 
-function requiredString(value: unknown, label: string): string {
-  if (typeof value !== "string" || value.length === 0) {
+function address(value: unknown, label: string): `0x${string}` {
+  if (typeof value !== "string" || !/^0x[0-9a-fA-F]{40}$/.test(value)) {
+    throw new GraphProviderError("GRAPH_RESPONSE_INVALID", `${label} is malformed`);
+  }
+  return value.toLowerCase() as `0x${string}`;
+}
+
+function decimal(value: unknown, label: string): string {
+  if (typeof value !== "string" || !/^(0|[1-9][0-9]*)$/.test(value)) {
     throw new GraphProviderError("GRAPH_RESPONSE_INVALID", `${label} is malformed`);
   }
   return value;
@@ -176,6 +186,7 @@ export class TheGraphClearanceReader implements GraphClearanceReader {
       });
     }
     const stored = record(entity, "The Graph clearance entity is malformed");
+    const entityId = hex32(stored.id, "id");
     const actualDigest = hex32(stored.clearanceDigest, "clearanceDigest");
     const bindings = [
       [stored.clearanceIdHash, requested.bindings.clearanceIdHash],
@@ -189,11 +200,13 @@ export class TheGraphClearanceReader implements GraphClearanceReader {
       [stored.evaluatorVersionHash, requested.bindings.evaluatorVersionHash],
       [stored.evaluationInputsDigest, requested.bindings.evaluationInputsDigest],
     ] as const;
-    const blockNumber = requiredString(stored.blockNumber, "blockNumber");
+    const blockNumber = decimal(stored.blockNumber, "blockNumber");
     const blockHash = hex32(stored.blockHash, "blockHash");
-    const issuedAt = requiredString(stored.issuedAt, "issuedAt");
-    const expiresAt = requiredString(stored.expiresAt, "expiresAt");
+    const issuedAt = decimal(stored.issuedAt, "issuedAt");
+    const expiresAt = decimal(stored.expiresAt, "expiresAt");
+    const issuer = address(stored.issuer, "issuer");
     const exact =
+      entityId === digest &&
       actualDigest === digest &&
       bindings.every(([actual, expected]) => hex32(actual, "binding") === expected.toLowerCase()) &&
       issuedAt === requested.bindings.issuedAt.toString() &&
@@ -207,6 +220,9 @@ export class TheGraphClearanceReader implements GraphClearanceReader {
       chainId: ROVAULTA_SEPOLIA_DEPLOYMENT.chainId,
       registry: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
       clearanceDigest: digest,
+      issuer,
+      issuedAt,
+      expiresAt,
       indexedAtBlock: blockNumber,
       blockHash,
     };

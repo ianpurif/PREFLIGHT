@@ -61,7 +61,32 @@ describe("The Graph clearance provider", () => {
       status: "MATCHED",
       chainId: 11_155_111,
       indexedAtBlock: "100",
+      issuer: `0x${"11".repeat(20)}`,
+      issuedAt: transport.bindings.issuedAt.toString(),
+      expiresAt: transport.bindings.expiresAt.toString(),
     });
+  });
+
+  test("queries the configured Gateway with only a public digest and public fields", async () => {
+    let request: Request | undefined;
+    const gatewayReader = new TheGraphClearanceReader({
+      apiKey: "graph-test-key",
+      subgraphId: "graph-test-subgraph",
+      fetch: async (input, init) => {
+        request = new Request(input, init);
+        return response(entity());
+      },
+    });
+    await gatewayReader.readClearance(clearance);
+    if (request === undefined) throw new Error("Expected Gateway request");
+    expect(request.url).toBe(
+      "https://gateway.thegraph.com/api/graph-test-key/subgraphs/id/graph-test-subgraph",
+    );
+    const body = (await request.json()) as { query: string; variables: { digest: string } };
+    expect(body.variables.digest).toBe(transport.clearanceDigest.toLowerCase());
+    expect(body.query).toContain("clearanceDigest");
+    expect(body.query).not.toContain("privateEnvelope");
+    expect(body.query).not.toContain("blind");
   });
 
   test("fails closed for missing, revoked, expired, and mismatched records", async () => {
@@ -101,6 +126,25 @@ describe("The Graph clearance provider", () => {
     await expect(
       reader(entity({ expiresAt: "1999999998" })).readClearance(clearance),
     ).resolves.toMatchObject({ status: "MISMATCH" });
+  });
+
+  test("rejects malformed public identity and block metadata instead of treating it as matched", async () => {
+    await expect(
+      reader(entity({ id: `0x${"ff".repeat(32)}` })).readClearance(clearance),
+    ).resolves.toMatchObject({ status: "MISMATCH" });
+    await expect(reader(entity({ id: "0x1234" })).readClearance(clearance)).rejects.toMatchObject({
+      code: "GRAPH_RESPONSE_INVALID",
+    } satisfies Partial<GraphProviderError>);
+    await expect(
+      reader(entity({ issuer: "0x1234" })).readClearance(clearance),
+    ).rejects.toMatchObject({
+      code: "GRAPH_RESPONSE_INVALID",
+    } satisfies Partial<GraphProviderError>);
+    await expect(
+      reader(entity({ blockNumber: "01" })).readClearance(clearance),
+    ).rejects.toMatchObject({
+      code: "GRAPH_RESPONSE_INVALID",
+    } satisfies Partial<GraphProviderError>);
   });
 
   test("does not use a fixture fallback when provider configuration is absent", async () => {

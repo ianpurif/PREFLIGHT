@@ -65,6 +65,9 @@ export interface DeploymentGraphContext {
   readonly registry: string;
   readonly clearanceDigest: string;
   readonly status: "MATCHED" | "NOT_FOUND" | "REVOKED" | "EXPIRED" | "MISMATCH";
+  readonly issuer?: string;
+  readonly issuedAt?: string;
+  readonly expiresAt?: string;
   readonly indexedAtBlock?: string;
   readonly blockHash?: string;
   readonly reason?: string;
