@@ -86,8 +86,8 @@ avoid conflicting edits across the API, subgraph, and documentation surfaces.
 - `bun run --cwd integrations/the-graph build`: pass; pinned Graph CLI code generation and
   AssemblyScript/WASM compilation completed.
 - `bun test apps/api/test/graph-provider.test.ts apps/api/test/deployment-agent.test.ts`: pass;
-  18 tests and 114 assertions.
-- `bun run test`: pass; 204 tests, 2,956 assertions, zero failures across 12 Turbo tasks.
+  18 tests and 116 assertions.
+- `bun run test`: pass; 204 tests, 2,958 assertions, zero failures across 12 Turbo tasks.
 - `bun run verify`: pass; lint, typecheck, package tests, all builds (including the Graph
   subgraph), Foundry contracts, and scaffold verification completed successfully.
 - `bun run --cwd integrations/the-graph evidence:live`: expected fail-closed blocker because
@@ -95,3 +95,15 @@ avoid conflicting edits across the API, subgraph, and documentation surfaces.
 - Hosted subgraph identity, live Gateway response, account-created trace, and Start Fresh pool
   eligibility remain external/unverified. The qualification artifact preserves these as
   `BLOCKED`, not as evidence.
+
+## Independent review resolution
+
+- The read-only review found no authority, privacy, or fixture-fallback regression. The focused
+  account-agent test now asserts that the Graph read occurs before every direct P5 registry read.
+- The Fastify route intentionally accepts an injected `DeploymentAgent`; it forwards the
+  authenticated account id and exact public clearance to that agent. The environment-wired
+  constructor is exercised by `apps/api evidence:p11-graph` when live configuration exists, so a
+  second test that replaces the production constructor would not add independent authority
+  coverage. The live provider/account trace remains externally blocked rather than mocked.
+- The evidence helper now rejects malformed/oversized responses and emits only an allowlisted,
+  validated public entity projection.

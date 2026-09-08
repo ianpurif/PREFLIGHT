@@ -67,7 +67,7 @@ configures a real Graph Gateway key and subgraph ID, and captures a response for
 registry clearance. The unit tests intentionally use injected responses and are labelled as local
 validation, not provider evidence.
 
-P10 does not add Subgraph MCP or Substreams: the minimal hosted subgraph plus Gateway query is already
+P11 does not add Subgraph MCP or Substreams: the minimal hosted subgraph plus Gateway query is already
 the load-bearing source needed by the deployment agent. The smallest live proof is one account-created
 `CLEAR` evaluation with a corresponding public Sepolia registry event, a Gateway `MATCHED` response for
 the exact clearance digest, and the agent's subsequent `LEDGER_APPROVAL_REQUIRED` handoff.

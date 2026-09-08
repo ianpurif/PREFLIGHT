@@ -285,13 +285,13 @@ eligibility also remains unverified; see
   deterministic P7 fixture regression.
 - Domain: 31/31; simulation core: 60/60; Chainlink CRE: 31/31; chain client: 12/12; Ledger gate:
   18/18; web: 2/2.
-- Full TypeScript total: 204 tests, 2,956 assertions, zero failures.
+- Full TypeScript total: 204 tests, 2,958 assertions, zero failures.
 - `bun run lint`: pass; Biome checks 161 files with 27 existing CSS specificity warnings and no
   errors.
 - `bun run typecheck`: pass; 7/7 Turbo tasks.
 - `bun run test`: pass; 12/12 Turbo tasks.
-- `bunx turbo test --force`: pass; uncached 12/12 tasks, confirming 201 tests and 2,946
-  assertions after the P10 callback/selector fixes.
+- `bunx turbo test --force`: pass; uncached 12/12 tasks, confirming 204 tests and 2,958
+  assertions after the P11 Graph/provider additions.
 - `bun run build`: pass; 8/8 tasks including the pinned The Graph subgraph build; Next.js
   production build includes static `/` and `/p5-ledger`.
 - `bun run --cwd apps/web test`: pass; 2 P6 projection/mutation tests, 9 assertions.
