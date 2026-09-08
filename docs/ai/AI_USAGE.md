@@ -245,3 +245,20 @@ they are not proof of physical robot safety. A local `CLEAR` result does not cre
 and release preparation records `BLOCKED` until the existing P5/P5.2 boundary has the required
 public clearance and configuration. No confidential policy, blind, credential, raw CRE payload,
 signature, AI authorization, robot activation, or P2+ feature was added.
+
+## 2026-09-08 — P8 adversarial product-boundary correction
+
+**Tool:** OpenAI Codex with a required read-only Preflight reviewer.
+
+**Human direction:** Continue P8 until the normal flow is a real account-backed product rather than
+a demo, and resolve any security or truthfulness gaps without starting P9 or changing P1–P5.2.
+
+**AI-assisted output:** Added production denial for the fixture route, Origin/Referer mutation checks,
+session protection for legacy P5/P5.2 routes, public-clearance paste and exact Ledger handoff from
+the normal release view, selected-build URL preservation, and explicit disclosure that the local
+evaluator runs over a declared route rather than inspecting artifact bytes. Test-port and API-origin
+configuration were aligned for repeatable browser verification.
+
+**Boundary:** The product still cannot create a clearance, sign, authorize, inspect artifact bytes,
+or expose private policy values. Missing public clearance, provider, registry, or Ledger configuration
+remains a truthful `BLOCKED` state.

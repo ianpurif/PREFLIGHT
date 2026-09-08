@@ -38,14 +38,16 @@ release preparation, and explicit human approval handoff.
 
 - A first-time visitor sees a clear landing page and can reach onboarding without knowing the
   architecture.
-- Onboarding creates an account and persists site, private policy, robot, and exact build records
-  through the API.
+- Onboarding creates an account and persists site, private policy, robot, and exact build
+  declarations through the API; the declared route is clearly presented as simulation input, not
+  binary provenance.
 - Workspace navigation exposes Setup, Builds, Evaluate, Releases, and Evidence without making
   technical partner labels the primary UX.
 - Evaluation view preserves unsafe `HOLD`, corrected `CLEAR`, mutated `BLOCKED`, and live-agent
   unavailable/error states.
-- Release view makes `LEDGER_APPROVAL_REQUIRED` distinct from authorization and links to the
-  existing Ledger harness only after an exact prepared request exists.
+- Release view accepts only a public P4 clearance record, makes `LEDGER_APPROVAL_REQUIRED` distinct
+  from authorization, and links to the existing Ledger harness only after an exact prepared request
+  exists.
 - Responsive/mobile and keyboard/focus states remain usable.
 - Existing critical e2e, web typecheck, lint, build, and repository verification pass.
 
