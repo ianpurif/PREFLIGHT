@@ -42,6 +42,11 @@ binding, `CLEAR` verdict, expiry, revocation state, chain, registry, block numbe
 It returns a redacted public context and never indexes or transmits envelopes, blinds, rules,
 thresholds, traces, credentials, or model output.
 
+The subgraph package pins the Graph CLI and AssemblyScript runtime and provides separate codegen,
+build, deploy, query, and account-agent evidence commands. Deployment and live evidence are
+operator actions; the normal repository build never contacts a provider. The provider key and
+hosted subgraph ID are server-only environment values.
+
 For authenticated account preparation, the host resolves the exact evaluation/clearance pair from
 the account store, then the bounded agent must call `getGraphContext` before `getClearance` and the
 existing P5 `ReleaseService.prepare()`. Missing, stale, revoked, expired, mismatched, or unavailable

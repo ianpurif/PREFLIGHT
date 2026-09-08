@@ -13,44 +13,49 @@ activate a robot or become an authority.
 8. **Registry transaction** is submitted by an owner-authorized registrar after inspecting a valid
    `CLEAR` result. It records the P1 clearance digest and fixed-size exact bindings. The verified P4
    registry is deployed on Sepolia; registration remains manual/authorized, not automatic CRE delivery.
-9. **AI deployment agent** first matches one bounded public natural-language request against finite
+9. **The Graph public-context step** queries the hosted Sepolia subgraph by the exact clearance
+   digest. The server validates the entity identity, all public P1/P4 binding hashes, issuer,
+   `CLEAR` verdict, expiry, revocation state, chain/registry identity, and indexed block metadata.
+   Missing, stale, revoked, expired, malformed, mismatched, or unavailable data fails closed; no
+   fixture response is accepted on an account-backed request.
+10. **AI deployment agent** first matches one bounded public natural-language request against finite
    forms generated from the trusted public catalog. It discards the raw text and sends only a
    host-generated canonical public request to a provider with `store: false`. A real provider may
    call only the next strict tool in the host-owned sequence, and its first aliases must resolve to
    the same immutable site/robot/build tuple already resolved by the host. Ambiguous, conflicting,
    secret-bearing, or non-catalog input fails before provider/audit handling. The model cannot supply
    clearance, signer, chain, registry, nonce, signature, signed payload, or authorization.
-10. **Agent inspection** reads the catalog's public evaluation status and complete public clearance,
+11. **Agent inspection** reads the catalog's public evaluation status and complete public clearance,
     then queries the fixed Sepolia P4 registry at an explicit block. Tool output includes only public
    status/digest/block data. No raw submitted request, private envelope, blind, private finding, CRE
    secret, credential, or raw upstream error enters model context or audit.
-11. **Release prepare API** validates exact proposal/clearance bindings and the signer allowlist, then
+12. **Release prepare API** validates exact proposal/clearance bindings and the signer allowlist, then
    reads the deployed registry at one explicit block. Only an existing exact `CLEAR`, unrevoked,
    unexpired record can produce a server-nonced full EIP-712 request. This result overrides every
    conflicting model claim. Success is `LEDGER_APPROVAL_REQUIRED`, never authorization.
-12. **Ledger operator harness** defaults to WebHID and connects a physical Ledger on an explicit
+13. **Ledger operator harness** defaults to WebHID and connects a physical Ledger on an explicit
     human gesture. Development/test may select only a loopback Ledger Speculos official device
     simulator; production configuration rejects it.
     Both confirm the address, reconstruct the exact request, and share full typed-data signing. The
     runtime descriptor must resolve every exact display path; partial context or legacy/blind
     fallback fails closed. The agent cannot invoke signing or consumption.
-13. **Human + Ledger** review/approve or reject. The private key never enters browser, API, or agent.
-14. **Release consume API** reconstructs the request, recovers an authorized signer, repeats the exact
+14. **Human + Ledger** review/approve or reject. The private key never enters browser, API, or agent.
+15. **Release consume API** reconstructs the request, recovers an authorized signer, repeats the exact
     P4 check for TOCTOU, enforces `now < expiresAt`, atomically consumes the durable nonce once, and
     emits a public `ReleaseAuthorization`.
-15. **Agent status read** may report `AUTHORIZED` only by correlating the exact prepared nonce and
+16. **Agent status read** may report `AUTHORIZED` only by correlating the exact prepared nonce and
     digests with that stored P5 `ReleaseAuthorization`. Model text, an old signature, or an arbitrary
     attempt ID cannot create this state. The public audit shows where autonomy stopped and human
     authorization began.
-16. **P6 judge UI** receives a server-side public projection of the existing deterministic fixture
+17. **P6 judge UI** receives a server-side public projection of the existing deterministic fixture
     and recorded P3/P5.2 public evidence. It renders the explanatory digital twin, public verdict,
     CRE boundary, Sepolia registry identity, and Ledger boundary only; the browser never receives
     the confidential envelope/blind or internal report and cannot turn `CLEAR` into authorization.
-17. **P6 Ledger handoff** may persist an exact prepared request returned by the existing agent API
+18. **P6 Ledger handoff** may persist an exact prepared request returned by the existing agent API
     and link to `/p5-ledger`. Without a real backend `LEDGER_APPROVAL_REQUIRED` response, the UI
     shows the external limitation and creates no request. Only the existing P5 consume/status path
     can later produce `AUTHORIZED`.
-18. **P7 later** may consume a verified authorization only after defining activation-time
+19. **P7 later** may consume a verified authorization only after defining activation-time
     validity/finality. No robot activation is implemented by P6.
 
 Canonical schema/digest rules are defined in ADR-0003, deterministic evaluation semantics in

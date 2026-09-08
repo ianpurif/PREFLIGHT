@@ -28,6 +28,34 @@ it never sends the private envelope, blind, policy, or internal report. No deplo
 request-scoped CRE secret provisioning, live Graph response, external OpenAI execution, or Ledger
 hardware evidence is present in this environment.**
 
+**P11 hardens and operationalizes The Graph qualification path:** the repository now has pinned
+Graph CLI/AssemblyScript tooling that code-generates and compiles the public Sepolia registry
+subgraph, a server-only Gateway client that validates the exact clearance identity/bindings,
+issuer, block metadata, verdict, revocation, and expiry, and an operator-only command that runs the
+real account-backed agent path without printing credentials. The account agent already requires
+`MATCHED` Graph context before the direct P5 check; all other Graph states fail closed. The build
+and injected critical tests are green. Hosted subgraph deployment, Graph credentials, an indexed
+account-created clearance, live `MATCHED` agent evidence, the 2–4 minute demo, and Start Fresh pool
+eligibility remain external blockers and are not claimed.**
+
+## P11 The Graph qualification implementation
+
+- `integrations/the-graph` pins `@graphprotocol/graph-cli@0.98.1` and
+  `@graphprotocol/graph-ts@0.38.2`; `bun run --cwd integrations/the-graph build` runs codegen and
+  WASM compilation. Generated code/build output is ignored and never scanned as application source.
+- The subgraph starts at the deployed Sepolia `RovaultaRegistry` block and indexes only public
+  clearance/binding/revocation fields. No private policy, envelope, blind, trace, secret, credential,
+  or model output is represented in the schema.
+- The Gateway adapter sends the exact clearance digest to the official provider URL, validates the
+  entity ID plus all P1/P4 public bindings, issuer, block number/hash, `CLEAR` verdict, expiry, and
+  revocation, and returns a redacted public context. It has no fixture fallback.
+- Authenticated account release preparation resolves its clearance from the account store, invokes
+  `getGraphContext`, blocks on any non-`MATCHED` response, and only then calls the existing P5 reader
+  and `ReleaseService.prepare()`. P5 remains the final authority.
+- `apps/api evidence:p11-graph` is the reproducible live-account evidence command. It requires a
+  real Graph key/subgraph ID, account-created public clearance, account identifier, and public
+  signer address; missing configuration fails closed.
+
 ## P9 partner qualification slice
 
 - `POST /evaluations` invokes the configured CRE transport and returns only the existing public

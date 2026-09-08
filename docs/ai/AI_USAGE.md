@@ -307,3 +307,25 @@ partner/evidence/task documentation with explicit external blockers.
 deployed CRE callback, live Graph response, external OpenAI execution, or physical Ledger evidence
 was generated or claimed. Private envelope, blind, policy, callback secret, and credentials remain
 uncommitted.
+
+## 2026-09-09 — P11 The Graph qualification implementation
+
+**Tool:** OpenAI Codex using the Rovaulta execution-plan, partner-compliance, and verification-loop
+skills plus official The Graph Subgraph Studio/Gateway documentation.
+
+**Human direction:** Implement only the smallest production-quality The Graph qualification path:
+build a public Sepolia `RovaultaRegistry` subgraph, consume live provider context in the normal
+account-backed deployment agent, preserve P5 authority, add critical tests/evidence hooks, and do
+not fabricate hosted deployment or live responses.
+
+**AI-assisted output:** Pinned Graph CLI/AssemblyScript package and reproducible codegen/WASM build;
+operator-only Subgraph Studio deploy and redacted live-query scripts; strict server-side provider
+validation for public entity identity, bindings, issuer, block metadata, verdict, expiry, and
+revocation; account-agent live evidence runner; negative provider/agent tests; and synchronized
+README, partner, architecture, planning, evidence, and environment documentation.
+
+**Evidence boundary:** Local Graph build and injected tests pass. The current environment has no
+`THE_GRAPH_API_KEY`, hosted `THE_GRAPH_SUBGRAPH_ID`, real indexed account clearance, or Start Fresh
+submission proof. No live Graph provider response, subgraph deployment, account-agent trace, or
+qualification claim was generated. No private policy, envelope, blind, credential, signature, or
+API key was committed.

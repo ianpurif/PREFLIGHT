@@ -114,6 +114,19 @@
 - [ ] capture external OpenAI execution if required by the selected submission
 - [ ] capture official Ledger Clear Signing/physical-device evidence if required by the selected pool
 
+## P11 — The Graph qualification
+- [x] pinned Graph CLI/AssemblyScript tooling with reproducible Sepolia codegen and WASM build
+- [x] public-only `RovaultaRegistry` subgraph schema, manifest, ABI, and event mappings
+- [x] server-only live Gateway client with exact digest, binding, issuer, block, expiry, and revocation validation
+- [x] account-backed deployment agent Graph gate before the existing P5 authority
+- [x] live-only operator scripts for hosted deployment, provider query, and account-agent evidence
+- [x] critical tests for provider request shape, malformed public data, non-matched states, and P5 handoff
+- [ ] deploy/index the subgraph through a real Graph provider and record hosted identity
+- [ ] capture a live Gateway `MATCHED` response for an account-created Sepolia clearance
+- [ ] capture the live Graph result changing the account-agent outcome and reaching `LEDGER_APPROVAL_REQUIRED`
+- [ ] verify and document Start Fresh pool eligibility with the event submission record
+- [ ] record a 2–4 minute public demo showing the live provider-to-agent decision
+
 ### Remaining submission evidence
 - [ ] partner evidence matrix complete
 - [ ] architecture diagram final

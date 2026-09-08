@@ -9,16 +9,17 @@ Rovaulta answers one practical question before a robot is released:
 It combines confidential evaluation with hardware-backed approval. The factory does not need to
 publish its private safety envelope, and the deployment agent cannot approve a release by itself.
 
-**Built for ETHGlobal From Scratch with Chainlink CRE and Ledger as load-bearing integrations.**
+**Built for ETHGlobal with Chainlink CRE, The Graph, and Ledger as load-bearing integrations.**
 
-> **Current status:** P1–P8 software is implemented and P9 now wires the normal account-backed
+  > **Current status:** P1–P8 software is implemented and P9–P11 now wire the normal account-backed
 > lifecycle through the partner boundaries: an official CRE gateway adapter for evaluation, a live
 > The Graph registry context check for account-backed agent preparation, and the existing P5/Ledger
-> human handoff. The Sepolia registry, deterministic evaluator, authenticated CRE simulation path,
-> bounded deployment agent, and offline fixture rehearsal remain in place. This checkout has no
-> deployed CRE result transport, request-scoped CRE secret provisioning, Graph API key/subgraph
-> deployment, external model run, physical Ledger/Clear Signing evidence, or final submission assets,
-> so those states fail closed and are not presented as completed partner proof.
+  > human handoff. The Sepolia registry, deterministic evaluator, authenticated CRE simulation path,
+  > pinned/buildable public registry subgraph, bounded deployment agent, and offline fixture rehearsal
+  > remain in place. This checkout has no deployed CRE result transport, request-scoped CRE secret
+  > provisioning, hosted Graph subgraph/API key, live account Graph trace, external model run,
+  > physical Ledger/Clear Signing evidence, or final submission assets, so those states fail closed
+  > and are not presented as completed partner proof. Start Fresh pool eligibility is not claimed.
 
 [Product path](#use-the-product) · [How it works](#how-it-works) · [Partner proof](#partner-integrations) · [Testing](#testing) · [Known limits](#current-status-and-known-limits)
 
@@ -173,7 +174,8 @@ sign in. The authenticated workspace then guides the operator through `/app/setu
    state.
 4. Review a `HOLD` or `CLEAR` result, paste the public P4 clearance for that exact evaluation when
    available, then prepare a release through the configured P5 gate.
-5. The agent requires a live public The Graph match before the P5 check. `LEDGER_APPROVAL_REQUIRED`
+5. The agent queries the live public The Graph subgraph for the exact clearance digest before the P5
+   check. Only `MATCHED` context continues. `LEDGER_APPROVAL_REQUIRED`
    means the exact request is waiting for a human Ledger action; it is
    not authorization. Missing clearance or gate configuration remains `BLOCKED`.
 
@@ -215,7 +217,7 @@ These partners answer different questions:
 | Partner       | Question                                                                    | Actual use in Rovaulta                                                                                                                                            | Current proof                                                                                                                                               |
 | ------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Chainlink CRE | Can the site evaluate an exact build without exposing its private envelope? | The confidential workflow fetches a site-bound secret inside `handlerInTee`, invokes the deterministic evaluator, and releases only the minimal result. The account API uses the official gateway request boundary. | Authenticated local CRE simulations for unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`; deployed account completion remains unconfigured. |
-| The Graph    | Can the agent use current public registry context before preparing a release? | A from-scratch Sepolia subgraph indexes public `RovaultaRegistry` events. The account-backed agent requires an exact `MATCHED` Graph context before P5. | Adapter/unit evidence is present; hosted subgraph, API key, and live `MATCHED` response remain unconfigured. |
+| The Graph    | Can the agent use current public registry context before preparing a release? | A pinned, buildable Sepolia subgraph indexes public `RovaultaRegistry` events. The account-backed agent requires an exact live `MATCHED` Graph context before P5. | Hosted subgraph/API key, live account trace, public demo, and Start Fresh eligibility remain unverified. |
 | Ledger        | Who can authorize the exact release after it passes?                        | The browser uses Ledger DMK, WebHID or test-only Speculos, the Ethereum signer kit, and full EIP-712 intent checks. The agent stops at `LEDGER_APPROVAL_REQUIRED`. | Software and partial Speculos evidence are recorded. Physical Clear Signing and official Tester cases remain blocked by missing external access.            |
 
 Without Chainlink's confidential execution, the site would need to hand its private rules to the
@@ -342,6 +344,12 @@ envelope blinds, signatures, or confidential CRE payloads.
 | `THE_GRAPH_API_KEY`               | The Graph Gateway API key (server-only)                  |
 | `THE_GRAPH_SUBGRAPH_ID`           | Hosted Rovaulta Sepolia subgraph ID (server-only)        |
 | `THE_GRAPH_API_URL`               | Optional Graph Gateway base URL                          |
+| `GRAPH_SUBGRAPH_SLUG`             | Operator-only Subgraph Studio deployment slug           |
+| `GRAPH_DEPLOY_KEY`                | Operator-only Subgraph Studio deploy key                |
+| `GRAPH_VERSION_LABEL`             | Hosted subgraph version label                            |
+| `ROVAULTA_P11_ACCOUNT_ID`         | Operator-only live account evidence input               |
+| `ROVAULTA_P11_CLEARANCE_PATH`     | Public clearance JSON for live evidence                  |
+| `ROVAULTA_P11_SIGNER_ADDRESS`     | Public Ledger signer address for live evidence           |
 | `NEXT_PUBLIC_LEDGER_TRANSPORT`     | `webhid` by default; `speculos` only in development/test |
 | `NEXT_PUBLIC_LEDGER_ORIGIN_TOKEN`  | Partner-issued signing-origin token, when available      |
 
@@ -400,7 +408,10 @@ These artifacts are intentionally separated by trust boundary:
 - [P7 deterministic rehearsal](docs/compliance/evidence/p7-deterministic-demo-2026-09-07.md)
   — repeatable public A/B/C trace and reset/race coverage.
 - [The Graph integration contract](docs/partners/THE_GRAPH.md)
-  — public registry subgraph design, load-bearing agent context, and live-evidence boundary.
+  — public registry subgraph design, pinned build/deploy path, load-bearing agent context, and
+  live-evidence boundary.
+- [P11 The Graph evidence](docs/compliance/evidence/p11-the-graph-qualification-2026-09-09.md)
+  — local build/test proof, operator commands, and explicit live-evidence blockers.
 - [Evidence matrix](docs/compliance/EVIDENCE_MATRIX.md) — judge-facing map of claims to artifacts.
 
 ### Existing Ledger emulator screenshots
