@@ -900,7 +900,11 @@ function EvaluateView({
       requestedBuildId !== null && data.builds.some((build) => build.id === requestedBuildId)
         ? requestedBuildId
         : (data.builds[0]?.id ?? "");
-    if (nextBuildId !== "" && !data.builds.some((build) => build.id === selectedBuildId))
+    if (
+      nextBuildId !== "" &&
+      (requestedBuildId !== null || !data.builds.some((build) => build.id === selectedBuildId)) &&
+      nextBuildId !== selectedBuildId
+    )
       setSelectedBuildId(nextBuildId);
   }, [data.builds, requestedBuildId, selectedBuildId]);
   const selected = data.builds.find((build) => build.id === selectedBuildId);
