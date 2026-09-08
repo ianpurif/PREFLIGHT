@@ -6,9 +6,9 @@ export default defineConfig({
   webServer: [
     {
       command: "bun run --cwd apps/api dev",
-      url: "http://localhost:4100/health",
+      url: "http://localhost:43100/health",
       env: {
-        PORT: "4100",
+        PORT: "43100",
         NODE_ENV: "test",
         PREFLIGHT_APP_DB_PATH: ".data/preflight-e2e.sqlite",
         PREFLIGHT_POLICY_KEY_PATH: ".data/preflight-e2e.key",
@@ -24,7 +24,7 @@ export default defineConfig({
       // still require an authenticated API session.
       env: {
         NEXT_PUBLIC_P6_SIGNER_ADDRESS: "0x0000000000000000000000000000000000000001",
-        NEXT_PUBLIC_API_ORIGIN: "http://localhost:4100",
+        NEXT_PUBLIC_API_ORIGIN: "http://localhost:43100",
         PREFLIGHT_ENABLE_DEMO_ROUTES: "true",
       },
       reuseExistingServer: false,
