@@ -66,9 +66,9 @@ export function LandingPage() {
             <Link className="landing-primary-action" href="/start">
               Get started <span aria-hidden="true">→</span>
             </Link>
-            <Link className="landing-secondary-action" href="/app/evaluate">
-              View the deterministic demo
-            </Link>
+            <a className="landing-secondary-action" href="#how-it-works">
+              See how it works
+            </a>
           </div>
           <p className="landing-note">
             Built for safety engineers, integrators, and teams shipping AMR software into real
@@ -80,7 +80,7 @@ export function LandingPage() {
           <div className="hero-visual-topline">
             <span>RELEASE REVIEW</span>
             <span className="hero-visual-live">
-              <i aria-hidden="true" /> Demo workspace
+              <i aria-hidden="true" /> Example review
             </span>
           </div>
           <div className="hero-build-card">
@@ -90,7 +90,7 @@ export function LandingPage() {
               </span>
               <div>
                 <span className="hero-card-label">Exact build</span>
-                <strong>AMR-17 / Controller 4.7.21</strong>
+                <strong>Robot build / Candidate release</strong>
               </div>
               <span className="hero-clear-pill">CLEAR</span>
             </div>
@@ -102,8 +102,8 @@ export function LandingPage() {
               <span className="route-node route-node-end" />
             </div>
             <div className="hero-build-footer">
-              <span>Warehouse Manila-01</span>
-              <span>Evaluator v1 · expires in 21 days</span>
+              <span>Site target</span>
+              <span>Evaluator version · expiry checked</span>
             </div>
           </div>
           <div className="hero-flow-list">
