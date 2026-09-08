@@ -388,6 +388,7 @@ The runner invokes the existing `handlerInTee` workflow three times and records 
 evidence; it has no P2 fallback, live deployment, or signing path.
 
 **Evidence boundary:** The committed P3 artifact remains the actual authenticated CRE CLI evidence
-(`HOLD`, `CLEAR`, `REJECT`). The current environment lacks the `cre` executable, so the new runner
-fails closed when invoked here and no fresh artifact was fabricated. Live DON/Vault/Nitro execution
-and account-created gateway completion remain unclaimed optional upgrades.
+(`HOLD`, `CLEAR`, `REJECT`) from before the current mandatory site-selector boundary. The current
+environment lacks the `cre` executable, so the new runner fails closed when invoked here and no fresh
+current-source artifact was fabricated. Live DON/Vault/Nitro execution and account-created gateway
+completion remain unclaimed optional upgrades.

@@ -261,15 +261,18 @@ and tampered confidential input `REJECT`. The workflow uses the real `handlerInT
 fetches the site-bound confidential envelope/blind inside the confidential callback, calls the
 existing deterministic evaluator, and emits only the bounded public result.
 
+This committed artifact is historical evidence from before the current mandatory site-selector
+boundary. It proves the authenticated confidential path at that revision, but it is not presented as
+a fresh current-source run.
+
 `apps/api/scripts/cre-simulation-evidence.ts` is now the reproducible operator path. It regenerates
 ignored site-bound inputs, runs all three official CLI commands, extracts only the public response,
 validates it with the strict Rovaulta request/callback parsers and exact bindings, checks that the
 confidential value is absent from CLI output, and writes only a redacted evidence JSON. The command
 fails closed when the official CLI or authenticated context is missing; it never substitutes P2 or
-creates a success artifact. The current environment has no `cre` executable, so a fresh rerun here
-was not possible; that limitation does not change the already committed authenticated simulation
-record. Live workflow deployment, DON consensus, production Vault custody, and hardware TEE
-attestation are not claimed.
+creates a success artifact. The current environment has no `cre` executable, so a fresh current-source
+rerun here was not possible. Live workflow deployment, DON consensus, production Vault custody, and
+hardware TEE attestation are not claimed.
 
 Focused checks for this change:
 
