@@ -4,6 +4,15 @@
 
 **Best AI Tooling or AI Use Case with The Graph — From Scratch**.
 
+### Pool-eligibility caveat
+
+The official prize wording treats “From Scratch” as a Start Fresh pool: project-specific code must
+begin after the event start, while pre-existing projects belong in Continuity. Rovaulta's repository
+was initialized on 2026-09-05, but this checkout does not contain independently verified event-start
+evidence or a submitted track selection. The implementation below is qualification work, not a claim
+that the Start Fresh pool is already eligible. The submission must document the original work and
+select the correct pool before claiming this prize.
+
 Rovaulta uses The Graph as a load-bearing public-context source for its account-backed deployment
 agent. The agent does not treat a local catalog or a browser assertion as proof that a release is
 eligible. Before it asks the existing P5 release service to prepare a deployment intent, it queries
@@ -51,6 +60,11 @@ response. Qualification evidence remains blocked until an operator deploys/index
 configures a real Graph Gateway key and subgraph ID, and captures a response for a real Sepolia
 registry clearance. The unit tests intentionally use injected responses and are labelled as local
 validation, not provider evidence.
+
+P10 does not add Subgraph MCP or Substreams: the minimal hosted subgraph plus Gateway query is already
+the load-bearing source needed by the deployment agent. The smallest live proof is one account-created
+`CLEAR` evaluation with a corresponding public Sepolia registry event, a Gateway `MATCHED` response for
+the exact clearance digest, and the agent's subsequent `LEDGER_APPROVAL_REQUIRED` handoff.
 
 ## Official references
 

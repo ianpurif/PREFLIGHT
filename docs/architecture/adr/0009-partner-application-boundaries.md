@@ -23,10 +23,13 @@ the official JSON-RPC `workflows.execute` body, signs the request with the confi
 key, and sends the P1 request, build, supplied behavior, behavior digest, timestamp, and a
 site-derived secret selector. The envelope and blinding secret are never serialized into the request.
 The client validates a completed public result against the exact request bindings and rejects an
-`ACCEPTED` execution as `CRE_EVALUATION_PENDING` until a separately configured completed-result
-transport is available. Missing configuration, gateway errors, malformed output, and network
-failures fail closed. `buildServer` does not install P2 as an implicit fallback; tests must inject
-the P2 evaluator explicitly.
+  `ACCEPTED` execution as `CRE_EVALUATION_PENDING`. The application persists the exact pending
+  request and completes it only through an optional callback from the TEE: canonical callback JSON
+  contains the minimal public result, an HMAC key is fetched inside the TEE, and the API checks the
+  exact site/robot/build/evaluation and behavior digest before an idempotent transaction exposes it
+  to the account. Missing configuration, gateway errors, malformed output, and network failures fail
+  closed. `buildServer` does not install P2 as an implicit fallback; tests must inject the P2 evaluator
+  explicitly.
 
 Every account site has a selector of the form
 `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_<site>`. Operators provision that selector in the CRE `main`
@@ -56,6 +59,7 @@ fixture path and tests. They cannot serve a normal account target.
 - A live Graph index can lag or disagree with the registry. The agent blocks on a non-match and P5
   still performs the final direct read, so Graph freshness never weakens authorization.
 - The account API can return a truthful pending/unavailable state instead of fabricating a verdict.
-  Completing the asynchronous result transport is an external deployment task, not a local fallback.
+  Deploying the callback URL and provisioning the two operator-managed secrets remain external tasks,
+  not a local fallback.
 - Unit tests use injected provider responses for determinism; they are not live Chainlink or Graph
   qualification evidence.

@@ -45,8 +45,9 @@ releases only an allowlisted P1 result plus the exact supplied-behavior binding.
 evidence currently uses the local simulator's ignored environment mapping; production Vault DON
 custody remains unproven. The workflow compiles to the CRE WASM/QuickJS target without Node,
 filesystem, environment, dynamic-import, browser, or native runtime dependencies. The account API
-uses an official JSON-RPC/JWT gateway adapter and fails closed on the gateway's asynchronous
-`ACCEPTED` response until a completed-result transport exists.
+  uses an official JSON-RPC/JWT gateway adapter, persists an exact pending request for the gateway's
+  asynchronous `ACCEPTED` response, and completes it only through the optional signed public-result
+  callback from the TEE.
 
 ### `contracts`
 P4 public attestation registry keyed by the P1 clearance digest. It stores only fixed-size exact

@@ -101,6 +101,19 @@
 - [ ] run a real account-backed Graph `MATCHED` preparation through P5/Ledger handoff
 - [ ] obtain external OpenAI model execution evidence (provider key/model unavailable locally)
 
+## P10 — Final partner qualification
+- [x] versioned canonical CRE result callback with HMAC authentication and public-only payload
+- [x] persist exact account evaluation requests while official CRE execution is asynchronous
+- [x] complete pending evaluations with exact binding checks and idempotent callback handling
+- [x] deliver the minimal result from the TEE through the official HTTP capability when configured
+- [x] expose explicit pending state and bounded browser polling in the normal workspace
+- [x] document Chainlink, Graph, and Ledger qualification boundaries without fabricated evidence
+- [ ] provision deployed CRE site/callback secrets and capture account-created completion
+- [ ] deploy/index the Sepolia subgraph and capture live Gateway `MATCHED` evidence
+- [ ] capture account-backed Graph `MATCHED` → P5/Ledger-required execution
+- [ ] capture external OpenAI execution if required by the selected submission
+- [ ] capture official Ledger Clear Signing/physical-device evidence if required by the selected pool
+
 ### Remaining submission evidence
 - [ ] partner evidence matrix complete
 - [ ] architecture diagram final

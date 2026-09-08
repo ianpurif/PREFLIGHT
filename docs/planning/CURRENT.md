@@ -17,12 +17,22 @@ present, but no live Graph response or account-created CRE completion is capture
 environment. The full local verification loop (lint, typecheck, package tests, build, Foundry,
 and scaffold verification) is green; external partner evidence remains open.**
 
+**P10 closes the asynchronous CRE application transport in code:** account evaluations now persist an
+exact pending request after the official gateway returns `ACCEPTED`; a configured CRE TEE callback
+can deliver only the minimal public result over an HMAC-authenticated canonical payload. The API
+checks the exact evaluation/site/robot/build, behavior-input digest, and callback idempotency before
+exposing the result to the owning account, and the web workspace polls the explicit pending state.
+The workflow uses the official HTTP capability only when this public-result delivery is configured;
+it never sends the private envelope, blind, policy, or internal report. No deployed callback,
+request-scoped CRE secret provisioning, live Graph response, external OpenAI execution, or Ledger
+hardware evidence is present in this environment.**
+
 ## P9 partner qualification slice
 
 - `POST /evaluations` invokes the configured CRE transport and returns only the existing public
-  evaluation projection. Missing CRE configuration, rejected requests, network failures, and
-  asynchronous gateway acceptance are explicit 503 failures; no local P2 fallback is used by the
-  normal API entrypoint.
+  evaluation projection. Missing CRE configuration, rejected requests, and network failures are
+  explicit 503 failures; asynchronous gateway acceptance is a 202 pending record completed only by
+  the signed callback. No local P2 fallback is used by the normal API entrypoint.
 - Each account site maps to a request-scoped CRE secret selector. Operators must provision that
   selector in the CRE `main` namespace with the private envelope/blind and deploy a result-delivery
   mechanism before a real account evaluation can complete.

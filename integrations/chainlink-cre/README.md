@@ -8,7 +8,7 @@ P3 implements an authenticated HTTP trigger whose callback is registered with th
 
 Public input contains the versioned P1 request, build descriptor, synthetic trace suite, explicit evaluation timestamp, provenance label, and `rovaulta.digest.cre-behavior-input/v1` SHA-256 digest over P1 canonical bytes. The HTTP signer configuration is also public. Scenario IDs must be public for exact trace-to-scenario binding; the demo uses readable synthetic names, while production inputs should use opaque IDs if scenario taxonomy is sensitive.
 
-The secret selector is a request-scoped value of the form `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_<site>`. Each selector must be provisioned by the operator in the CRE `main` namespace with the versioned full private envelope and lowercase 64-hex-character blind. It is fetched only inside the TEE callback. A request-scoped lookup never falls back to another selector; the legacy fixed selector is retained only for old simulation payloads that omit the new field. The handler makes no ordinary capability calls.
+The secret selector is a request-scoped value of the form `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_<site>`. Each selector must be provisioned by the operator in the CRE `main` namespace with the versioned full private envelope and lowercase 64-hex-character blind. It is fetched only inside the TEE callback. A request-scoped lookup never falls back to another selector; the legacy fixed selector is retained only for old simulation payloads that omit the new field. The handler makes no outbound capability call during evaluation unless the optional HTTPS result-delivery URL is configured; that delivery contains only the minimal public result.
 
 Success discloses only the unchanged P1 `EvaluationResult`, behavior-input digest, and `SYNTHETIC_CALLER_SUPPLIED` marker. It omits the envelope, geometry, rules, thresholds, blind, internal scenario evidence, violation details/count, and confidential diagnostics. Errors use fixed redacted codes. The handler has no logging or DON crossover.
 
@@ -41,7 +41,10 @@ These are local, single-node CRE simulations—not deployment, a hardware TEE, l
 `apps/api/src/evaluation/cre-client.ts` is the server-side application adapter. It signs the
 official `workflows.execute` JSON-RPC request, sends only public request data plus the site selector,
 and rejects an asynchronous `ACCEPTED` response as `CRE_EVALUATION_PENDING` rather than pretending
-that an evaluation is complete. Configure `ROVAULTA_CRE_GATEWAY_URL`,
+that an evaluation is complete. The API persists that exact pending request and accepts a completed
+result only through `/internal/cre/evaluation-result`, authenticated with the HMAC shared by
+`ROVAULTA_CONFIDENTIAL_EVALUATION_RESULT_CALLBACK_SECRET` in CRE and
+`ROVAULTA_CRE_RESULT_CALLBACK_SECRET` on the API. Configure `ROVAULTA_CRE_GATEWAY_URL`,
 `CHAINLINK_CRE_WORKFLOW_ID`, and `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY` only on the API server. The
-current implementation intentionally has no local-evaluator fallback when these settings or a
-completed result transport are missing.
+current implementation intentionally has no local-evaluator fallback when these settings, the
+request-scoped site secret, or the HTTPS callback transport are missing.

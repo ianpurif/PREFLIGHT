@@ -11,9 +11,10 @@ P3 must execute the unchanged deterministic P2 evaluator over a private site env
 
 Use `@chainlink/cre-sdk` 1.19.1 with one authenticated HTTP trigger registered by the official
 `handlerInTee` API. Require Nitro in `us-west-2`. Fetch exactly one site-bound secret from the
-`main` namespace using the request's selector, and make no ordinary capability calls from the
-handler. A request-scoped selector never falls back to another site's secret; the legacy fixed
-selector is retained only for old simulation payloads that omit the selector.
+`main` namespace using the request's selector. A request-scoped selector never falls back to another
+site's secret; the legacy fixed selector is retained only for old simulation payloads that omit the
+selector. When result delivery is configured, the only allowed capability call is the official HTTP
+client posting the already-minimal public result with an HMAC fetched inside the TEE.
 
 The public request schema `rovaulta.cre-public-evaluation-request/v1` contains:
 
@@ -41,7 +42,7 @@ Success schema `rovaulta.cre-public-evaluation-result/v1` returns only:
 - the behavior-input digest, required to bind the response to the supplied synthetic behavior
 - the provenance marker, required to prevent stronger origin claims
 
-It omits counts, violations, scenario findings, geometry, rules, thresholds, blind, and private-evidence digests. Failure schema `rovaulta.cre-public-evaluation-error/v1` returns only protocol/schema version, `status: REJECT`, and a fixed broad code. The handler does not log, expose caught diagnostics, use a public/local fallback, or call `usingTheDons`/`reportFromDon`.
+It omits counts, violations, scenario findings, geometry, rules, thresholds, blind, and private-evidence digests. Failure schema `rovaulta.cre-public-evaluation-error/v1` returns only protocol/schema version, `status: REJECT`, and a fixed broad code. The handler does not log, expose caught diagnostics, use a public/local fallback, or call `usingTheDons`/`reportFromDon`; its callback body contains no private-value fields.
 
 ## Consequences
 

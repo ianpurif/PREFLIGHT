@@ -289,3 +289,21 @@ deployed CRE gateway/workflow result transport, request-scoped CRE secrets, Grap
 ID, or OpenAI provider/model configuration. Therefore no completed account-created CRE result, live
 Graph response, or external model execution is claimed. The existing authenticated CRE CLI
 simulation remains simulation evidence only.
+
+## 2026-09-08 — P10 final partner qualification transport
+
+**Tool:** OpenAI Codex using the Rovaulta execution-plan and verification-loop skills, with official
+Chainlink CRE gateway/HTTP capability documentation and The Graph prize requirements reviewed.
+
+**Human direction:** Close the remaining partner-qualification engineering gap without redesigning
+P3, starting P4, fabricating partner evidence, or adding unrelated Ledger/Graph features.
+
+**AI-assisted output:** A versioned canonical CRE result-callback protocol; TEE-only HMAC secret
+delivery through the official HTTP capability; account pending-evaluation persistence; exact
+site/robot/build/behavior binding and idempotent callback completion; bounded browser polling; and
+partner/evidence/task documentation with explicit external blockers.
+
+**Evidence boundary:** Callback tests use local SDK/runtime mocks and an injected API secret. No
+deployed CRE callback, live Graph response, external OpenAI execution, or physical Ledger evidence
+was generated or claimed. Private envelope, blind, policy, callback secret, and credentials remain
+uncommitted.

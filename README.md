@@ -338,6 +338,7 @@ envelope blinds, signatures, or confidential CRE payloads.
 | `ROVAULTA_CRE_GATEWAY_URL`       | Deployed CRE HTTP gateway URL (server-only)              |
 | `CHAINLINK_CRE_WORKFLOW_ID`      | Deployed CRE workflow ID (server-only)                   |
 | `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY` | Authorized CRE HTTP trigger key (server-only)         |
+| `ROVAULTA_CRE_RESULT_CALLBACK_SECRET` | API-only HMAC key for the TEE public-result callback |
 | `THE_GRAPH_API_KEY`               | The Graph Gateway API key (server-only)                  |
 | `THE_GRAPH_SUBGRAPH_ID`           | Hosted Rovaulta Sepolia subgraph ID (server-only)        |
 | `THE_GRAPH_API_URL`               | Optional Graph Gateway base URL                          |

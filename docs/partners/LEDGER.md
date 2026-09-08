@@ -4,6 +4,12 @@
 
 **Intended AI Agents x Ledger direction: human-in-the-loop autonomous-agent authorization.**
 
+The current official AI Agents x Ledger wording emphasizes projects started during the event and
+device-backed security as central. This repository's first commit is dated 2026-09-05, but the
+checkout does not independently prove the event-start boundary or the submitted prize pool. The
+human-in-the-loop implementation is technically load-bearing; Start Fresh/Continuity eligibility
+must be documented truthfully in the submission.
+
 > An orchestration client can prepare an exact robot release request, but release authorization requires a cryptographically valid, one-time Ledger-backed human approval bound to the exact cleared build and deployed Rovaulta registry.
 
 P5.2 now implements the narrow autonomous deployment-agent half: a real strict tool-calling provider
@@ -11,7 +17,10 @@ adapter plus a host-owned deterministic controller can resolve a public request,
 and Sepolia clearance state, and call the existing release-preparation authority. The agent has no
 signing/consumption key or tool and eligible execution stops at `LEDGER_APPROVAL_REQUIRED`. The
 current `/p5-ledger` route remains the separate manual operator evidence harness. Ledger does not
-evaluate safety, run Chainlink CRE, certify an industrial system, or activate a physical robot.
+  evaluate safety, run Chainlink CRE, certify an industrial system, or activate a physical robot.
+
+No Key Ring CLI, scoped-secret broker, Ledger-secured payment flow, or VPS-host direction is claimed.
+Those are separate AI Agents x Ledger directions and are intentionally outside this release gate.
 
 ## Load-bearing authority flow
 

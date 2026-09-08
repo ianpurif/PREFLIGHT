@@ -1,12 +1,13 @@
-# P5–P9 Ledger, Partner Agent + Product Qualification Verification Report
+# P5–P10 Ledger, Partner Agent + Product Qualification Verification Report
 
 **Date:** 2026-09-08 (P9 implementation began 2026-09-08; earlier evidence dates remain attached to their artifacts)
 
 **Scope:** P5 software, partial P5.1 Speculos evidence, P5.2 AI deployment-agent closure, P6
 judge-facing digital twin, P7 deterministic demo reliability, P8 account product flow, and P9
-Chainlink/The Graph partner boundaries; P1–P4 regression-checked.
+Chainlink/The Graph partner boundaries, and P10 asynchronous CRE result completion; P1–P4
+regression-checked.
 
-**Status:** P9 code and targeted tests are complete, but external qualification evidence remains open.
+**Status:** P10 code and targeted tests are complete, but external qualification evidence remains open.
 The normal account path now fails closed unless a deployed CRE gateway/result transport, request-scoped
 CRE secrets, a hosted The Graph subgraph/provider, and an external provider/model are configured.
 No completed account-created CRE evaluation, live Graph response, external model execution,
@@ -206,7 +207,8 @@ The normal account path now uses the partner boundaries rather than a fixture-on
   `workflows.execute` JSON-RPC/JWT request, includes a request-scoped site secret selector, sends no
   envelope or blind, validates the completed public result and exact bindings, and turns network,
   rejection, malformed-result, and asynchronous `ACCEPTED` responses into explicit fail-closed
-  errors. `buildServer` has no implicit P2 evaluator fallback.
+  states. The P10 callback completes an accepted request only after its signed public result is
+  verified. `buildServer` has no implicit P2 evaluator fallback.
 - `integrations/the-graph/subgraph` contains a from-scratch Sepolia `RovaultaRegistry` event index.
   `TheGraphClearanceReader` queries only public fields by the exact clearance digest and checks the
   chain, registry, every binding, verdict, revocation, expiry, block number, and block hash.
@@ -232,6 +234,22 @@ environment has no `ROVAULTA_CRE_GATEWAY_URL`, `CHAINLINK_CRE_WORKFLOW_ID`,
 OpenAI provider/model. The required next external steps are documented in
 `docs/partners/THE_GRAPH.md`, `docs/partners/CHAINLINK.md`, and
 `docs/planning/exec-plans/P9-partner-bounty-qualification.md`.
+
+## P10 asynchronous CRE result completion
+
+The official CRE gateway returns account executions asynchronously. P10 now stores a pending
+evaluation request before the gateway call, returns `202 PENDING`, and exposes a bounded browser
+poll against the exact evaluation id. The optional workflow `resultDeliveryUrl` uses the CRE HTTP
+capability only after the TEE has produced the minimal public response. It fetches a separate HMAC
+secret inside the TEE and sends canonical callback JSON containing only the public P1 result.
+
+The API callback verifies the HMAC in constant time, parses the versioned callback strictly, checks
+the exact account site/robot/build/evaluation and behavior-input digest, and completes the record in
+an SQLite transaction. Replaying the same signed callback returns `ALREADY_COMPLETED`; a conflicting
+binding returns `409 CONFLICT`. Tests cover pending state, callback completion, replay, invalid
+signature, binding mismatch, canonical serialization, and private-field leakage. This is local
+transport evidence only: no deployed workflow, callback URL, request-scoped site secret, or live
+account-created result exists in this environment.
 
 ## Verification results
 

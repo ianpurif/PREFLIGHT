@@ -6,11 +6,13 @@ Private envelope values, hidden scenario parameters, restricted geometry, and co
 P3 implements this boundary with an SDK 1.19.1 `handlerInTee` callback restricted to Nitro in
 `us-west-2`. The callback fetches one atomic, versioned site secret from the `main` namespace using
 the request's selector. A selector supplied by an application request never falls back to another
-site; the legacy fixed selector is simulation compatibility only. The handler makes no ordinary
-capability calls, does not log or call `usingTheDons`/`reportFromDon`, and constructs its public
-response field by field. CRE CLI v1.32.0 authenticated simulations exercise this path; the CLI
-explicitly states that simulation is not a real TEE. The account API signs the official gateway
-request and treats an asynchronous `ACCEPTED` response as pending/unavailable rather than a verdict.
+  site; the legacy fixed selector is simulation compatibility only. The handler does not log or call
+  `usingTheDons`/`reportFromDon`, and constructs its public response field by field. If configured,
+  the only outbound capability is the official HTTP client posting that same minimal public response
+  with an HMAC fetched inside the TEE; no private envelope/blind/report field is serialized. CRE CLI
+  v1.32.0 authenticated simulations exercise this path; the CLI explicitly states that simulation is
+  not a real TEE. The account API signs the official gateway request and treats an asynchronous
+  `ACCEPTED` response as an exact pending record rather than a verdict until the callback verifies.
 
 ## Boundary B — Deterministic evaluator
 The clearance decision must be reproducible from declared evaluator version + allowed inputs. An LLM may orchestrate/explain but cannot decide `CLEAR`, `HOLD`, or `ESCALATE`.
