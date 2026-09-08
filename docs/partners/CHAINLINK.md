@@ -50,6 +50,14 @@ The current environment has neither a deployed workflow gateway configuration no
 evidence, so the normal account path remains explicitly pending/unavailable rather than claiming a
 completed live evaluation.
 
+P13 adds `bun run --cwd apps/api p13:account-evaluation` as the operator composition command. It
+uses only the normal authenticated HTTP routes and writes an allowlisted public result if the
+signed callback completes. It does not expose the encrypted site policy/blind or create a second
+evaluation authority. A real run remains blocked until the operator deploys/activates the workflow,
+provisions the exact request-scoped site secret and callback secret, exposes the HTTPS callback,
+and supplies the API gateway/workflow/signer environment. No P13 account-created `CLEAR` evidence
+is claimed in this checkout.
+
 The captured runtime blind was generated fresh into ignored local files and is not the source-visible P2 unit-test blind. The demo envelope itself is synthetic source-visible test data, so this is confidential-path/non-disclosure evidence rather than proof that repository readers could not know the demo rules.
 
 ## Official resources
