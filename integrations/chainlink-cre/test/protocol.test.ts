@@ -14,6 +14,7 @@ import {
   parseEvaluationResultCallback,
   parsePublicEvaluationRequest,
   serializeEvaluationResultCallback,
+  siteSecretId,
 } from "../src/protocol.js";
 import {
   deepClone,
@@ -154,6 +155,38 @@ describe("P3 public protocol", () => {
 
   test("public request remains valid P1 canonical data", () => {
     expect(() => canonicalSerialize(makePublicInput(fixture.unsafeFixtureBuild))).not.toThrow();
+  });
+
+  test("site secret selectors are site-bound and collision-resistant", () => {
+    expect(siteSecretId("site:a.b")).not.toBe(siteSecretId("site:a_b"));
+    const input = makePublicInput(fixture.unsafeFixtureBuild);
+    const { behaviorInputDigest: _, ...payload } = input;
+    const siteBound = {
+      ...payload,
+      confidentialInputSecretId: siteSecretId(input.request.inputs.siteId),
+    } as const;
+    const withSelector = {
+      ...siteBound,
+      behaviorInputDigest: digestBehaviorInput(siteBound),
+    };
+    expect(parsePublicEvaluationRequest(withSelector)).toEqual(withSelector);
+
+    const wrongSite = {
+      ...withSelector,
+      confidentialInputSecretId: siteSecretId("site:other"),
+    } as const;
+    expectBoundaryCode(
+      () =>
+        parsePublicEvaluationRequest({
+          ...wrongSite,
+          behaviorInputDigest: digestBehaviorInput(wrongSite),
+        }),
+      "MALFORMED_PUBLIC_INPUT",
+    );
+    expectBoundaryCode(
+      () => parsePublicEvaluationRequest(input, { requireSiteSecretSelector: true }),
+      "MALFORMED_PUBLIC_INPUT",
+    );
   });
 });
 

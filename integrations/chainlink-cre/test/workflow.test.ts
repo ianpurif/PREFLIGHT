@@ -67,3 +67,18 @@ test("TEE callback can read the compatibility secret selector during migration",
   });
   expect(response.status).toBe("EVALUATED");
 });
+
+test("deployed workflow configuration requires the site-bound selector", () => {
+  const runtime = {
+    getSecret: () => ({ result: () => ({ value: makeConfidentialSecret() }) }),
+    config: {
+      authorizedEvmAddress: `0x${"12".repeat(20)}`,
+      requireSiteSecretSelector: true,
+    },
+  } as unknown as TeeRuntime<WorkflowConfig>;
+  const response = evaluateInTee(runtime, {
+    input: encodePublicInput(makePublicInput(fixture.correctedFixtureBuild)),
+  });
+  expect(response.status).toBe("REJECT");
+  expect(response).toHaveProperty("code", "MALFORMED_PUBLIC_INPUT");
+});

@@ -16,6 +16,7 @@ import {
   parseEvaluationResult,
   parseRobotBuildDescriptor,
   parseSha256Digest,
+  parseSiteId,
   parseUnixTimestamp,
   type RobotBuildDescriptor,
   type Sha256Digest,
@@ -44,12 +45,32 @@ export const MAX_PUBLIC_PAYLOAD_BYTES = 128 * 1024;
 export const MAX_CONFIDENTIAL_PAYLOAD_BYTES = 2 * 1024;
 
 const BEHAVIOR_INPUT_DIGEST_DOMAIN = "rovaulta.digest.cre-behavior-input/v1" as const;
+const SITE_SECRET_BASE32_ALPHABET = "abcdefghijklmnopqrstuvwxyz234567";
+
+function encodeSiteSecretComponent(siteId: string): string {
+  const bytes = new TextEncoder().encode(siteId);
+  let buffer = 0;
+  let bits = 0;
+  let output = "";
+  for (const byte of bytes) {
+    buffer = (buffer << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      bits -= 5;
+      output += SITE_SECRET_BASE32_ALPHABET[(buffer >>> bits) & 31];
+      buffer &= bits === 0 ? 0 : (1 << bits) - 1;
+    }
+  }
+  if (bits > 0) {
+    output += SITE_SECRET_BASE32_ALPHABET[(buffer << (5 - bits)) & 31];
+  }
+  return output;
+}
 
 export function siteSecretId(siteId: string): string {
-  const suffix = siteId.replace(/[^a-z0-9_-]/gi, "_").toLowerCase();
-  if (suffix.length === 0 || suffix.length > 96)
-    throw new Error("site secret reference is malformed");
-  return `${CONFIDENTIAL_INPUT_SECRET_ID}_${suffix}`;
+  const parsedSiteId = parseSiteId(siteId);
+  const encodedSiteId = encodeSiteSecretComponent(parsedSiteId);
+  return `${CONFIDENTIAL_INPUT_SECRET_ID}_site_${encodedSiteId}`;
 }
 
 export type CrePublicFailureCode =
@@ -325,7 +346,10 @@ export function decodePublicPayload(input: Uint8Array): unknown {
   }
 }
 
-export function parsePublicEvaluationRequest(input: unknown): CrePublicEvaluationRequest {
+export function parsePublicEvaluationRequest(
+  input: unknown,
+  options: { readonly requireSiteSecretSelector?: boolean } = {},
+): CrePublicEvaluationRequest {
   const record = expectExactObject(
     input,
     [
@@ -390,10 +414,19 @@ export function parsePublicEvaluationRequest(input: unknown): CrePublicEvaluatio
     if (
       confidentialInputSecretId !== undefined &&
       (typeof confidentialInputSecretId !== "string" ||
-        !/^ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_[a-z0-9_-]{1,96}$/.test(
+        !/^ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_site_[a-z2-7]{1,160}$/.test(
           confidentialInputSecretId,
         ))
     ) {
+      return reject("MALFORMED_PUBLIC_INPUT");
+    }
+    if (
+      confidentialInputSecretId !== undefined &&
+      confidentialInputSecretId !== siteSecretId(request.inputs.siteId)
+    ) {
+      return reject("MALFORMED_PUBLIC_INPUT");
+    }
+    if (options.requireSiteSecretSelector === true && confidentialInputSecretId === undefined) {
       return reject("MALFORMED_PUBLIC_INPUT");
     }
     const normalized = Object.freeze({

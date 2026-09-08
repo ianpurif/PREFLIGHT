@@ -283,4 +283,58 @@ describe("CRE account result callback", () => {
     expect(JSON.parse(response.body).error).toBe("CONFLICT");
     await app.close();
   });
+
+  test("reject callbacks are terminal and idempotent", async () => {
+    const store = new ApplicationStore({ dbPath: ":memory:", policyKey: KEY });
+    const account = store.registerAccount({
+      email: "reject@example.test",
+      password: "correct horse battery staple",
+    }).account;
+    const site = store.createSite(account.id, {
+      name: "Reject site",
+      location: "Manila",
+      policy,
+    });
+    const robot = store.createRobot(account.id, site.id, { name: "AMR-reject" });
+    const build = store.createBuild(account.id, site.id, {
+      robotId: robot.id,
+      version: "1.0.0",
+      label: "Reject candidate",
+      artifactDigest: `sha256:${"ef".repeat(32)}`,
+      route: {
+        start: { xMm: 100, yMm: 100 },
+        end: { xMm: 900, yMm: 100 },
+        speedMmPerSecond: 400,
+      },
+    });
+    const evaluationId = "evaluation:reject-callback-test";
+    await expect(
+      store.evaluateBuild(account.id, {
+        siteId: site.id,
+        robotId: robot.id,
+        buildId: build.id,
+        evaluationId,
+        requestedAt: "1000",
+        evaluatedAt: "1000",
+        evaluate: async () => {
+          throw new CreEvaluationError("CRE_EVALUATION_PENDING", "accepted");
+        },
+      }),
+    ).rejects.toMatchObject({ code: "CRE_EVALUATION_PENDING" });
+
+    const callback = makeEvaluationResultCallback(evaluationId, {
+      schemaVersion: "rovaulta.cre-public-evaluation-error/v1",
+      protocolVersion: PROTOCOL_VERSION,
+      status: "REJECT",
+      code: "CONFIDENTIAL_INPUT_UNAVAILABLE",
+    });
+    expect(store.completeCreEvaluation(callback)).toEqual({
+      status: "REJECTED",
+      code: "CONFIDENTIAL_INPUT_UNAVAILABLE",
+    });
+    expect(store.completeCreEvaluation(callback)).toEqual({
+      status: "REJECTED",
+      code: "CONFIDENTIAL_INPUT_UNAVAILABLE",
+    });
+  });
 });

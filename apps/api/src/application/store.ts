@@ -24,6 +24,7 @@ import {
   EVALUATION_INPUTS_SCHEMA_VERSION,
   EVALUATION_REQUEST_SCHEMA_VERSION,
   PROTOCOL_VERSION,
+  ProtocolError,
   parseClearanceRecord,
   parseEvaluationRequest,
   parseEvaluatorVersionId,
@@ -213,6 +214,14 @@ interface PendingEvaluationRow {
   created_at: string;
 }
 
+interface CreEvaluationRejectionRow {
+  evaluation_id: string;
+  account_id: string;
+  code: string;
+  callback_digest: string;
+  created_at: string;
+}
+
 interface ReleaseAttemptRow {
   id: string;
   account_id: string;
@@ -245,6 +254,10 @@ function id(prefix: string): string {
 
 function hashToken(token: string): string {
   return createHash("sha256").update(token, "utf8").digest("hex");
+}
+
+function creCallbackDigest(callback: CreEvaluationResultCallback): string {
+  return createHash("sha256").update(canonicalSerialize(callback), "utf8").digest("hex");
 }
 
 function normalizeEmail(input: unknown): string {
@@ -640,6 +653,14 @@ export class ApplicationStore {
           created_at TEXT NOT NULL,
           UNIQUE(account_id, evaluation_id)
         ) STRICT;
+        CREATE TABLE IF NOT EXISTS cre_evaluation_rejections (
+          evaluation_id TEXT PRIMARY KEY,
+          account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+          code TEXT NOT NULL,
+          callback_digest TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          UNIQUE(account_id, evaluation_id)
+        ) STRICT;
         CREATE TABLE IF NOT EXISTS release_attempts (
           id TEXT PRIMARY KEY,
           account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
@@ -1031,6 +1052,16 @@ export class ApplicationStore {
       .run(evaluationId);
   }
 
+  #findCreEvaluationRejection(evaluationId: string): CreEvaluationRejectionRow | null {
+    return (
+      this.#database
+        .query<CreEvaluationRejectionRow, [string]>(
+          "SELECT * FROM cre_evaluation_rejections WHERE evaluation_id = ?",
+        )
+        .get(evaluationId) ?? null
+    );
+  }
+
   getEvaluationStatus(
     accountId: string,
     evaluationId: string,
@@ -1053,82 +1084,113 @@ export class ApplicationStore {
     | { readonly status: "COMPLETED"; readonly evaluation: PublicEvaluation }
     | { readonly status: "ALREADY_COMPLETED"; readonly evaluation: PublicEvaluation }
     | { readonly status: "REJECTED"; readonly code: string } {
-    const pending = this.#database
-      .query<PendingEvaluationRow, [string]>(
-        "SELECT * FROM pending_evaluations WHERE evaluation_id = ?",
-      )
-      .get(callback.evaluationId);
-    if (pending === null || pending === undefined) {
-      const existing = this.#findAnyEvaluationByEvaluationId(callback.evaluationId);
-      if (existing !== null) {
-        return { status: "ALREADY_COMPLETED", evaluation: publicEvaluation(existing) };
-      }
-      throw new ApplicationError("NOT_FOUND", "Pending evaluation was not found");
-    }
-    if (callback.response.status === "REJECT") {
-      this.#deletePendingEvaluation(callback.evaluationId);
-      return { status: "REJECTED", code: callback.response.code };
-    }
-    if (callback.response.behaviorInputDigest !== pending.behavior_input_digest) {
-      throw new ApplicationError("CONFLICT", "CRE result behavior binding does not match request");
-    }
-    const site = this.#siteRow(pending.account_id, pending.site_id);
-    const robot = this.#robotRow(pending.account_id, site.id, pending.robot_id);
-    const build = this.#buildRow(pending.account_id, site.id, robot.id, pending.build_id);
-    const descriptor = parseRobotBuildDescriptor(JSON.parse(build.descriptor_json));
-    const request = parseEvaluationRequest({
-      schemaVersion: EVALUATION_REQUEST_SCHEMA_VERSION,
-      evaluationId: callback.evaluationId,
-      inputs: {
-        schemaVersion: EVALUATION_INPUTS_SCHEMA_VERSION,
-        siteId: site.id,
-        robotId: robot.id,
-        robotBuildId: descriptor.robotBuildId,
-        robotBuildDigest: digestRobotBuild(descriptor),
-        safetyEnvelopeId: site.safety_envelope_id,
-        safetyEnvelopeCommitment: site.safety_envelope_commitment,
-        evaluatorVersion: parseEvaluatorVersionId(WAREHOUSE_EVALUATOR_VERSION),
-      },
-      requestedAt: pending.requested_at,
-    });
-    const result = assertEvaluationResultBindings(callback.response.result, request);
-    const publicResult: PublicEvaluation = Object.freeze({
-      id: id("evaluation-record"),
-      siteId: site.id,
-      robotId: robot.id,
-      buildId: build.id,
-      evaluationId: result.evaluationId,
-      robotBuildId: result.inputs.robotBuildId,
-      verdict: result.verdict,
-      safetyEnvelopeId: result.inputs.safetyEnvelopeId,
-      evaluatorVersion: result.inputs.evaluatorVersion,
-      robotBuildDigest: result.inputs.robotBuildDigest,
-      safetyEnvelopeCommitment: result.inputs.safetyEnvelopeCommitment,
-      evaluationInputsDigest: result.evaluationInputsDigest,
-      scenarioCount: null,
-      violationCount: null,
-      reasons: Object.freeze([]),
-      evaluatedAt: result.evaluatedAt,
-    });
-    const row: EvaluationRow = {
-      id: publicResult.id,
-      account_id: pending.account_id,
-      site_id: site.id,
-      robot_id: robot.id,
-      build_id: build.id,
-      public_json: canonicalSerialize(publicResult),
-      created_at: this.#now(),
-    };
     try {
       this.#database.run("BEGIN IMMEDIATE");
-      const duplicate = this.#findEvaluationByEvaluationId(
-        pending.account_id,
-        callback.evaluationId,
-      );
-      if (duplicate !== null) {
-        this.#database.run("ROLLBACK");
-        return { status: "ALREADY_COMPLETED", evaluation: publicEvaluation(duplicate) };
+      const callbackDigest = creCallbackDigest(callback);
+      const pending = this.#database
+        .query<PendingEvaluationRow, [string]>(
+          "SELECT * FROM pending_evaluations WHERE evaluation_id = ?",
+        )
+        .get(callback.evaluationId);
+      if (pending === null || pending === undefined) {
+        const existing = this.#findAnyEvaluationByEvaluationId(callback.evaluationId);
+        if (existing !== null) {
+          this.#database.run("COMMIT");
+          return { status: "ALREADY_COMPLETED", evaluation: publicEvaluation(existing) };
+        }
+        const rejection = this.#findCreEvaluationRejection(callback.evaluationId);
+        if (rejection !== null) {
+          if (rejection.callback_digest !== callbackDigest) {
+            throw new ApplicationError(
+              "CONFLICT",
+              "CRE evaluation already reached a terminal state",
+            );
+          }
+          this.#database.run("COMMIT");
+          return { status: "REJECTED", code: rejection.code };
+        }
+        throw new ApplicationError("NOT_FOUND", "Pending evaluation was not found");
       }
+
+      const rejection = this.#findCreEvaluationRejection(callback.evaluationId);
+      if (rejection !== null) {
+        if (rejection.callback_digest !== callbackDigest) {
+          throw new ApplicationError("CONFLICT", "CRE evaluation already reached a terminal state");
+        }
+        this.#database.run("COMMIT");
+        return { status: "REJECTED", code: rejection.code };
+      }
+
+      if (callback.response.status === "REJECT") {
+        this.#database
+          .query(
+            "INSERT INTO cre_evaluation_rejections (evaluation_id, account_id, code, callback_digest, created_at) VALUES (?, ?, ?, ?, ?)",
+          )
+          .run(
+            callback.evaluationId,
+            pending.account_id,
+            callback.response.code,
+            callbackDigest,
+            this.#now(),
+          );
+        this.#deletePendingEvaluation(callback.evaluationId);
+        this.#database.run("COMMIT");
+        return { status: "REJECTED", code: callback.response.code };
+      }
+
+      if (callback.response.behaviorInputDigest !== pending.behavior_input_digest) {
+        throw new ApplicationError(
+          "CONFLICT",
+          "CRE result behavior binding does not match request",
+        );
+      }
+      const site = this.#siteRow(pending.account_id, pending.site_id);
+      const robot = this.#robotRow(pending.account_id, site.id, pending.robot_id);
+      const build = this.#buildRow(pending.account_id, site.id, robot.id, pending.build_id);
+      const descriptor = parseRobotBuildDescriptor(JSON.parse(build.descriptor_json));
+      const request = parseEvaluationRequest({
+        schemaVersion: EVALUATION_REQUEST_SCHEMA_VERSION,
+        evaluationId: callback.evaluationId,
+        inputs: {
+          schemaVersion: EVALUATION_INPUTS_SCHEMA_VERSION,
+          siteId: site.id,
+          robotId: robot.id,
+          robotBuildId: descriptor.robotBuildId,
+          robotBuildDigest: digestRobotBuild(descriptor),
+          safetyEnvelopeId: site.safety_envelope_id,
+          safetyEnvelopeCommitment: site.safety_envelope_commitment,
+          evaluatorVersion: parseEvaluatorVersionId(WAREHOUSE_EVALUATOR_VERSION),
+        },
+        requestedAt: pending.requested_at,
+      });
+      const result = assertEvaluationResultBindings(callback.response.result, request);
+      const publicResult: PublicEvaluation = Object.freeze({
+        id: id("evaluation-record"),
+        siteId: site.id,
+        robotId: robot.id,
+        buildId: build.id,
+        evaluationId: result.evaluationId,
+        robotBuildId: result.inputs.robotBuildId,
+        verdict: result.verdict,
+        safetyEnvelopeId: result.inputs.safetyEnvelopeId,
+        evaluatorVersion: result.inputs.evaluatorVersion,
+        robotBuildDigest: result.inputs.robotBuildDigest,
+        safetyEnvelopeCommitment: result.inputs.safetyEnvelopeCommitment,
+        evaluationInputsDigest: result.evaluationInputsDigest,
+        scenarioCount: null,
+        violationCount: null,
+        reasons: Object.freeze([]),
+        evaluatedAt: result.evaluatedAt,
+      });
+      const row: EvaluationRow = {
+        id: publicResult.id,
+        account_id: pending.account_id,
+        site_id: site.id,
+        robot_id: robot.id,
+        build_id: build.id,
+        public_json: canonicalSerialize(publicResult),
+        created_at: this.#now(),
+      };
       this.#database
         .query(
           "INSERT INTO evaluations (id, account_id, site_id, robot_id, build_id, public_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -1144,19 +1206,19 @@ export class ApplicationStore {
         );
       this.#deletePendingEvaluation(callback.evaluationId);
       this.#database.run("COMMIT");
+      return { status: "COMPLETED", evaluation: publicResult };
     } catch (error) {
       try {
         this.#database.run("ROLLBACK");
       } catch {
         // Preserve the original failure without exposing SQLite details.
       }
-      if (error instanceof ApplicationError) throw error;
+      if (error instanceof ApplicationError || error instanceof ProtocolError) throw error;
       throw new ApplicationError(
         "PERSISTENCE_UNAVAILABLE",
         "CRE evaluation result could not be stored",
       );
     }
-    return { status: "COMPLETED", evaluation: publicResult };
   }
 
   async evaluateBuild(

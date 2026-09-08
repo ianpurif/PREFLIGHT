@@ -22,6 +22,8 @@ import {
 
 export interface WorkflowConfig {
   readonly authorizedEvmAddress: string;
+  /** Deployed workflows require a selector bound to the request site. */
+  readonly requireSiteSecretSelector?: boolean;
   /** Optional HTTPS endpoint that receives only the minimal public result. */
   readonly resultDeliveryUrl?: string;
   /** CRE secret selector for the callback HMAC key. */
@@ -79,7 +81,9 @@ export function evaluateInTee(
 ): CrePublicEvaluationResponse {
   let publicInput: CrePublicEvaluationRequest;
   try {
-    publicInput = parsePublicEvaluationRequest(decodePublicPayload(triggerOutput.input));
+    publicInput = parsePublicEvaluationRequest(decodePublicPayload(triggerOutput.input), {
+      requireSiteSecretSelector: runtime.config?.requireSiteSecretSelector === true,
+    });
   } catch (error) {
     return makePublicFailure(
       error instanceof CreBoundaryError ? error.publicCode : "MALFORMED_PUBLIC_INPUT",
