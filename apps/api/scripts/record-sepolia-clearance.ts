@@ -68,7 +68,11 @@ function assertSame(actual: unknown, expected: unknown, label: string): void {
 }
 
 function publicErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message.length <= 180) return error.message;
+  if (error instanceof Error && error.message.length <= 180) {
+    return error.message
+      .replace(/https?:\/\/[^\s)]+/gi, "[rpc-url]")
+      .replace(/0x[0-9a-fA-F]{64}/g, "[hex]");
+  }
   return "Sepolia clearance issuance failed closed";
 }
 
