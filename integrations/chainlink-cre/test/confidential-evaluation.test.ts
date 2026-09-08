@@ -6,10 +6,10 @@ import {
   CRE_PUBLIC_ERROR_VERSION,
   CRE_PUBLIC_RESULT_VERSION,
   CRE_RESULT_CALLBACK_SECRET_ID,
-  parseEvaluationResultCallback,
-  serializeEvaluationResultCallback,
   type CrePublicEvaluationFailure,
   digestBehaviorInput,
+  parseEvaluationResultCallback,
+  serializeEvaluationResultCallback,
 } from "../src/protocol.js";
 import {
   deepClone,

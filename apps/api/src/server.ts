@@ -1,13 +1,13 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { ReleaseGateError } from "@rovaulta/chain-client";
-import { parseClearanceRecord } from "@rovaulta/domain";
 import {
   parseEvaluationResultCallback,
   serializeEvaluationResultCallback,
 } from "@rovaulta/chainlink-cre/protocol";
+import { parseClearanceRecord } from "@rovaulta/domain";
 import Fastify, { type FastifyReply } from "fastify";
 import { type DeploymentAgent, DeploymentAgentError } from "./agent/index.js";
-import { ApplicationError, ApplicationStore } from "./application/index.js";
+import { ApplicationError, ApplicationStore, type PublicEvaluation } from "./application/index.js";
 import { readEnvironment } from "./environment.js";
 import { type ConfidentialEvaluationExecutor, CreEvaluationError } from "./evaluation/index.js";
 import type { ReleaseService } from "./release/index.js";
@@ -380,7 +380,7 @@ export function buildServer(
       return rejectMalformed(reply);
     const timestamp = Math.floor(Date.now() / 1000).toString();
     const evaluationId = `evaluation:${randomBytes(16).toString("hex")}`;
-    let evaluation;
+    let evaluation: PublicEvaluation;
     try {
       evaluation = await requireStore().evaluateBuild(accountId, {
         siteId: body.siteId,
@@ -402,12 +402,10 @@ export function buildServer(
 
   app.post("/internal/cre/evaluation-result", async (request, reply) => {
     if (creCallbackSecret === undefined || creCallbackSecret.length === 0) {
-      return reply
-        .code(503)
-        .send({
-          error: "CRE_CALLBACK_UNAVAILABLE",
-          message: "CRE result callback is not configured",
-        });
+      return reply.code(503).send({
+        error: "CRE_CALLBACK_UNAVAILABLE",
+        message: "CRE result callback is not configured",
+      });
     }
     const signature = request.headers["x-rovaulta-cre-signature"];
     let callback: ReturnType<typeof parseEvaluationResultCallback>;
@@ -420,12 +418,10 @@ export function buildServer(
     }
     const body = serializeEvaluationResultCallback(callback);
     if (!validCallbackSignature(creCallbackSecret, body, signature)) {
-      return reply
-        .code(401)
-        .send({
-          error: "CRE_CALLBACK_UNAUTHORIZED",
-          message: "CRE result callback signature is invalid",
-        });
+      return reply.code(401).send({
+        error: "CRE_CALLBACK_UNAUTHORIZED",
+        message: "CRE result callback signature is invalid",
+      });
     }
     const completion = requireStore().completeCreEvaluation(callback);
     if (completion.status === "REJECTED") {

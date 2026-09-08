@@ -10,12 +10,20 @@ import {
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import {
+  CRE_PUBLIC_REQUEST_VERSION,
+  type CreEvaluationResultCallback,
+  digestBehaviorInput,
+  SYNTHETIC_TRACE_PROVENANCE,
+  siteSecretId,
+} from "@rovaulta/chainlink-cre/protocol";
+import {
   assertEvaluationResultBindings,
   canonicalSerialize,
   digestRobotBuild,
   digestSafetyEnvelopeCommitment,
   EVALUATION_INPUTS_SCHEMA_VERSION,
   EVALUATION_REQUEST_SCHEMA_VERSION,
+  PROTOCOL_VERSION,
   parseClearanceRecord,
   parseEvaluationRequest,
   parseEvaluatorVersionId,
@@ -24,17 +32,9 @@ import {
   parseSha256Digest,
   parseSiteId,
   parseUnixTimestamp,
-  PROTOCOL_VERSION,
   ROBOT_BUILD_SCHEMA_VERSION,
   type RobotBuildDescriptor,
 } from "@rovaulta/domain";
-import {
-  CRE_PUBLIC_REQUEST_VERSION,
-  SYNTHETIC_TRACE_PROVENANCE,
-  digestBehaviorInput,
-  siteSecretId,
-  type CreEvaluationResultCallback,
-} from "@rovaulta/chainlink-cre/protocol";
 import {
   CONFIDENTIAL_EVALUATION_ENVELOPE_VERSION,
   type ConfidentialEvaluationEnvelope,

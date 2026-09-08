@@ -2,15 +2,15 @@ import { describe, expect, test } from "bun:test";
 import { canonicalSerialize, ProtocolError } from "@rovaulta/domain";
 import { evaluateSimulation } from "@rovaulta/simulation-core";
 import {
+  CRE_PUBLIC_REQUEST_VERSION,
   CRE_PUBLIC_RESULT_VERSION,
   CRE_RESULT_CALLBACK_VERSION,
-  CRE_PUBLIC_REQUEST_VERSION,
   CreBoundaryError,
   type CrePublicFailureCode,
   decodePublicPayload,
   digestBehaviorInput,
-  parseConfidentialEvaluationInput,
   makeEvaluationResultCallback,
+  parseConfidentialEvaluationInput,
   parseEvaluationResultCallback,
   parsePublicEvaluationRequest,
   serializeEvaluationResultCallback,

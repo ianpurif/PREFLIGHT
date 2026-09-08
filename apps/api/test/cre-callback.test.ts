@@ -1,23 +1,23 @@
-import { createHmac } from "node:crypto";
 import { describe, expect, test } from "bun:test";
-import {
-  parseEvaluationRequest,
-  parseRobotBuildDescriptor,
-  parseUnixTimestamp,
-  PROTOCOL_VERSION,
-} from "@rovaulta/domain";
-import { evaluateSimulation, parseRobotBehaviorTraceSuite } from "@rovaulta/simulation-core";
-import { ApplicationStore } from "../src/application/index.js";
-import { CreEvaluationError, type ConfidentialEvaluationInput } from "../src/evaluation/index.js";
-import { buildServer } from "../src/server.js";
+import { createHmac } from "node:crypto";
 import {
   CRE_PUBLIC_REQUEST_VERSION,
-  SYNTHETIC_TRACE_PROVENANCE,
   digestBehaviorInput,
   makeEvaluationResultCallback,
+  SYNTHETIC_TRACE_PROVENANCE,
   serializeEvaluationResultCallback,
   siteSecretId,
 } from "@rovaulta/chainlink-cre/protocol";
+import {
+  PROTOCOL_VERSION,
+  parseEvaluationRequest,
+  parseRobotBuildDescriptor,
+  parseUnixTimestamp,
+} from "@rovaulta/domain";
+import { evaluateSimulation, parseRobotBehaviorTraceSuite } from "@rovaulta/simulation-core";
+import { ApplicationStore } from "../src/application/index.js";
+import { type ConfidentialEvaluationInput, CreEvaluationError } from "../src/evaluation/index.js";
+import { buildServer } from "../src/server.js";
 
 const KEY = Uint8Array.from({ length: 32 }, (_, index) => index + 1);
 const CALLBACK_SECRET = "p10-callback-test-secret";
@@ -197,7 +197,7 @@ describe("CRE account result callback", () => {
     const badSignature = await app.inject({
       method: "POST",
       url: "/internal/cre/evaluation-result",
-      headers: { ...request.headers, "x-rovaulta-cre-signature": "sha256=" + "00".repeat(32) },
+      headers: { ...request.headers, "x-rovaulta-cre-signature": `sha256=${"00".repeat(32)}` },
       payload: request.body,
     });
     expect(badSignature.statusCode).toBe(401);
