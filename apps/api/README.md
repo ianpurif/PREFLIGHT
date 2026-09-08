@@ -54,3 +54,62 @@ bun run --cwd apps/api evidence:p52-agent:live-read
 
 The first is a local deterministic integration. The second uses the configured Sepolia RPC and is
 read-only. Neither invokes Ledger or activates a robot.
+
+## P13 account-created CRE evaluation
+
+The normal account path is the only supported source for a P13 evaluation. Start the API with the
+same environment used by the web app, then create an ignored local setup file such as
+`.data/p13-setup.json`:
+
+```json
+{
+  "site": {
+    "name": "North dock",
+    "location": "Manila",
+    "policy": {
+      "warehouseWidthMm": 1000,
+      "warehouseHeightMm": 1000,
+      "restrictedZone": { "minXmm": 400, "minYmm": 400, "maxXmm": 600, "maxYmm": 600 },
+      "maximumSpeedMmPerSecond": 1000,
+      "zoneSpeedLimitMmPerSecond": 600,
+      "payloadThresholdGrams": 40000
+    }
+  },
+  "robot": { "name": "AMR-01" },
+  "build": {
+    "version": "1.0.0",
+    "label": "Clear candidate",
+    "artifactDigest": "sha256:replace-with-the-real-build-digest",
+    "route": {
+      "start": { "xMm": 100, "yMm": 100 },
+      "end": { "xMm": 900, "yMm": 100 },
+      "speedMmPerSecond": 400
+    }
+  }
+}
+```
+
+Replace the artifact digest and policy/route with the facility's real configuration. Do not commit
+this file: the policy is private even though the API returns only its commitment. Set
+`ROVAULTA_P13_EMAIL` and `ROVAULTA_P13_PASSWORD` in an ignored environment file, then run:
+
+```powershell
+bun run --cwd apps/api p13:account-evaluation
+```
+
+The command registers (or signs in to) the account, calls the existing site/robot/build routes,
+submits `/evaluations`, and polls only the owning account's evaluation. It never opens SQLite,
+calls the P2 evaluator, imports a P7 fixture, or accepts a browser-supplied verdict. A configured
+CRE gateway returns `PENDING` until the signed TEE callback completes; missing gateway/workflow/
+trigger configuration fails closed. Set `ROVAULTA_P13_EVIDENCE_PATH` only when a completed public
+result should be written to an ignored path. The evidence file contains an allowlisted public
+projection and no policy, envelope, blind, secret, credential, or internal report.
+
+Before running the command, an operator must deploy/activate the workflow, provision the exact
+site selector `ROVAULTA_CONFIDENTIAL_EVALUATION_INPUT_site_<base32-site-id>` and the callback HMAC
+secret in the CRE `main` namespace, configure the workflow's HTTPS `resultDeliveryUrl` to the
+reachable API callback, and set the matching server-only `ROVAULTA_CRE_GATEWAY_URL`,
+`CHAINLINK_CRE_WORKFLOW_ID`, `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY`, and
+`ROVAULTA_CRE_RESULT_CALLBACK_SECRET`. The application does not expose the encrypted site policy
+or blind for copying; site-secret provisioning must use the facility's approved secure operator
+process. Do not treat a local P2-injected test as P13 evidence.

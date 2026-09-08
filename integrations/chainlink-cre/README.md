@@ -48,3 +48,11 @@ result only through `/internal/cre/evaluation-result`, authenticated with the HM
 `CHAINLINK_CRE_WORKFLOW_ID`, and `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY` only on the API server. The
 current implementation intentionally has no local-evaluator fallback when these settings, the
 request-scoped site secret, or the HTTPS callback transport are missing.
+
+For a real account-created evaluation, the account API first creates the site and returns only its
+public identifier/commitment. The facility operator must provision the matching private envelope
+and blind under the exact selector emitted by `siteSecretId(siteId)` using the approved CRE Vault
+process; the repository does not expose a policy-export route. The callback URL must be reachable
+from CRE, and the HMAC value in `ROVAULTA_CONFIDENTIAL_EVALUATION_RESULT_CALLBACK_SECRET` must
+match the API's `ROVAULTA_CRE_RESULT_CALLBACK_SECRET`. A missing selector, callback, workflow ID,
+or trigger signer is an explicit blocker, never a reason to use the local P2 evaluator.
