@@ -82,6 +82,7 @@ export function buildServer(
     readonly headers: {
       readonly origin?: string | undefined;
       readonly referer?: string | undefined;
+      readonly cookie?: string | undefined;
     };
   }): boolean {
     const origin = request.headers.origin;
@@ -94,7 +95,7 @@ export function buildServer(
         return false;
       }
     }
-    return true;
+    return request.headers.cookie === undefined;
   }
   app.addHook("preHandler", async (request, reply) => {
     if (request.method !== "POST" || isTrustedMutationOrigin(request)) return;
@@ -189,10 +190,16 @@ export function buildServer(
     reply: FastifyReply,
   ): boolean {
     if (
-      applicationStore === undefined ||
-      (environment.NODE_ENV !== "production" && environment.PREFLIGHT_ENABLE_DEMO_ROUTES === "true")
+      environment.NODE_ENV !== "production" &&
+      environment.PREFLIGHT_ENABLE_DEMO_ROUTES === "true"
     ) {
       return true;
+    }
+    if (applicationStore === undefined) {
+      throw new ApplicationError(
+        "PERSISTENCE_UNAVAILABLE",
+        "Authenticated application persistence is required for this route",
+      );
     }
     return requireAccount(request, reply) !== null;
   }

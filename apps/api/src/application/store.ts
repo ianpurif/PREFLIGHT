@@ -1127,7 +1127,13 @@ export class ApplicationStore {
     if (header === undefined) return null;
     for (const part of header.split(";")) {
       const [name, ...rest] = part.trim().split("=");
-      if (name === SESSION_COOKIE) return decodeURIComponent(rest.join("="));
+      if (name === SESSION_COOKIE) {
+        try {
+          return decodeURIComponent(rest.join("="));
+        } catch {
+          return null;
+        }
+      }
     }
     return null;
   }

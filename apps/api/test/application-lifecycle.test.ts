@@ -13,6 +13,10 @@ function cookie(response: { headers: Record<string, unknown> }): string {
   return typeof value === "string" ? (value.split(";", 1)[0] ?? "") : "";
 }
 
+function sessionHeaders(value: string) {
+  return { cookie: value, origin: "http://localhost:3000" };
+}
+
 const policy = {
   warehouseWidthMm: 1_000,
   warehouseHeightMm: 1_000,
@@ -41,7 +45,7 @@ describe("account-scoped product lifecycle", () => {
     const siteResponse = await app.inject({
       method: "POST",
       url: "/sites",
-      headers: { cookie: session },
+      headers: sessionHeaders(session),
       payload: { name: "North dock", location: "Manila", policy },
     });
     expect(siteResponse.statusCode).toBe(201);
@@ -52,7 +56,7 @@ describe("account-scoped product lifecycle", () => {
     const robotResponse = await app.inject({
       method: "POST",
       url: `/sites/${site.id}/robots`,
-      headers: { cookie: session },
+      headers: sessionHeaders(session),
       payload: { name: "AMR-01" },
     });
     expect(robotResponse.statusCode).toBe(201);
@@ -61,7 +65,7 @@ describe("account-scoped product lifecycle", () => {
     const buildResponse = await app.inject({
       method: "POST",
       url: `/sites/${site.id}/builds`,
-      headers: { cookie: session },
+      headers: sessionHeaders(session),
       payload: {
         robotId: robot.id,
         version: "1.0.0",
@@ -80,7 +84,7 @@ describe("account-scoped product lifecycle", () => {
     const evaluationResponse = await app.inject({
       method: "POST",
       url: "/evaluations",
-      headers: { cookie: session },
+      headers: sessionHeaders(session),
       payload: { siteId: site.id, robotId: robot.id, buildId: build.id },
     });
     expect(evaluationResponse.statusCode).toBe(201);
@@ -92,7 +96,7 @@ describe("account-scoped product lifecycle", () => {
     const releaseResponse = await app.inject({
       method: "POST",
       url: "/releases/prepare",
-      headers: { cookie: session },
+      headers: sessionHeaders(session),
       payload: {
         evaluationId: evaluation.evaluationId,
         signerAddress: "0x0000000000000000000000000000000000000001",
@@ -104,7 +108,7 @@ describe("account-scoped product lifecycle", () => {
     const tamperedClearanceResponse = await app.inject({
       method: "POST",
       url: "/releases/prepare",
-      headers: { cookie: session },
+      headers: sessionHeaders(session),
       payload: {
         evaluationId: evaluation.evaluationId,
         signerAddress: "0x0000000000000000000000000000000000000001",
@@ -142,7 +146,7 @@ describe("account-scoped product lifecycle", () => {
     const siteResponse = await app.inject({
       method: "POST",
       url: "/sites",
-      headers: { cookie: first },
+      headers: sessionHeaders(first),
       payload: { name: "Private site", location: "Manila", policy },
     });
     const site = JSON.parse(siteResponse.body).site;
@@ -150,13 +154,13 @@ describe("account-scoped product lifecycle", () => {
     const hidden = await app.inject({
       method: "GET",
       url: `/sites/${site.id}`,
-      headers: { cookie: second },
+      headers: sessionHeaders(second),
     });
     expect(hidden.statusCode).toBe(404);
     const hiddenBuild = await app.inject({
       method: "POST",
       url: "/evaluations",
-      headers: { cookie: second },
+      headers: sessionHeaders(second),
       payload: { siteId: site.id, robotId: "robot:missing", buildId: "robot-build:missing" },
     });
     expect(hiddenBuild.statusCode).toBe(404);
@@ -168,6 +172,12 @@ describe("account-scoped product lifecycle", () => {
     const app = buildServer({ applicationStore: store });
     const anonymous = await app.inject({ method: "GET", url: "/sites" });
     expect(anonymous.statusCode).toBe(401);
+    const malformedCookie = await app.inject({
+      method: "GET",
+      url: "/sites",
+      headers: { cookie: "preflight_session=%" },
+    });
+    expect(malformedCookie.statusCode).toBe(401);
     const malformed = await app.inject({
       method: "POST",
       url: "/auth/register",
@@ -189,6 +199,13 @@ describe("account-scoped product lifecycle", () => {
     });
     expect(csrfResponse.statusCode).toBe(403);
     expect(JSON.parse(csrfResponse.body).error).toBe("CSRF_ORIGIN_REJECTED");
+    const missingOriginResponse = await app.inject({
+      method: "POST",
+      url: "/sites",
+      headers: { cookie: session },
+      payload: { name: "Blocked site", location: "Manila", policy },
+    });
+    expect(missingOriginResponse.statusCode).toBe(403);
 
     const legacyResponse = await app.inject({
       method: "POST",
@@ -201,7 +218,7 @@ describe("account-scoped product lifecycle", () => {
     const authenticatedLegacyResponse = await app.inject({
       method: "POST",
       url: "/release/consume",
-      headers: { cookie: session },
+      headers: sessionHeaders(session),
       payload: { intent: {}, signature: "0x00" },
     });
     expect(authenticatedLegacyResponse.statusCode).toBe(503);

@@ -30,6 +30,11 @@ const proposal = {
   signerAddress: "0x0000000000000000000000000000000000000001",
 };
 
+const TEST_FIXTURE_ENV = {
+  NODE_ENV: "test",
+  PREFLIGHT_ENABLE_DEMO_ROUTES: "true",
+} as NodeJS.ProcessEnv;
+
 describe("P5 release API boundary", () => {
   test("exposes configuration status without fabricating a release gate", async () => {
     const app = buildServer();
@@ -53,6 +58,7 @@ describe("P5 release API boundary", () => {
           return { status: "LEDGER_APPROVAL_REQUIRED" };
         },
       }),
+      environment: TEST_FIXTURE_ENV,
     });
     const accepted = await app.inject({
       method: "POST",
@@ -105,6 +111,7 @@ describe("P5 release API boundary", () => {
           return { status: "prepared" } as never;
         },
       }),
+      environment: TEST_FIXTURE_ENV,
     });
     const accepted = await app.inject({
       method: "POST",
@@ -142,6 +149,7 @@ describe("P5 release API boundary", () => {
           throw new ReleaseGateError("REPLAY_REJECTED", "Release nonce was consumed");
         },
       }),
+      environment: TEST_FIXTURE_ENV,
     });
     const unavailable = await app.inject({
       method: "POST",
