@@ -237,4 +237,39 @@ describe("account-scoped product lifecycle", () => {
     expect(authenticatedLegacyResponse.statusCode).toBe(503);
     await app.close();
   });
+
+  test("does not fall back to the local evaluator when CRE is not configured", async () => {
+    const store = new ApplicationStore({ dbPath: ":memory:", policyKey: KEY });
+    const registered = store.registerAccount({
+      email: "cre-required@example.test",
+      password: "correct horse battery staple",
+    });
+    const site = store.createSite(registered.account.id, {
+      name: "CRE required site",
+      location: "Manila",
+      policy,
+    });
+    const robot = store.createRobot(registered.account.id, site.id, { name: "AMR-CRE" });
+    const build = store.createBuild(registered.account.id, site.id, {
+      robotId: robot.id,
+      version: "1.0.0",
+      label: "CRE candidate",
+      artifactDigest: `sha256:${"ef".repeat(32)}`,
+      route: {
+        start: { xMm: 100, yMm: 100 },
+        end: { xMm: 900, yMm: 100 },
+        speedMmPerSecond: 400,
+      },
+    });
+    const app = buildServer({ applicationStore: store });
+    const response = await app.inject({
+      method: "POST",
+      url: "/evaluations",
+      headers: sessionHeaders(ApplicationStore.sessionCookie(registered.sessionToken, false)),
+      payload: { siteId: site.id, robotId: robot.id, buildId: build.id },
+    });
+    expect(response.statusCode).toBe(503);
+    expect(JSON.parse(response.body).error).toBe("CRE_UNAVAILABLE");
+    await app.close();
+  });
 });
