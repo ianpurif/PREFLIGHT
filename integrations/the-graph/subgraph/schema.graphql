@@ -1,4 +1,4 @@
-type Clearance @entity {
+type Clearance @entity(immutable: false) {
   id: Bytes!
   clearanceDigest: Bytes!
   clearanceIdHash: Bytes!

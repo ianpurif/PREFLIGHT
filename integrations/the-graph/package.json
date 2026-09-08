@@ -1,0 +1,15 @@
+{
+  "name": "@rovaulta/the-graph",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "codegen": "graph codegen subgraph/subgraph.yaml --output-dir subgraph/generated",
+    "build": "bun run codegen && graph build subgraph/subgraph.yaml",
+    "deploy": "node scripts/deploy.mjs",
+    "evidence:live": "node scripts/live-evidence.mjs"
+  },
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "0.98.1",
+    "@graphprotocol/graph-ts": "0.38.2"
+  }
+}

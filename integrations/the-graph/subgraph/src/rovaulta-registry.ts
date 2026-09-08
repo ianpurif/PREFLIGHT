@@ -1,5 +1,5 @@
-import { Bytes } from "@graphprotocol/graph-ts";
-import type {
+import { BigInt, Bytes } from "@graphprotocol/graph-ts";
+import {
   ClearanceBindingsRecorded,
   ClearanceRecorded,
   ClearanceRevoked,
@@ -25,8 +25,8 @@ function getOrCreate(digest: Bytes): Clearance {
     entity.evaluationInputsDigest = ZERO_BYTES32;
     entity.verdict = ZERO_BYTES32;
     entity.issuer = Bytes.fromHexString("0x0000000000000000000000000000000000000000");
-    entity.issuedAt = 0;
-    entity.expiresAt = 0;
+    entity.issuedAt = BigInt.fromI32(0);
+    entity.expiresAt = BigInt.fromI32(0);
     entity.revoked = false;
   }
   return entity;

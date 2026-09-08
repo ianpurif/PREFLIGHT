@@ -15,6 +15,8 @@
       "!!**/.env.*",
       "!!**/.cre_build_tmp.js",
       "!!**/*.tsbuildinfo",
+      "!!integrations/the-graph/subgraph/generated",
+      "!!integrations/the-graph/subgraph/build",
       "!!contracts/out",
       "!!contracts/cache",
       "!!contracts/broadcast",

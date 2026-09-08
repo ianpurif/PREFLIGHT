@@ -5,6 +5,10 @@ coverage/
 playwright-report/
 test-results/
 .turbo/
+integrations/the-graph/subgraph/generated/
+integrations/the-graph/subgraph/build/
+integrations/the-graph/generated/
+integrations/the-graph/build/
 .env
 .env.*
 !.env.example
