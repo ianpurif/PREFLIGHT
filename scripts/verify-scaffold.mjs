@@ -11,6 +11,7 @@ const required = [
   "docs/architecture/TRUST_BOUNDARIES.md",
   "docs/partners/CHAINLINK.md",
   "docs/partners/LEDGER.md",
+  "docs/partners/THE_GRAPH.md",
   "apps/web/AGENTS.md",
   "apps/api/AGENTS.md",
   "packages/domain/AGENTS.md",
@@ -46,7 +47,17 @@ const required = [
   "apps/web/src/app/real-workspace.tsx",
   "apps/web/src/app/dev-fixtures/evaluate/page.tsx",
   "apps/api/src/application/store.ts",
+  "apps/api/src/evaluation/cre-client.ts",
+  "apps/api/src/graph/provider.ts",
   "apps/api/test/application-lifecycle.test.ts",
+  "apps/api/test/cre-client.test.ts",
+  "apps/api/test/graph-provider.test.ts",
+  "integrations/the-graph/README.md",
+  "integrations/the-graph/subgraph/schema.graphql",
+  "integrations/the-graph/subgraph/subgraph.yaml",
+  "integrations/the-graph/subgraph/abis/RovaultaRegistry.json",
+  "integrations/the-graph/subgraph/src/rovaulta-registry.ts",
+  "docs/planning/exec-plans/P9-partner-bounty-qualification.md",
   "apps/web/src/app/workspace-context.tsx",
   "apps/web/src/app/product-app.tsx",
   "apps/web/src/app/workspace-views.tsx",
@@ -96,6 +107,12 @@ const confidentialEvaluation = readFileSync(
   resolve(root, "integrations/chainlink-cre/src/confidential-evaluation.ts"),
   "utf8",
 );
+const creClient = readFileSync(resolve(root, "apps/api/src/evaluation/cre-client.ts"), "utf8");
+const graphProvider = readFileSync(resolve(root, "apps/api/src/graph/provider.ts"), "utf8");
+const deploymentAgentSource = readFileSync(
+  resolve(root, "apps/api/src/agent/deployment-agent.ts"),
+  "utf8",
+);
 const chainlinkPackage = JSON.parse(
   readFileSync(resolve(root, "integrations/chainlink-cre/package.json"), "utf8"),
 );
@@ -114,6 +131,20 @@ if (
   throw new Error("P3 confidential handler must fetch private input and reuse P2");
 if (confidentialEvaluation.includes("runtime.log"))
   throw new Error("P3 confidential handler must not log from inside the TEE");
+if (
+  !creClient.includes("workflows.execute") ||
+  !creClient.includes("CRE_EVALUATION_PENDING") ||
+  !creClient.includes("confidentialInputSecretId")
+)
+  throw new Error("P9 application evaluation must use the official CRE boundary and fail closed");
+if (
+  !graphProvider.includes("TheGraphClearanceReader") ||
+  !graphProvider.includes("GRAPH_UNAVAILABLE") ||
+  !graphProvider.includes("expiresAt")
+)
+  throw new Error("P9 agent context must use exact, server-only The Graph data");
+if (!deploymentAgentSource.includes("getGraphContext"))
+  throw new Error("P9 deployment preparation must require Graph context before P5");
 if (
   chainlinkPackage.dependencies?.["@rovaulta/domain"] !== "workspace:*" ||
   chainlinkPackage.dependencies?.["@rovaulta/simulation-core"] !== "workspace:*" ||
@@ -206,6 +237,7 @@ const deploymentAgent = readFileSync(
   resolve(root, "apps/api/src/agent/deployment-agent.ts"),
   "utf8",
 );
+const deploymentCatalog = readFileSync(resolve(root, "apps/api/src/agent/catalog.ts"), "utf8");
 const deploymentAgentTools = readFileSync(resolve(root, "apps/api/src/agent/tools.ts"), "utf8");
 const deploymentAgentProvider = readFileSync(
   resolve(root, "apps/api/src/agent/openai-responses-model.ts"),
@@ -283,11 +315,12 @@ for (const requiredSurface of [
   "LEDGER_APPROVAL_REQUIRED",
   "P5_AUTHORIZATION_VERIFIED",
   "resolvePublicRequest",
-  "formatPublicRequest",
 ]) {
   if (!deploymentAgent.includes(requiredSurface))
     throw new Error(`P5.2 deterministic controller is missing: ${requiredSurface}`);
 }
+if (!deploymentCatalog.includes("formatPublicDeploymentRequest"))
+  throw new Error("P5.2 deterministic controller is missing: formatPublicDeploymentRequest");
 if (deploymentAgent.includes(".consume("))
   throw new Error("P5.2 model/controller must not receive release-consumption authority");
 for (const requiredSurface of [
@@ -441,7 +474,7 @@ if (rootAgentsBytes > 16 * 1024)
 
 console.log("✓ scaffold structure present");
 console.log("✓ JSON manifests parse");
-console.log("✓ P1-P8 implementation and verification guardrails present");
+console.log("✓ P1-P9 implementation and verification guardrails present");
 console.log("✓ .env.example has no obvious secret material");
 console.log("✓ root AGENTS.md remains context-efficient");
 

@@ -75,7 +75,7 @@ Graph while P5 remains the final exact-binding and authorization authority.
 - [x] Add negative tests for missing/revoked/mismatched Graph state and authority attempts
 - [ ] Capture live Graph evidence and update partner documentation
 - [x] Run targeted verification for the implemented boundaries
-- [ ] Run the full verification loop
+- [x] Run the full verification loop
 - [ ] Obtain independent read-only review and resolve findings
 - [x] Update task state, evidence matrix, README, and partner/architecture documentation
 - [ ] Capture a completed account-created CRE result and a live Graph `MATCHED` result
@@ -106,15 +106,17 @@ and is sequenced by dependency: protocol/adapters â†’ Graph provider/subgraph â†
 
 ## Verification evidence
 
-Targeted local validation currently passes:
+Targeted and full local validation currently passes:
 
 ```text
 bun --cwd apps/api typecheck
 bun --cwd apps/api test test/application-lifecycle.test.ts test/server.test.ts test/deployment-agent.test.ts test/graph-provider.test.ts test/cre-client.test.ts
+bun run verify
+git diff --check
 ```
 
 The P3 authenticated CRE simulation evidence remains in
 `docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md`. A live Graph
-query identity, a completed account-created CRE result, and the full `bun run verify` result remain
-open. The current environment has no CRE gateway/workflow/private key, Graph API key/subgraph ID,
-RPC, or OpenAI provider/model configuration; no live partner claim is made.
+query identity and a completed account-created CRE result remain open. The current environment has
+no CRE gateway/workflow/private key, Graph API key/subgraph ID, RPC, or OpenAI provider/model
+configuration; no live partner claim is made.

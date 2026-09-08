@@ -14,7 +14,8 @@ authenticated evaluation/clearance, requires a live The Graph registry context, 
 the existing P5 authority; the static catalog remains only for the explicit development fixture
 route. The Graph subgraph/provider artifacts, unit tests, and redacted public audit projection are
 present, but no live Graph response or account-created CRE completion is captured in this
-environment.**
+environment. The full local verification loop (lint, typecheck, package tests, build, Foundry,
+and scaffold verification) is green; external partner evidence remains open.**
 
 ## P9 partner qualification slice
 

@@ -239,21 +239,19 @@ OpenAI provider/model. The required next external steps are documented in
   development/test-only loopback Speculos configuration and production rejection, shared signing path, missing origin token, signer mismatch,
   refusal, failure, malformed output, exact/partial runtime descriptor resolution, required context
   steps, and legacy-fallback cancellation.
-- Chain client: 11/11 tests for deployed-domain EIP-712, all field/domain mutations, signature
+- Chain client: 12/12 tests for deployed-domain EIP-712, all field/domain mutations, signature
   recovery, exact P4 transport, positive pinned-block reader/ABI behavior, chain/registry, verdict,
   revocation, and expiry boundaries.
-- API: 28/28 tests. The 12 P5 regressions still cover pre-sign mismatch/allowlist, signature
-  tampering, durable reopen, concurrent one-time consumption, replay, TOCTOU, strict request shape,
-  CORS, and fail-closed HTTP errors. Fourteen P5.2 tests cover exact orchestration, unsafe/mutated/
-  revoked/expired blocks, genuine P5 authorization status, tool/prompt injection, alternate and
-  conflicting targets, private-context non-disclosure, deterministic wording, provider schemas/
-  failure, and routes. Two P7 tests repeat the fixed-clock A/B/C public trace and verify the
-  corrected clearance remains bound after mutation.
-- Domain: 30/30; simulation core: 60/60; Chainlink CRE: 25/25.
-- Full TypeScript total: 172 tests, 2,814 assertions, zero failures.
-- `bun run lint`: pass; Biome checks 119 files.
+- API: 42/42 tests across 9 files, including the account lifecycle/CRE fail-closed path, Graph
+  provider binding and outage cases, P5/P5.2 authority boundaries, provider schema failures, and
+  deterministic P7 fixture regression.
+- Domain: 31/31; simulation core: 60/60; Chainlink CRE: 26/26; chain client: 12/12; Ledger gate:
+  18/18; web: 2/2.
+- Full TypeScript total: 191 tests, 2,888 assertions, zero failures.
+- `bun run lint`: pass; Biome checks 160 files with 27 existing CSS specificity warnings and no
+  errors.
 - `bun run typecheck`: pass; 7/7 Turbo tasks.
-- `bun run test`: pass; 11/11 Turbo tasks.
+- `bun run test`: pass; 12/12 Turbo tasks.
 - `bun run build`: pass; 7/7 tasks; Next.js production build includes static `/` and `/p5-ledger`.
 - `bun run --cwd apps/web test`: pass; 2 P6 projection/mutation tests, 9 assertions.
 - `bun run test:e2e`: pass; 7 browser tests, including the five P6 states plus the P7 clean
@@ -263,10 +261,10 @@ OpenAI provider/model. The required next external steps are documented in
   pass; generated public trace is byte-for-byte stable. Local timings were approximately `0.43s`
   for setup and `0.37s` for a repeat run.
 - Client bundle leakage scan: pass; no confidential fixture markers in `apps/web/.next/static/chunks`.
-- `bun run contracts:test`: pass; 24 Foundry unit/fuzz tests plus five invariants (128 runs,
-  8,192 calls).
-- `bun run verify:scaffold`: pass; 4/4 tests with positive P5.2/P6/P7 assertions and the
-  non-authoritative judge guard intact.
+- `bun run contracts:test`: pass; 25 Foundry tests (24 registry unit/fuzz tests plus one invariant
+  suite with five invariants, 128 runs, 8,192 calls).
+- `bun run verify:scaffold`: pass; 4/4 tests with positive P5.2/P6/P7/P9 partner-boundary
+  assertions and the non-authoritative judge guard intact.
 - `bun audit`: pass after top-level compatible `uuid` `11.1.1` and `ws` `8.21.0` overrides; 212
   packages checked, no known vulnerabilities.
 - `git diff --check`: pass.

@@ -4,10 +4,10 @@ import test from "node:test";
 
 const root = new URL("../", import.meta.url);
 
-test("selected partners stay limited to Chainlink and Ledger", async () => {
+test("selected partners stay limited to Chainlink, The Graph, and Ledger", async () => {
   const brief = await readFile(new URL("docs/product/BRIEF.md", root), "utf8");
   const decisions = await readFile(new URL("docs/planning/DECISIONS.md", root), "utf8");
-  assert.match(decisions, /Chainlink \+ Ledger only/);
+  assert.match(decisions, /Chainlink \+ The Graph \+ Ledger only/);
   assert.doesNotMatch(brief, /Uniswap|Privy|1inch|Hedera|World ID/);
 });
 
@@ -29,7 +29,7 @@ test("P5 uses pinned current Ledger packages without legacy LedgerJS", async () 
   assert.doesNotMatch(parsed.scripts.test, /pass-with-no-tests/);
 });
 
-test("P3-P8 are load-bearing and the product boundary remains non-authoritative", async () => {
+test("P3-P9 are load-bearing and the product boundary remains non-authoritative", async () => {
   const workflow = await readFile(
     new URL("integrations/chainlink-cre/src/workflow.ts", root),
     "utf8",
@@ -54,6 +54,9 @@ test("P3-P8 are load-bearing and the product boundary remains non-authoritative"
   const eip712 = await readFile(new URL("packages/chain-client/src/eip712.ts", root), "utf8");
   const release = await readFile(new URL("apps/api/src/release/release-service.ts", root), "utf8");
   const agent = await readFile(new URL("apps/api/src/agent/deployment-agent.ts", root), "utf8");
+  const catalog = await readFile(new URL("apps/api/src/agent/catalog.ts", root), "utf8");
+  const creClient = await readFile(new URL("apps/api/src/evaluation/cre-client.ts", root), "utf8");
+  const graphProvider = await readFile(new URL("apps/api/src/graph/provider.ts", root), "utf8");
   const agentProvider = await readFile(
     new URL("apps/api/src/agent/openai-responses-model.ts", root),
     "utf8",
@@ -119,7 +122,12 @@ test("P3-P8 are load-bearing and the product boundary remains non-authoritative"
   assert.match(agent, /this\.#releaseService\.prepare/);
   assert.match(agent, /LEDGER_APPROVAL_REQUIRED/);
   assert.match(agent, /resolvePublicRequest/);
-  assert.match(agent, /formatPublicRequest/);
+  assert.match(catalog, /formatPublicDeploymentRequest/);
+  assert.match(creClient, /workflows\.execute/);
+  assert.match(creClient, /CRE_EVALUATION_PENDING/);
+  assert.match(graphProvider, /TheGraphClearanceReader/);
+  assert.match(graphProvider, /GRAPH_UNAVAILABLE/);
+  assert.match(agent, /getGraphContext/);
   assert.match(agentProvider, /store: false/);
   assert.doesNotMatch(agent, /this\.#releaseService\.consume/);
   for (const name of [
