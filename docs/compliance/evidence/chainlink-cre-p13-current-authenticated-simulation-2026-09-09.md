@@ -1,11 +1,11 @@
 # P13 Current Chainlink CRE Authenticated Simulation Evidence
 
-**Evidence class:** CRE authenticated simulation  
-**Captured:** `2026-09-08T21:44:30.120Z` (UTC)  
-**CLI:** CRE `1.32.0`  
-**Target:** `staging-settings`  
-**Workflow:** `integrations/chainlink-cre`  
-**Trigger index:** `0` (`http-trigger`)  
+**Evidence class:** CRE authenticated simulation
+**Captured:** `2026-09-08T21:44:30.120Z` (UTC)
+**CLI:** CRE `1.32.0`
+**Target:** `staging-settings`
+**Workflow:** `integrations/chainlink-cre`
+**Trigger index:** `0` (`http-trigger`)
 **Deployment:** simulation only; no live DON deployment claimed
 
 This is a fresh current-source run after the site-bound selector and temporary secret injection
