@@ -30,7 +30,7 @@ export function LandingPage() {
       <header className="landing-nav">
         <Link className="brand-lockup" href="/" aria-label="Rovaulta home">
           <span className="brand-mark" aria-hidden="true">
-            P
+            R
           </span>
           <span>
             <strong>Rovaulta</strong>

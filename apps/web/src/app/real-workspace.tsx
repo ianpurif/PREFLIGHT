@@ -39,7 +39,7 @@ function ProductBrand() {
   return (
     <Link className="brand-lockup product-brand" href="/app" aria-label="Rovaulta workspace home">
       <span className="brand-mark" aria-hidden="true">
-        P
+        R
       </span>
       <span>
         <strong>Rovaulta</strong>

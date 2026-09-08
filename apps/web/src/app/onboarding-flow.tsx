@@ -39,7 +39,7 @@ export function AccountEntry({
       <div className="onboarding-topbar">
         <Link className="brand-lockup" href="/" aria-label="Back to Rovaulta home">
           <span className="brand-mark" aria-hidden="true">
-            P
+            R
           </span>
           <span>
             <strong>Rovaulta</strong>

@@ -139,7 +139,7 @@ export default function P5LedgerOperatorPage() {
       <header className="operator-topbar">
         <Link className="brand-lockup" href="/app" aria-label="Back to Rovaulta workspace">
           <span className="brand-mark" aria-hidden="true">
-            P
+            R
           </span>
           <span>
             <strong>Rovaulta</strong>
