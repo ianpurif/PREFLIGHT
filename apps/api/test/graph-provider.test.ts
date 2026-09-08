@@ -79,6 +79,9 @@ describe("The Graph clearance provider", () => {
     await expect(
       reader(entity({ robotBuildDigest: `0x${"ff".repeat(32)}` })).readClearance(clearance),
     ).resolves.toMatchObject({ status: "MISMATCH" });
+    await expect(
+      reader(entity({ expiresAt: "1999999998" })).readClearance(clearance),
+    ).resolves.toMatchObject({ status: "MISMATCH" });
   });
 
   test("does not use a fixture fallback when provider configuration is absent", async () => {

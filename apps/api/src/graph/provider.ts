@@ -191,9 +191,13 @@ export class TheGraphClearanceReader implements GraphClearanceReader {
     ] as const;
     const blockNumber = requiredString(stored.blockNumber, "blockNumber");
     const blockHash = hex32(stored.blockHash, "blockHash");
+    const issuedAt = requiredString(stored.issuedAt, "issuedAt");
+    const expiresAt = requiredString(stored.expiresAt, "expiresAt");
     const exact =
       actualDigest === digest &&
       bindings.every(([actual, expected]) => hex32(actual, "binding") === expected.toLowerCase()) &&
+      issuedAt === requested.bindings.issuedAt.toString() &&
+      expiresAt === requested.bindings.expiresAt.toString() &&
       typeof stored.verdict === "string" &&
       stored.verdict.toLowerCase() === VERDICT_CLEAR_BYTES32 &&
       typeof stored.revoked === "boolean";
@@ -210,8 +214,8 @@ export class TheGraphClearanceReader implements GraphClearanceReader {
       return Object.freeze({ ...base, status: "MISMATCH", reason: "CLEARANCE_BINDING_MISMATCH" });
     if (stored.revoked === true)
       return Object.freeze({ ...base, status: "REVOKED", reason: "CLEARANCE_REVOKED" });
-    const expiresAt = Number(requiredString(stored.expiresAt, "expiresAt"));
-    if (!Number.isSafeInteger(expiresAt) || expiresAt <= this.#now()) {
+    const expiresAtNumber = Number(expiresAt);
+    if (!Number.isSafeInteger(expiresAtNumber) || expiresAtNumber <= this.#now()) {
       return Object.freeze({ ...base, status: "EXPIRED", reason: "CLEARANCE_EXPIRED" });
     }
     return Object.freeze({ ...base, status: "MATCHED" });
