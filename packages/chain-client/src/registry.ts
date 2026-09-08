@@ -43,6 +43,13 @@ const CLEARANCE_BINDING_COMPONENTS = [
 export const ROVAULTA_REGISTRY_ABI = [
   {
     type: "function",
+    name: "registrars",
+    stateMutability: "view",
+    inputs: [{ name: "", type: "address" }],
+    outputs: [{ name: "", type: "bool" }],
+  },
+  {
+    type: "function",
     name: "clearanceDigestByIdHash",
     stateMutability: "view",
     inputs: [{ name: "clearanceIdHash", type: "bytes32" }],
@@ -77,6 +84,53 @@ export const ROVAULTA_REGISTRY_ABI = [
       { name: "expected", type: "tuple", components: CLEARANCE_BINDING_COMPONENTS },
     ],
     outputs: [{ name: "", type: "bool" }],
+  },
+  {
+    type: "function",
+    name: "recordClearance",
+    stateMutability: "nonpayable",
+    inputs: [
+      {
+        name: "input",
+        type: "tuple",
+        components: [
+          { name: "clearanceDigest", type: "bytes32" },
+          { name: "bindings", type: "tuple", components: CLEARANCE_BINDING_COMPONENTS },
+          { name: "verdict", type: "bytes32" },
+        ],
+      },
+    ],
+    outputs: [],
+  },
+  {
+    type: "event",
+    name: "ClearanceRecorded",
+    anonymous: false,
+    inputs: [
+      { name: "clearanceDigest", type: "bytes32", indexed: true },
+      { name: "clearanceIdHash", type: "bytes32", indexed: true },
+      { name: "robotBuildDigest", type: "bytes32", indexed: true },
+      { name: "verdict", type: "bytes32", indexed: false },
+      { name: "issuer", type: "address", indexed: false },
+      { name: "issuedAt", type: "uint64", indexed: false },
+      { name: "expiresAt", type: "uint64", indexed: false },
+    ],
+  },
+  {
+    type: "event",
+    name: "ClearanceBindingsRecorded",
+    anonymous: false,
+    inputs: [
+      { name: "clearanceDigest", type: "bytes32", indexed: true },
+      { name: "siteIdHash", type: "bytes32", indexed: true },
+      { name: "robotIdHash", type: "bytes32", indexed: true },
+      { name: "robotBuildIdHash", type: "bytes32", indexed: false },
+      { name: "safetyEnvelopeIdHash", type: "bytes32", indexed: false },
+      { name: "safetyEnvelopeCommitment", type: "bytes32", indexed: false },
+      { name: "evaluatorVersionHash", type: "bytes32", indexed: false },
+      { name: "evaluationIdHash", type: "bytes32", indexed: false },
+      { name: "evaluationInputsDigest", type: "bytes32", indexed: false },
+    ],
   },
 ] as const;
 
