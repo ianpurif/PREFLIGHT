@@ -23,7 +23,9 @@ function validated(name: string, pattern: RegExp, message: string): string {
 
 function redactedError(error: unknown, sensitive: readonly string[]): string {
   const candidate = error instanceof Error ? error.message : "CRE secrets provisioning failed";
-  return sensitive.reduce((message, value) => message.replaceAll(value, "[redacted]"), candidate);
+  return sensitive
+    .filter((value) => value.length > 0)
+    .reduce((message, value) => message.replaceAll(value, "[redacted]"), candidate);
 }
 
 function run(): void {
