@@ -47,4 +47,5 @@ export function createApplicationStoreFromEnvironment(
 }
 
 export * from "./errors.js";
+export * from "./clearance.js";
 export * from "./store.js";
