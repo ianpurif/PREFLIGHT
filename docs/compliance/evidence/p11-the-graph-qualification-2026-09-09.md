@@ -47,6 +47,7 @@ nonce, and human Ledger checks.
 | Graph Gateway request contains only exact public digest and allowlisted fields | PASS; injected transport test |
 | Missing/revoked/expired/mismatched/malformed Graph state blocks account agent | PASS; injected provider/agent tests |
 | P5 remains after Graph gate | PASS; matched test reaches `LEDGER_APPROVAL_REQUIRED`, direct P5 reader remains next |
+| `bun run verify` | PASS; lint, typecheck, 204 tests/2,956 assertions, 8 build tasks, Foundry, and scaffold verification |
 
 These tests use injected responses and are deliberately not described as live provider evidence.
 
@@ -87,6 +88,10 @@ These tests use injected responses and are deliberately not described as live pr
 The small query-only helper `bun run --cwd integrations/the-graph evidence:live` can verify a
 public digest before the full account-agent command. It exits nonzero for missing credentials or a
 missing entity and never prints the API key.
+
+In this checkout the helper was run on 2026-09-09 and failed closed with:
+`THE_GRAPH_API_KEY is required; no live evidence was collected`. This is an environment blocker,
+not a simulated provider result.
 
 ## Current status and blockers
 
