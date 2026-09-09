@@ -56,6 +56,13 @@ direct registry read, signer allowlist, nonce, Ledger device, and post-sign chec
 The static catalog and deterministic local readers are retained only for the explicit development
 fixture path and tests. They cannot serve a normal account target.
 
+The normal application also exposes an explicit operator-selected
+`ROVAULTA_CRE_EXECUTION_MODE=simulation` mode. It invokes the unchanged official CRE CLI workflow
+for account-owned inputs, creates a temporary workflow `secretsNames` mapping for the exact site
+selector, and persists `official-cre-cli-simulation` plus the CLI version only after the same public
+callback and exact-binding checks pass. Gateway mode remains the default; simulation mode is
+provenance for a local official CLI execution, not a live CRE/DON assertion or a P2 fallback.
+
 ## Consequences
 
 - The normal product cannot claim a completed evaluation or account-backed Graph preparation while
@@ -71,3 +78,5 @@ fixture path and tests. They cannot serve a normal account target.
   is never an HTTP route and never writes the envelope or blind to evidence.
 - Unit tests use injected provider responses for determinism; they are not live Chainlink or Graph
   qualification evidence.
+- Account-owned simulation tests use a fake process runner for deterministic cleanup and parser
+  coverage; they are not evidence of a real operator account, Sepolia transaction, or Graph index.

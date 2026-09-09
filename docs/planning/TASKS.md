@@ -154,3 +154,17 @@
 - [x] simulation selected as the Chainlink qualification path; live deployment explicitly not claimed
 - [ ] create one normal account-backed evaluation through an optional deployed CRE gateway
 - [ ] verify an account-created evaluation is consumable by the existing P12 command (optional live path)
+
+## P13.1 — Account-owned official CRE CLI simulation mode
+- [x] add an explicit `ROVAULTA_CRE_EXECUTION_MODE=simulation` application mode; keep gateway as the default
+- [x] build the official CLI public payload from account-owned site, robot, build, request, and traces
+- [x] generate a temporary `secretsNames` mapping for the exact request-scoped site selector
+- [x] pass the versioned confidential envelope/blind through the CRE-supported temporary `-e` file only
+- [x] require `cre -v` and `cre whoami` before starting the account simulation
+- [x] require the existing callback parser, behavior-input digest, and exact P1 binding validation before persistence
+- [x] persist public `official-cre-cli-simulation` provenance and CLI version on the account evaluation
+- [x] delete temporary workflow, mapping, payload, and secret material on success or failure
+- [x] cover dynamic selector mapping, cleanup, confidential-output rejection, and clearance construction
+- [x] document the operator flow and keep simulation provenance distinct from live CRE/DON execution
+- [ ] run the mode with a real operator account and capture one account-owned `CLEAR`
+- [ ] use that stored `CLEAR` with P12 to create a real Sepolia clearance and capture Graph indexing

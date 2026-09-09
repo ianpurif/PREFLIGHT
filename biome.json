@@ -13,6 +13,8 @@
       "!!.env",
       "!!**/.env",
       "!!**/.env.*",
+      "!!.data",
+      "!!**/.data",
       "!!**/.cre_build_tmp.js",
       "!!**/*.tsbuildinfo",
       "!!integrations/the-graph/subgraph/generated",

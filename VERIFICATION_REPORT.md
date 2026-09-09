@@ -8,10 +8,11 @@ Chainlink boundaries, P10 asynchronous CRE result completion, P11 The Graph qual
 authenticated CRE simulation qualification; P1–P4 regression-checked.
 
 **Status:** The Chainlink qualification path is complete through committed authenticated CRE CLI
-simulation evidence. The optional normal account gateway still fails closed unless deployed CRE
-gateway/result transport and request-scoped secrets are configured. The Graph live response,
-external model execution, authenticated Clear Signing A/B/E/F, and physical Ledger evidence remain
-unclaimed.
+simulation evidence. The normal account gateway still fails closed unless deployed CRE gateway/
+result transport and request-scoped secrets are configured. P13.1 now adds an explicit account-owned
+official CLI simulation mode, but no account-owned result, Sepolia transaction, Graph match, or
+Ledger approval is claimed from this checkout. The Graph live response, external model execution,
+authenticated Clear Signing A/B/E/F, and physical Ledger evidence remain unclaimed.
 
 ## P6 judge-facing dashboard result
 
@@ -270,9 +271,12 @@ ignored site-bound inputs, runs all three official CLI commands, extracts only t
 validates it with the strict Rovaulta request/callback parsers and exact bindings, checks that the
 confidential value is absent from CLI output, and writes only a redacted evidence JSON. The command
 fails closed when the official CLI or authenticated context is missing; it never substitutes P2 or
-creates a success artifact. The current environment has no `cre` executable, so a fresh current-source
-rerun here was not possible. Live workflow deployment, DON consensus, production Vault custody, and
-hardware TEE attestation are not claimed.
+creates a success artifact. The official `cre` CLI is installed in WSL for operator use. The
+account-mode executor now checks `cre whoami` before invoking the workflow. The current WSL probe
+stops there with the external error `authentication failed: unable to retrieve organization info`
+(`token refresh failed`, request timeout); no account result or evidence artifact was created.
+Live workflow deployment, DON consensus, production Vault custody, and hardware TEE attestation
+are not claimed.
 
 Focused checks for this change:
 
@@ -280,7 +284,7 @@ Focused checks for this change:
 bun --filter '@rovaulta/chainlink-cre' test
 bun --filter '@rovaulta/chainlink-cre' typecheck
 bun --filter '@rovaulta/api' test -- cre-simulation-evidence.test.ts
-bun run --cwd apps/api evidence:cre-simulation  # fails closed here: CRE CLI unavailable
+bun run --cwd apps/api evidence:cre-simulation  # requires the authenticated operator CRE context
 ```
 
 ## P11 The Graph qualification result
@@ -312,18 +316,18 @@ eligibility also remains unverified; see
 - Chain client: 12/12 tests for deployed-domain EIP-712, all field/domain mutations, signature
   recovery, exact P4 transport, positive pinned-block reader/ABI behavior, chain/registry, verdict,
   revocation, and expiry boundaries.
-- API: 50/50 tests across 10 files, including the account lifecycle/CRE fail-closed path, Graph
-  provider binding and outage cases, P5/P5.2 authority boundaries, provider schema failures, and
-  deterministic P7 fixture regression.
-- Domain: 31/31; simulation core: 60/60; Chainlink CRE: 31/31; chain client: 12/12; Ledger gate:
+- API: 60/60 tests across 13 files, including the account lifecycle/CRE fail-closed path, official
+  CLI simulation cleanup/provenance, Graph provider binding and outage cases, P5/P5.2 authority
+  boundaries, provider schema failures, and deterministic P7 fixture regression.
+- Domain: 31/31; simulation core: 60/60; Chainlink CRE: 32/32; chain client: 12/12; Ledger gate:
   18/18; web: 2/2.
-- Full TypeScript total: 204 tests, 2,958 assertions, zero failures.
-- `bun run lint`: pass; Biome checks 161 files with 27 existing CSS specificity warnings and no
+- Full TypeScript total: 215 tests, 3,008 assertions, zero failures.
+- `bun run lint`: pass; Biome checks 173 files with 27 existing CSS specificity warnings and no
   errors.
 - `bun run typecheck`: pass; 7/7 Turbo tasks.
 - `bun run test`: pass; 12/12 Turbo tasks.
-- `bunx turbo test --force`: pass; uncached 12/12 tasks, confirming 204 tests and 2,958
-  assertions after the P11 Graph/provider additions.
+- `bunx turbo test --force`: pass; uncached 12/12 tasks, confirming 215 tests and 3,008
+  assertions.
 - `bun run build`: pass; 8/8 tasks including the pinned The Graph subgraph build; Next.js
   production build includes static `/` and `/p5-ledger`.
 - `bun run --cwd apps/web test`: pass; 2 P6 projection/mutation tests, 9 assertions.
@@ -334,15 +338,15 @@ eligibility also remains unverified; see
   pass; generated public trace is byte-for-byte stable. Local timings were approximately `0.43s`
   for setup and `0.37s` for a repeat run.
 - Client bundle leakage scan: pass; no confidential fixture markers in `apps/web/.next/static/chunks`.
-- `bun run contracts:test`: pass; 25 Foundry tests (24 registry unit/fuzz tests plus one invariant
-  suite with five invariants, 128 runs, 8,192 calls).
+- Windows `forge test`: pass; 24 registry unit/fuzz tests. The WSL `bun run contracts:test` command
+  remains environment-blocked because `forge` is not installed in WSL.
 - `bun run verify:scaffold`: pass; 4/4 tests with positive P5.2/P6/P7/P9 partner-boundary
   assertions and the non-authoritative judge guard intact.
 - `bun audit`: pass after top-level compatible `uuid` `11.1.1` and `ws` `8.21.0` overrides; 212
   packages checked, no known vulnerabilities.
 - `git diff --check`: pass.
-- `bun run verify`: pass; lint, typecheck, package tests, build, Foundry contracts, and scaffold
-  verification all completed successfully.
+- WSL `bun run verify`: reached the final contract step after lint, typecheck, package tests, and
+  build passed, then stopped with `forge: command not found`; the Windows Foundry run above passes.
 
 The read-only live Sepolia P5 client confirmed chain, registry code, and exact-reader behavior at
 block `11645707`; a deliberately unregistered local fixture returned `exists=false` and
@@ -395,14 +399,29 @@ The command was run in this environment and failed closed before creating any ac
 {"status":"BLOCKED","error":"ROVAULTA_P13_EMAIL is required"}
 ```
 
-The environment also lacks `CHAINLINK_CRE_WORKFLOW_ID`, `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY`,
-`ROVAULTA_CRE_RESULT_CALLBACK_SECRET`, the deployed CRE gateway/result callback, and a
-request-scoped site secret. The official `cre` CLI is not installed. Consequently there is no
-real evaluation ID, public `CLEAR`, callback, execution identifier, or P13 evidence artifact to
-report. The next operator action is to provision the deployed/activated workflow, exact site secret
-selector, callback HMAC/HTTPS delivery, and server-only gateway credentials, then run setup-only,
-the local provisioning command, and the normal account evaluation. A local P2-injected test is not
-acceptable evidence.
+The environment has no usable deployed gateway/result callback or account-ready CRE organization
+context for this run. Consequently there is no real evaluation ID, account-owned public `CLEAR`,
+callback, execution identifier, clearance transaction, or Graph match to report. P13.1 now provides
+the explicit `ROVAULTA_CRE_EXECUTION_MODE=simulation` path: after setup-only creates the real
+account/site/robot/build records, it invokes the official CLI with a temporary exact-selector
+`secretsNames` mapping and persists the result only after strict public validation. A local P2-
+injected test is not acceptable evidence. The next operator action is to run that mode with a
+working authenticated CRE CLI, then pass its stored `CLEAR` to the existing P12 command.
+
+## P13.1 account-owned official CLI simulation mode
+
+The normal API entrypoint now selects the official CLI executor only when
+`ROVAULTA_CRE_EXECUTION_MODE=simulation` is explicitly set; gateway mode remains the default. The
+executor constructs the public request from the authenticated account's persisted site, robot,
+build, and traces, creates a short-lived workflow folder with the exact site selector in
+`secretsNames`, writes the versioned envelope/blind only to a temporary CRE `-e` file, and invokes
+the unchanged P13 workflow. It accepts no P2 fallback, fabricated result, browser verdict, or
+manual callback. The public result passes the existing callback parser, behavior-input digest, and
+exact P1 binding checks before `ApplicationStore` persists `executionMode:
+official-cre-cli-simulation` and the CLI version. Temporary workflow, mapping, payload, and secret
+material are removed on every exit path. The executor verifies both `cre -v` and `cre whoami` and
+fails closed before workflow execution when the authenticated session is unavailable. The
+simulation provenance is explicitly not live CRE/DON execution and does not itself write Sepolia.
 
 ## Dependency and secret review
 

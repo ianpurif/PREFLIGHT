@@ -61,6 +61,22 @@ secret in CRE `main`, the callback HMAC secret, an HTTPS result-delivery URL, an
 signer configuration. Missing live configuration keeps that path explicitly unavailable; it does not
 weaken or block the simulation qualification path.
 
+### Account-owned official CLI simulation mode
+
+The normal API can also run with `ROVAULTA_CRE_EXECUTION_MODE=simulation` when an operator needs a
+real account-owned evaluation without a deployed CRE gateway. This is not a second evaluator: the
+route constructs the public request from persisted account records, invokes the unchanged official
+CLI workflow and `handlerInTee`, and accepts the result only after the existing public callback
+parser, behavior-input digest check, and exact P1 binding validation succeed. The executor creates
+a short-lived workflow configuration with a `secretsNames` entry for the exact site selector and
+supplies the encrypted policy's versioned envelope/blind through the CLI `-e` file. Temporary
+workflow, mapping, payload, and secret files are deleted after the command. The stored evaluation
+records `official-cre-cli-simulation` and the CLI version so P12 can distinguish this provenance
+from live CRE/DON execution. The executor checks `cre -v` and `cre whoami` before simulation and
+fails closed if the authenticated CLI session is unavailable. No account-owned result, Sepolia
+clearance, or Graph match is claimed until an operator runs the flow with real credentials and
+captures those outputs.
+
 P13 adds a two-phase operator path. First, `bun run --cwd apps/api p13:account-evaluation` with
 `ROVAULTA_P13_SETUP_ONLY=true` uses only the normal authenticated HTTP routes and prints public
 account/site/robot/build IDs. Then `bun run --cwd apps/api p13:provision-site-secret` reads the

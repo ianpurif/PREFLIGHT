@@ -393,3 +393,25 @@ evidence; it has no P2 fallback, live deployment, or signing path.
 The runner stores no raw CLI output, envelope, blind, or credential and deletes its temporary secret
 directory after execution. Live DON/Vault/Nitro execution and account-created gateway completion
 remain unclaimed optional upgrades.
+
+## 2026-09-09 — P13.1 account-owned official CLI simulation mode
+
+**Tool:** OpenAI Codex using the Rovaulta vertical-slice, execution-plan, partner-compliance, and
+verification-loop skills.
+
+**Human direction:** Reuse the frozen P13 official CRE simulation to produce an account-owned
+evaluation without fabricating records, bypassing strict P1/P9/P10 validation, or claiming live CRE.
+
+**AI-assisted output:** An explicit `ROVAULTA_CRE_EXECUTION_MODE=simulation` application executor
+that builds public input from persisted account resources, generates a temporary CRE workflow
+`secretsNames` mapping for the exact site selector, passes the confidential payload through the
+documented CLI `-e` mechanism, validates the public result and bindings, and persists safe execution
+provenance for the existing Sepolia clearance command. It performs a `cre -v`/`cre whoami`
+preflight, allows only the official CLI authentication context (including `CRE_API_KEY` when
+explicitly supplied), and never logs that credential. Tests cover dynamic selector mapping,
+temporary-file cleanup, confidential-output rejection, and clearance construction.
+
+**Evidence boundary:** This change adds no account-owned live result, Sepolia transaction, Graph
+match, or Ledger approval evidence. The frozen P13 workflow/handler is unchanged, temporary secret
+material is deleted, and an operator must supply real account credentials and run the path before
+any account-owned `CLEAR` claim is made.

@@ -86,6 +86,25 @@ still fail closed when its external configuration is absent.**
   redacted public artifact; the account-backed gateway remains independently blocked without its
   external deployment configuration.
 
+## P13.1 account-owned official CRE CLI simulation mode
+
+- The normal authenticated `/evaluations` route now accepts the explicit
+  `ROVAULTA_CRE_EXECUTION_MODE=simulation` operator mode. Gateway mode remains the default, and
+  no implicit local P2/P7 fallback exists.
+- The simulation executor verifies the installed CLI version and runs `cre whoami` before invoking
+  the workflow. An unavailable or expired authenticated CLI session fails closed without exposing
+  the CLI response.
+- The simulation executor builds its public payload from the account-owned site, robot, build,
+  request, and traces, then invokes the unchanged P13 `handlerInTee` workflow through the official
+  CRE CLI. It creates a short-lived workflow configuration whose `secretsNames` entry matches the
+  exact request-scoped site selector, maps that selector to a temporary `-e` environment file, and
+  removes the workflow, payload, mapping, and secret files in a `finally` block.
+- A result is persisted only after the existing callback parser, behavior-input digest check, and
+  exact P1 binding validation pass. The public evaluation records
+  `executionMode: official-cre-cli-simulation` and the CLI version; this is explicit provenance,
+  not a live CRE/DON claim. The existing P12 command can consume the stored `CLEAR`, but no
+  account-owned simulation or Sepolia transaction has been run in this checkout.
+
 ## P11 The Graph qualification implementation
 
 - `integrations/the-graph` pins `@graphprotocol/graph-cli@0.98.1` and

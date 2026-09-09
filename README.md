@@ -339,6 +339,7 @@ envelope blinds, signatures, or confidential CRE payloads.
 | `ROVAULTA_AGENT_MODEL`            | Explicit provider model name                             |
 | `ROVAULTA_AGENT_CATALOG_PATH`     | Public deployment catalog path                           |
 | `ROVAULTA_CRE_GATEWAY_URL`       | Deployed CRE HTTP gateway URL (server-only)              |
+| `ROVAULTA_CRE_EXECUTION_MODE`    | `gateway` (default) or explicit `simulation` for the official CRE CLI |
 | `CHAINLINK_CRE_WORKFLOW_ID`      | Deployed CRE workflow ID (server-only)                   |
 | `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY` | Authorized CRE HTTP trigger key (server-only)         |
 | `ROVAULTA_CRE_RESULT_CALLBACK_SECRET` | API-only HMAC key for the TEE public-result callback |
@@ -364,6 +365,17 @@ envelope blinds, signatures, or confidential CRE payloads.
 The complete variable list is in [`.env.example`](.env.example). The API catalog must contain public
 canonical targets and clearance records only; it must never contain a private safety envelope or
 blind. See [`apps/api/README.md`](apps/api/README.md) for the exact request grammar and endpoints.
+
+### Run an account-owned official CRE simulation
+
+When a deployed CRE gateway is unavailable, the normal account application can use the explicit
+`ROVAULTA_CRE_EXECUTION_MODE=simulation` mode. It still creates the site, robot, and build through
+the authenticated routes, invokes the unchanged official `handlerInTee` workflow through the CRE CLI,
+validates the public result and exact P1 bindings, and stores only the public
+evaluation plus `official-cre-cli-simulation` provenance. The executor creates and deletes a
+temporary request-scoped `secretsNames` mapping and `-e` environment file; it never uses the local
+P2 evaluator as a fallback and never claims live CRE/DON execution. The CLI version and `cre whoami`
+checks must succeed first. See the [API runbook](apps/api/README.md#account-owned-official-cre-cli-simulation-mode).
 
 ### Record one real account clearance on Sepolia
 

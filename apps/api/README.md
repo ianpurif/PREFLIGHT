@@ -139,6 +139,42 @@ allowlisted public projection and no policy, envelope, blind, secret, credential
 report. If the gateway returns a bounded public workflow execution identifier, it is carried through
 as `creExecutionId`; no raw gateway response is retained.
 
+### Account-owned official CRE CLI simulation mode
+
+When live CRE provisioning is unavailable, the normal account route can be run against the same
+authenticated official CLI simulation without promoting a fixture or using the local P2 evaluator.
+Set the explicit mode before starting the API:
+
+```powershell
+$env:ROVAULTA_CRE_EXECUTION_MODE="simulation"
+$env:ROVAULTA_CRE_CLI="cre"
+bun run --cwd apps/api dev
+```
+
+Use the setup-only and evaluation commands above with a real operator setup file and real account
+credentials. The server builds the public CRE payload from that account's site/robot/build records,
+creates the temporary CLI env file from the encrypted site policy, invokes:
+
+```text
+cre -R . -T staging-settings -e <temporary-env-file> --non-interactive workflow simulate <temporary-workflow-folder> --trigger-index 0 --http-payload <temporary-public-payload>
+```
+
+The executor also creates a short-lived workflow configuration whose `secretsNames` entry maps the
+exact account site's selector to the temporary environment variable; the checked-in fixture
+mapping is never reused for another site. The CLI result is accepted only after the existing public
+callback parser, behavior-input digest check, and exact P1 binding validation pass. The resulting account evaluation records
+`executionMode: official-cre-cli-simulation` and the CLI version. Temporary payload/secret files are
+deleted on success or failure; no confidential value or raw CLI output is returned or written to
+evidence. The executor checks both `cre -v` and `cre whoami` before starting the workflow; a missing
+or expired CLI session fails closed. Authentication may come from the operator's `cre login` context
+or the official `CRE_API_KEY` environment variable; the key is passed only to the child CLI and is
+never printed or persisted. A nonzero CLI exit, malformed result, rejection, binding mismatch, or
+leakage fails closed.
+
+This mode is explicitly simulation provenance. It is not live CRE/DON execution and does not itself
+create a clearance. Once the persisted account result is `CLEAR`, the existing
+`record:sepolia-clearance` command is the only path that can create the real Sepolia registry record.
+
 ## Chainlink simulation qualification
 
 The Chainlink prize uses the authenticated official CRE CLI simulation path; a live CRE deployment is
