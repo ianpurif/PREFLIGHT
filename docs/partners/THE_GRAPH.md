@@ -23,10 +23,12 @@ bindings, verdict, revocation state, expiry, chain, registry, and block metadata
 
 - `integrations/the-graph/subgraph/` contains the from-scratch Sepolia subgraph schema, manifest,
   ABI, and event mappings for `RovaultaRegistry`.
-- `apps/api/src/graph/provider.ts` is a server-only Graph Gateway adapter. It sends the exact
-  clearance digest as a GraphQL variable and returns only public registry context. It has no fixture
-  fallback and fails closed on missing configuration, malformed data, provider errors, stale/expired
-  records, revocation, or any binding mismatch.
+- `apps/api/src/graph/provider.ts` is a server-only Graph provider adapter. It sends the exact
+  clearance digest as a GraphQL variable and returns only public registry context. It supports the
+  production Gateway pair and an explicitly labelled, exact Subgraph Studio query URL for a hosted
+  deployment that has not been published to Gateway. It has no fixture fallback and fails closed on
+  missing configuration, malformed data, provider errors, stale/expired records, revocation, or
+  any binding mismatch.
 - `apps/api/src/agent/deployment-agent.ts` exposes `getGraphContext` in the bounded tool sequence.
   An account-backed preparation cannot reach P5 unless the live Graph result is `MATCHED`.
 - `apps/api/src/agent/index.ts` resolves the target from authenticated account records, not the
@@ -40,10 +42,11 @@ Subgraph Studio deployment path. Generated code and build output are ignored and
 application source.
 
 The operator has deployed the current manifest as `rovaulta-registry` version `0.1.0` on Ethereum
-Sepolia; the hosted index reports 100% sync with zero entities before the first real clearance. This
-is deployment/indexing state, not a clearance proof. The next live step is to run the account-backed
-Sepolia issuance command documented in the root README, then query the exact resulting digest through
-the Gateway after the entity appears.
+Sepolia. After the first real account-owned clearance was recorded, the hosted Subgraph Studio
+endpoint returned the exact public entity and the API reader validated it as `MATCHED`. This is
+Subgraph Studio provider evidence; it is not a Gateway or decentralized-network claim. The redacted
+result is recorded in `docs/compliance/evidence/p14-live-bounty-evidence-2026-09-09.md`. The Gateway
+subgraph ID and model-backed agent handoff remain external evidence items.
 
 The indexed entity contains only public P4 registry fields: exact P1 binding hashes, the verdict,
 issuer, timestamps, revocation state, and the indexing block identity. Private safety envelopes,
@@ -63,20 +66,24 @@ or the P7 fixture is not Graph prize evidence.
 
 ## Configuration and evidence boundary
 
-The API reads `THE_GRAPH_API_KEY`, `THE_GRAPH_SUBGRAPH_ID`, and optionally `THE_GRAPH_API_URL` from
-server environment only. The browser receives the redacted public context in the agent audit, never
-the API key or provider URL credentials.
+The API reads the Gateway pair (`THE_GRAPH_API_KEY` and `THE_GRAPH_SUBGRAPH_ID`) and optionally
+`THE_GRAPH_API_URL` from server environment only. For a hosted Subgraph Studio deployment that has
+not been published to the Gateway, the explicit `THE_GRAPH_STUDIO_QUERY_URL` may be used instead;
+it must be the exact HTTPS Studio query endpoint and carries no credential. The browser receives
+the redacted public context in the agent audit, never the API key or provider URL credentials.
 
-This repository currently contains implementation and unit coverage, but no committed live Graph
-response. Qualification evidence remains blocked until an operator configures a real Graph Gateway
-key/subgraph ID, records one account-created Sepolia clearance, and captures a response for that
-exact digest. The unit tests intentionally use injected responses and are labelled as local
-validation, not provider evidence.
+The repository's live proof can use either a configured Graph Gateway or the explicit hosted Studio
+query endpoint. A Studio response must be labelled as Subgraph Studio evidence, not Gateway or
+decentralized-network evidence. The unit tests intentionally use injected responses and are
+labelled as local validation, not provider evidence. The current public proof uses Studio because
+the hosted deployment's Gateway subgraph ID is not available in this checkout.
 
-P11 does not add Subgraph MCP or Substreams: the minimal hosted subgraph plus Gateway query is already
-the load-bearing source needed by the deployment agent. The smallest live proof is one account-created
-`CLEAR` evaluation with a corresponding public Sepolia registry event, a Gateway `MATCHED` response for
-the exact clearance digest, and the agent's subsequent `LEDGER_APPROVAL_REQUIRED` handoff.
+P11 does not add Subgraph MCP or Substreams: the minimal hosted subgraph plus the configured live
+provider query is the load-bearing source needed by the deployment agent. The smallest live proof is
+one account-created `CLEAR` evaluation with a corresponding public Sepolia registry event, a
+`MATCHED` response for the exact clearance digest, and the agent's subsequent
+`LEDGER_APPROVAL_REQUIRED` handoff. The provider response is captured; the final agent handoff still
+requires an external model configuration.
 
 ## Official references
 

@@ -1,0 +1,58 @@
+{
+  "evidenceClass": "live Sepolia clearance plus live The Graph Subgraph Studio query",
+  "capturedAt": "2026-09-09T15:28:15.857Z",
+  "chain": {
+    "network": "ethereum-sepolia",
+    "chainId": 11155111,
+    "registry": "0xFB270cc222efa8B5005AA097dD512Be2558dde65",
+    "transactionHash": "0xa1854cef882006928b312d418372e861f6470125beaa23c97708a8c8b077e4a1",
+    "blockNumber": "11668773",
+    "issuer": "0xaa5768d0f2157f8781efb975cdd9aec99e7879e3",
+    "events": {
+      "clearanceRecorded": true,
+      "clearanceBindingsRecorded": true
+    }
+  },
+  "accountEvaluation": {
+    "accountId": "account:3dbe64397ce11e131f7286277d93294d",
+    "evaluationId": "evaluation:1a89c0ad9a5e0672c086ad58346595ee",
+    "executionMode": "official-cre-cli-simulation",
+    "creCliVersion": "1.32.0",
+    "verdict": "CLEAR",
+    "siteId": "site:192e49ae56c0abf18cd827706b909ce3",
+    "robotId": "robot:ce87964de66e14684b1b3c68a7a4b1be",
+    "robotBuildId": "robot-build:075049b64bf7dd982705cac9a40d0f27",
+    "robotBuildDigest": "0xc496d3fc98485bcbdef70658f36449da918afc3ec0e56610dff5eeab7bea4a3e",
+    "clearanceId": "clearance:account-3dbe6439-20260909-01",
+    "clearanceDigest": "0xa2434762455812fe57479dc5c86b41f13fbb7a111d23e32101327073b1d4a10d",
+    "issuedAt": "1788967128",
+    "expiresAt": "1789571928"
+  },
+  "graph": {
+    "provider": "subgraph-studio",
+    "queryUrl": "https://api.studio.thegraph.com/query/1758964/rovaulta-registry/0.1.0",
+    "deploymentId": "QmV5cGZDKqNHLMtcsBiCTERSHXJyY6FQemouvzhHQ7rxoj",
+    "status": "MATCHED",
+    "clearanceDigest": "0xa2434762455812fe57479dc5c86b41f13fbb7a111d23e32101327073b1d4a10d",
+    "indexedAtBlock": "11668773",
+    "blockHash": "0xbeb1825cd74ad4600852342cb927cc82604a10d19a7281181852bfdb2a5f5f4b",
+    "revoked": false,
+    "indexingErrors": false
+  },
+  "confidentiality": {
+    "privateEnvelopeIncluded": false,
+    "blindIncluded": false,
+    "credentialsIncluded": false,
+    "privatePolicyIncluded": false
+  },
+  "agent": {
+    "liveGraphContextVerified": true,
+    "liveAccountAgentRun": "BLOCKED",
+    "blocker": "External OpenAI provider key/model configuration is absent; no model execution was claimed"
+  },
+  "ledger": {
+    "humanApprovalRequired": true,
+    "physicalDeviceUsed": false,
+    "clearSigningClaimed": false
+  }
+}

@@ -498,3 +498,24 @@ protects one coordinated API database only. Database loss/split replicas, Sepoli
 clearance revocation after authorization but before a future P6 action require operational/finality
 policy. P5 does not prove physical robot safety, trace provenance, registrar honesty, or live CRE
 delivery.
+
+## 2026-09-09 — P14 live bounty evidence update
+
+The existing account-owned `official-cre-cli-simulation` `CLEAR` was consumed by the unchanged P12
+operator path. Ethereum Sepolia transaction
+`0xa1854cef882006928b312d418372e861f6470125beaa23c97708a8c8b077e4a1` confirmed at block
+`11668773`; both `ClearanceRecorded` and `ClearanceBindingsRecorded` were present and exact registry
+readback passed. The public-only result is recorded in
+`docs/compliance/evidence/p14-live-bounty-evidence-2026-09-09.md`.
+
+The deployed `rovaulta-registry` v0.1.0 Subgraph Studio endpoint returned the exact public entity,
+and `TheGraphClearanceReader` returned `MATCHED` after validating all bindings, issuer, timestamps,
+verdict, revocation, chain, registry, and block metadata. This is live Studio evidence, not Gateway
+or decentralized-network evidence. The direct live query was also captured by the Graph evidence
+script; no entity was manually inserted.
+
+The account-agent evidence command stopped fail-closed before model execution because
+`OPENAI_API_KEY` and `ROVAULTA_AGENT_MODEL` are absent. No model output, `LEDGER_APPROVAL_REQUIRED`
+handoff, Ledger signature, physical approval, Gateway publication, or live CRE/DON execution is
+claimed. The Ledger adapter test suite remains green; physical and official Tester evidence remain
+external prerequisites.

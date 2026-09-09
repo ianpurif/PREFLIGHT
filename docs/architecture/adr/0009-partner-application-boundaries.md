@@ -36,16 +36,18 @@ Every account site has a selector of the form
 namespace. A request-scoped lookup never falls back to another site's secret; the legacy fixed
 selector is simulation compatibility only.
 
-The Graph integration is a server-only Gateway adapter over a from-scratch Sepolia subgraph for the
+The Graph integration is a server-only provider adapter over a from-scratch Sepolia subgraph for the
 public `RovaultaRegistry` events. It queries by the exact clearance digest and verifies every P4
 binding, `CLEAR` verdict, expiry, revocation state, chain, registry, block number, and block hash.
-It returns a redacted public context and never indexes or transmits envelopes, blinds, rules,
-thresholds, traces, credentials, or model output.
+The production path is The Graph Gateway; an exact hosted Subgraph Studio query URL is also allowed
+when a deployment has not been published to Gateway, and its evidence is labelled separately. It
+returns a redacted public context and never indexes or transmits envelopes, blinds, rules, thresholds,
+traces, credentials, or model output.
 
 The subgraph package pins the Graph CLI and AssemblyScript runtime and provides separate codegen,
 build, deploy, query, and account-agent evidence commands. Deployment and live evidence are
-operator actions; the normal repository build never contacts a provider. The provider key and
-hosted subgraph ID are server-only environment values.
+operator actions; the normal repository build never contacts a provider. Gateway credentials,
+hosted subgraph IDs, and the optional Studio URL are server-only environment values.
 
 For authenticated account preparation, the host resolves the exact evaluation/clearance pair from
 the account store, then the bounded agent must call `getGraphContext` before `getClearance` and the

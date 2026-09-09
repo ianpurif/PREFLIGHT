@@ -72,7 +72,8 @@ clearance record for the existing P5/P11 flows.
 - A separate read-only P12 review was requested; the reviewer runtime hit its usage limit before
   returning findings. The implementation was self-reviewed for chain/registrar guards, exact
   binding reuse, receipt/event matching, secret redaction, and pre-broadcast failure behavior.
-- Real Sepolia transaction, event topics, receipt, and Graph indexing: pending operator execution;
-  this checkout now has one account-owned `CLEAR` produced by the authenticated official CLI
-  simulation mode. The operator command still stops before broadcast until its explicit clearance,
-  registrar, and confirmation inputs are supplied.
+- Real Sepolia transaction, event topics, receipt, and Graph indexing: complete for one account-owned
+  `CLEAR` produced by the authenticated official CLI simulation mode. The 2026-09-09 operator run
+  confirmed both registry events and exact readback at block `11668773`; the deployed Subgraph
+  Studio endpoint returned the matching public entity. This is simulation provenance plus live
+  Sepolia/Studio evidence, not live CRE/DON execution or Gateway/decentralized-network evidence.

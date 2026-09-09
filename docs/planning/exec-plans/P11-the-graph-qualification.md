@@ -56,7 +56,7 @@ implemented code from external deployment/provider evidence.
 - [x] Harden/extend live provider and account-agent critical path.
 - [x] Add focused tests and redacted evidence hooks.
 - [x] Run targeted and full verification.
-- [ ] Request independent read-only review and resolve findings.
+- [x] Request independent read-only review and resolve findings.
 - [x] Update docs, evidence, CURRENT, TASKS, and AI usage records.
 
 ## Parallel work / worktrees
@@ -92,9 +92,12 @@ avoid conflicting edits across the API, subgraph, and documentation surfaces.
   subgraph), Foundry contracts, and scaffold verification completed successfully.
 - `bun run --cwd integrations/the-graph evidence:live`: expected fail-closed blocker because
   `THE_GRAPH_API_KEY` is unset; no live response was collected.
-- Hosted subgraph identity, live Gateway response, account-created trace, and Start Fresh pool
-  eligibility remain external/unverified. The qualification artifact preserves these as
-  `BLOCKED`, not as evidence.
+- The hosted Subgraph Studio deployment is live on Sepolia and the first real account-owned
+  clearance is indexed. The direct Studio query and server provider both return `MATCHED` for the
+  exact public digest; this is labelled Studio evidence, not Gateway or decentralized-network
+  evidence. A live Gateway subgraph ID, model-backed agent handoff, and Start Fresh pool
+  eligibility remain external/unverified. The qualification artifact preserves those as
+  `PARTIAL`/`BLOCKED`, not as evidence.
 
 ## Independent review resolution
 

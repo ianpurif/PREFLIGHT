@@ -218,7 +218,7 @@ These partners answer different questions:
 | Partner       | Question                                                                    | Actual use in Rovaulta                                                                                                                                            | Current proof                                                                                                                                               |
 | ------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Chainlink CRE | Can the site evaluate an exact build without exposing its private envelope? | The confidential workflow fetches a site-bound secret inside `handlerInTee`, invokes the deterministic evaluator, and releases only the minimal result. The account API uses the official gateway boundary or the explicit authenticated CLI simulation mode. | Current-source authenticated CLI simulation records unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`; one account-owned simulated `CLEAR` is persisted with explicit simulation provenance. Live gateway completion remains unconfigured. |
-| The Graph    | Can the agent use current public registry context before preparing a release? | A pinned, buildable Sepolia subgraph indexes public `RovaultaRegistry` events. The account-backed agent requires an exact live `MATCHED` Graph context before P5. | Hosted subgraph/API key, live account trace, public demo, and Start Fresh eligibility remain unverified. |
+| The Graph    | Can the agent use current public registry context before preparing a release? | A pinned, buildable Sepolia subgraph indexes public `RovaultaRegistry` events. The account-backed agent requires an exact live `MATCHED` Graph context before P5. | Real clearance is indexed and the Studio provider returns `MATCHED`; live model-to-agent handoff, Gateway publication, public demo, and Start Fresh eligibility remain open. |
 | Ledger        | Who can authorize the exact release after it passes?                        | The browser uses Ledger DMK, WebHID or test-only Speculos, the Ethereum signer kit, and full EIP-712 intent checks. The agent stops at `LEDGER_APPROVAL_REQUIRED`. | Software and partial Speculos evidence are recorded. Physical Clear Signing and official Tester cases remain blocked by missing external access.            |
 
 Without Chainlink's confidential execution, the site would need to hand its private rules to the
@@ -240,7 +240,7 @@ secret custody or a remote robot attestation.
 | P4    | Exact-binding Solidity registry, fuzz/invariant tests, and Sepolia deployment/source verification                          | Implemented; registrar attestation remains explicit and manual |
 | P5    | EIP-712 intent, exact registry checks, durable nonce, Ledger DMK/WebHID/Speculos adapter, and fail-closed signing boundary | Software implemented; hardware evidence incomplete             |
 | P5.2  | Strict OpenAI Responses adapter, host-owned tool state machine, catalog resolution, and Ledger-required handoff            | Local evidence complete; no external model call captured       |
-| P9    | CRE application boundary, The Graph public-context adapter/subgraph, and account-backed agent preparation                    | Code/tests complete; Chainlink simulation qualification evidenced; live account/Graph/model evidence remains open |
+| P9    | CRE application boundary, The Graph public-context adapter/subgraph, and account-backed agent preparation                    | Code/tests complete; Chainlink simulation and live Studio `MATCHED` evidence captured; model/Gateway/Ledger handoff remains open |
 | P6    | Judge dashboard and deterministic React Three Fiber digital twin                                                           | Implemented and browser-tested                                 |
 | P7    | Fixed-clock offline A/B/C rehearsal, demo reset, stale-response protection, and Playwright flow                            | Implemented and locally rehearsed                              |
 | UI    | Landing, first-time onboarding, workspace navigation, setup/build/evaluate/release/evidence views, and Ledger handoff UX  | Implemented and browser-smoke-tested                          |
@@ -346,6 +346,7 @@ envelope blinds, signatures, or confidential CRE payloads.
 | `THE_GRAPH_API_KEY`               | The Graph Gateway API key (server-only)                  |
 | `THE_GRAPH_SUBGRAPH_ID`           | Hosted Rovaulta Sepolia subgraph ID (server-only)        |
 | `THE_GRAPH_API_URL`               | Optional Graph Gateway base URL                          |
+| `THE_GRAPH_STUDIO_QUERY_URL`      | Optional direct hosted Subgraph Studio query URL         |
 | `GRAPH_SUBGRAPH_SLUG`             | Operator-only Subgraph Studio deployment slug           |
 | `GRAPH_DEPLOY_KEY`                | Operator-only Subgraph Studio deploy key                |
 | `GRAPH_VERSION_LABEL`             | Hosted subgraph version label                            |
@@ -478,6 +479,9 @@ These artifacts are intentionally separated by trust boundary:
   live-evidence boundary.
 - [P11 The Graph evidence](docs/compliance/evidence/p11-the-graph-qualification-2026-09-09.md)
   — local build/test proof, operator commands, and explicit live-evidence blockers.
+- [P14 live Sepolia and Graph evidence](docs/compliance/evidence/p14-live-bounty-evidence-2026-09-09.md)
+  — the account-owned simulated `CLEAR`, confirmed Sepolia registry events, and live Subgraph
+  Studio `MATCHED` response; no Gateway, model, or Ledger hardware claim.
 - [Evidence matrix](docs/compliance/EVIDENCE_MATRIX.md) — judge-facing map of claims to artifacts.
 
 ### Existing Ledger emulator screenshots
@@ -529,7 +533,8 @@ Not yet proven or intentionally not implemented:
 - a live Chainlink DON/Vault/Nitro deployment or automatic CRE-to-EVM attestation (not required for the selected simulation qualification path);
 - a completed account-created CRE gateway result (the deployed gateway is asynchronous and no result
   transport is configured in this checkout);
-- a hosted Rovaulta subgraph and live Graph Gateway `MATCHED` response;
+- a live Graph Gateway `MATCHED` response or decentralized-network publication; the hosted Sepolia
+  Subgraph Studio deployment and exact `MATCHED` response are captured in the P14 evidence artifact;
 - a live external OpenAI model execution in the repository evidence;
 - official Ledger Clear Signing Tester A/B/E/F access and complete Speculos signing captures;
 - physical Ledger approval evidence;

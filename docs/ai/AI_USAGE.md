@@ -480,3 +480,25 @@ the workflow directory, and failure-path cleanup is regression-tested.
 **Evidence boundary:** With the authenticated CRE CLI v1.32.0, the existing account/site/robot/build
 records produced one persisted `official-cre-cli-simulation` `CLEAR`. The run did not expose the
 envelope/blind, did not create a Sepolia clearance, and did not claim live DON execution.
+
+## 2026-09-09 — P14 live Sepolia and The Graph evidence closure
+
+**Tool:** OpenAI Codex using the Rovaulta execution-plan, partner-compliance, and verification-loop
+skills plus official The Graph provider documentation.
+
+**Human direction:** Reuse the existing account-owned simulated `CLEAR` and P12/P11 paths. Finish
+only legitimate Chainlink, Graph, and Ledger evidence; do not fabricate an evaluation, clearance,
+Graph entity, AI output, Ledger signature, or live CRE/DON result.
+
+**AI-assisted output:** A server-only optional Subgraph Studio query path was added alongside the
+existing Gateway adapter, with strict endpoint validation, provider labelling, and focused tests.
+The real P12 command recorded the stored account-owned `CLEAR` on Ethereum Sepolia and verified both
+registry events/readback. The deployed Subgraph Studio endpoint was queried for the exact digest and
+the API reader returned `MATCHED`. Redacted public evidence and planning/matrix/runbook updates were
+added; no contract, workflow, evaluator, or Ledger authority was changed.
+
+**Evidence boundary:** The Graph artifact contains only public chain/entity/provenance fields. The
+live account-agent command stopped before model execution because the external OpenAI key/model was
+absent. No `LEDGER_APPROVAL_REQUIRED`, signature, physical-device, Gateway, decentralized-network,
+or live CRE/DON claim is made. Private policy, envelope, blind, credentials, and deploy keys remain
+uncommitted.

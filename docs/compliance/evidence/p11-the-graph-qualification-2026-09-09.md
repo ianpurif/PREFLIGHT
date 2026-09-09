@@ -1,6 +1,7 @@
 # P11 The Graph Qualification Evidence
 
-**Label:** implementation and local validation; no live Graph provider execution is claimed.
+**Label:** historical implementation checkpoint; superseded live provider evidence is recorded in
+[`p14-live-bounty-evidence-2026-09-09.md`](p14-live-bounty-evidence-2026-09-09.md).
 
 **Date:** 2026-09-09
 
@@ -89,18 +90,18 @@ The small query-only helper `bun run --cwd integrations/the-graph evidence:live`
 public digest before the full account-agent command. It exits nonzero for missing credentials or a
 missing entity and never prints the API key.
 
-In this checkout the helper was run on 2026-09-09 and failed closed with:
-`THE_GRAPH_API_KEY is required; no live evidence was collected`. This is an environment blocker,
-not a simulated provider result.
+At this historical checkpoint the helper failed closed with `THE_GRAPH_API_KEY is required; no live
+evidence was collected`. The later P14 run used the deployed Subgraph Studio query endpoint and
+captured a real indexed `MATCHED` response without changing the subgraph data.
 
 ## Current status and blockers
 
 | Requirement | Status | Evidence | Remaining blocker |
 |---|---|---|---|
 | Start Fresh / From Scratch pool | BLOCKED | Repository history and prize wording are documented in `docs/partners/THE_GRAPH.md` | Event-start timestamp and submitted pool must be verified by the submitter; pre-existing work must be disclosed honestly |
-| Actual Subgraph product | PASS (local implementation) | Manifest, schema, ABI, mapping, pinned CLI build | Hosted deployment identity still needs to be recorded |
-| Live Graph provider data | BLOCKED | Server Gateway adapter and live-only scripts | `THE_GRAPH_API_KEY` and hosted `THE_GRAPH_SUBGRAPH_ID` are unset in this environment |
-| Load-bearing AI reasoning/decision | PASS (code), BLOCKED (live proof) | Account agent blocks every non-`MATCHED` state and permits the P5 path only after `MATCHED` | Run one real account-created live trace and record its public audit |
+| Actual Subgraph product | PASS | Manifest, schema, ABI, mapping, pinned CLI build, hosted Studio deployment, and P14 indexed entity |
+| Live Graph provider data | PASS (Studio), PARTIAL (Gateway) | P14 direct Studio query and strict API reader returned `MATCHED` for the real clearance | Gateway subgraph ID and network publication remain unverified |
+| Load-bearing AI reasoning/decision | PASS (code), BLOCKED (live model proof) | Account agent blocks every non-`MATCHED` state and permits P5 only after the Graph gate | External model key/model is absent for the live account-agent command |
 | Open-source documentation | PASS | README, partner contract, architecture, env example, this artifact | Add hosted ID and redacted output after deployment |
 | Short demo evidence | BLOCKED | Reproducible operator procedure exists | Record a 2–4 minute public demo with live provider result and decision transition |
 

@@ -97,7 +97,7 @@
 - [x] negative tests for CRE fallback/network failures, Graph outage/mismatch, account mismatch,
   and agent authority boundaries
 - [ ] provision request-scoped CRE secrets and capture a completed account-created CRE result (optional live path; not required for Chainlink simulation qualification)
-- [ ] deploy/index the Rovaulta Sepolia subgraph and capture live Graph-provider evidence
+- [x] deploy/index the Rovaulta Sepolia subgraph and capture live Graph-provider evidence
 - [ ] run a real account-backed Graph `MATCHED` preparation through P5/Ledger handoff
 - [ ] obtain external OpenAI model execution evidence (provider key/model unavailable locally)
 
@@ -109,7 +109,7 @@
 - [x] expose explicit pending state and bounded browser polling in the normal workspace
 - [x] document Chainlink, Graph, and Ledger qualification boundaries without fabricated evidence
 - [ ] provision deployed CRE site/callback secrets and capture account-created completion (optional live path; not required for Chainlink simulation qualification)
-- [ ] deploy/index the Sepolia subgraph and capture live Gateway `MATCHED` evidence
+- [x] deploy/index the Sepolia subgraph and capture live Subgraph Studio `MATCHED` evidence
 - [ ] capture account-backed Graph `MATCHED` → P5/Ledger-required execution
 - [ ] capture external OpenAI execution if required by the selected submission
 - [ ] capture official Ledger Clear Signing/physical-device evidence if required by the selected pool
@@ -121,8 +121,8 @@
 - [x] account-backed deployment agent Graph gate before the existing P5 authority
 - [x] live-only operator scripts for hosted deployment, provider query, and account-agent evidence
 - [x] critical tests for provider request shape, malformed public data, non-matched states, and P5 handoff
-- [x] deploy/index the subgraph through a real Graph provider and record hosted identity (`rovaulta-registry` v0.1.0, Sepolia, 100% sync, zero entities before first clearance)
-- [ ] capture a live Gateway `MATCHED` response for an account-created Sepolia clearance
+- [x] deploy/index the subgraph through a real Graph provider and record hosted identity (`rovaulta-registry` v0.1.0, Sepolia, 100% sync, one real account clearance indexed)
+- [x] capture a live Subgraph Studio `MATCHED` response for an account-created Sepolia clearance
 - [ ] capture the live Graph result changing the account-agent outcome and reaching `LEDGER_APPROVAL_REQUIRED`
 - [ ] verify and document Start Fresh pool eligibility with the event submission record
 - [ ] record a 2–4 minute public demo showing the live provider-to-agent decision
@@ -139,8 +139,8 @@
 - [x] canonical P4 registry write/event ABI and exact transport reuse
 - [x] fail-closed operator command with simulation, confirmation, event checks, and readback
 - [x] operator runbook and public-only output contract
-- [ ] create one real account-backed Sepolia clearance and capture transaction evidence
-- [ ] wait for The Graph entity and capture the exact live Gateway `MATCHED` response
+- [x] create one real account-backed Sepolia clearance and capture transaction evidence
+- [x] wait for The Graph entity and capture the exact live Subgraph Studio `MATCHED` response
 
 ## P13 — CRE simulation qualification and account boundary
 - [x] normal account/site/robot/build/evaluation HTTP path is reused without a production P2 fallback
@@ -168,4 +168,4 @@
 - [x] document the operator flow and keep simulation provenance distinct from live CRE/DON execution
 - [x] provide a safe clean-checkout setup template/generator and strict actionable setup-file validation
 - [x] run the mode with a real operator account and capture one account-owned simulated `CLEAR` with explicit official CLI provenance
-- [ ] use that stored `CLEAR` with P12 to create a real Sepolia clearance and capture Graph indexing
+- [x] use that stored `CLEAR` with P12 to create a real Sepolia clearance and capture Graph indexing

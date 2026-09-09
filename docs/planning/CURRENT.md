@@ -2,21 +2,18 @@
 
 ## Phase
 
-**P1–P7 software is implemented. P5.2 adds the narrow AI deployment-agent workflow, deterministic tool/capability boundary, public audit projection, local positive/adversarial evidence, and a live read-only Sepolia blocked-state trace. P6 adds the deterministic digital twin over a server-side public projection of the existing P2/P3 fixture. P7 adds an offline fixed-clock A/B/C rehearsal, demo-owned idempotent reset, stale-browser protection, and reliable Playwright flow coverage. P8 now provides an account-backed product lifecycle: authenticated onboarding, persisted site/robot/build/evaluation/release records, encrypted private policy storage, server-side evaluation, and a truthful P5/P5.2 release boundary. P7 fixtures are development/test-only and are not normal account data. The real provider adapter is implemented but no external model call was captured because provider credentials/model are absent. P5.1 has official Speculos transport, actual Ethereum app/address UI smoke, ERC-7730 v2 validation, real pre-sign C, and invalid/unregistered D. Authenticated Clear Signing A/B/E/F and physical Ledger evidence remain externally blocked. Submission evidence/assets remain open.**
+**P1–P8 software is implemented. P5.2 adds the narrow AI deployment-agent workflow, deterministic tool/capability boundary, public audit projection, local positive/adversarial evidence, and a live read-only Sepolia blocked-state trace. P6 adds the deterministic digital twin over a server-side public projection of the existing P2/P3 fixture. P7 adds an offline fixed-clock A/B/C rehearsal, demo-owned idempotent reset, stale-browser protection, and reliable Playwright flow coverage. P8 provides the account-backed product lifecycle: authenticated onboarding, persisted site/robot/build/evaluation/release records, encrypted private policy storage, server-side evaluation, and a truthful P5/P5.2 release boundary. P7 fixtures are development/test-only and are not normal account data. The real provider adapter is implemented, but no external model call is captured because provider credentials/model are absent. P5.1 has official Speculos transport, actual Ethereum app/address UI smoke, ERC-7730 v2 validation, real pre-sign C, and invalid/unregistered D. Authenticated Clear Signing A/B/E/F and physical Ledger evidence remain externally blocked.**
 
-**P9 partner qualification slice is implemented in code but not externally evidenced:** the normal
-account evaluation boundary now uses an official Chainlink CRE HTTP JSON-RPC/JWT client and never
-falls back to the in-process evaluator; a request-scoped site secret selector is bound into the
-public CRE request. The production gateway returns asynchronous `ACCEPTED` executions, and P10
-now completes them through a signed public-only callback when deployment/result-delivery
-configuration is present; without that external provisioning the API remains explicitly pending or
-unavailable. Account-backed release preparation resolves the exact authenticated
-evaluation/clearance, requires a live The Graph registry context, then delegates to the existing
-P5 authority; the static catalog remains only for the explicit development fixture route. The
-Graph subgraph/provider artifacts, unit tests, and redacted public audit projection are present,
-but no live Graph response or account-created CRE gateway completion is captured in this environment. The
-full local verification loop (lint, typecheck, package tests, build, Foundry, and scaffold
-verification) is green; external partner evidence remains open.**
+**P9 partner qualification slice is implemented and now has public live Graph evidence:** the normal
+account evaluation boundary uses an official Chainlink CRE HTTP JSON-RPC/JWT client and never falls
+back to the in-process evaluator; a request-scoped site secret selector is bound into the public CRE
+request. The production gateway remains asynchronous and P10 completes it only through a signed
+public-only callback when deployment/result-delivery configuration exists. Account-backed release
+preparation resolves the exact authenticated evaluation/clearance, requires a live The Graph registry
+context, then delegates to the existing P5 authority; the static catalog remains only for the explicit
+development fixture route. The deployed Sepolia subgraph now indexes one real account-owned clearance,
+and the strict provider returns `MATCHED` through the hosted Studio endpoint. Gateway publication,
+external model execution, and the final Ledger handoff remain unclaimed.**
 
 **P10 closes the asynchronous CRE application transport in code:** account evaluations now persist an
 exact pending request after the official gateway returns `ACCEPTED`; a configured CRE TEE callback
@@ -24,29 +21,32 @@ can deliver only the minimal public result over an HMAC-authenticated canonical 
 checks the exact evaluation/site/robot/build, behavior-input digest, and callback idempotency before
 exposing the result to the owning account, and the web workspace polls the explicit pending state.
 The workflow uses the official HTTP capability only when this public-result delivery is configured;
-it never sends the private envelope, blind, policy, or internal report. No deployed callback,
-request-scoped CRE secret provisioning, live Graph response, external OpenAI execution, or Ledger
-hardware evidence is present in this environment.**
+it never sends the private envelope, blind, policy, or internal report. The authenticated P13
+simulation remains the selected Chainlink qualification path. A real Sepolia clearance and live
+Subgraph Studio `MATCHED` response are now captured; deployed callback completion, external OpenAI
+execution, and Ledger hardware evidence remain external.**
 
 **P11 hardens and operationalizes The Graph qualification path:** the repository now has pinned
 Graph CLI/AssemblyScript tooling that code-generates and compiles the public Sepolia registry
-subgraph, a server-only Gateway client that validates the exact clearance identity/bindings,
+subgraph, a server-only provider client that validates the exact clearance identity/bindings,
 issuer, block metadata, verdict, revocation, and expiry, and an operator-only command that runs the
 real account-backed agent path without printing credentials. The account agent already requires
 `MATCHED` Graph context before the direct P5 check; all other Graph states fail closed. The build
-and injected critical tests are green. The hosted `rovaulta-registry` deployment is now operator-
-reported, but Graph Gateway credentials, an indexed account-created clearance, live `MATCHED` agent
-evidence, the 2–4 minute demo, and Start Fresh pool eligibility remain external blockers and are not
-claimed.**
+and injected critical tests are green. The hosted `rovaulta-registry` deployment is live on Sepolia,
+one real clearance is indexed, and both the direct Studio query and strict API reader return
+`MATCHED` for the exact digest. This is labelled Studio evidence, not Gateway/decentralized evidence.
+The model-backed agent handoff, 2–4 minute demo, Gateway subgraph ID, and Start Fresh pool eligibility
+remain external blockers and are not claimed.**
 
 **P12 adds the missing operator path from account data to the deployed registry:** a validated
 account-owned public `CLEAR` evaluation can now be converted through the canonical P1 clearance
 schema and existing P4 transport, preflighted against the authorized Sepolia registrar, simulated,
 submitted to `RovaultaRegistry.recordClearance`, confirmed, checked for both public registry events,
 and read back through the existing exact-binding client. The command emits only public confirmation
-fields and can write a public-only clearance JSON for P5/P11. The hosted `rovaulta-registry` v0.1.0
-subgraph is operator-reported as fully indexed with zero entities before this first transaction; no
-account-owned Sepolia clearance or live Graph `MATCHED` response has been captured in this checkout.**
+fields and can write a public-only clearance JSON for P5/P11. The existing account-owned simulated
+`CLEAR` produced a confirmed Ethereum Sepolia transaction with both registry events and exact
+readback; the deployed `rovaulta-registry` v0.1.0 Subgraph Studio endpoint then returned the exact
+entity and the API reader returned `MATCHED`.**
 
 **P13 now selects the authenticated official CRE CLI simulation as the Chainlink qualification path:**
 `apps/api/scripts/cre-simulation-evidence.ts` regenerates ignored site-bound public payloads/secrets,
@@ -102,9 +102,10 @@ still fail closed when its external configuration is absent.**
 - A result is persisted only after the existing callback parser, behavior-input digest check, and
   exact P1 binding validation pass. The public evaluation records
   `executionMode: official-cre-cli-simulation` and the CLI version; this is explicit provenance,
-  not a live CRE/DON claim. An operator run has now persisted one account-owned simulated `CLEAR`
-  through this path. The existing P12 command can consume it; no Sepolia transaction has been run
-  in this checkout.
+  not a live CRE/DON claim. An operator run persisted one account-owned simulated `CLEAR` through
+  this path, and the existing P12 command consumed it to produce the confirmed Sepolia transaction
+  recorded in the P14 evidence artifact. The resulting public entity is indexed by Subgraph Studio;
+  no Gateway or live CRE/DON claim is made.
 - The clean-checkout operator path now has a tracked safe template at
   `apps/api/p13-setup.example.json`; `p13:setup-template` copies it to the ignored
   `apps/api/.data/p13-setup.json`. The account runner uses a shared strict loader that rejects
@@ -117,6 +118,25 @@ still fail closed when its external configuration is absent.**
   must replace them locally with the real build/site values. Setup-only still creates only
   account-owned site/robot/build records and never an evaluation or clearance.
 
+## P14 live bounty evidence closure
+
+- The persisted account-owned `CLEAR` from the authenticated official CRE CLI simulation was
+  consumed by the existing P12 operator path. Ethereum Sepolia confirmed transaction
+  `0xa1854cef882006928b312d418372e861f6470125beaa23c97708a8c8b077e4a1` at block `11668773`,
+  including both `ClearanceRecorded` and `ClearanceBindingsRecorded` plus exact readback.
+- The deployed `rovaulta-registry` v0.1.0 Subgraph Studio endpoint returned the exact public
+  clearance entity at the same indexed block; `TheGraphClearanceReader` returned `MATCHED` after
+  validating every public binding. This is live Studio evidence, not Gateway or decentralized-network
+  evidence, and no Graph entity was manually inserted.
+- The account-agent command was attempted with the live Studio provider and exact public clearance,
+  but failed closed before model execution because `OPENAI_API_KEY` and `ROVAULTA_AGENT_MODEL` are
+  absent. No AI output, `LEDGER_APPROVAL_REQUIRED` handoff, signature, or authorization is claimed.
+- Ledger adapter tests remain green and existing Speculos evidence remains partial. Physical-device
+  approval and official Clear Signing Tester A/B/E/F evidence require external hardware/access.
+- Redacted evidence: `docs/compliance/evidence/p14-live-bounty-evidence-2026-09-09.md` and
+  `p14-live-sepolia-graph-2026-09-09.json`; detailed execution plan:
+  `docs/planning/exec-plans/P14-live-bounty-evidence-closure.md`.
+
 ## P11 The Graph qualification implementation
 
 - `integrations/the-graph` pins `@graphprotocol/graph-cli@0.98.1` and
@@ -125,15 +145,18 @@ still fail closed when its external configuration is absent.**
 - The subgraph starts at the deployed Sepolia `RovaultaRegistry` block and indexes only public
   clearance/binding/revocation fields. No private policy, envelope, blind, trace, secret, credential,
   or model output is represented in the schema.
-- The Gateway adapter sends the exact clearance digest to the official provider URL, validates the
-  entity ID plus all P1/P4 public bindings, issuer, block number/hash, `CLEAR` verdict, expiry, and
-  revocation, and returns a redacted public context. It has no fixture fallback.
+- The provider adapter sends the exact clearance digest to either the configured Gateway URL or an
+  explicitly configured, exact Subgraph Studio query URL, validates the entity ID plus all P1/P4
+  public bindings, issuer, block number/hash, `CLEAR` verdict, expiry, and revocation, and returns a
+  redacted public context. It has no fixture fallback; Studio responses are labelled separately.
 - Authenticated account release preparation resolves its clearance from the account store, invokes
   `getGraphContext`, blocks on any non-`MATCHED` response, and only then calls the existing P5 reader
   and `ReleaseService.prepare()`. P5 remains the final authority.
 - `apps/api evidence:p11-graph` is the reproducible live-account evidence command. It requires a
-  real Graph key/subgraph ID, account-created public clearance, account identifier, and public
-  signer address; missing configuration fails closed.
+  real Gateway key/subgraph ID or exact Studio query URL, account-created public clearance, account
+  identifier, and public signer address; missing configuration fails closed. The current live proof
+  validates Studio context independently; the command stops before model execution when the external
+  model key/model is absent.
 
 ## P12 account-backed clearance issuance
 
@@ -148,6 +171,9 @@ still fail closed when its external configuration is absent.**
 - The script never opens the encrypted policy and never prints envelope, blind, credential, private
   key, or confidential evaluation fields. A missing account evaluation, CRE completion, RPC, or
   funded registrar is a pre-broadcast blocker.
+- The 2026-09-09 run recorded the account-owned simulated `CLEAR` on Ethereum Sepolia at block
+  `11668773`, confirmed both registry events, and wrote the public-only clearance artifact used for
+  the live Graph query. See the P14 evidence artifact for the transaction and digest.
 
 ## P9 partner qualification slice
 
@@ -159,8 +185,9 @@ still fail closed when its external configuration is absent.**
   selector in the CRE `main` namespace with the private envelope/blind and deploy a result-delivery
   mechanism before a real account evaluation can complete.
 - `integrations/the-graph/subgraph` indexes only public Sepolia `RovaultaRegistry` events. The API
-  Graph Gateway adapter validates exact public bindings, chain/registry, block identity, verdict,
-  revocation, and expiry. Account-backed agent preparation blocks unless Graph returns `MATCHED`.
+  Graph adapter validates exact public bindings, chain/registry, block identity, verdict, revocation,
+  and expiry. Account-backed agent preparation blocks unless Graph returns `MATCHED`; the deployed
+  Studio endpoint now supplies one live exact match.
 - Normal `/releases/prepare` and the non-fixture agent route use account records and the Graph
   context step before the existing P5 read/prepare authority. The model still cannot sign, consume,
   write registry state, or authorize a release.
