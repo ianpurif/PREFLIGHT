@@ -10,9 +10,11 @@ authenticated CRE simulation qualification; P1–P4 regression-checked.
 **Status:** The Chainlink qualification path is complete through committed authenticated CRE CLI
 simulation evidence. The normal account gateway still fails closed unless deployed CRE gateway/
 result transport and request-scoped secrets are configured. P13.1 now adds an explicit account-owned
-official CLI simulation mode, but no account-owned result, Sepolia transaction, Graph match, or
-Ledger approval is claimed from this checkout. The Graph live response, external model execution,
-authenticated Clear Signing A/B/E/F, and physical Ledger evidence remain unclaimed.
+official CLI simulation mode. The clean-checkout setup-only path was exercised with a newly generated
+test account and created valid account/site/robot/build records; no account-owned evaluation,
+Sepolia transaction, Graph match, or Ledger approval is claimed from this checkout. The Graph live
+response, external model execution, authenticated Clear Signing A/B/E/F, and physical Ledger
+evidence remain unclaimed.
 
 ## P6 judge-facing dashboard result
 
@@ -316,17 +318,18 @@ eligibility also remains unverified; see
 - Chain client: 12/12 tests for deployed-domain EIP-712, all field/domain mutations, signature
   recovery, exact P4 transport, positive pinned-block reader/ABI behavior, chain/registry, verdict,
   revocation, and expiry boundaries.
-- API: 60/60 tests across 13 files, including the account lifecycle/CRE fail-closed path, official
-  CLI simulation cleanup/provenance, Graph provider binding and outage cases, P5/P5.2 authority
-  boundaries, provider schema failures, and deterministic P7 fixture regression.
+- API: 62/62 tests across 14 files, including the account lifecycle/CRE fail-closed path, official
+  CLI simulation cleanup/provenance, strict P13 setup-file/template validation, Graph provider
+  binding and outage cases, P5/P5.2 authority boundaries, provider schema failures, and
+  deterministic P7 fixture regression.
 - Domain: 31/31; simulation core: 60/60; Chainlink CRE: 32/32; chain client: 12/12; Ledger gate:
   18/18; web: 2/2.
-- Full TypeScript total: 215 tests, 3,008 assertions, zero failures.
+- Full TypeScript total: 217 tests, 3,016 assertions, zero failures.
 - `bun run lint`: pass; Biome checks 173 files with 27 existing CSS specificity warnings and no
   errors.
 - `bun run typecheck`: pass; 7/7 Turbo tasks.
 - `bun run test`: pass; 12/12 Turbo tasks.
-- `bunx turbo test --force`: pass; uncached 12/12 tasks, confirming 215 tests and 3,008
+- `bunx turbo test --force`: pass; uncached 12/12 tasks, confirming 217 tests and 3,016
   assertions.
 - `bun run build`: pass; 8/8 tasks including the pinned The Graph subgraph build; Next.js
   production build includes static `/` and `/p5-ledger`.
@@ -393,20 +396,36 @@ It reads the encrypted site policy through the trusted local `ApplicationStore`,
 versioned secret to `cre secrets create` through an in-memory environment variable, and removes its
 temporary mapping. It never prints or writes the envelope/blind.
 
-The command was run in this environment and failed closed before creating any account/resource:
+Before the setup fix, the command was also run with the repository's existing `.env` and failed
+closed at the API password-length boundary; no record was created by that attempt:
 
 ```json
-{"status":"BLOCKED","error":"ROVAULTA_P13_EMAIL is required"}
+{"status":"BLOCKED","error":"INVALID_INPUT (400): Password must be 12-256 characters"}
 ```
 
-The environment has no usable deployed gateway/result callback or account-ready CRE organization
-context for this run. Consequently there is no real evaluation ID, account-owned public `CLEAR`,
-callback, execution identifier, clearance transaction, or Graph match to report. P13.1 now provides
-the explicit `ROVAULTA_CRE_EXECUTION_MODE=simulation` path: after setup-only creates the real
-account/site/robot/build records, it invokes the official CLI with a temporary exact-selector
-`secretsNames` mapping and persists the result only after strict public validation. A local P2-
-injected test is not acceptable evidence. The next operator action is to run that mode with a
-working authenticated CRE CLI, then pass its stored `CLEAR` to the existing P12 command.
+The clean-checkout template flow was then exercised with an unprinted generated test credential.
+`p13:setup-template` produced the ignored `.data/p13-setup.json`, and setup-only completed through
+the normal authenticated HTTP routes:
+
+```json
+{
+  "status": "SETUP_COMPLETE",
+  "execution": "normal account application path",
+  "accountId": "account:a785740e7950d53c1c939c700b9cdc5a",
+  "siteId": "site:f8051b93dffb528d23336bbe00a2e6aa",
+  "robotId": "robot:29c487f4d2010e9fd9ec78e2a9fecf77",
+  "buildId": "robot-build:9bb450bf2066d335685b9de52bf430ca"
+}
+```
+
+Only public IDs are recorded here. No evaluation was submitted, so there is intentionally no
+account-owned evaluation ID, `CLEAR`, callback, execution identifier, clearance transaction, or
+Graph match to report. P13.1 still provides the explicit `ROVAULTA_CRE_EXECUTION_MODE=simulation`
+path: after setup-only creates the real account/site/robot/build records, it invokes the official
+CLI with a temporary exact-selector `secretsNames` mapping and persists the result only after strict
+public validation. A local P2-injected test is not acceptable evidence. The next operator action is
+to reuse the IDs with `ROVAULTA_P13_SETUP_PATH` unset and run that mode with a working authenticated
+CRE CLI, then pass its stored `CLEAR` to the existing P12 command.
 
 ## P13.1 account-owned official CLI simulation mode
 
