@@ -78,6 +78,7 @@ request and never prints the password. Use the existing account password when th
 exists—this is not a password reset:
 
 ```bash
+unset ROVAULTA_P13_ACCOUNT_ID ROVAULTA_P13_SITE_ID ROVAULTA_P13_ROBOT_ID ROVAULTA_P13_BUILD_ID
 export ROVAULTA_P13_EMAIL='operator@example.com'
 export ROVAULTA_P13_PASSWORD='<the test account password>'
 export ROVAULTA_P13_SETUP_PATH='.data/p13-setup.json'
@@ -88,7 +89,10 @@ bun run --cwd apps/api p13:account-evaluation
 The command registers the account when the email is new, or signs in when it already exists, then
 calls the existing site/robot/build routes. It prints only the public account/site/robot/build IDs.
 It never opens SQLite, calls the P2 evaluator, imports a P7 fixture, or accepts a browser-supplied
-verdict. If credentials are already supplied by `.env`, the two `export` lines can be omitted.
+verdict. If credentials are already supplied by `.env`, the two credential `export` lines can be
+omitted. If the runner reports that the configured site was not found, the current shell is reusing
+stale IDs or the API is pointed at a different database; clear all four ID variables and rerun this
+setup-only phase rather than copying IDs between databases.
 
 For the live gateway path only, provision the exact site-bound secret directly to the official CRE
 secret store from the same local operator environment. The helper reads the encrypted policy through

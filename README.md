@@ -388,7 +388,9 @@ provides a default), setting `ROVAULTA_P13_SETUP_ONLY=false` plus the three ID v
 running the command again. The setup template contains no credentials or private
 facility policy; replace its example policy, route, and build digest locally before evaluation. The
 operator password must be 12–256 characters, and an existing account must use its original exact
-password; this flow does not reset credentials.
+password; this flow does not reset credentials. Before setup-only, clear any stale
+`ROVAULTA_P13_ACCOUNT_ID`, `ROVAULTA_P13_SITE_ID`, `ROVAULTA_P13_ROBOT_ID`, and
+`ROVAULTA_P13_BUILD_ID` exports so resources are created in the current API database.
 
 ### Record one real account clearance on Sepolia
 

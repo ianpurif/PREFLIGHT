@@ -318,19 +318,20 @@ eligibility also remains unverified; see
 - Chain client: 12/12 tests for deployed-domain EIP-712, all field/domain mutations, signature
   recovery, exact P4 transport, positive pinned-block reader/ABI behavior, chain/registry, verdict,
   revocation, and expiry boundaries.
-- API: 66/66 tests across 16 files, including the account lifecycle/CRE fail-closed path, official
+- API: 67/67 tests across 16 files, including the account lifecycle/CRE fail-closed path, official
   CLI simulation cleanup/provenance, strict P13 setup-file/template validation and owner-only mode
-  checks, operator credential-bound validation, Graph provider binding and outage cases, P5/P5.2
-  authority boundaries, provider schema failures, and deterministic P7 fixture regression.
+  checks, operator credential-bound and stale-resource-ID validation, Graph provider binding and
+  outage cases, P5/P5.2 authority boundaries, provider schema failures, and deterministic P7
+  fixture regression.
 - Domain: 31/31; simulation core: 60/60; Chainlink CRE: 32/32; chain client: 12/12; Ledger gate:
   18/18; web: 2/2.
-- Full TypeScript total: 221 tests, 3,024 assertions, zero failures.
+- Full TypeScript total: 222 tests, 3,030 assertions, zero failures.
 - `bun run lint`: pass; Biome checks 173 files with 27 existing CSS specificity warnings and no
   errors.
 - `bun run typecheck`: pass; 7/7 Turbo tasks.
 - `bun run test`: pass; 12/12 Turbo tasks.
-- `bun run test`: pass; 12/12 Turbo tasks, confirming 221 tests and 3,024 assertions after the
-  setup-flow and operator-credential preflight changes.
+- `bun run test`: pass; 12/12 Turbo tasks, confirming 222 tests and 3,030 assertions after the
+  setup-flow, operator-credential, and stale-resource-ID preflight changes.
 - `bun run build`: pass; 8/8 tasks including the pinned The Graph subgraph build; Next.js
   production build includes static `/` and `/p5-ledger`.
 - `bun run --cwd apps/web test`: pass; 2 P6 projection/mutation tests, 9 assertions.

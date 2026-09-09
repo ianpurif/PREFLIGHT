@@ -450,3 +450,17 @@ logged or included in evidence.
 **Evidence boundary:** The existing ignored `.env` remains unchanged. Operators must provide the
 existing account password (or a new account credential) that satisfies the API bound; this change
 does not reset passwords or create an evaluation.
+
+## 2026-09-09 — P13 stale resource-ID recovery guidance
+
+**Tool:** OpenAI Codex using the Rovaulta verification-loop skill.
+
+**Human direction:** Diagnose the account runner's `Site was not found` failure without bypassing
+account ownership or silently creating replacement resources.
+
+**AI-assisted output:** The ID-reuse path now reports an actionable resource-not-found message
+without echoing identifiers, and the operator runbook explicitly clears stale ID exports before
+setup-only creation in the current API database.
+
+**Evidence boundary:** No account, site, robot, build, evaluation, or clearance was fabricated by
+this change. Reuse remains strict: missing or cross-database resources stop the command.

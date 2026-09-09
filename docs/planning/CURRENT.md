@@ -108,6 +108,9 @@ still fail closed when its external configuration is absent.**
   `apps/api/p13-setup.example.json`; `p13:setup-template` copies it to the ignored
   `apps/api/.data/p13-setup.json`. The account runner uses a shared strict loader that rejects
   missing, empty, malformed, or structurally invalid files with an actionable template command.
+- ID-reuse failures are explicit and fail closed: a missing account-owned site, robot, or build
+  tells the operator to clear stale `ROVAULTA_P13_*_ID` exports and rerun setup-only in the
+  current API database; the runner never silently creates replacement resources in reuse mode.
   On POSIX hosts the generator applies owner-only modes to the directory and setup file. The
   template's digest, route, and example policy are accepted by the existing account API; operators
   must replace them locally with the real build/site values. Setup-only still creates only
