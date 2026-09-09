@@ -73,5 +73,6 @@ clearance record for the existing P5/P11 flows.
   returning findings. The implementation was self-reviewed for chain/registrar guards, exact
   binding reuse, receipt/event matching, secret redaction, and pre-broadcast failure behavior.
 - Real Sepolia transaction, event topics, receipt, and Graph indexing: pending operator execution;
-  this checkout has no account-owned completed `CLEAR` evaluation and the operator command correctly
-  stops before broadcast when its required inputs are absent.
+  this checkout now has one account-owned `CLEAR` produced by the authenticated official CLI
+  simulation mode. The operator command still stops before broadcast until its explicit clearance,
+  registrar, and confirmation inputs are supplied.

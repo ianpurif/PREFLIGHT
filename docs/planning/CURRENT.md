@@ -14,7 +14,7 @@ unavailable. Account-backed release preparation resolves the exact authenticated
 evaluation/clearance, requires a live The Graph registry context, then delegates to the existing
 P5 authority; the static catalog remains only for the explicit development fixture route. The
 Graph subgraph/provider artifacts, unit tests, and redacted public audit projection are present,
-but no live Graph response or account-created CRE completion is captured in this environment. The
+but no live Graph response or account-created CRE gateway completion is captured in this environment. The
 full local verification loop (lint, typecheck, package tests, build, Foundry, and scaffold
 verification) is green; external partner evidence remains open.**
 
@@ -46,7 +46,7 @@ submitted to `RovaultaRegistry.recordClearance`, confirmed, checked for both pub
 and read back through the existing exact-binding client. The command emits only public confirmation
 fields and can write a public-only clearance JSON for P5/P11. The hosted `rovaulta-registry` v0.1.0
 subgraph is operator-reported as fully indexed with zero entities before this first transaction; no
-real account-created CLEAR or live Graph `MATCHED` response has been captured in this checkout.**
+account-owned Sepolia clearance or live Graph `MATCHED` response has been captured in this checkout.**
 
 **P13 now selects the authenticated official CRE CLI simulation as the Chainlink qualification path:**
 `apps/api/scripts/cre-simulation-evidence.ts` regenerates ignored site-bound public payloads/secrets,
@@ -102,8 +102,9 @@ still fail closed when its external configuration is absent.**
 - A result is persisted only after the existing callback parser, behavior-input digest check, and
   exact P1 binding validation pass. The public evaluation records
   `executionMode: official-cre-cli-simulation` and the CLI version; this is explicit provenance,
-  not a live CRE/DON claim. The existing P12 command can consume the stored `CLEAR`, but no
-  account-owned simulation or Sepolia transaction has been run in this checkout.
+  not a live CRE/DON claim. An operator run has now persisted one account-owned simulated `CLEAR`
+  through this path. The existing P12 command can consume it; no Sepolia transaction has been run
+  in this checkout.
 - The clean-checkout operator path now has a tracked safe template at
   `apps/api/p13-setup.example.json`; `p13:setup-template` copies it to the ignored
   `apps/api/.data/p13-setup.json`. The account runner uses a shared strict loader that rejects

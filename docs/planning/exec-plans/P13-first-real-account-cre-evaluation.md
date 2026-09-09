@@ -107,8 +107,9 @@ response is available. The runner never stores raw CLI output.
 - `bun --filter '@rovaulta/api' test -- cre-simulation-evidence.test.ts` passed (3 parser tests).
 - The account-backed gateway configuration remains absent (`CHAINLINK_CRE_WORKFLOW_ID`,
   `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY`, and `ROVAULTA_CRE_RESULT_CALLBACK_SECRET` are empty), so
-  no live account/evaluation was created. The separately authenticated official CLI simulation now
-  supplies the current-source Chainlink qualification evidence.
+  no live gateway evaluation was created. A separate authenticated official CLI simulation run
+  now persisted one account-owned `CLEAR`; its provenance is simulation-only and supplies no live
+  DON claim or Sepolia transaction.
 
 ## Current simulation secret-injection repair
 

@@ -11,10 +11,11 @@ authenticated CRE simulation qualification; P1–P4 regression-checked.
 simulation evidence. The normal account gateway still fails closed unless deployed CRE gateway/
 result transport and request-scoped secrets are configured. P13.1 now adds an explicit account-owned
 official CLI simulation mode. The clean-checkout setup-only path was exercised with a newly generated
-test account and created valid account/site/robot/build records; no account-owned evaluation,
-Sepolia transaction, Graph match, or Ledger approval is claimed from this checkout. The Graph live
-response, external model execution, authenticated Clear Signing A/B/E/F, and physical Ledger
-evidence remain unclaimed.
+test account and created valid account/site/robot/build records. The explicit authenticated CRE CLI
+simulation mode then persisted one account-owned `CLEAR`; no live gateway result, Sepolia
+transaction, Graph match, or Ledger approval is claimed from this checkout. The Graph live response,
+external model execution, authenticated Clear Signing A/B/E/F, and physical Ledger evidence remain
+unclaimed.
 
 ## P6 judge-facing dashboard result
 
@@ -426,14 +427,31 @@ the normal authenticated HTTP routes:
 }
 ```
 
-Only public IDs are recorded here. No evaluation was submitted, so there is intentionally no
-account-owned evaluation ID, `CLEAR`, callback, execution identifier, clearance transaction, or
-Graph match to report. P13.1 still provides the explicit `ROVAULTA_CRE_EXECUTION_MODE=simulation`
-path: after setup-only creates the real account/site/robot/build records, it invokes the official
-CLI with a temporary exact-selector `secretsNames` mapping and persists the result only after strict
-public validation. A local P2-injected test is not acceptable evidence. The next operator action is
-to reuse the IDs with `ROVAULTA_P13_SETUP_PATH` unset and run that mode with a working authenticated
-CRE CLI, then pass its stored `CLEAR` to the existing P12 command.
+Only public IDs are recorded for the setup-only run above. The same account-owned resources were
+then evaluated with `ROVAULTA_CRE_EXECUTION_MODE=simulation` and the official authenticated CRE
+CLI. The normal API persisted this public result after strict callback, behavior-digest, and exact-
+binding validation:
+
+```json
+{
+  "status": "CLEAR",
+  "executionMode": "official-cre-cli-simulation",
+  "creCliVersion": "1.32.0",
+  "accountId": "account:3dbe64397ce11e131f7286277d93294d",
+  "siteId": "site:192e49ae56c0abf18cd827706b909ce3",
+  "robotId": "robot:ce87964de66e14684b1b3c68a7a4b1be",
+  "buildId": "robot-build:075049b64bf7dd982705cac9a40d0f27",
+  "evaluationId": "evaluation:1a89c0ad9a5e0672c086ad58346595ee",
+  "robotBuildDigest": "sha256:c496d3fc98485bcbdef70658f36449da918afc3ec0e56610dff5eeab7bea4a3e",
+  "safetyEnvelopeCommitment": "sha256:69af11588f15c0c6cf94087c41f2e03c051bfab0209158d8669013b2c53b7369",
+  "evaluatorVersion": "evaluator-version:warehouse-rules-v1",
+  "evaluationInputsDigest": "sha256:a49c510f57d4253bbf7dd25d558d62352f8d1ec40119f20bd1349ef5b1e675ea"
+}
+```
+
+The CLI simulation was not live CRE/DON execution and did not create a Sepolia clearance. The next
+operator action is to pass this stored `CLEAR` to the existing P12 command only after its explicit
+registrar, clearance, and confirmation inputs are supplied.
 
 ## P13.1 account-owned official CLI simulation mode
 
@@ -447,8 +465,9 @@ manual callback. The public result passes the existing callback parser, behavior
 exact P1 binding checks before `ApplicationStore` persists `executionMode:
 official-cre-cli-simulation` and the CLI version. Temporary workflow, mapping, payload, and secret
 material are removed on every exit path. The executor verifies both `cre -v` and `cre whoami` and
-fails closed before workflow execution when the authenticated session is unavailable. The
-simulation provenance is explicitly not live CRE/DON execution and does not itself write Sepolia.
+fails closed before workflow execution when the authenticated session is unavailable. A real
+operator run persisted the public `CLEAR` shown above; the simulation provenance is explicitly not
+live CRE/DON execution and does not itself write Sepolia.
 
 ## Dependency and secret review
 

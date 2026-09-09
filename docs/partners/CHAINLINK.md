@@ -73,9 +73,9 @@ supplies the encrypted policy's versioned envelope/blind through the CLI `-e` fi
 workflow, mapping, payload, and secret files are deleted after the command. The stored evaluation
 records `official-cre-cli-simulation` and the CLI version so P12 can distinguish this provenance
 from live CRE/DON execution. The executor checks `cre -v` and `cre whoami` before simulation and
-fails closed if the authenticated CLI session is unavailable. No account-owned result, Sepolia
-clearance, or Graph match is claimed until an operator runs the flow with real credentials and
-captures those outputs.
+fails closed if the authenticated CLI session is unavailable. One account-owned simulated `CLEAR`
+has now been persisted through this path; no live gateway result, Sepolia clearance, or Graph match
+is claimed.
 
 P13 adds a two-phase operator path. First, `bun run --cwd apps/api p13:account-evaluation` with
 `ROVAULTA_P13_SETUP_ONLY=true` uses only the normal authenticated HTTP routes and prints public

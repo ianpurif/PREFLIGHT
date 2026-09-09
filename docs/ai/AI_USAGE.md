@@ -26,10 +26,10 @@ existing registry ABI extended with `recordClearance`/event definitions, and an 
 command that checks registrar authorization, simulates and confirms the transaction, validates both
 registry events, performs exact readback, and emits only public confirmation fields.
 
-**Evidence boundary:** This checkout has no account-created completed CRE evaluation yet, so no live
-clearance transaction was broadcast and no Graph entity or `MATCHED` response is claimed. The
-operator command fails closed until the account, evaluation, registrar, RPC, and explicit confirmation
-are supplied.
+**Evidence boundary:** This checkout now has one account-owned `CLEAR` from the authenticated
+official CRE CLI simulation path, but no live gateway result. No clearance transaction was broadcast
+and no Graph entity or `MATCHED` response is claimed. The operator command still fails closed until
+the account, evaluation, registrar, RPC, and explicit confirmation are supplied.
 
 ## 2026-09-05 — Boilerplate verification repair
 
@@ -464,3 +464,19 @@ setup-only creation in the current API database.
 
 **Evidence boundary:** No account, site, robot, build, evaluation, or clearance was fabricated by
 this change. Reuse remains strict: missing or cross-database resources stop the command.
+
+## 2026-09-09 — P13 CRE runner diagnostics and account simulation execution
+
+**Tool:** OpenAI Codex using the Rovaulta verification-loop skill and a read-only reviewer.
+
+**Human direction:** Diagnose the generic `CRE_RESPONSE_INVALID` account-evaluation failure without
+weakening the frozen P13 workflow, exposing confidential input, or claiming live CRE execution.
+
+**AI-assisted output:** The official CLI failure now returns bounded command, working-directory,
+workflow, target, trigger, exit-code, stdout, and stderr context after redacting credentials and
+confidential markers. The temporary account workflow resolves its authoritative CRE artifacts from
+the workflow directory, and failure-path cleanup is regression-tested.
+
+**Evidence boundary:** With the authenticated CRE CLI v1.32.0, the existing account/site/robot/build
+records produced one persisted `official-cre-cli-simulation` `CLEAR`. The run did not expose the
+envelope/blind, did not create a Sepolia clearance, and did not claim live DON execution.
