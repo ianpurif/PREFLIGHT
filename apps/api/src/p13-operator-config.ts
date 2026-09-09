@@ -1,5 +1,8 @@
-const P13_PASSWORD_MIN_LENGTH = 12;
-const P13_PASSWORD_MAX_LENGTH = 256;
+import {
+  isPasswordLengthValid,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from "./application/password-policy.js";
 
 /**
  * Validate the operator credential before making an account request.
@@ -9,13 +12,13 @@ const P13_PASSWORD_MAX_LENGTH = 256;
  * evidence.
  */
 export function parseP13OperatorPassword(value: string | undefined): string {
-  const password = value?.trim();
+  const password = value;
   if (password === undefined || password.length === 0) {
     throw new Error("ROVAULTA_P13_PASSWORD is required");
   }
-  if (password.length < P13_PASSWORD_MIN_LENGTH || password.length > P13_PASSWORD_MAX_LENGTH) {
+  if (!isPasswordLengthValid(password)) {
     throw new Error(
-      `ROVAULTA_P13_PASSWORD must be ${P13_PASSWORD_MIN_LENGTH}-${P13_PASSWORD_MAX_LENGTH} characters; update the ignored root .env or export a valid value`,
+      `ROVAULTA_P13_PASSWORD must be ${PASSWORD_MIN_LENGTH}-${PASSWORD_MAX_LENGTH} characters; update the ignored root .env or export a valid value`,
     );
   }
   return password;

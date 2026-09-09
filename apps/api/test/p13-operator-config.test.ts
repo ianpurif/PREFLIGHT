@@ -2,8 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { parseP13OperatorPassword } from "../src/p13-operator-config.js";
 
 describe("P13 operator credential validation", () => {
-  test("accepts a trimmed password within the API bounds", () => {
-    expect(parseP13OperatorPassword("  123456789012  ")).toBe("123456789012");
+  test("preserves a password's exact value within the API bounds", () => {
+    expect(parseP13OperatorPassword("  1234567890  ")).toBe("  1234567890  ");
   });
 
   test("rejects missing and short credentials without exposing the value", () => {

@@ -55,12 +55,16 @@ import type {
   EvaluationExecutionMode,
 } from "../evaluation/index.js";
 import { ApplicationError } from "./errors.js";
+import {
+  isPasswordLengthValid,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from "./password-policy.js";
 
 const SESSION_COOKIE = "rovaulta_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
 const POLICY_CIPHERTEXT_VERSION = "rovaulta.policy-ciphertext/v1" as const;
 const ACCOUNT_ID_PATTERN = /^account:[a-f0-9]{32}$/;
-const MAX_PASSWORD_LENGTH = 256;
 
 export interface PublicAccount {
   readonly id: string;
@@ -286,8 +290,11 @@ function normalizeEmail(input: unknown): string {
 }
 
 function validatePassword(input: unknown): string {
-  if (typeof input !== "string" || input.length < 12 || input.length > MAX_PASSWORD_LENGTH) {
-    throw new ApplicationError("INVALID_INPUT", "Password must be 12-256 characters");
+  if (typeof input !== "string" || !isPasswordLengthValid(input)) {
+    throw new ApplicationError(
+      "INVALID_INPUT",
+      `Password must be ${PASSWORD_MIN_LENGTH}-${PASSWORD_MAX_LENGTH} characters`,
+    );
   }
   return input;
 }
