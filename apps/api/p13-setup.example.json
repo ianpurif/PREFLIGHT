@@ -1,0 +1,38 @@
+{
+  "site": {
+    "name": "North dock",
+    "location": "Manila",
+    "policy": {
+      "warehouseWidthMm": 1000,
+      "warehouseHeightMm": 1000,
+      "restrictedZone": {
+        "minXmm": 400,
+        "minYmm": 400,
+        "maxXmm": 600,
+        "maxYmm": 600
+      },
+      "maximumSpeedMmPerSecond": 1000,
+      "zoneSpeedLimitMmPerSecond": 600,
+      "payloadThresholdGrams": 40000
+    }
+  },
+  "robot": {
+    "name": "AMR-01"
+  },
+  "build": {
+    "version": "1.0.0",
+    "label": "Example build (replace artifact digest)",
+    "artifactDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "route": {
+      "start": {
+        "xMm": 100,
+        "yMm": 100
+      },
+      "end": {
+        "xMm": 900,
+        "yMm": 100
+      },
+      "speedMmPerSecond": 400
+    }
+  }
+}

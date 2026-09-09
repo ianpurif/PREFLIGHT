@@ -1,22 +1,8 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { type P13Setup, readP13SetupFile } from "../src/p13-setup.js";
 
 type JsonRecord = Record<string, unknown>;
-
-type Setup = {
-  readonly site: {
-    readonly name: string;
-    readonly location: string;
-    readonly policy: JsonRecord;
-  };
-  readonly robot: { readonly name: string };
-  readonly build: {
-    readonly version: string;
-    readonly label: string;
-    readonly artifactDigest: string;
-    readonly route: JsonRecord;
-  };
-};
 
 type PublicEvaluation = {
   readonly id: string;
@@ -109,27 +95,6 @@ function text(value: unknown, label: string): string {
     throw new Error(`${label} must be a non-empty string`);
   }
   return value.trim();
-}
-
-function parseSetup(value: unknown): Setup {
-  const input = record(value, "P13 setup");
-  const site = record(input.site, "P13 setup.site");
-  const robot = record(input.robot, "P13 setup.robot");
-  const build = record(input.build, "P13 setup.build");
-  return {
-    site: {
-      name: text(site.name, "P13 setup.site.name"),
-      location: text(site.location, "P13 setup.site.location"),
-      policy: record(site.policy, "P13 setup.site.policy"),
-    },
-    robot: { name: text(robot.name, "P13 setup.robot.name") },
-    build: {
-      version: text(build.version, "P13 setup.build.version"),
-      label: text(build.label, "P13 setup.build.label"),
-      artifactDigest: text(build.artifactDigest, "P13 setup.build.artifactDigest"),
-      route: record(build.route, "P13 setup.build.route"),
-    },
-  };
 }
 
 function parseCookie(value: string | null): string {
@@ -252,7 +217,7 @@ async function createResources(
   apiOrigin: string,
   webOrigin: string,
   cookie: string,
-  setup: Setup,
+  setup: P13Setup,
 ): Promise<Resources> {
   const siteResponse = await request(apiOrigin, webOrigin, "/sites", {
     method: "POST",
@@ -487,10 +452,7 @@ async function run(): Promise<void> {
   if (suppliedResourceCount === configuredResources.length && setupPath !== undefined) {
     throw new Error("Unset ROVAULTA_P13_SETUP_PATH when reusing existing resource IDs");
   }
-  const setup =
-    setupPath === undefined
-      ? undefined
-      : parseSetup(JSON.parse(readFileSync(resolve(process.cwd(), setupPath), "utf8")) as unknown);
+  const setup = setupPath === undefined ? undefined : readP13SetupFile(setupPath);
   const cookie = await createSession(apiOrigin, webOrigin, email, password);
   const accountResponse = await request(apiOrigin, webOrigin, "/auth/me", {
     method: "GET",
@@ -513,7 +475,7 @@ async function run(): Promise<void> {
           robotId: configuredRobotId as string,
           buildId: configuredBuildId as string,
         })
-      : await createResources(apiOrigin, webOrigin, cookie, setup as Setup);
+      : await createResources(apiOrigin, webOrigin, cookie, setup as P13Setup);
   if (setupOnly) {
     console.log(
       JSON.stringify(
