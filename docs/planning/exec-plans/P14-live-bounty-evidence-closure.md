@@ -75,3 +75,10 @@ the final human authorization boundary; no physical-device result is inferred.
 - 2026-09-09: Graph provider tests cover the direct Studio endpoint and malformed URL rejection;
   existing Ledger software tests pass. Physical Ledger and official Clear Signing Tester access
   remain external blockers.
+
+## Independent review
+
+- A fresh read-only review checked the provider trust boundary, evidence redaction, and planning
+  terminology. It identified that the query-only helper did not perform the production reader's
+  full binding policy; the evidence wording and helper comments now state that boundary explicitly.
+  No remaining actionable findings were reported.
