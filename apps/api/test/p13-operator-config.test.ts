@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parseP13OperatorPassword } from "../src/p13-operator-config.js";
+import { p13ResourceNotFound, parseP13OperatorPassword } from "../src/p13-operator-config.js";
 
 describe("P13 operator credential validation", () => {
   test("preserves a password's exact value within the API bounds", () => {
@@ -18,5 +18,13 @@ describe("P13 operator credential validation", () => {
     expect(() => parseP13OperatorPassword("x".repeat(257))).toThrow(
       /ROVAULTA_P13_PASSWORD must be 12-256 characters/,
     );
+  });
+
+  test("describes stale resource IDs without echoing identifiers", () => {
+    for (const resource of ["site", "robot", "build"] as const) {
+      const error = p13ResourceNotFound(resource);
+      expect(error.message).toContain("clear the ROVAULTA_P13_*_ID values");
+      expect(error.message).not.toContain(":");
+    }
   });
 });
