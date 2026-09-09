@@ -167,5 +167,5 @@
 - [x] cover dynamic selector mapping, cleanup, confidential-output rejection, and clearance construction
 - [x] document the operator flow and keep simulation provenance distinct from live CRE/DON execution
 - [x] provide a safe clean-checkout setup template/generator and strict actionable setup-file validation
-- [ ] run the mode with a real operator account and capture one account-owned `CLEAR`
+- [x] run the mode with a real operator account and capture one account-owned simulated `CLEAR` with explicit official CLI provenance
 - [ ] use that stored `CLEAR` with P12 to create a real Sepolia clearance and capture Graph indexing
