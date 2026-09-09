@@ -318,18 +318,18 @@ eligibility also remains unverified; see
 - Chain client: 12/12 tests for deployed-domain EIP-712, all field/domain mutations, signature
   recovery, exact P4 transport, positive pinned-block reader/ABI behavior, chain/registry, verdict,
   revocation, and expiry boundaries.
-- API: 62/62 tests across 14 files, including the account lifecycle/CRE fail-closed path, official
-  CLI simulation cleanup/provenance, strict P13 setup-file/template validation, Graph provider
-  binding and outage cases, P5/P5.2 authority boundaries, provider schema failures, and
-  deterministic P7 fixture regression.
+- API: 63/63 tests across 15 files, including the account lifecycle/CRE fail-closed path, official
+  CLI simulation cleanup/provenance, strict P13 setup-file/template validation and owner-only mode
+  checks, Graph provider binding and outage cases, P5/P5.2 authority boundaries, provider schema
+  failures, and deterministic P7 fixture regression.
 - Domain: 31/31; simulation core: 60/60; Chainlink CRE: 32/32; chain client: 12/12; Ledger gate:
   18/18; web: 2/2.
-- Full TypeScript total: 217 tests, 3,016 assertions, zero failures.
+- Full TypeScript total: 218 tests, 3,019 assertions, zero failures.
 - `bun run lint`: pass; Biome checks 173 files with 27 existing CSS specificity warnings and no
   errors.
 - `bun run typecheck`: pass; 7/7 Turbo tasks.
 - `bun run test`: pass; 12/12 Turbo tasks.
-- `bunx turbo test --force`: pass; uncached 12/12 tasks, confirming 217 tests and 3,016
+- `bunx turbo test --force`: pass; uncached 12/12 tasks, confirming 218 tests and 3,019
   assertions.
 - `bun run build`: pass; 8/8 tasks including the pinned The Graph subgraph build; Next.js
   production build includes static `/` and `/p5-ledger`.
