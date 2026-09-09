@@ -145,8 +145,10 @@ if (entity === null) {
   if (publicResult.clearanceDigest !== clearanceDigest.toLowerCase()) {
     throw new Error("The Graph clearance digest does not match the requested digest");
   }
-  // Emit only public indexed fields; the API key, private application data, and request headers
-  // never enter the evidence output.
+  // This query-only helper checks response shape plus the requested entity digest. The production
+  // API reader performs the full binding/verdict/expiry/revocation policy before an agent can
+  // proceed. Emit only public indexed fields; the API key, private application data, and request
+  // headers never enter the evidence output.
   console.log(
     JSON.stringify(
       {

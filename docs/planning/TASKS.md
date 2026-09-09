@@ -90,7 +90,7 @@
 - [x] official CRE gateway client boundary with request-scoped site secret binding
 - [x] fail-closed CRE request/rejection/pending/network semantics and public-result validation
 - [x] Sepolia RovaultaRegistry subgraph schema, manifest, ABI, and event mappings
-- [x] server-only The Graph Gateway adapter with exact binding/revocation/expiry checks
+  - [x] server-only The Graph provider adapter with exact binding/revocation/expiry checks
 - [x] account-backed agent resolution from authenticated evaluation/clearance records
 - [x] load-bearing `getGraphContext` step before the existing P5 preparation authority
 - [x] normal release preparation routed through the account-backed agent boundary
@@ -117,7 +117,7 @@
 ## P11 — The Graph qualification
 - [x] pinned Graph CLI/AssemblyScript tooling with reproducible Sepolia codegen and WASM build
 - [x] public-only `RovaultaRegistry` subgraph schema, manifest, ABI, and event mappings
-- [x] server-only live Gateway client with exact digest, binding, issuer, block, expiry, and revocation validation
+  - [x] server-only live Graph client with exact digest, binding, issuer, block, expiry, and revocation validation
 - [x] account-backed deployment agent Graph gate before the existing P5 authority
 - [x] live-only operator scripts for hosted deployment, provider query, and account-agent evidence
 - [x] critical tests for provider request shape, malformed public data, non-matched states, and P5 handoff

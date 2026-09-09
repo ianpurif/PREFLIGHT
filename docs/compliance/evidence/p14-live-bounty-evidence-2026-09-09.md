@@ -53,7 +53,8 @@ exact registry readback: true
 
 The deployed Sepolia Subgraph Studio endpoint returned the exact clearance entity for the public
 digest. The endpoint is labelled Subgraph Studio evidence, not Gateway or decentralized-network
-evidence. The live query script and API reader both validated the public fields; the API reader
+evidence. The query-only script returned the allowlisted public entity and requested digest; the
+production API reader performed the exact binding, verdict, expiry, and revocation checks and
 returned `MATCHED`.
 
 ```text
