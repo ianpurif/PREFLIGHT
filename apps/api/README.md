@@ -113,6 +113,8 @@ export ROVAULTA_P13_SITE_ID='site:<site-id-from-setup>'
 export ROVAULTA_P13_ROBOT_ID='robot:<robot-id-from-setup>'
 export ROVAULTA_P13_BUILD_ID='robot-build:<build-id-from-setup>'
 unset ROVAULTA_P13_SETUP_PATH
+# If the root .env has a default setup path, override it because this command must not read setup JSON:
+export ROVAULTA_P13_SETUP_PATH=''
 bun run --cwd apps/api p13:account-evaluation
 ```
 

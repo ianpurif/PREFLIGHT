@@ -383,8 +383,9 @@ From a clean checkout, the documented two-phase operator flow starts with
 `ROVAULTA_P13_SETUP_PATH=.data/p13-setup.json`, and `ROVAULTA_P13_SETUP_ONLY=true`, then run
 `bun run --cwd apps/api p13:account-evaluation`. The command registers a new account or signs into
 an existing one, creates the account-owned site/robot/build, and prints their public IDs. Reuse those
-IDs by unsetting `ROVAULTA_P13_SETUP_PATH`, setting `ROVAULTA_P13_SETUP_ONLY=false` plus the three
-ID variables, and running the command again. The setup template contains no credentials or private
+IDs by unsetting `ROVAULTA_P13_SETUP_PATH` (or exporting it as an empty value if the root `.env`
+provides a default), setting `ROVAULTA_P13_SETUP_ONLY=false` plus the three ID variables, and
+running the command again. The setup template contains no credentials or private
 facility policy; replace its example policy, route, and build digest locally before evaluation.
 
 ### Record one real account clearance on Sepolia

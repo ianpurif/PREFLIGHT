@@ -435,7 +435,11 @@ async function run(): Promise<void> {
   const password = required("ROVAULTA_P13_PASSWORD");
   const requestedMode = process.env.ROVAULTA_CRE_EXECUTION_MODE?.trim().toLowerCase();
   const setupOnly = optionalBoolean("ROVAULTA_P13_SETUP_ONLY");
-  const setupPath = process.env.ROVAULTA_P13_SETUP_PATH?.trim();
+  const configuredSetupPath = process.env.ROVAULTA_P13_SETUP_PATH?.trim();
+  const setupPath =
+    configuredSetupPath === undefined || configuredSetupPath.length === 0
+      ? undefined
+      : configuredSetupPath;
   const configuredSiteId = optionalResourceId("ROVAULTA_P13_SITE_ID");
   const configuredRobotId = optionalResourceId("ROVAULTA_P13_ROBOT_ID");
   const configuredBuildId = optionalResourceId("ROVAULTA_P13_BUILD_ID");
