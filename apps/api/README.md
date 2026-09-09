@@ -55,6 +55,14 @@ bun run --cwd apps/api evidence:p52-agent:live-read
 The first is a local deterministic integration. The second uses the configured Sepolia RPC and is
 read-only. Neither invokes Ledger or activates a robot.
 
+### Live The Graph provider
+
+The normal account-backed agent requires live public clearance context before P5 preparation. Use
+`THE_GRAPH_API_KEY` plus `THE_GRAPH_SUBGRAPH_ID` for the Gateway path, or set the exact hosted
+Subgraph Studio endpoint in `THE_GRAPH_STUDIO_QUERY_URL` when the deployment has not been published
+to the Gateway. Studio output is labelled as Studio evidence; it is not presented as Gateway or
+decentralized-network evidence. Neither setting is exposed to the browser.
+
 ## P13 account-created CRE evaluation
 
 The normal account path is the only supported source for a P13 evaluation. Start the API with the
