@@ -6,9 +6,10 @@ CRE secret. The checked-in manifest starts at the registry deployment block and 
 record, exact-binding, and revocation events.
 
 The API queries the deployed subgraph through The Graph Gateway with `THE_GRAPH_API_KEY` kept
-server-side. The deployment agent treats the result as public context: a missing, stale, revoked,
-expired, or mismatched record blocks preparation. The direct P5 Sepolia registry read remains the
-final authority.
+server-side, or through an explicitly configured Subgraph Studio query URL when the hosted deployment
+has not been published to Gateway. Studio output is labelled separately. The deployment agent treats
+the result as public context: a missing, stale, revoked, expired, or mismatched record blocks
+preparation. The direct P5 Sepolia registry read remains the final authority.
 
 ## Build locally
 
@@ -44,7 +45,8 @@ that a hosted deployment exists.
    a redacted query response. Publishing to the decentralized network is not required for the
    provider-backed qualification proof; do not label a Studio deployment as a live DON.
 4. Set `THE_GRAPH_API_KEY`, `THE_GRAPH_SUBGRAPH_ID`, and (if needed) `THE_GRAPH_API_URL` in the
-   server environment. Never put the API key in the browser or committed files.
+   server environment. If the deployment is only available in Studio, set the exact
+   `THE_GRAPH_STUDIO_QUERY_URL` instead. Never put the API key in the browser or committed files.
 
 The provider endpoint is `https://gateway.thegraph.com/api/<API_KEY>/subgraphs/id/<SUBGRAPH_ID>`.
 The API sends a single GraphQL query by exact `clearance(id: $digest)` and validates every returned
@@ -68,5 +70,6 @@ or private model data. Use `bun run --cwd integrations/the-graph evidence:live` 
 check of a public digest. Both commands fail closed when live configuration is absent.
 
 The repository contains the manifest, schema, mapping, and minimal ABI so the provider is
-reproducible. A deployed subgraph and a live Gateway response are external evidence; local
-fixtures or a mocked Graph response do not qualify as prize evidence.
+reproducible. A deployed subgraph and a live provider response are external evidence; local
+fixtures or a mocked Graph response do not qualify as prize evidence. Label Studio responses as
+Studio evidence rather than Gateway/decentralized-network evidence.

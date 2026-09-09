@@ -7,6 +7,8 @@ import { type ClearanceRecord, parseClearanceRecord } from "@rovaulta/domain";
 
 const DEFAULT_ENDPOINT = "https://gateway.thegraph.com/api";
 const MAX_RESPONSE_BYTES = 256 * 1024;
+const STUDIO_QUERY_URL_PATTERN =
+  /^https:\/\/api\.studio\.thegraph\.com\/query\/[0-9]+\/[A-Za-z0-9][A-Za-z0-9._-]{0,127}\/[A-Za-z0-9][A-Za-z0-9._-]{0,63}\/?$/;
 
 type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
@@ -14,7 +16,7 @@ export type GraphClearanceStatus = "MATCHED" | "NOT_FOUND" | "REVOKED" | "EXPIRE
 
 export interface GraphClearanceContext {
   readonly source: "the-graph";
-  readonly provider: "gateway";
+  readonly provider: "gateway" | "studio";
   readonly chainId: 11_155_111;
   readonly registry: `0x${string}`;
   readonly clearanceDigest: `0x${string}`;
@@ -99,6 +101,7 @@ export class TheGraphClearanceReader implements GraphClearanceReader {
   readonly #apiKey: string | undefined;
   readonly #subgraphId: string | undefined;
   readonly #endpoint: string;
+  readonly #studioQueryUrl: string | undefined;
   readonly #fetch: FetchLike;
   readonly #now: () => number;
 
@@ -106,42 +109,59 @@ export class TheGraphClearanceReader implements GraphClearanceReader {
     readonly apiKey?: string;
     readonly subgraphId?: string;
     readonly endpoint?: string;
+    readonly studioQueryUrl?: string;
     readonly fetch?: FetchLike;
     readonly now?: () => number;
   }) {
     this.#apiKey = options.apiKey?.trim() || undefined;
     this.#subgraphId = options.subgraphId?.trim() || undefined;
     this.#endpoint = options.endpoint?.trim() || DEFAULT_ENDPOINT;
+    this.#studioQueryUrl = options.studioQueryUrl?.trim() || undefined;
     this.#fetch = options.fetch ?? fetch;
     this.#now = options.now ?? (() => Math.floor(Date.now() / 1000));
   }
 
   async readClearance(input: ClearanceRecord): Promise<GraphClearanceContext> {
     const clearance = parseClearanceRecord(input);
-    if (this.#apiKey === undefined || this.#subgraphId === undefined) {
+    if (
+      this.#studioQueryUrl === undefined &&
+      (this.#apiKey === undefined || this.#subgraphId === undefined)
+    ) {
       throw new GraphProviderError(
         "GRAPH_UNAVAILABLE",
-        "The Graph API key and Rovaulta subgraph ID are required",
+        "The Graph Gateway key/subgraph ID or an explicit Studio query URL is required",
       );
     }
-    if (!/^https:\/\//.test(this.#endpoint) || !/^[A-Za-z0-9_-]{8,256}$/.test(this.#subgraphId)) {
+    if (
+      this.#studioQueryUrl !== undefined &&
+      !STUDIO_QUERY_URL_PATTERN.test(this.#studioQueryUrl)
+    ) {
+      throw new GraphProviderError("GRAPH_UNAVAILABLE", "The Graph Studio query URL is malformed");
+    }
+    if (
+      this.#studioQueryUrl === undefined &&
+      (!/^https:\/\//.test(this.#endpoint) ||
+        this.#subgraphId === undefined ||
+        !/^[A-Za-z0-9_-]{8,256}$/.test(this.#subgraphId))
+    ) {
       throw new GraphProviderError(
         "GRAPH_UNAVAILABLE",
-        "The Graph provider configuration is malformed",
+        "The Graph Gateway configuration is malformed",
       );
     }
     const requested = clearanceRecordToTransport(clearance);
     const digest = requested.clearanceDigest;
+    const provider =
+      this.#studioQueryUrl === undefined ? ("gateway" as const) : ("studio" as const);
+    const queryUrl =
+      this.#studioQueryUrl ?? `${this.#endpoint}/${this.#apiKey}/subgraphs/id/${this.#subgraphId}`;
     let response: Response;
     try {
-      response = await this.#fetch(
-        `${this.#endpoint}/${this.#apiKey}/subgraphs/id/${this.#subgraphId}`,
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ query: QUERY, variables: { digest } }),
-        },
-      );
+      response = await this.#fetch(queryUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ query: QUERY, variables: { digest } }),
+      });
     } catch {
       throw new GraphProviderError("GRAPH_UNAVAILABLE", "The Graph provider is unreachable");
     }
@@ -177,7 +197,7 @@ export class TheGraphClearanceReader implements GraphClearanceReader {
     if (entity === null || entity === undefined) {
       return Object.freeze({
         source: "the-graph",
-        provider: "gateway",
+        provider,
         chainId: ROVAULTA_SEPOLIA_DEPLOYMENT.chainId,
         registry: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
         clearanceDigest: digest,
@@ -216,7 +236,7 @@ export class TheGraphClearanceReader implements GraphClearanceReader {
       typeof stored.revoked === "boolean";
     const base = {
       source: "the-graph" as const,
-      provider: "gateway" as const,
+      provider,
       chainId: ROVAULTA_SEPOLIA_DEPLOYMENT.chainId,
       registry: ROVAULTA_SEPOLIA_DEPLOYMENT.verifyingContract,
       clearanceDigest: digest,
@@ -241,10 +261,17 @@ export class TheGraphClearanceReader implements GraphClearanceReader {
 export function createGraphReaderFromEnvironment(
   environment: NodeJS.ProcessEnv = process.env,
 ): TheGraphClearanceReader {
-  const options: { apiKey?: string; subgraphId?: string; endpoint?: string } = {};
+  const options: {
+    apiKey?: string;
+    subgraphId?: string;
+    endpoint?: string;
+    studioQueryUrl?: string;
+  } = {};
   if (environment.THE_GRAPH_API_KEY !== undefined) options.apiKey = environment.THE_GRAPH_API_KEY;
   if (environment.THE_GRAPH_SUBGRAPH_ID !== undefined)
     options.subgraphId = environment.THE_GRAPH_SUBGRAPH_ID;
   if (environment.THE_GRAPH_API_URL !== undefined) options.endpoint = environment.THE_GRAPH_API_URL;
+  if (environment.THE_GRAPH_STUDIO_QUERY_URL !== undefined)
+    options.studioQueryUrl = environment.THE_GRAPH_STUDIO_QUERY_URL;
   return new TheGraphClearanceReader(options);
 }

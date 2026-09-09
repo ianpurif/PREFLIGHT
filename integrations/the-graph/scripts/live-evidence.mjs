@@ -1,15 +1,23 @@
 const apiKey = process.env.THE_GRAPH_API_KEY?.trim();
 const subgraphId = process.env.THE_GRAPH_SUBGRAPH_ID?.trim();
+const studioQueryUrl = process.env.THE_GRAPH_STUDIO_QUERY_URL?.trim();
 const endpoint = (
   process.env.THE_GRAPH_API_URL?.trim() || "https://gateway.thegraph.com/api"
 ).replace(/\/$/u, "");
 const clearanceDigest = process.env.ROVAULTA_P11_CLEARANCE_DIGEST?.trim();
 
-if (apiKey === undefined || apiKey.length === 0) {
-  throw new Error("THE_GRAPH_API_KEY is required; no live evidence was collected");
+const studioQueryPattern =
+  /^https:\/\/api\.studio\.thegraph\.com\/query\/[0-9]+\/[A-Za-z0-9][A-Za-z0-9._-]{0,127}\/[A-Za-z0-9][A-Za-z0-9._-]{0,63}\/?$/u;
+if (studioQueryUrl !== undefined && !studioQueryPattern.test(studioQueryUrl)) {
+  throw new Error("THE_GRAPH_STUDIO_QUERY_URL is malformed");
 }
-if (subgraphId === undefined || !/^[A-Za-z0-9_-]{8,256}$/.test(subgraphId)) {
-  throw new Error("THE_GRAPH_SUBGRAPH_ID is required and must be a Graph subgraph ID");
+if (studioQueryUrl === undefined) {
+  if (apiKey === undefined || apiKey.length === 0) {
+    throw new Error("THE_GRAPH_API_KEY is required; no live evidence was collected");
+  }
+  if (subgraphId === undefined || !/^[A-Za-z0-9_-]{8,256}$/.test(subgraphId)) {
+    throw new Error("THE_GRAPH_SUBGRAPH_ID is required and must be a Graph subgraph ID");
+  }
 }
 if (clearanceDigest === undefined || !/^0x[0-9a-fA-F]{64}$/.test(clearanceDigest)) {
   throw new Error("ROVAULTA_P11_CLEARANCE_DIGEST must be a 32-byte public clearance digest");
@@ -39,7 +47,9 @@ const query = `query RovaultaClearance($digest: Bytes!) {
     blockHash
   }
 }`;
-const response = await fetch(`${endpoint}/${apiKey}/subgraphs/id/${subgraphId}`, {
+const queryUrl = studioQueryUrl ?? `${endpoint}/${apiKey}/subgraphs/id/${subgraphId}`;
+const providerSource = studioQueryUrl === undefined ? "the-graph-gateway" : "the-graph-studio";
+const response = await fetch(queryUrl, {
   method: "POST",
   headers: { "content-type": "application/json" },
   body: JSON.stringify({ query, variables: { digest: clearanceDigest.toLowerCase() } }),
@@ -71,8 +81,10 @@ if (entity === null) {
     JSON.stringify(
       {
         label: "The Graph live provider query",
-        source: "the-graph-gateway",
-        subgraphId,
+        source: providerSource,
+        ...(studioQueryUrl === undefined
+          ? { subgraphId }
+          : { providerEndpoint: "subgraph-studio" }),
         clearanceDigest: clearanceDigest.toLowerCase(),
         status: "NOT_FOUND",
       },
@@ -139,8 +151,10 @@ if (entity === null) {
     JSON.stringify(
       {
         label: "The Graph live provider query",
-        source: "the-graph-gateway",
-        subgraphId,
+        source: providerSource,
+        ...(studioQueryUrl === undefined
+          ? { subgraphId }
+          : { providerEndpoint: "subgraph-studio" }),
         clearanceDigest: clearanceDigest.toLowerCase(),
         status: "FOUND",
         publicResult,

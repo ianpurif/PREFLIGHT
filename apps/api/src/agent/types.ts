@@ -60,7 +60,7 @@ export interface DeploymentCatalogEntry {
 
 export interface DeploymentGraphContext {
   readonly source: "the-graph";
-  readonly provider: "gateway";
+  readonly provider: "gateway" | "studio";
   readonly chainId: number;
   readonly registry: string;
   readonly clearanceDigest: string;

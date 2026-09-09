@@ -33,8 +33,9 @@ export function createDeploymentAgentFromEnvironment(
     );
   }
   const graphConfigured =
-    (readEnvironment(environment, "THE_GRAPH_API_KEY")?.trim() || "") !== "" &&
-    (readEnvironment(environment, "THE_GRAPH_SUBGRAPH_ID")?.trim() || "") !== "";
+    (readEnvironment(environment, "THE_GRAPH_STUDIO_QUERY_URL")?.trim() || "") !== "" ||
+    ((readEnvironment(environment, "THE_GRAPH_API_KEY")?.trim() || "") !== "" &&
+      (readEnvironment(environment, "THE_GRAPH_SUBGRAPH_ID")?.trim() || "") !== "");
   const accountResolver =
     applicationStore === undefined
       ? undefined

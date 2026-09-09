@@ -90,6 +90,37 @@ describe("The Graph clearance provider", () => {
     expect(body.query).not.toContain("blind");
   });
 
+  test("supports the explicit live Subgraph Studio query endpoint without Gateway credentials", async () => {
+    let request: Request | undefined;
+    const studioReader = new TheGraphClearanceReader({
+      studioQueryUrl: "https://api.studio.thegraph.com/query/1758964/rovaulta-registry/0.1.0",
+      fetch: async (input, init) => {
+        request =
+          input instanceof Request ? new Request(input, init) : new Request(input.toString(), init);
+        return response(entity());
+      },
+    });
+    await expect(studioReader.readClearance(clearance)).resolves.toMatchObject({
+      status: "MATCHED",
+    });
+    if (request === undefined) throw new Error("Expected Studio request");
+    expect(request.url).toBe(
+      "https://api.studio.thegraph.com/query/1758964/rovaulta-registry/0.1.0",
+    );
+    expect(request.headers.get("authorization")).toBeNull();
+    const body = (await request.json()) as { variables: { digest: string } };
+    expect(body.variables.digest).toBe(transport.clearanceDigest.toLowerCase());
+  });
+
+  test("rejects malformed Studio query configuration", async () => {
+    await expect(
+      new TheGraphClearanceReader({
+        studioQueryUrl: "https://example.com/not-a-studio-query",
+        fetch: async () => response(entity()),
+      }).readClearance(clearance),
+    ).rejects.toMatchObject({ code: "GRAPH_UNAVAILABLE" } satisfies Partial<GraphProviderError>);
+  });
+
   test("fails closed for missing, revoked, expired, and mismatched records", async () => {
     await expect(reader(null).readClearance(clearance)).resolves.toMatchObject({
       status: "NOT_FOUND",
