@@ -329,8 +329,8 @@ eligibility also remains unverified; see
   errors.
 - `bun run typecheck`: pass; 7/7 Turbo tasks.
 - `bun run test`: pass; 12/12 Turbo tasks.
-- `bunx turbo test --force`: pass; uncached 12/12 tasks, confirming 218 tests and 3,019
-  assertions.
+- `bun run test`: pass; 12/12 Turbo tasks, confirming 218 tests and 3,019 assertions after the
+  setup-flow changes.
 - `bun run build`: pass; 8/8 tasks including the pinned The Graph subgraph build; Next.js
   production build includes static `/` and `/p5-ledger`.
 - `bun run --cwd apps/web test`: pass; 2 P6 projection/mutation tests, 9 assertions.
