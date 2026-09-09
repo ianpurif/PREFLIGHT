@@ -330,7 +330,7 @@ eligibility also remains unverified; see
 - `bun run typecheck`: pass; 7/7 Turbo tasks.
 - `bun run test`: pass; 12/12 Turbo tasks.
 - `bun run test`: pass; 12/12 Turbo tasks, confirming 221 tests and 3,024 assertions after the
-  setup-flow changes.
+  setup-flow and operator-credential preflight changes.
 - `bun run build`: pass; 8/8 tasks including the pinned The Graph subgraph build; Next.js
   production build includes static `/` and `/p5-ledger`.
 - `bun run --cwd apps/web test`: pass; 2 P6 projection/mutation tests, 9 assertions.
