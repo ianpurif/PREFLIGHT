@@ -377,6 +377,16 @@ temporary request-scoped `secretsNames` mapping and `-e` environment file; it ne
 P2 evaluator as a fallback and never claims live CRE/DON execution. The CLI version and `cre whoami`
 checks must succeed first. See the [API runbook](apps/api/README.md#account-owned-official-cre-cli-simulation-mode).
 
+From a clean checkout, the documented two-phase operator flow starts with
+`bun run --cwd apps/api p13:setup-template`, which copies the safe tracked template to the ignored
+`apps/api/.data/p13-setup.json`. Set `ROVAULTA_P13_EMAIL`, `ROVAULTA_P13_PASSWORD`,
+`ROVAULTA_P13_SETUP_PATH=.data/p13-setup.json`, and `ROVAULTA_P13_SETUP_ONLY=true`, then run
+`bun run --cwd apps/api p13:account-evaluation`. The command registers a new account or signs into
+an existing one, creates the account-owned site/robot/build, and prints their public IDs. Reuse those
+IDs by unsetting `ROVAULTA_P13_SETUP_PATH`, setting `ROVAULTA_P13_SETUP_ONLY=false` plus the three
+ID variables, and running the command again. The setup template contains no credentials or private
+facility policy; replace its example policy, route, and build digest locally before evaluation.
+
 ### Record one real account clearance on Sepolia
 
 After the normal account flow has completed a real `CLEAR` evaluation through the configured CRE

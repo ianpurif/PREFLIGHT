@@ -166,5 +166,6 @@
 - [x] delete temporary workflow, mapping, payload, and secret material on success or failure
 - [x] cover dynamic selector mapping, cleanup, confidential-output rejection, and clearance construction
 - [x] document the operator flow and keep simulation provenance distinct from live CRE/DON execution
+- [x] provide a safe clean-checkout setup template/generator and strict actionable setup-file validation
 - [ ] run the mode with a real operator account and capture one account-owned `CLEAR`
 - [ ] use that stored `CLEAR` with P12 to create a real Sepolia clearance and capture Graph indexing

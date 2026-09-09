@@ -58,59 +58,44 @@ read-only. Neither invokes Ledger or activates a robot.
 ## P13 account-created CRE evaluation
 
 The normal account path is the only supported source for a P13 evaluation. Start the API with the
-same environment used by the web app, then create an ignored local setup file such as
-`.data/p13-setup.json`:
+same environment used by the web app. From a clean checkout, generate the ignored setup file from
+the tracked, non-secret template instead of creating an empty JSON file:
 
-```json
-{
-  "site": {
-    "name": "North dock",
-    "location": "Manila",
-    "policy": {
-      "warehouseWidthMm": 1000,
-      "warehouseHeightMm": 1000,
-      "restrictedZone": { "minXmm": 400, "minYmm": 400, "maxXmm": 600, "maxYmm": 600 },
-      "maximumSpeedMmPerSecond": 1000,
-      "zoneSpeedLimitMmPerSecond": 600,
-      "payloadThresholdGrams": 40000
-    }
-  },
-  "robot": { "name": "AMR-01" },
-  "build": {
-    "version": "1.0.0",
-    "label": "Clear candidate",
-    "artifactDigest": "sha256:replace-with-the-real-build-digest",
-    "route": {
-      "start": { "xMm": 100, "yMm": 100 },
-      "end": { "xMm": 900, "yMm": 100 },
-      "speedMmPerSecond": 400
-    }
-  }
-}
+```bash
+bun run --cwd apps/api p13:setup-template
 ```
 
-Replace the artifact digest and policy/route with the facility's real configuration. Do not commit
-this file: the policy is private even though the API returns only its commitment. Set
-`ROVAULTA_P13_EMAIL` and `ROVAULTA_P13_PASSWORD` in an ignored environment file, then create the
-account-owned resources without evaluating them:
+This copies [`p13-setup.example.json`](p13-setup.example.json) to
+`apps/api/.data/p13-setup.json`. The example contains the exact fields accepted by the API and a
+valid placeholder SHA-256 build digest/route. Replace the policy, route, and artifact digest with
+the operator's real values before evaluation. The generated file is ignored because a real facility
+policy is confidential; the generator refuses to overwrite an existing file.
 
-```powershell
-$env:ROVAULTA_P13_SETUP_ONLY="true"
+Set `ROVAULTA_P13_EMAIL` and `ROVAULTA_P13_PASSWORD` in the ignored root `.env` (or export them in
+the operator shell), then create the account-owned resources without evaluating them:
+
+```bash
+export ROVAULTA_P13_EMAIL='operator@example.com'
+export ROVAULTA_P13_PASSWORD='<the test account password>'
+export ROVAULTA_P13_SETUP_PATH='.data/p13-setup.json'
+export ROVAULTA_P13_SETUP_ONLY='true'
 bun run --cwd apps/api p13:account-evaluation
 ```
 
-The command registers (or signs in to) the account and calls the existing site/robot/build routes.
-It prints only the public account/site/robot/build IDs. It never opens SQLite, calls the P2
-evaluator, imports a P7 fixture, or accepts a browser-supplied verdict.
+The command registers the account when the email is new, or signs in when it already exists, then
+calls the existing site/robot/build routes. It prints only the public account/site/robot/build IDs.
+It never opens SQLite, calls the P2 evaluator, imports a P7 fixture, or accepts a browser-supplied
+verdict. If credentials are already supplied by `.env`, the two `export` lines can be omitted.
 
-Provision the exact site-bound secret directly to the official CRE secret store from the same local
-operator environment. The helper reads the encrypted policy through the application store, creates
-only a temporary `secretsNames` mapping, passes the versioned envelope/blind to the CLI in memory,
-and deletes the mapping afterward. It never prints or writes the secret value:
+For the live gateway path only, provision the exact site-bound secret directly to the official CRE
+secret store from the same local operator environment. The helper reads the encrypted policy through
+the application store, creates only a temporary `secretsNames` mapping, passes the versioned
+envelope/blind to the CLI in memory, and deletes the mapping afterward. It never prints or writes
+the secret value:
 
-```powershell
-$env:ROVAULTA_P13_ACCOUNT_ID="account:<account-id-from-setup>"
-$env:ROVAULTA_P13_SITE_ID="site:<site-id-from-setup>"
+```bash
+export ROVAULTA_P13_ACCOUNT_ID='account:<account-id-from-setup>'
+export ROVAULTA_P13_SITE_ID='site:<site-id-from-setup>'
 bun run --cwd apps/api p13:provision-site-secret
 ```
 
@@ -120,14 +105,14 @@ mode rather than a credential). If the CLI or CRE access is unavailable it fails
 copy a secret into a browser, API request, shell transcript, or evidence file.
 
 For the evaluation phase, unset `ROVAULTA_P13_SETUP_PATH`, set the three IDs printed by setup, and
-run the same normal account command:
+run the same normal account command. The setup file is intentionally not read during this phase:
 
-```powershell
-$env:ROVAULTA_P13_SETUP_ONLY="false"
-$env:ROVAULTA_P13_SITE_ID="site:<site-id-from-setup>"
-$env:ROVAULTA_P13_ROBOT_ID="robot:<robot-id-from-setup>"
-$env:ROVAULTA_P13_BUILD_ID="robot-build:<build-id-from-setup>"
-Remove-Item Env:ROVAULTA_P13_SETUP_PATH -ErrorAction SilentlyContinue
+```bash
+export ROVAULTA_P13_SETUP_ONLY='false'
+export ROVAULTA_P13_SITE_ID='site:<site-id-from-setup>'
+export ROVAULTA_P13_ROBOT_ID='robot:<robot-id-from-setup>'
+export ROVAULTA_P13_BUILD_ID='robot-build:<build-id-from-setup>'
+unset ROVAULTA_P13_SETUP_PATH
 bun run --cwd apps/api p13:account-evaluation
 ```
 
@@ -143,11 +128,11 @@ as `creExecutionId`; no raw gateway response is retained.
 
 When live CRE provisioning is unavailable, the normal account route can be run against the same
 authenticated official CLI simulation without promoting a fixture or using the local P2 evaluator.
-Set the explicit mode before starting the API:
+Set the mode before starting the API:
 
-```powershell
-$env:ROVAULTA_CRE_EXECUTION_MODE="simulation"
-$env:ROVAULTA_CRE_CLI="cre"
+```bash
+export ROVAULTA_CRE_EXECUTION_MODE='simulation'
+export ROVAULTA_CRE_CLI='cre'
 bun run --cwd apps/api dev
 ```
 
@@ -159,7 +144,9 @@ creates the temporary CLI env file from the encrypted site policy, invokes:
 cre -R . -T staging-settings -e <temporary-env-file> --non-interactive workflow simulate <temporary-workflow-folder> --trigger-index 0 --http-payload <temporary-public-payload>
 ```
 
-The executor also creates a short-lived workflow configuration whose `secretsNames` entry maps the
+In this explicit simulation mode, do not run `p13:provision-site-secret`: the executor creates the
+temporary mapping from the account-owned encrypted policy itself. The executor also creates a
+short-lived workflow configuration whose `secretsNames` entry maps the
 exact account site's selector to the temporary environment variable; the checked-in fixture
 mapping is never reused for another site. The CLI result is accepted only after the existing public
 callback parser, behavior-input digest check, and exact P1 binding validation pass. The resulting account evaluation records

@@ -415,3 +415,22 @@ temporary-file cleanup, confidential-output rejection, and clearance constructio
 match, or Ledger approval evidence. The frozen P13 workflow/handler is unchanged, temporary secret
 material is deleted, and an operator must supply real account credentials and run the path before
 any account-owned `CLEAR` claim is made.
+
+## 2026-09-09 — P13.1 clean-checkout operator setup flow
+
+**Tool:** OpenAI Codex using the Rovaulta execution-plan and verification-loop skills.
+
+**Human direction:** Make the documented account setup command work from a clean checkout without
+  redesigning P13. Do not fabricate an evaluation, clearance, live CRE execution, or confidential
+  input.
+
+**AI-assisted output:** A tracked non-secret `apps/api/p13-setup.example.json`, an ignored setup
+  template generator, a shared strict setup-file loader with actionable empty/malformed/schema
+  errors, and a critical test that sends the exact template through the existing account-store
+  site/robot/build validation. The runner now uses that loader and preserves the existing
+  account-registration/sign-in, ownership, provenance, and fail-closed behavior.
+
+**Evidence boundary:** The template contains no credentials, secrets, blinds, or private facility
+  policy. A real operator must replace the example values locally. Setup-only creates resources
+  only; no evaluation, Sepolia transaction, Graph record, or partner evidence is claimed by this
+  change.
