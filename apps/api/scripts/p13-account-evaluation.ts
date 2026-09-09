@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { parseP13OperatorPassword } from "../src/p13-operator-config.js";
 import { type P13Setup, readP13SetupFile } from "../src/p13-setup.js";
 
 type JsonRecord = Record<string, unknown>;
@@ -432,7 +433,7 @@ async function run(): Promise<void> {
   ).replace(/\/$/, "");
   assertApiOrigin(apiOrigin);
   const email = required("ROVAULTA_P13_EMAIL");
-  const password = required("ROVAULTA_P13_PASSWORD");
+  const password = parseP13OperatorPassword(process.env.ROVAULTA_P13_PASSWORD);
   const requestedMode = process.env.ROVAULTA_CRE_EXECUTION_MODE?.trim().toLowerCase();
   const setupOnly = optionalBoolean("ROVAULTA_P13_SETUP_ONLY");
   const configuredSetupPath = process.env.ROVAULTA_P13_SETUP_PATH?.trim();
