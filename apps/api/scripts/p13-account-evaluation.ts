@@ -35,6 +35,8 @@ type PublicEvaluation = {
   readonly violationCount: number | null;
   readonly reasons: readonly string[];
   readonly evaluatedAt: string;
+  readonly executionMode?: "official-cre-cli-simulation" | "cre-gateway" | "cre-gateway-callback";
+  readonly creCliVersion?: string;
 };
 
 type EvaluationOutcome = {
@@ -141,6 +143,19 @@ function publicEvaluation(value: unknown): PublicEvaluation {
   if (verdict !== "CLEAR" && verdict !== "HOLD" && verdict !== "ESCALATE") {
     throw new Error("public evaluation verdict is invalid");
   }
+  const executionMode = input.executionMode;
+  if (
+    executionMode !== undefined &&
+    executionMode !== "official-cre-cli-simulation" &&
+    executionMode !== "cre-gateway" &&
+    executionMode !== "cre-gateway-callback"
+  ) {
+    throw new Error("public evaluation execution mode is invalid");
+  }
+  const creCliVersion = input.creCliVersion;
+  if (creCliVersion !== undefined && typeof creCliVersion !== "string") {
+    throw new Error("public evaluation CRE CLI version is invalid");
+  }
   return Object.freeze({
     id: text(input.id, "public evaluation.id"),
     siteId: text(input.siteId, "public evaluation.siteId"),
@@ -168,6 +183,10 @@ function publicEvaluation(value: unknown): PublicEvaluation {
         )
       : Object.freeze([]),
     evaluatedAt: text(input.evaluatedAt, "public evaluation.evaluatedAt"),
+    ...(executionMode === undefined ? {} : { executionMode }),
+    ...(creCliVersion === undefined
+      ? {}
+      : { creCliVersion: text(creCliVersion, "public evaluation.creCliVersion") }),
   });
 }
 
@@ -415,7 +434,12 @@ function writePublicEvidence(
   mkdirSync(dirname(target), { recursive: true });
   const evidence = {
     evidenceType: "P13 account-created CRE evaluation",
-    execution: "normal account application path",
+    execution:
+      evaluation.executionMode === "official-cre-cli-simulation"
+        ? "authenticated CRE CLI simulation through the normal account path"
+        : "normal account application path",
+    executionMode: evaluation.executionMode ?? null,
+    creCliVersion: evaluation.creCliVersion ?? null,
     capturedAt: new Date().toISOString(),
     accountId,
     creExecutionId: creExecutionId ?? null,
@@ -444,6 +468,7 @@ async function run(): Promise<void> {
   assertApiOrigin(apiOrigin);
   const email = required("ROVAULTA_P13_EMAIL");
   const password = required("ROVAULTA_P13_PASSWORD");
+  const requestedMode = process.env.ROVAULTA_CRE_EXECUTION_MODE?.trim().toLowerCase();
   const setupOnly = optionalBoolean("ROVAULTA_P13_SETUP_ONLY");
   const setupPath = process.env.ROVAULTA_P13_SETUP_PATH?.trim();
   const configuredSiteId = optionalResourceId("ROVAULTA_P13_SITE_ID");
@@ -497,7 +522,10 @@ async function run(): Promise<void> {
           execution: "normal account application path",
           accountId,
           ...resources,
-          nextStep: "Provision the site-bound CRE secret before evaluating this build",
+          nextStep:
+            requestedMode === "simulation"
+              ? "Run the evaluation; simulation mode creates a temporary confidential mapping and removes it after execution"
+              : "Provision the site-bound CRE secret before evaluating this build",
         },
         null,
         2,
@@ -507,13 +535,24 @@ async function run(): Promise<void> {
   }
   const outcome = await evaluate(apiOrigin, webOrigin, cookie, resources);
   const evaluation = outcome.evaluation;
+  if (
+    requestedMode === "simulation" &&
+    evaluation.executionMode !== "official-cre-cli-simulation"
+  ) {
+    throw new Error("the account evaluation was not produced by the official CRE CLI simulation");
+  }
   const evidencePath = process.env.ROVAULTA_P13_EVIDENCE_PATH?.trim();
 
   console.log(
     JSON.stringify(
       {
         status: evaluation.verdict === "CLEAR" ? "CLEAR" : evaluation.verdict,
-        execution: "normal account application path",
+        execution:
+          evaluation.executionMode === "official-cre-cli-simulation"
+            ? "authenticated CRE CLI simulation through the normal account path"
+            : "normal account application path",
+        executionMode: evaluation.executionMode ?? null,
+        creCliVersion: evaluation.creCliVersion ?? null,
         accountId,
         siteId: evaluation.siteId,
         robotId: evaluation.robotId,

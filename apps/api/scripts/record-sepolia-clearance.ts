@@ -270,6 +270,8 @@ async function run(): Promise<void> {
           transactionHash,
           blockNumber: receipt.blockNumber.toString(),
           issuer: account.address,
+          evaluationExecutionMode: evaluation.executionMode ?? null,
+          creCliVersion: evaluation.creCliVersion ?? null,
           clearanceId: clearance.clearanceId,
           evaluationId: clearance.evaluationId,
           siteId: clearance.inputs.siteId,

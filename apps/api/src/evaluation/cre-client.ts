@@ -41,11 +41,22 @@ export interface ConfidentialEvaluationInput {
   readonly evaluatedAt: unknown;
 }
 
+/**
+ * Records how the public result reached the account store. This is application provenance, not a
+ * safety verdict and not evidence of live DON execution.
+ */
+export type EvaluationExecutionMode =
+  | "official-cre-cli-simulation"
+  | "cre-gateway"
+  | "cre-gateway-callback";
+
 export interface ConfidentialEvaluationReport {
   readonly result: EvaluationResult;
   readonly scenarioCount?: number;
   readonly violationCount?: number;
   readonly violations?: readonly Readonly<{ readonly type: string }>[];
+  readonly executionMode?: EvaluationExecutionMode;
+  readonly creCliVersion?: string;
 }
 
 export type ConfidentialEvaluationExecutor = {
@@ -227,6 +238,7 @@ function assertCompletedResult(
   }
   return Object.freeze({
     result,
+    executionMode: "cre-gateway" as const,
   });
 }
 

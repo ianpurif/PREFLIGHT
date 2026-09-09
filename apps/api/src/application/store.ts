@@ -52,6 +52,7 @@ import {
 import type {
   ConfidentialEvaluationInput,
   ConfidentialEvaluationReport,
+  EvaluationExecutionMode,
 } from "../evaluation/index.js";
 import { ApplicationError } from "./errors.js";
 
@@ -130,6 +131,9 @@ export interface PublicEvaluation {
   readonly violationCount: number | null;
   readonly reasons: readonly string[];
   readonly evaluatedAt: string;
+  /** Public execution provenance; absent only on legacy rows created before P13.1. */
+  readonly executionMode?: EvaluationExecutionMode;
+  readonly creCliVersion?: string;
 }
 
 export interface PublicEvaluationPending {
@@ -1228,6 +1232,7 @@ export class ApplicationStore {
         violationCount: null,
         reasons: Object.freeze([]),
         evaluatedAt: result.evaluatedAt,
+        executionMode: "cre-gateway-callback",
       });
       const row: EvaluationRow = {
         id: publicResult.id,
@@ -1367,6 +1372,8 @@ export class ApplicationStore {
       violationCount: report.violationCount ?? null,
       reasons,
       evaluatedAt: boundResult.evaluatedAt,
+      ...(report.executionMode === undefined ? {} : { executionMode: report.executionMode }),
+      ...(report.creCliVersion === undefined ? {} : { creCliVersion: report.creCliVersion }),
     });
     const row: EvaluationRow = {
       id: result.id,
