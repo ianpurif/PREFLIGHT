@@ -386,7 +386,9 @@ an existing one, creates the account-owned site/robot/build, and prints their pu
 IDs by unsetting `ROVAULTA_P13_SETUP_PATH` (or exporting it as an empty value if the root `.env`
 provides a default), setting `ROVAULTA_P13_SETUP_ONLY=false` plus the three ID variables, and
 running the command again. The setup template contains no credentials or private
-facility policy; replace its example policy, route, and build digest locally before evaluation.
+facility policy; replace its example policy, route, and build digest locally before evaluation. The
+operator password must be 12–256 characters, and an existing account must use its original exact
+password; this flow does not reset credentials.
 
 ### Record one real account clearance on Sepolia
 
