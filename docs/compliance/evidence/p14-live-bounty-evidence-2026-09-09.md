@@ -26,7 +26,13 @@ The existing P12 operator command recorded the exact persisted `CLEAR` through t
 `RovaultaRegistry` and verified the receipt events plus exact readback:
 
 ```text
-command: bun run --cwd apps/api record:sepolia-clearance
+command (public arguments; RPC/registrar values were loaded from the ignored .env):
+  ROVAULTA_CLEARANCE_ACCOUNT_ID=account:3dbe64397ce11e131f7286277d93294d
+  ROVAULTA_CLEARANCE_EVALUATION_ID=evaluation:1a89c0ad9a5e0672c086ad58346595ee
+  ROVAULTA_CLEARANCE_ID=clearance:account-3dbe6439-20260909-01
+  ROVAULTA_CLEARANCE_CONFIRM=YES
+  ROVAULTA_CLEARANCE_OUTPUT_PATH=.data/clearance-p13-sepolia.json
+  bun run --cwd apps/api record:sepolia-clearance
 network: ethereum-sepolia
 chainId: 11155111
 registry: 0xFB270cc222efa8B5005AA097dD512Be2558dde65
