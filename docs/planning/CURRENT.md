@@ -108,9 +108,10 @@ still fail closed when its external configuration is absent.**
   `apps/api/p13-setup.example.json`; `p13:setup-template` copies it to the ignored
   `apps/api/.data/p13-setup.json`. The account runner uses a shared strict loader that rejects
   missing, empty, malformed, or structurally invalid files with an actionable template command.
-  The template's digest, route, and example policy are accepted by the existing account API;
-  operators must replace them locally with the real build/site values. Setup-only still creates
-  only account-owned site/robot/build records and never an evaluation or clearance.
+  On POSIX hosts the generator applies owner-only modes to the directory and setup file. The
+  template's digest, route, and example policy are accepted by the existing account API; operators
+  must replace them locally with the real build/site values. Setup-only still creates only
+  account-owned site/robot/build records and never an evaluation or clearance.
 
 ## P11 The Graph qualification implementation
 

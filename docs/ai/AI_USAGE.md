@@ -425,10 +425,10 @@ any account-owned `CLEAR` claim is made.
   input.
 
 **AI-assisted output:** A tracked non-secret `apps/api/p13-setup.example.json`, an ignored setup
-  template generator, a shared strict setup-file loader with actionable empty/malformed/schema
-  errors, and a critical test that sends the exact template through the existing account-store
-  site/robot/build validation. The runner now uses that loader and preserves the existing
-  account-registration/sign-in, ownership, provenance, and fail-closed behavior.
+  template generator with owner-only POSIX modes, a shared strict setup-file loader with actionable
+  empty/malformed/schema errors, and critical tests that send the exact template through the existing
+  account-store site/robot/build validation. The runner now uses that loader and preserves the
+  existing account-registration/sign-in, ownership, provenance, and fail-closed behavior.
 
 **Evidence boundary:** The template contains no credentials, secrets, blinds, or private facility
   policy. A real operator must replace the example values locally. Setup-only creates resources
