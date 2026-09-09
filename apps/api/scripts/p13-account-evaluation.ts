@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { parseP13OperatorPassword } from "../src/p13-operator-config.js";
+import { p13ResourceNotFound, parseP13OperatorPassword } from "../src/p13-operator-config.js";
 import { type P13Setup, readP13SetupFile } from "../src/p13-setup.js";
 
 type JsonRecord = Record<string, unknown>;
@@ -279,6 +279,7 @@ async function resolveExistingResources(
     { method: "GET", cookie },
   );
   if (siteResponse.response.status !== 200) {
+    if (siteResponse.response.status === 404) throw p13ResourceNotFound("site");
     throw apiError(siteResponse.response.status, siteResponse.body);
   }
   const site = record(record(siteResponse.body, "site response").site, "site");
@@ -293,6 +294,7 @@ async function resolveExistingResources(
     { method: "GET", cookie },
   );
   if (robotsResponse.response.status !== 200) {
+    if (robotsResponse.response.status === 404) throw p13ResourceNotFound("robot");
     throw apiError(robotsResponse.response.status, robotsResponse.body);
   }
   const robots = record(robotsResponse.body, "robots response").robots;
@@ -310,6 +312,7 @@ async function resolveExistingResources(
     { method: "GET", cookie },
   );
   if (buildsResponse.response.status !== 200) {
+    if (buildsResponse.response.status === 404) throw p13ResourceNotFound("build");
     throw apiError(buildsResponse.response.status, buildsResponse.body);
   }
   const builds = record(buildsResponse.body, "builds response").builds;

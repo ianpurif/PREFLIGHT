@@ -23,3 +23,10 @@ export function parseP13OperatorPassword(value: string | undefined): string {
   }
   return password;
 }
+
+export function p13ResourceNotFound(resource: "site" | "robot" | "build"): Error {
+  const label = resource === "site" ? "site" : resource === "robot" ? "robot" : "build";
+  return new Error(
+    `Configured ${label} was not found for the authenticated account; clear the ROVAULTA_P13_*_ID values and rerun setup-only in the current API database`,
+  );
+}
