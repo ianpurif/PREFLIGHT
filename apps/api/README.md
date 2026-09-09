@@ -142,8 +142,14 @@ Set the mode before starting the API:
 ```bash
 export ROVAULTA_CRE_EXECUTION_MODE='simulation'
 export ROVAULTA_CRE_CLI='cre'
+# WSL: the API child must inherit both Bun (used to compile the TS workflow) and CRE.
+export PATH="$HOME/.bun/bin:$HOME/.cre/bin:$PATH"
 bun run --cwd apps/api dev
 ```
+
+Start or restart the API after exporting `PATH`; the CRE CLI inherits the server process environment.
+If the path is missing, the official CLI reports `bun is required for TypeScript workflows but was
+not found in PATH` and the account evaluation fails closed.
 
 Use the setup-only and evaluation commands above with a real operator setup file and real account
 credentials. The server builds the public CRE payload from that account's site/robot/build records,
