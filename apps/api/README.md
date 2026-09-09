@@ -72,7 +72,10 @@ the operator's real values before evaluation. The generated file is ignored beca
 policy is confidential; the generator refuses to overwrite an existing file.
 
 Set `ROVAULTA_P13_EMAIL` and `ROVAULTA_P13_PASSWORD` in the ignored root `.env` (or export them in
-the operator shell), then create the account-owned resources without evaluating them:
+the operator shell), then create the account-owned resources without evaluating them. The API
+requires passwords to be 12–256 characters; the runner validates this locally before making a
+request and never prints the password. Use the existing account password when the email already
+exists—this is not a password reset:
 
 ```bash
 export ROVAULTA_P13_EMAIL='operator@example.com'

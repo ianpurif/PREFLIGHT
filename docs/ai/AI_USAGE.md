@@ -434,3 +434,19 @@ any account-owned `CLEAR` claim is made.
   policy. A real operator must replace the example values locally. Setup-only creates resources
   only; no evaluation, Sepolia transaction, Graph record, or partner evidence is claimed by this
   change.
+
+## 2026-09-09 — P13 operator credential preflight
+
+**Tool:** OpenAI Codex using the Rovaulta verification-loop skill.
+
+**Human direction:** Diagnose the account-evaluation command's password-length failure without
+changing P13, exposing credentials, or overwriting the operator's account secret.
+
+**AI-assisted output:** The account runner now validates the API's 12–256 character password bound
+before making an HTTP request and reports only an actionable configuration error. A focused test
+covers missing, short, maximum-length, and overlong values; the operator password itself is never
+logged or included in evidence.
+
+**Evidence boundary:** The existing ignored `.env` remains unchanged. Operators must provide the
+existing account password (or a new account credential) that satisfies the API bound; this change
+does not reset passwords or create an evaluation.
