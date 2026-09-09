@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync } from "node:fs";
+import { chmodSync, copyFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 
 const source = resolve(import.meta.dir, "../p13-setup.example.json");
@@ -11,7 +11,9 @@ if (existsSync(target)) {
 }
 
 mkdirSync(dirname(target), { recursive: true });
+chmodSync(dirname(target), 0o700);
 copyFileSync(source, target);
+chmodSync(target, 0o600);
 
 console.log(
   JSON.stringify(
