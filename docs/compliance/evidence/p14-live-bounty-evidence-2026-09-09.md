@@ -17,6 +17,8 @@ CRE CLI simulation. It is not live CRE/DON execution.
 | Execution mode | `official-cre-cli-simulation` |
 | CRE CLI | `1.32.0` |
 | Site / robot / build | `site:192e49ae56c0abf18cd827706b909ce3` / `robot:ce87964de66e14684b1b3c68a7a4b1be` / `robot-build:075049b64bf7dd982705cac9a40d0f27` |
+| Public safety-envelope commitment | `sha256:69af11588f15c0c6cf94087c41f2e03c051bfab0209158d8669013b2c53b7369` |
+| Evaluator / input digest | `evaluator-version:warehouse-rules-v1` / `sha256:a49c510f57d4253bbf7dd25d558d62352f8d1ec40119f20bd1349ef5b1e675ea` |
 
 ## Sepolia clearance
 
