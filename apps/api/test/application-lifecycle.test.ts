@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { evaluateSimulation } from "@rovaulta/simulation-core";
-import { ApplicationStore } from "../src/application/index.js";
+import { ApplicationStore, createClearanceRecordFromEvaluation } from "../src/application/index.js";
 import { buildServer } from "../src/server.js";
 
 const KEY = Uint8Array.from({ length: 32 }, (_, index) => index + 1);
@@ -283,5 +283,59 @@ describe("account-scoped product lifecycle", () => {
     expect(response.statusCode).toBe(503);
     expect(JSON.parse(response.body).error).toBe("CRE_UNAVAILABLE");
     await app.close();
+  });
+
+  test("persists simulation provenance that the existing clearance path can consume", async () => {
+    const store = new ApplicationStore({ dbPath: ":memory:", policyKey: KEY });
+    const registered = store.registerAccount({
+      email: "simulation-provenance@example.test",
+      password: "correct horse battery staple",
+    });
+    const site = store.createSite(registered.account.id, {
+      name: "Simulation site",
+      location: "Manila",
+      policy,
+    });
+    const robot = store.createRobot(registered.account.id, site.id, { name: "AMR-SIM" });
+    const build = store.createBuild(registered.account.id, site.id, {
+      robotId: robot.id,
+      version: "1.0.0",
+      label: "Simulation candidate",
+      artifactDigest: `sha256:${"12".repeat(32)}`,
+      route: {
+        start: { xMm: 100, yMm: 100 },
+        end: { xMm: 900, yMm: 100 },
+        speedMmPerSecond: 400,
+      },
+    });
+    const evaluation = await store.evaluateBuild(registered.account.id, {
+      siteId: site.id,
+      robotId: robot.id,
+      buildId: build.id,
+      evaluationId: "evaluation:simulation-provenance",
+      requestedAt: "1788547200",
+      evaluatedAt: "1788547210",
+      evaluate: async (input) => ({
+        ...(await evaluateSimulation(input)),
+        executionMode: "official-cre-cli-simulation" as const,
+        creCliVersion: "1.32.0",
+      }),
+    });
+
+    expect(evaluation.verdict).toBe("CLEAR");
+    expect(evaluation.executionMode).toBe("official-cre-cli-simulation");
+    expect(evaluation.creCliVersion).toBe("1.32.0");
+    expect(store.getEvaluation(registered.account.id, evaluation.evaluationId)).toMatchObject({
+      executionMode: "official-cre-cli-simulation",
+      creCliVersion: "1.32.0",
+    });
+    const clearance = createClearanceRecordFromEvaluation(evaluation, {
+      clearanceId: "clearance:simulation-provenance",
+      issuedAt: "1788547210",
+      expiresAt: "1788548200",
+    });
+    expect(clearance.verdict).toBe("CLEAR");
+    expect(String(clearance.evaluationId)).toBe(evaluation.evaluationId);
+    store.close();
   });
 });
