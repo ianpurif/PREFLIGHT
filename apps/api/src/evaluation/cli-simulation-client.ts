@@ -58,8 +58,10 @@ const DEFAULT_WORKFLOW_PATH = "integrations/chainlink-cre";
 const DEFAULT_TARGET = "staging-settings";
 const DEFAULT_TRIGGER_INDEX = "0";
 const MAX_OUTPUT_BYTES = 256 * 1024;
+const MAX_FAILURE_DIAGNOSTIC_BYTES = 8 * 1024;
 const SAFE_VERSION = /\bv?\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?\b/;
 const TARGET_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
+const ANSI_ESCAPE_PATTERN = new RegExp(`${String.fromCharCode(27)}\\[[0-?]*[ -/]*[@-~]`, "gu");
 const CONFIDENTIAL_OUTPUT_MARKERS = Object.freeze([
   "confidentialEnvelope",
   "envelopeBlindingSecret",
@@ -302,6 +304,82 @@ function assertNoConfidentialOutput(output: string, secret: string, envelope: un
   }
 }
 
+function redactCliDiagnostic(
+  value: unknown,
+  secret: string,
+  environment: NodeJS.ProcessEnv,
+): string {
+  let diagnostic = value instanceof Error ? value.message : String(value ?? "");
+  diagnostic = diagnostic.replace(ANSI_ESCAPE_PATTERN, "").replace(/\r\n?/gu, "\n");
+  for (const sensitiveValue of [secret, environment.CRE_API_KEY].filter(
+    (candidate): candidate is string => candidate !== undefined && candidate.length > 0,
+  )) {
+    diagnostic = diagnostic.split(sensitiveValue).join("[REDACTED]");
+  }
+  diagnostic = diagnostic
+    .replace(/(Bearer\s+)[^\s\r\n]+/giu, "$1[REDACTED]")
+    .replace(/((?:api[-_ ]?key|authorization)\s*[:=]\s*)[^\s,\r\n]+/giu, "$1[REDACTED]")
+    .replace(
+      /(\b(?:[A-Z][A-Z0-9]*_)?CONFIDENTIAL_EVALUATION_INPUT_JSON\s*=\s*)[^\s\r\n]+/gu,
+      "$1[REDACTED]",
+    )
+    .trim();
+  const encodedLength = new TextEncoder().encode(diagnostic).byteLength;
+  if (encodedLength <= MAX_FAILURE_DIAGNOSTIC_BYTES) return diagnostic;
+  const suffix = "\n[diagnostic truncated]";
+  const encoder = new TextEncoder();
+  const availableBytes = MAX_FAILURE_DIAGNOSTIC_BYTES - encoder.encode(suffix).byteLength;
+  let output = "";
+  let outputBytes = 0;
+  for (const character of diagnostic) {
+    const characterBytes = encoder.encode(character).byteLength;
+    if (outputBytes + characterBytes > availableBytes) break;
+    output += character;
+    outputBytes += characterBytes;
+  }
+  return `${output}${suffix}`;
+}
+
+function simulationFailureMessage(
+  executable: string,
+  args: readonly string[],
+  run: CliProcessResult,
+  options: {
+    readonly cwd: string;
+    readonly workflowRoot: string;
+    readonly sourceWorkflowPath: string;
+    readonly target: string;
+    readonly triggerIndex: string;
+    readonly secret: string;
+    readonly environment: NodeJS.ProcessEnv;
+  },
+): string {
+  const safeArgs = args.map((argument, index) =>
+    args[index - 1] === "-e" ? "[temporary env file]" : argument,
+  );
+  const command = [executable, ...safeArgs].join(" ");
+  const exitCode = run.error === undefined ? String(run.status) : "process-start";
+  const details = [
+    `command: ${command}`,
+    `cwd: ${options.cwd}`,
+    `workflow root: ${options.workflowRoot}`,
+    `workflow source: ${options.sourceWorkflowPath}`,
+    `target: ${options.target}`,
+    `trigger index: ${options.triggerIndex}`,
+    `exit code: ${exitCode}`,
+    run.stdout.length === 0
+      ? undefined
+      : `stdout:\n${redactCliDiagnostic(run.stdout, options.secret, options.environment)}`,
+    run.stderr.length === 0
+      ? undefined
+      : `stderr:\n${redactCliDiagnostic(run.stderr, options.secret, options.environment)}`,
+    run.error === undefined
+      ? undefined
+      : `process error: ${redactCliDiagnostic(run.error, options.secret, options.environment)}`,
+  ].filter((detail): detail is string => detail !== undefined);
+  return `The official CRE simulation failed\n${details.join("\n")}`;
+}
+
 function cliVersion(output: string): string {
   const match = output.match(SAFE_VERSION);
   if (match === null) {
@@ -364,8 +442,11 @@ function createTemporaryWorkflow(
   const sourceDirectory = resolve(REPOSITORY_ROOT, sourceWorkflowPath);
   const sourceEntry = resolve(sourceDirectory, "src/main.ts");
   const sourceConfig = resolve(sourceDirectory, "config.staging.json");
-  const relativeEntry = workflowPathValue(relative(REPOSITORY_ROOT, sourceEntry));
-  const relativeConfig = workflowPathValue(relative(REPOSITORY_ROOT, sourceConfig));
+  // CRE resolves workflow artifacts relative to the directory containing workflow.yaml, not the
+  // repository root passed with -R. Keep the existing source/config files authoritative while
+  // making their paths valid from this short-lived workflow directory.
+  const relativeEntry = workflowPathValue(relative(workflowRoot, sourceEntry));
+  const relativeConfig = workflowPathValue(relative(workflowRoot, sourceConfig));
   writeFileSync(
     join(workflowRoot, "workflow.yaml"),
     [
@@ -490,7 +571,18 @@ export class CreCliSimulationEvaluationClient {
       const output = `${run.stdout}\n${run.stderr}`;
       assertNoConfidentialOutput(output, secret, input.confidentialEnvelope);
       if (run.error !== undefined || run.status !== 0) {
-        throw new CreEvaluationError("CRE_RESPONSE_INVALID", "The official CRE simulation failed");
+        throw new CreEvaluationError(
+          "CRE_RESPONSE_INVALID",
+          simulationFailureMessage(this.#cli, args, run, {
+            cwd: REPOSITORY_ROOT,
+            workflowRoot: relativePath(confidentialRoot),
+            sourceWorkflowPath: this.#workflowPath,
+            target: this.#target,
+            triggerIndex: this.#triggerIndex,
+            secret,
+            environment: this.#environment,
+          }),
+        );
       }
       if (new TextEncoder().encode(output).byteLength > MAX_OUTPUT_BYTES) {
         throw new CreEvaluationError(

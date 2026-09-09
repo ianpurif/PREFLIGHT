@@ -57,8 +57,10 @@ describe("official CRE CLI simulation executor", () => {
         const secrets = readFileSync(resolve(temporaryWorkflowPath, "secrets.yaml"), "utf8");
         expect(workflow).toContain("workflow-path:");
         expect(workflow).toContain("config-path:");
-        expect(workflow).toContain('workflow-path: "integrations/chainlink-cre/src/main.ts"');
-        expect(workflow).toContain('config-path: "integrations/chainlink-cre/config.staging.json"');
+        expect(workflow).toContain('workflow-path: "../../integrations/chainlink-cre/src/main.ts"');
+        expect(workflow).toContain(
+          'config-path: "../../integrations/chainlink-cre/config.staging.json"',
+        );
         expect(existsSync(resolve(options.cwd, "integrations/chainlink-cre/src/main.ts"))).toBe(
           true,
         );
@@ -184,5 +186,53 @@ describe("official CRE CLI simulation executor", () => {
       }),
     ).rejects.toThrow("not authenticated");
     expect(simulationStarted).toBe(false);
+  });
+
+  test("reports bounded non-secret diagnostics when the official simulation exits nonzero", async () => {
+    const fixture = createDeterministicDemoFixture();
+    let simulationEnvironmentPath: string | undefined;
+    let temporaryWorkflowPath: string | undefined;
+    const client = new CreCliSimulationEvaluationClient({
+      environment: { ...process.env, CRE_API_KEY: "operator-api-key" },
+      run: (_executable, args, options) => {
+        if (args.length === 1 && args[0] === "-v") {
+          return { status: 0, stdout: "cre version v1.32.0", stderr: "" };
+        }
+        if (args.length === 1 && args[0] === "whoami") {
+          return { status: 0, stdout: "authenticated", stderr: "" };
+        }
+        const environmentPath = args[args.indexOf("-e") + 1];
+        const workflowPath = args[args.indexOf("simulate") + 1];
+        if (environmentPath !== undefined) {
+          simulationEnvironmentPath = resolve(options.cwd, environmentPath);
+        }
+        if (workflowPath !== undefined) {
+          temporaryWorkflowPath = resolve(options.cwd, workflowPath);
+        }
+        return {
+          status: 17,
+          stdout: "workflow simulation stopped after validation",
+          stderr: "compile error: api-key=operator-api-key",
+        };
+      },
+    });
+
+    await expect(
+      client.evaluate({
+        request: fixture.correctedFixtureBuild.request,
+        robotBuild: fixture.correctedFixtureBuild.robotBuild,
+        confidentialEnvelope: fixture.confidentialEnvelope,
+        envelopeBlindingSecret: fixture.envelopeBlindingSecret,
+        behaviorTraces: fixture.correctedFixtureBuild.behaviorTraces,
+        evaluatedAt: fixture.correctedFixtureBuild.evaluatedAt,
+      }),
+    ).rejects.toThrow(
+      /exit code: 17[\s\S]*stdout:[\s\S]*workflow simulation stopped[\s\S]*stderr:[\s\S]*\[REDACTED\]/,
+    );
+    if (simulationEnvironmentPath === undefined || temporaryWorkflowPath === undefined) {
+      throw new Error("simulation temporary paths were not captured");
+    }
+    expect(existsSync(simulationEnvironmentPath)).toBe(false);
+    expect(existsSync(temporaryWorkflowPath)).toBe(false);
   });
 });
