@@ -81,10 +81,10 @@ still fail closed when its external configuration is absent.**
   configure the matching callback HMAC, gateway URL, workflow ID, and trigger signer. The local
   provisioning helper does not expose a policy-export route and requires the official CRE CLI.
 - Local account-runner preflight: `bun run --cwd apps/api p13:account-evaluation` fails closed with
-  the missing `ROVAULTA_P13_EMAIL` requirement before creating any records. The authenticated
-  official CLI simulation runner now completes all three current-source cases and writes only its
-  redacted public artifact; the account-backed gateway remains independently blocked without its
-  external deployment configuration.
+  missing email or a password outside the API's 12–256 character bound before creating any
+  records. The authenticated official CLI simulation runner now completes all three current-source
+  cases and writes only its redacted public artifact; the account-backed gateway remains
+  independently blocked without its external deployment configuration.
 
 ## P13.1 account-owned official CRE CLI simulation mode
 

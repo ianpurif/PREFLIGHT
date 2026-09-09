@@ -318,18 +318,18 @@ eligibility also remains unverified; see
 - Chain client: 12/12 tests for deployed-domain EIP-712, all field/domain mutations, signature
   recovery, exact P4 transport, positive pinned-block reader/ABI behavior, chain/registry, verdict,
   revocation, and expiry boundaries.
-- API: 63/63 tests across 15 files, including the account lifecycle/CRE fail-closed path, official
+- API: 66/66 tests across 16 files, including the account lifecycle/CRE fail-closed path, official
   CLI simulation cleanup/provenance, strict P13 setup-file/template validation and owner-only mode
-  checks, Graph provider binding and outage cases, P5/P5.2 authority boundaries, provider schema
-  failures, and deterministic P7 fixture regression.
+  checks, operator credential-bound validation, Graph provider binding and outage cases, P5/P5.2
+  authority boundaries, provider schema failures, and deterministic P7 fixture regression.
 - Domain: 31/31; simulation core: 60/60; Chainlink CRE: 32/32; chain client: 12/12; Ledger gate:
   18/18; web: 2/2.
-- Full TypeScript total: 218 tests, 3,019 assertions, zero failures.
+- Full TypeScript total: 221 tests, 3,024 assertions, zero failures.
 - `bun run lint`: pass; Biome checks 173 files with 27 existing CSS specificity warnings and no
   errors.
 - `bun run typecheck`: pass; 7/7 Turbo tasks.
 - `bun run test`: pass; 12/12 Turbo tasks.
-- `bun run test`: pass; 12/12 Turbo tasks, confirming 218 tests and 3,019 assertions after the
+- `bun run test`: pass; 12/12 Turbo tasks, confirming 221 tests and 3,024 assertions after the
   setup-flow changes.
 - `bun run build`: pass; 8/8 tasks including the pinned The Graph subgraph build; Next.js
   production build includes static `/` and `/p5-ledger`.
@@ -401,6 +401,13 @@ closed at the API password-length boundary; no record was created by that attemp
 
 ```json
 {"status":"BLOCKED","error":"INVALID_INPUT (400): Password must be 12-256 characters"}
+```
+
+After the operator preflight guard, the same unchanged ignored `.env` fails before any API request
+with an actionable configuration error and still does not print the credential:
+
+```json
+{"status":"BLOCKED","error":"ROVAULTA_P13_PASSWORD must be 12-256 characters; update the ignored root .env or export a valid value"}
 ```
 
 The clean-checkout template flow was then exercised with an unprinted generated test credential.
