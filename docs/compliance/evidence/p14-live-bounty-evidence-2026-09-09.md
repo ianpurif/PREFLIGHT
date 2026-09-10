@@ -81,3 +81,7 @@ execution, agent decision, Ledger signature, or authorization is claimed from th
 
 Ledger software tests remain green and the existing Speculos evidence remains partial. Physical
 Ledger use and official Clear Signing A/B/E/F evidence were not performed and are not claimed.
+
+This artifact records the provider state on 2026-09-09. The later real Gemini account-agent run,
+including the live Graph gate and `LEDGER_APPROVAL_REQUIRED` handoff, is recorded separately in
+[`p15-live-gemini-graph-ledger-boundary-2026-09-10.md`](p15-live-gemini-graph-ledger-boundary-2026-09-10.md).

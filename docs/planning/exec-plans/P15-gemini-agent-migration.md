@@ -65,6 +65,11 @@ authorization boundary.
 - The repository package wrappers cannot complete on this checkout because the Windows
   `node_modules` tree has broken workspace links (`typescript`, `viem`, `@biomejs/biome`, and
   `turbo` resolve to missing paths). WSL is also unavailable in this environment.
-- A real Gemini-backed agent run is intentionally not claimed: `.env` has no `GEMINI_API_KEY`, and
-  the live account-agent command fails before provider construction when the broken install cannot
-  resolve `viem`. No credential or fabricated provider result was used.
+- 2026-09-10: the real `apps/api evidence:p11-graph` command completed against the account-owned
+  Sepolia clearance and live Subgraph Studio context. The official Gemini SDK made seven
+  host-validated calls and ended at `LEDGER_APPROVAL_REQUIRED` after `prepareDeploymentIntent`.
+  Public evidence is recorded in
+  `docs/compliance/evidence/p15-live-gemini-graph-ledger-boundary-2026-09-10.md`.
+- This key rejects the repository default `gemini-2.5-flash` as unavailable to new users; the live
+  evidence used the explicit server-only `GEMINI_MODEL=gemini-3.5-flash` override. No provider
+  fallback, confidential payload, signing, physical-device use, or fabricated model result was used.

@@ -52,10 +52,11 @@ API verifies, rechecks clearance, consumes nonce once
   create or override the state.
 
 Local P5.2 evidence shows unsafe A blocked, deterministic corrected B reaching the Ledger boundary,
-and mutated C losing to exact-build preparation. A separate live read-only Sepolia agent run blocked
-the deliberately unregistered existing fixture. No external provider credential was configured, so
-the real Gemini adapter is contract-tested but no live model call is claimed. No Speculos signature
-or physical device approval is inferred from agent preparation.
+and mutated C losing to exact-build preparation. The live account-backed run then used the real
+Gemini provider and Studio `MATCHED` context, prepared the exact P5 intent, and stopped at
+`LEDGER_APPROVAL_REQUIRED` after all seven host-selected tools. The model had no signing or
+consumption capability. No Speculos signature or physical device approval is inferred from agent
+preparation; those remain separate evidence requirements.
 
 ## Current packages
 

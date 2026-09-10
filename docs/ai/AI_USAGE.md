@@ -522,3 +522,24 @@ provider runtime dependency or environment key remains.
 public tool observations. Confidential CRE policy/envelope/blind data, credentials, raw model
 output, signatures, and Ledger authority remain outside the provider boundary. A real execution
 is reported separately according to whether a local `GEMINI_API_KEY` is available.
+
+## 2026-09-10 — Live Gemini account-agent qualification
+
+**Tool:** OpenAI Codex using the Rovaulta verification-loop and partner-compliance guidance plus
+the official Google Gen AI SDK already configured in the repository.
+
+**Human direction:** Exercise the real account-owned Sepolia clearance through the live Subgraph
+Studio provider and Gemini deployment agent, without changing Chainlink, Graph, Ledger, or the
+host-owned authorization boundary.
+
+**AI-assisted output:** The real `apps/api evidence:p11-graph` command used the official Gemini SDK
+and made seven host-validated function calls: target resolution, context lock, evaluation, Graph
+context, clearance inspection, `prepareDeploymentIntent`, and Ledger status. The exact live Graph
+entity was `MATCHED`; the final public result was `LEDGER_APPROVAL_REQUIRED`.
+
+The evidence run used `gemini-3.5-flash` through the explicit server-side `GEMINI_MODEL` override
+because this API key rejects the repository default `gemini-2.5-flash` as unavailable to new users.
+No fallback, mock, signing, or authorization capability was introduced. Physical Ledger and Clear
+Signing evidence remain unperformed and are not claimed.
+
+**Evidence:** [`p15-live-gemini-graph-ledger-boundary-2026-09-10.md`](../compliance/evidence/p15-live-gemini-graph-ledger-boundary-2026-09-10.md).

@@ -60,7 +60,8 @@
 - [x] unsafe, corrected, mutated, revoked, expired, adversarial, injection, and determinism tests
 - [x] finite public request grammar, conflicting-target rejection, and raw-text non-disclosure
 - [x] local A/B/C agent evidence and live read-only Sepolia blocked-state evidence
-- [ ] external Gemini model execution evidence — environment lacks Gemini API key
+- [x] external Gemini model execution evidence — live run captured; this key uses explicit
+  `gemini-3.5-flash` because the default `gemini-2.5-flash` is unavailable to new users
 
 ## P6 — Demo UI / digital twin
 - [x] deterministic warehouse scene
@@ -98,8 +99,8 @@
   and agent authority boundaries
 - [ ] provision request-scoped CRE secrets and capture a completed account-created CRE result (optional live path; not required for Chainlink simulation qualification)
 - [x] deploy/index the Rovaulta Sepolia subgraph and capture live Graph-provider evidence
-- [ ] run a real account-backed Graph `MATCHED` preparation through P5/Ledger handoff
-- [ ] obtain external Gemini model execution evidence (API key unavailable locally)
+- [x] run a real account-backed Graph `MATCHED` preparation through P5/Ledger handoff
+- [x] obtain external Gemini model execution evidence (server-side key; model override recorded)
 
 ## P10 — Final partner qualification
 - [x] versioned canonical CRE result callback with HMAC authentication and public-only payload
@@ -110,8 +111,8 @@
 - [x] document Chainlink, Graph, and Ledger qualification boundaries without fabricated evidence
 - [ ] provision deployed CRE site/callback secrets and capture account-created completion (optional live path; not required for Chainlink simulation qualification)
 - [x] deploy/index the Sepolia subgraph and capture live Subgraph Studio `MATCHED` evidence
-- [ ] capture account-backed Graph `MATCHED` → P5/Ledger-required execution
-- [ ] capture external Gemini execution if required by the selected submission
+- [x] capture account-backed Graph `MATCHED` → P5/Ledger-required execution
+- [x] capture external Gemini execution if required by the selected submission
 - [ ] capture official Ledger Clear Signing/physical-device evidence if required by the selected pool
 
 ## P11 — The Graph qualification
@@ -178,4 +179,5 @@
 - [x] keep `GEMINI_API_KEY` server-side and exclude confidential CRE data from model context
 - [x] update runtime configuration, README, architecture/evidence/AI documentation, and scaffold checks
 - [x] add adapter regression tests for tool shape, malformed output, failure redaction, and missing credentials
-- [ ] run a real Gemini-backed account-agent execution when an approved API key and live account configuration are available
+- [x] run a real Gemini-backed account-agent execution against the live account/Graph configuration;
+  this key required the explicit `gemini-3.5-flash` override because `gemini-2.5-flash` was unavailable

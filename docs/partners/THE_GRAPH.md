@@ -82,8 +82,9 @@ P11 does not add Subgraph MCP or Substreams: the minimal hosted subgraph plus th
 provider query is the load-bearing source needed by the deployment agent. The smallest live proof is
 one account-created `CLEAR` evaluation with a corresponding public Sepolia registry event, a
 `MATCHED` response for the exact clearance digest, and the agent's subsequent
-`LEDGER_APPROVAL_REQUIRED` handoff. The provider response is captured; the final agent handoff still
-requires an external model configuration.
+`LEDGER_APPROVAL_REQUIRED` handoff. The provider response and the real Gemini-backed handoff are
+captured in the P15 live evidence artifact. This is Subgraph Studio evidence, not Gateway or
+decentralized-network publication; the final Ledger handoff still requires a human device action.
 
 ## Official references
 

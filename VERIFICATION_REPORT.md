@@ -519,3 +519,23 @@ The account-agent evidence command stopped fail-closed before model execution be
 handoff, Ledger signature, physical approval, Gateway publication, or live CRE/DON execution is
 claimed. The Ledger adapter test suite remains green; physical and official Tester evidence remain
 external prerequisites.
+
+## 2026-09-10 — P15 live Gemini account-agent update
+
+The previous provider-blocked state was closed without changing the Chainlink, Graph, Ledger, or
+evaluation architecture. The real `apps/api evidence:p11-graph` command used the account-owned
+Sepolia clearance and the hosted Subgraph Studio endpoint, then made seven host-validated Gemini
+function calls. The sequence reached `MATCHED`, `ELIGIBLE`, `PREPARED`, and
+`LEDGER_APPROVAL_REQUIRED`; no signing or authorization capability was exposed to the model. The
+public-only details are in `docs/compliance/evidence/p15-live-gemini-graph-ledger-boundary-2026-09-10.md`.
+
+This API key rejects the repository default `gemini-2.5-flash` as unavailable to new users, so the
+run supplied the explicit server-only `GEMINI_MODEL=gemini-3.5-flash` override. This is a real
+provider execution, not a mock or fallback. Physical Ledger/Clear Signing evidence remains blocked.
+
+Verification after the run: focused Gemini/deployment-agent/Graph tests pass (16 + 8 tests), the
+Ledger suite passes (18 tests), `bun run typecheck`, `bun run build`, `bun run contracts:test`, and
+`git diff --check` pass. `bun run test` is blocked by one existing Windows sandbox `EPERM` when
+`p13-setup-template.test.ts` spawns a child Bun process (70 API tests pass); `verify:scaffold` has
+the same child-process `EPERM`, and Speculos smoke is blocked because no emulator is listening on
+`127.0.0.1:5000`. These are environment limitations, not claimed partner evidence.

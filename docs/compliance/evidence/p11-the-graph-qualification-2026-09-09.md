@@ -107,3 +107,9 @@ captured a real indexed `MATCHED` response without changing the subgraph data.
 
 No live response, subgraph deployment, account trace, or qualification claim is fabricated by this
 artifact.
+
+Follow-up evidence captured on 2026-09-10 is in
+[`p15-live-gemini-graph-ledger-boundary-2026-09-10.md`](p15-live-gemini-graph-ledger-boundary-2026-09-10.md):
+the real Gemini provider consumed this live `MATCHED` context and reached
+`LEDGER_APPROVAL_REQUIRED`. The historical model-blocked row above is retained as-of its capture
+date; no physical Ledger approval is claimed.

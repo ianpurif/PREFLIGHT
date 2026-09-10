@@ -63,6 +63,23 @@ Subgraph Studio endpoint in `THE_GRAPH_STUDIO_QUERY_URL` when the deployment has
 to the Gateway. Studio output is labelled as Studio evidence; it is not presented as Gateway or
 decentralized-network evidence. Neither setting is exposed to the browser.
 
+For the real account-backed provider trace, set the public account/clearance inputs and run the
+existing operator command (the signer is an address only; no private key is read by the agent):
+
+```powershell
+$env:GEMINI_MODEL='gemini-3.5-flash' # use only when the configured AI Studio key rejects 2.5
+$env:ROVAULTA_P11_ACCOUNT_ID='account:<32-hex-account-id>'
+$env:ROVAULTA_P11_CLEARANCE_PATH='.data/clearance-p13-sepolia.json'
+$env:ROVAULTA_P11_SIGNER_ADDRESS='0x<authorized-public-address>'
+$env:ROVAULTA_AUTHORIZED_SIGNERS='0x<authorized-public-address>'
+$env:THE_GRAPH_STUDIO_QUERY_URL='https://api.studio.thegraph.com/query/<studio-account>/rovaulta-registry/0.1.0'
+bun run --cwd apps/api evidence:p11-graph
+```
+
+The successful boundary is `LEDGER_APPROVAL_REQUIRED`, after `MATCHED` Graph context and
+`prepareDeploymentIntent`; the model cannot sign, consume, or authorize the release. See the
+redacted [P15 live Gemini evidence](../../docs/compliance/evidence/p15-live-gemini-graph-ledger-boundary-2026-09-10.md).
+
 ## P13 account-created CRE evaluation
 
 The normal account path is the only supported source for a P13 evaluation. Start the API with the

@@ -239,8 +239,8 @@ secret custody or a remote robot attestation.
 | P3    | CRE workflow, confidential handler, minimal public result, and redacted authenticated simulations                          | Implemented; live DON deployment not claimed                   |
 | P4    | Exact-binding Solidity registry, fuzz/invariant tests, and Sepolia deployment/source verification                          | Implemented; registrar attestation remains explicit and manual |
 | P5    | EIP-712 intent, exact registry checks, durable nonce, Ledger DMK/WebHID/Speculos adapter, and fail-closed signing boundary | Software implemented; hardware evidence incomplete             |
-| P5.2  | Strict Gemini function-calling adapter, host-owned tool state machine, catalog resolution, and Ledger-required handoff      | Local evidence complete; external execution requires Gemini configuration |
-| P9    | CRE application boundary, The Graph public-context adapter/subgraph, and account-backed agent preparation                    | Code/tests complete; Chainlink simulation and live Studio `MATCHED` evidence captured; model/Gateway/Ledger handoff remains open |
+| P5.2  | Strict Gemini function-calling adapter, host-owned tool state machine, catalog resolution, and Ledger-required handoff      | Live account/Graph run reaches `LEDGER_APPROVAL_REQUIRED`; physical approval remains incomplete |
+| P9    | CRE application boundary, The Graph public-context adapter/subgraph, and account-backed agent preparation                    | Chainlink simulation, live Studio `MATCHED`, and real Gemini handoff captured; Gateway/Ledger hardware remain open |
 | P6    | Judge dashboard and deterministic React Three Fiber digital twin                                                           | Implemented and browser-tested                                 |
 | P7    | Fixed-clock offline A/B/C rehearsal, demo reset, stale-response protection, and Playwright flow                            | Implemented and locally rehearsed                              |
 | UI    | Landing, first-time onboarding, workspace navigation, setup/build/evaluate/release/evidence views, and Ledger handoff UX  | Implemented and browser-smoke-tested                          |
@@ -481,7 +481,10 @@ These artifacts are intentionally separated by trust boundary:
   — local build/test proof, operator commands, and explicit live-evidence blockers.
 - [P14 live Sepolia and Graph evidence](docs/compliance/evidence/p14-live-bounty-evidence-2026-09-09.md)
   — the account-owned simulated `CLEAR`, confirmed Sepolia registry events, and live Subgraph
-  Studio `MATCHED` response; no Gateway, model, or Ledger hardware claim.
+  Studio `MATCHED` response.
+- [P15 live Gemini agent evidence](docs/compliance/evidence/p15-live-gemini-graph-ledger-boundary-2026-09-10.md)
+  — real Gemini tool calls over the live Graph context, `prepareDeploymentIntent`, and the
+  `LEDGER_APPROVAL_REQUIRED` pre-signing boundary; no physical-device claim.
 - [Evidence matrix](docs/compliance/EVIDENCE_MATRIX.md) — judge-facing map of claims to artifacts.
 
 ### Existing Ledger emulator screenshots
@@ -535,7 +538,8 @@ Not yet proven or intentionally not implemented:
   transport is configured in this checkout);
 - a live Graph Gateway `MATCHED` response or decentralized-network publication; the hosted Sepolia
   Subgraph Studio deployment and exact `MATCHED` response are captured in the P14 evidence artifact;
-- a live external Gemini model execution in the repository evidence;
+- Gemini 2.5 Flash for this specific AI Studio key (the live evidence uses the explicit
+  `gemini-3.5-flash` override because 2.5 is unavailable to new users);
 - official Ledger Clear Signing Tester A/B/E/F access and complete Speculos signing captures;
 - physical Ledger approval evidence;
 - proof that a remote black-box model endpoint is the exact artifact whose digest was evaluated;
@@ -550,13 +554,16 @@ authority, provider, descriptor, or binding is missing.
 The next work should stay narrow:
 
 1. Capture legitimate Ledger origin/descriptor and physical-device evidence.
-2. Run the real provider adapter only with approved credentials and an explicit model.
+2. Repeat the Gemini run with the repository-default `gemini-2.5-flash` when Google AI Studio makes
+   that model available to this key; the live evidence currently uses the explicit `gemini-3.5-flash`
+   override.
 3. Provision request-scoped CRE secrets, deploy the workflow/result transport, and document the real
    DON/Vault boundaries.
-4. Deploy the Rovaulta Sepolia subgraph and capture a live provider-backed account trace.
+4. Publish the Rovaulta Sepolia subgraph through a Graph Gateway and capture a decentralized
+   provider-backed account trace (Studio evidence is already captured).
 5. Add stronger remote artifact or inference-endpoint attestation before treating a model service as
    the evaluated build.
-5. Add physical commissioning evidence and the final P8 submission materials.
+6. Add physical commissioning evidence and the final P8 submission materials.
 
 Do not turn the browser projection into an authority, add robot activation, or store private site
 rules onchain as part of these improvements.

@@ -2,15 +2,17 @@
 
 ## Phase
 
-**P1–P8 software is implemented. P5.2 adds the narrow AI deployment-agent workflow, deterministic tool/capability boundary, public audit projection, local positive/adversarial evidence, and a live read-only Sepolia blocked-state trace. P6 adds the deterministic digital twin over a server-side public projection of the existing P2/P3 fixture. P7 adds an offline fixed-clock A/B/C rehearsal, demo-owned idempotent reset, stale-browser protection, and reliable Playwright flow coverage. P8 provides the account-backed product lifecycle: authenticated onboarding, persisted site/robot/build/evaluation/release records, encrypted private policy storage, server-side evaluation, and a truthful P5/P5.2 release boundary. P7 fixtures are development/test-only and are not normal account data. The official Gemini provider adapter is implemented, but no external model call is captured because `GEMINI_API_KEY` is absent. P5.1 has official Speculos transport, actual Ethereum app/address UI smoke, ERC-7730 v2 validation, real pre-sign C, and invalid/unregistered D. Authenticated Clear Signing A/B/E/F and physical Ledger evidence remain externally blocked.**
+**P1–P8 software is implemented. P5.2 adds the narrow AI deployment-agent workflow, deterministic tool/capability boundary, public audit projection, local positive/adversarial evidence, and a live read-only Sepolia blocked-state trace. P6 adds the deterministic digital twin over a server-side public projection of the existing P2/P3 fixture. P7 adds an offline fixed-clock A/B/C rehearsal, demo-owned idempotent reset, stale-browser protection, and reliable Playwright flow coverage. P8 provides the account-backed product lifecycle: authenticated onboarding, persisted site/robot/build/evaluation/release records, encrypted private policy storage, server-side evaluation, and a truthful P5/P5.2 release boundary. P7 fixtures are development/test-only and are not normal account data. A real Gemini-backed account-agent run now consumes the live Studio `MATCHED` clearance and reaches `LEDGER_APPROVAL_REQUIRED`. P5.1 has official Speculos transport, actual Ethereum app/address UI smoke, ERC-7730 v2 validation, real pre-sign C, and invalid/unregistered D. Authenticated Clear Signing A/B/E/F and physical Ledger evidence remain externally blocked.**
 
 **P15 replaces the deployment-agent provider without changing its authority model:** the API now uses
 the official Google Gen AI SDK (`@google/genai`) with `gemini-2.5-flash` as the default model. The
 host still sends only the canonical public request and public observations, forces one host-selected
 function per turn, and leaves Graph checks, P5 preparation, and Ledger authorization unchanged.
 `GEMINI_API_KEY` is server-only; no confidential CRE policy, envelope, blind, credential, signature,
-or raw model output enters the agent context or public audit. A real Gemini execution remains
-external until an operator supplies the API key and the existing live account/Graph configuration.
+or raw model output enters the agent context or public audit. A real Gemini execution is captured in
+the P15 evidence artifact. This API key rejects `gemini-2.5-flash` for new users, so the evidence run
+supplied the server-only `GEMINI_MODEL=gemini-3.5-flash` override; the repository default remains
+`gemini-2.5-flash`.
 
 **P9 partner qualification slice is implemented and now has public live Graph evidence:** the normal
 account evaluation boundary uses an official Chainlink CRE HTTP JSON-RPC/JWT client and never falls
@@ -20,8 +22,8 @@ public-only callback when deployment/result-delivery configuration exists. Accou
 preparation resolves the exact authenticated evaluation/clearance, requires a live The Graph registry
 context, then delegates to the existing P5 authority; the static catalog remains only for the explicit
 development fixture route. The deployed Sepolia subgraph now indexes one real account-owned clearance,
-and the strict provider returns `MATCHED` through the hosted Studio endpoint. Gateway publication,
-external model execution, and the final Ledger handoff remain unclaimed.**
+and the strict provider returns `MATCHED` through the hosted Studio endpoint. Gateway publication
+and the final Ledger handoff remain unclaimed; the real Gemini handoff is captured in P15 evidence.**
 
 **P10 closes the asynchronous CRE application transport in code:** account evaluations now persist an
 exact pending request after the official gateway returns `ACCEPTED`; a configured CRE TEE callback
@@ -31,8 +33,8 @@ exposing the result to the owning account, and the web workspace polls the expli
 The workflow uses the official HTTP capability only when this public-result delivery is configured;
 it never sends the private envelope, blind, policy, or internal report. The authenticated P13
 simulation remains the selected Chainlink qualification path. A real Sepolia clearance and live
-Subgraph Studio `MATCHED` response are now captured; deployed callback completion, external Gemini
-execution, and Ledger hardware evidence remain external.**
+Subgraph Studio `MATCHED` response, and Gemini-backed `LEDGER_APPROVAL_REQUIRED` handoff are now
+captured; deployed callback completion and Ledger hardware evidence remain external.**
 
 **P11 hardens and operationalizes The Graph qualification path:** the repository now has pinned
 Graph CLI/AssemblyScript tooling that code-generates and compiles the public Sepolia registry
@@ -43,8 +45,8 @@ real account-backed agent path without printing credentials. The account agent a
 and injected critical tests are green. The hosted `rovaulta-registry` deployment is live on Sepolia,
 one real clearance is indexed, and both the direct Studio query and strict API reader return
 `MATCHED` for the exact digest. This is labelled Studio evidence, not Gateway/decentralized evidence.
-The model-backed agent handoff, 2–4 minute demo, Gateway subgraph ID, and Start Fresh pool eligibility
-remain external blockers and are not claimed.**
+The model-backed agent handoff is captured in the P15 evidence artifact. The 2–4 minute demo, Gateway
+subgraph ID, and Start Fresh pool eligibility remain external blockers and are not claimed.**
 
 **P12 adds the missing operator path from account data to the deployed registry:** a validated
 account-owned public `CLEAR` evaluation can now be converted through the canonical P1 clearance
@@ -136,14 +138,32 @@ still fail closed when its external configuration is absent.**
   clearance entity at the same indexed block; `TheGraphClearanceReader` returned `MATCHED` after
   validating every public binding. This is live Studio evidence, not Gateway or decentralized-network
   evidence, and no Graph entity was manually inserted.
-- The account-agent command was attempted with the live Studio provider and exact public clearance,
-  but failed closed before model execution because `GEMINI_API_KEY` is
-  absent. No AI output, `LEDGER_APPROVAL_REQUIRED` handoff, signature, or authorization is claimed.
+- The account-agent command now runs with the live Studio provider and exact public clearance. A
+  real Gemini function-calling execution resolved the target, observed `MATCHED`, prepared the exact
+  P5 intent, and returned `LEDGER_APPROVAL_REQUIRED`. No signature or authorization is claimed.
+- The model-specific evidence uses `gemini-3.5-flash` because this API key rejects the repository's
+  default `gemini-2.5-flash` as unavailable to new users; no provider fallback is implemented.
 - Ledger adapter tests remain green and existing Speculos evidence remains partial. Physical-device
   approval and official Clear Signing Tester A/B/E/F evidence require external hardware/access.
 - Redacted evidence: `docs/compliance/evidence/p14-live-bounty-evidence-2026-09-09.md` and
   `p14-live-sepolia-graph-2026-09-09.json`; detailed execution plan:
-  `docs/planning/exec-plans/P14-live-bounty-evidence-closure.md`.
+  `docs/planning/exec-plans/P14-live-bounty-evidence-closure.md`. The Gemini run is recorded in
+  `docs/compliance/evidence/p15-live-gemini-graph-ledger-boundary-2026-09-10.md`.
+
+## P15 live Gemini deployment-agent evidence
+
+- The existing `apps/api evidence:p11-graph` command was run against the real account-owned
+  clearance, the deployed Sepolia registry, and the hosted Subgraph Studio endpoint. It used the
+  official `@google/genai` SDK and made seven real host-selected function calls.
+- The public sequence was `RESOLVED → LOCKED → CLEAR → MATCHED → ELIGIBLE → PREPARED →
+  AWAITING_HUMAN`, ending at `LEDGER_APPROVAL_REQUIRED`. The agent had no signing, registry-write,
+  or authorization capability.
+- Evidence is public-only and records the target bindings, chain/registry, Graph block metadata,
+  clearance digest, intent digests, provider/model, and no confidential payload. See
+  `docs/compliance/evidence/p15-live-gemini-graph-ledger-boundary-2026-09-10.md`.
+- The repository keeps `gemini-2.5-flash` as its default, but this API key rejects that model as
+  unavailable to new users. The run used the explicit server-side `GEMINI_MODEL=gemini-3.5-flash`
+  override. This is a model-availability limitation, not a fallback or authority change.
 
 ## P11 The Graph qualification implementation
 
@@ -163,8 +183,8 @@ still fail closed when its external configuration is absent.**
 - `apps/api evidence:p11-graph` is the reproducible live-account evidence command. It requires a
   real Gateway key/subgraph ID or exact Studio query URL, account-created public clearance, account
   identifier, and public signer address; missing configuration fails closed. The current live proof
-  validates Studio context independently; the command stops before model execution when the external
-  model key/model is absent.
+  validates Studio context independently, and the P15 run records the real Gemini tool sequence after
+  the `MATCHED` gate.
 
 ## P12 account-backed clearance issuance
 

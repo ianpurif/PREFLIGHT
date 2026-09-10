@@ -82,3 +82,13 @@ the final human authorization boundary; no physical-device result is inferred.
   terminology. It identified that the query-only helper did not perform the production reader's
   full binding policy; the evidence wording and helper comments now state that boundary explicitly.
   No remaining actionable findings were reported.
+
+## Follow-up evidence captured 2026-09-10
+
+The previously external model step was rerun without changing the Chainlink, Graph, or Ledger
+architecture. With the existing account-owned Sepolia clearance and hosted Studio endpoint, the
+official Gemini SDK completed all seven host-selected calls and reached `LEDGER_APPROVAL_REQUIRED`
+after `prepareDeploymentIntent`. The run used the explicit server-side `GEMINI_MODEL=gemini-3.5-flash`
+override because the configured key rejects `gemini-2.5-flash` for new users. Public-only details
+are recorded in `p15-live-gemini-graph-ledger-boundary-2026-09-10.md`; no physical Ledger use or
+authorization is claimed.
