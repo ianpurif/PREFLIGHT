@@ -239,7 +239,7 @@ secret custody or a remote robot attestation.
 | P3    | CRE workflow, confidential handler, minimal public result, and redacted authenticated simulations                          | Implemented; live DON deployment not claimed                   |
 | P4    | Exact-binding Solidity registry, fuzz/invariant tests, and Sepolia deployment/source verification                          | Implemented; registrar attestation remains explicit and manual |
 | P5    | EIP-712 intent, exact registry checks, durable nonce, Ledger DMK/WebHID/Speculos adapter, and fail-closed signing boundary | Software implemented; hardware evidence incomplete             |
-| P5.2  | Strict OpenAI Responses adapter, host-owned tool state machine, catalog resolution, and Ledger-required handoff            | Local evidence complete; no external model call captured       |
+| P5.2  | Strict Gemini function-calling adapter, host-owned tool state machine, catalog resolution, and Ledger-required handoff      | Local evidence complete; external execution requires Gemini configuration |
 | P9    | CRE application boundary, The Graph public-context adapter/subgraph, and account-backed agent preparation                    | Code/tests complete; Chainlink simulation and live Studio `MATCHED` evidence captured; model/Gateway/Ledger handoff remains open |
 | P6    | Judge dashboard and deterministic React Three Fiber digital twin                                                           | Implemented and browser-tested                                 |
 | P7    | Fixed-clock offline A/B/C rehearsal, demo reset, stale-response protection, and Playwright flow                            | Implemented and locally rehearsed                              |
@@ -284,7 +284,7 @@ authorize a deployment by itself.
 
 ### Development fixture rehearsal
 
-This path does not call OpenAI, Sepolia, CRE, Ledger, or Speculos. It uses the checked-in P2
+This path does not call Gemini, Sepolia, CRE, Ledger, or Speculos. It uses the checked-in P2
 fixture, a local registry reader, the existing P5.2 controller, and a demo-only fixed nonce.
 
 ```bash
@@ -335,8 +335,8 @@ envelope blinds, signatures, or confidential CRE payloads.
 | `ROVAULTA_APP_DB_PATH`             | SQLite account/site/build/evaluation state               |
 | `ROVAULTA_POLICY_ENCRYPTION_KEY`   | 32-byte hex key for encrypted site policies              |
 | `ROVAULTA_POLICY_KEY_PATH`         | Local ignored key-file fallback when the key is unset    |
-| `OPENAI_API_KEY`                   | Optional real Responses API provider                     |
-| `ROVAULTA_AGENT_MODEL`            | Explicit provider model name                             |
+| `GEMINI_API_KEY`                   | Server-side Google AI Studio key (required for the real agent) |
+| `GEMINI_MODEL`                     | Gemini model override (defaults to `gemini-2.5-flash`)       |
 | `ROVAULTA_AGENT_CATALOG_PATH`     | Public deployment catalog path                           |
 | `ROVAULTA_CRE_GATEWAY_URL`       | Deployed CRE HTTP gateway URL (server-only)              |
 | `ROVAULTA_CRE_EXECUTION_MODE`    | `gateway` (default) or explicit `simulation` for the official CRE CLI |
@@ -535,7 +535,7 @@ Not yet proven or intentionally not implemented:
   transport is configured in this checkout);
 - a live Graph Gateway `MATCHED` response or decentralized-network publication; the hosted Sepolia
   Subgraph Studio deployment and exact `MATCHED` response are captured in the P14 evidence artifact;
-- a live external OpenAI model execution in the repository evidence;
+- a live external Gemini model execution in the repository evidence;
 - official Ledger Clear Signing Tester A/B/E/F access and complete Speculos signing captures;
 - physical Ledger approval evidence;
 - proof that a remote black-box model endpoint is the exact artifact whose digest was evaluated;

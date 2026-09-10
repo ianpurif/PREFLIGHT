@@ -52,7 +52,7 @@
   "agent": {
     "liveGraphContextVerified": true,
     "liveAccountAgentRun": "BLOCKED",
-    "blocker": "External OpenAI provider key/model configuration is absent; no model execution was claimed"
+    "blocker": "External Gemini API key configuration is absent; no model execution was claimed"
   },
   "ledger": {
     "humanApprovalRequired": true,

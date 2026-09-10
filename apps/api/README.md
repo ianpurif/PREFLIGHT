@@ -6,8 +6,8 @@ The API can run one narrow model-driven deployment-preparation mission. Configur
 environment values:
 
 ```text
-OPENAI_API_KEY=<local secret>
-ROVAULTA_AGENT_MODEL=<explicit Responses API model>
+GEMINI_API_KEY=<local secret; server-side only>
+GEMINI_MODEL=gemini-2.5-flash
 ROVAULTA_AGENT_CATALOG_PATH=<path to public deployment catalog JSON>
 EVM_RPC_URL=<Sepolia RPC>
 ROVAULTA_AUTHORIZED_SIGNERS=<operator Ledger address allowlist>
@@ -40,9 +40,9 @@ the entire input against catalog-generated public forms such as `Deploy Robot <r
 target or private context, fails before the model is invoked. The raw submitted string is discarded;
 the provider and public attempt audit receive only a host-generated canonical public request.
 
-The Responses request uses `store: false`, one strict function schema, one host-selected next tool,
-and bounded output. The model never receives a private envelope, blind, credential, raw signature,
-or confidential CRE payload.
+The Gemini request uses one strict function schema, one host-selected next tool, and bounded output.
+The model never receives a private envelope, blind, credential, raw signature, or confidential CRE
+payload. `GEMINI_API_KEY` is read only by the server and is never exposed to the browser.
 
 Missing provider configuration never falls back to the scripted test model. The deterministic and
 live-read evidence commands are:

@@ -170,8 +170,8 @@ agent, or P6 behavior is claimed.
 ## 2026-09-07 — P5.2 AI deployment-agent closure
 
 **Tool:** OpenAI Codex using the project execution-plan, vertical-slice, Ledger
-partner-compliance, verification-loop, and handoff skills; the official OpenAI function-calling
-guide; and read-only architecture, seam, partner, and adversarial-test specialists.
+partner-compliance, verification-loop, and handoff skills; the provider function-calling guide;
+and read-only architecture, seam, partner, and adversarial-test specialists.
 
 **Human direction:** Implement only P5.2: a narrow real tool-calling deployment agent that resolves
 an exact public target, inspects evaluation/live Sepolia clearance state, reuses the existing P5
@@ -179,7 +179,7 @@ preparation authority, stops at Ledger, records a public audit, resists model/to
 does not begin P6 or redesign P1–P5.1.
 
 **AI-assisted output:** Host-owned six-tool state machine; strict public deployment catalog; real
-OpenAI Responses function-calling adapter over `fetch`; exact P5 authorization-status correlation;
+provider function-calling adapter; exact P5 authorization-status correlation;
 agent prepare/status API routes; local deterministic and live read-only Sepolia evidence runners;
 provider/orchestration/adversarial/leakage tests; scaffold transition; ADR-0008; and planning,
 architecture, security, Ledger, compliance, verification, and handoff documentation.
@@ -187,7 +187,7 @@ architecture, security, Ledger, compliance, verification, and handoff documentat
 The final adversarial review found that broad request text could become provider/audit input and that
 alias containment could accept a negated second target. Those findings were fixed by restricting
 requests to whole catalog-generated public forms, discarding raw submitted text, sending only the
-canonical public projection with Responses `store: false`, and requiring the first model tool call
+canonical public projection, and requiring the first model tool call
 to resolve to the host-selected catalog entry. Negative tests cover both cases.
 
 **Authority boundary:** Model output is never a safety, eligibility, signing, or authorization
@@ -198,8 +198,8 @@ only the existing cryptographic P5 consume result can produce `AUTHORIZED`.
 
 **Evidence boundary:** Positive Build B evidence uses a clearly labeled deterministic registry
 fixture; the live Sepolia agent trace is read-only and blocks the existing unregistered fixture.
-No external model execution was captured because `OPENAI_API_KEY` and
-`ROVAULTA_AGENT_MODEL` were unavailable. No Speculos signature, physical Ledger/Secure Element,
+No external model execution was captured because provider credentials were unavailable. No
+Speculos signature, physical Ledger/Secure Element,
 accepted Clear Signing descriptor, robot activation, confidential value, credential, or P6 behavior
 is claimed.
 
@@ -239,7 +239,7 @@ response guards, deterministic Playwright sequence coverage, and synchronized P7
 documentation.
 
 **Boundary:** The rehearsal uses a scripted model and deterministic local registry reader. It is
-not live OpenAI, Sepolia, Chainlink CRE, Ledger, or Speculos execution. B stops at
+not live Gemini, Sepolia, Chainlink CRE, Ledger, or Speculos execution. B stops at
 `LEDGER_APPROVAL_REQUIRED` and C stops at `CLEARANCE_BINDING_MISMATCH`; no signature, nonce
 consumption, registry write, authorization, confidential envelope, or robot activation is produced.
 
@@ -305,7 +305,7 @@ account-backed agent; and synchronized architecture, partner, planning, and evid
 
 **Evidence boundary:** Local tests use injected provider responses. The current environment has no
 deployed CRE gateway/workflow result transport, request-scoped CRE secrets, Graph API key/subgraph
-ID, or OpenAI provider/model configuration. Therefore no completed account-created CRE result, live
+ID, or Gemini provider configuration. Therefore no completed account-created CRE result, live
 Graph response, or external model execution is claimed. The existing authenticated CRE CLI
 simulation remains simulation evidence only.
 
@@ -323,7 +323,7 @@ site/robot/build/behavior binding and idempotent callback completion; bounded br
 partner/evidence/task documentation with explicit external blockers.
 
 **Evidence boundary:** Callback tests use local SDK/runtime mocks and an injected API secret. No
-deployed CRE callback, live Graph response, external OpenAI execution, or physical Ledger evidence
+deployed CRE callback, live Graph response, external Gemini execution, or physical Ledger evidence
 was generated or claimed. Private envelope, blind, policy, callback secret, and credentials remain
 uncommitted.
 
@@ -498,7 +498,27 @@ the API reader returned `MATCHED`. Redacted public evidence and planning/matrix/
 added; no contract, workflow, evaluator, or Ledger authority was changed.
 
 **Evidence boundary:** The Graph artifact contains only public chain/entity/provenance fields. The
-live account-agent command stopped before model execution because the external OpenAI key/model was
+live account-agent command stopped before model execution because the external Gemini API key was
 absent. No `LEDGER_APPROVAL_REQUIRED`, signature, physical-device, Gateway, decentralized-network,
 or live CRE/DON claim is made. Private policy, envelope, blind, credentials, and deploy keys remain
 uncommitted.
+
+## 2026-09-10 — Gemini deployment-agent provider migration
+
+**Tool:** OpenAI Codex using the Rovaulta execution-plan and verification-loop skills plus official
+Google Gen AI SDK documentation.
+
+**Human direction:** Replace the deployment agent's legacy runtime provider with Google AI Studio
+Gemini 2.5 Flash without changing the host-owned tool state machine, Graph gate, security rules, or
+Ledger authorization boundary.
+
+**AI-assisted output:** The dependency-free provider adapter was replaced by the official
+`@google/genai` SDK adapter. It forces exactly the host-selected function, validates the SDK's
+single function-call result, defaults to `gemini-2.5-flash`, and keeps `GEMINI_API_KEY` server-side.
+Environment, README, planning, evidence, and provider regression tests were updated; no legacy
+provider runtime dependency or environment key remains.
+
+**Evidence boundary:** Gemini receives only the existing canonical public deployment request and
+public tool observations. Confidential CRE policy/envelope/blind data, credentials, raw model
+output, signatures, and Ledger authority remain outside the provider boundary. A real execution
+is reported separately according to whether a local `GEMINI_API_KEY` is available.

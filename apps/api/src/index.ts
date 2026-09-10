@@ -1,6 +1,5 @@
 import { createDeploymentAgentFromEnvironment } from "./agent/index.js";
 import { createApplicationStoreFromEnvironment } from "./application/index.js";
-import { readEnvironment } from "./environment.js";
 import { createEvaluationExecutorFromEnvironment } from "./evaluation/index.js";
 import { createReleaseServiceFromEnvironment } from "./release/index.js";
 import { buildServer } from "./server";
@@ -12,9 +11,7 @@ const hasRegistryRpc = Boolean(process.env.EVM_RPC_URL || process.env.SEPOLIA_RP
 // startup. This is not a production fallback and never fabricates a release result.
 const releaseService = hasRegistryRpc ? createReleaseServiceFromEnvironment() : undefined;
 const applicationStore = createApplicationStoreFromEnvironment();
-const agentEnvironmentConfigured =
-  (process.env.OPENAI_API_KEY ?? "").trim() !== "" ||
-  (readEnvironment(process.env, "ROVAULTA_AGENT_MODEL") ?? "").trim() !== "";
+const agentEnvironmentConfigured = (process.env.GEMINI_API_KEY ?? "").trim() !== "";
 const deploymentAgent =
   releaseService !== undefined && agentEnvironmentConfigured
     ? createDeploymentAgentFromEnvironment(releaseService, process.env, applicationStore)

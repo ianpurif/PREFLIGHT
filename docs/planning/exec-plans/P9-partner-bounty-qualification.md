@@ -118,5 +118,5 @@ git diff --check
 The P3 authenticated CRE simulation evidence remains in
 `docs/compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md`. A live Graph
 query identity and a completed account-created CRE result remain open. The current environment has
-no CRE gateway/workflow/private key, Graph API key/subgraph ID, RPC, or OpenAI provider/model
+no CRE gateway/workflow/private key, Graph API key/subgraph ID, RPC, or Gemini provider/model
 configuration; no live partner claim is made.

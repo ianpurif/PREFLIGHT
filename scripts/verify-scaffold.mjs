@@ -34,11 +34,11 @@ const required = [
   "apps/api/src/release/release-service.ts",
   "apps/api/src/release/nonce-store.ts",
   "apps/api/src/agent/deployment-agent.ts",
-  "apps/api/src/agent/openai-responses-model.ts",
+  "apps/api/src/agent/gemini-model.ts",
   "apps/api/src/agent/tools.ts",
   "apps/api/test/release-service.test.ts",
   "apps/api/test/deployment-agent.test.ts",
-  "apps/api/test/openai-responses-model.test.ts",
+  "apps/api/test/gemini-model.test.ts",
   "apps/api/test/server.test.ts",
   "apps/web/src/app/page.tsx",
   "apps/web/src/app/landing-page.tsx",
@@ -240,7 +240,7 @@ const deploymentAgent = readFileSync(
 const deploymentCatalog = readFileSync(resolve(root, "apps/api/src/agent/catalog.ts"), "utf8");
 const deploymentAgentTools = readFileSync(resolve(root, "apps/api/src/agent/tools.ts"), "utf8");
 const deploymentAgentProvider = readFileSync(
-  resolve(root, "apps/api/src/agent/openai-responses-model.ts"),
+  resolve(root, "apps/api/src/agent/gemini-model.ts"),
   "utf8",
 );
 for (const requiredSurface of ["SignerEthBuilder", "signTypedData"]) {
@@ -324,10 +324,10 @@ if (!deploymentCatalog.includes("formatPublicDeploymentRequest"))
 if (deploymentAgent.includes(".consume("))
   throw new Error("P5.2 model/controller must not receive release-consumption authority");
 for (const requiredSurface of [
-  "/v1/responses",
-  "strict: true",
-  "parallel_tool_calls: false",
-  "store: false",
+  "@google/genai",
+  "FunctionCallingConfigMode.ANY",
+  "parametersJsonSchema",
+  "allowedFunctionNames",
 ]) {
   if (!deploymentAgentProvider.includes(requiredSurface))
     throw new Error(`P5.2 real provider adapter is missing: ${requiredSurface}`);
@@ -337,8 +337,8 @@ for (const requiredEnvironment of [
   "ROVAULTA_AUTHORIZED_SIGNERS",
   "ROVAULTA_RELEASE_DB_PATH",
   "NEXT_PUBLIC_LEDGER_ORIGIN_TOKEN",
-  "OPENAI_API_KEY",
-  "ROVAULTA_AGENT_MODEL",
+  "GEMINI_API_KEY",
+  "GEMINI_MODEL",
   "ROVAULTA_AGENT_CATALOG_PATH",
 ]) {
   if (!turbo.tasks?.dev?.env?.includes(requiredEnvironment))

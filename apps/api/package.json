@@ -19,6 +19,7 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@google/genai": "2.21.0",
     "@rovaulta/chain-client": "workspace:*",
     "@rovaulta/chainlink-cre": "workspace:*",
     "@rovaulta/domain": "workspace:*",

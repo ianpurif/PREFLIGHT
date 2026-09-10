@@ -123,7 +123,6 @@ automatic CRE delivery.
 - exact six-tool allowlist with one host-selected next tool per provider turn and no parallel calls
 - a finite catalog-generated public grammar resolves site/robot/build locally before any provider
   call; raw submitted text is discarded and only a host-generated canonical public request is sent
-  with `store: false`
 - only human-reference extraction accepts model arguments, and its aliases must match the already
   locked site, robot, build ID/digest, and candidate public clearance
 - later calls accept no chain, registry, signer, nonce, signature, arbitrary payload, or approval data
@@ -133,7 +132,7 @@ automatic CRE delivery.
 - host-derived final state and deterministic explanations; model prose/tool text cannot authorize
 - exact attempt-to-prepared-request correlation; `AUTHORIZED` requires a validated authorization
   read from P5's atomically consumed nonce state
-- provider request/response bounds, strict schemas, `store: false`, stable redacted failures, and no
+- provider request/response bounds, strict schemas, stable redacted failures, and no
   credentialless mock fallback
 - public audit allowlist excludes raw submitted text/model output, signature material, credentials,
   private envelope/blind data, CRE payloads, and detailed evaluator findings

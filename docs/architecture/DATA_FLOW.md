@@ -20,7 +20,7 @@ activate a robot or become an authority.
    fixture response is accepted on an account-backed request.
 10. **AI deployment agent** first matches one bounded public natural-language request against finite
    forms generated from the trusted public catalog. It discards the raw text and sends only a
-   host-generated canonical public request to a provider with `store: false`. A real provider may
+   host-generated canonical public request to a provider. A real provider may
    call only the next strict tool in the host-owned sequence, and its first aliases must resolve to
    the same immutable site/robot/build tuple already resolved by the host. Ambiguous, conflicting,
    secret-bearing, or non-catalog input fails before provider/audit handling. The model cannot supply

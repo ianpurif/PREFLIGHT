@@ -39,7 +39,7 @@ API verifies, rechecks clearance, consumes nonce once
 ```
 
 - The P5.2 agent accepts only catalog-generated public deployment forms. The host resolves and
-  locks canonical identifiers before a provider sees a generated public projection (`store: false`);
+  locks canonical identifiers before a provider sees a generated public projection;
   the model cannot construct clearance, signer, chain, registry, nonce, signature, payload, or
   authorization.
 - Its strict tools can inspect public state and invoke `ReleaseService.prepare()`. There is no
@@ -54,7 +54,7 @@ API verifies, rechecks clearance, consumes nonce once
 Local P5.2 evidence shows unsafe A blocked, deterministic corrected B reaching the Ledger boundary,
 and mutated C losing to exact-build preparation. A separate live read-only Sepolia agent run blocked
 the deliberately unregistered existing fixture. No external provider credential was configured, so
-the real OpenAI adapter is contract-tested but no live model call is claimed. No Speculos signature
+the real Gemini adapter is contract-tested but no live model call is claimed. No Speculos signature
 or physical device approval is inferred from agent preparation.
 
 ## Current packages

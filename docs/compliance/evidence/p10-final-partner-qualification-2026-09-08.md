@@ -44,4 +44,4 @@ tests.
 
 P10 local evidence covers protocol parsing, canonical serialization, TEE callback leakage, API
 pending state, HMAC authentication, exact bindings, idempotency, and browser pending polling. It does
-not substitute for live CRE, live Graph, external OpenAI, or Ledger hardware evidence.
+not substitute for live CRE, live Graph, external Gemini, or Ledger hardware evidence.

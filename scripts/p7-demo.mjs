@@ -30,7 +30,7 @@ function publicManifest() {
     demoClock: "2026-09-07T10:00:00.000Z",
     evaluator: "@rovaulta/simulation-core deterministic fixture",
     externalExecution: {
-      openai: "not used",
+      gemini: "not used",
       sepolia: "not used; local registry reader fixture",
       chainlinkCre: "recorded authenticated simulation evidence only",
       ledger: "handoff only; no signing or consumption",
@@ -84,7 +84,7 @@ async function runRehearsal() {
   const output = {
     evidenceType: "P7 offline deterministic demo rehearsal",
     executionMode:
-      "scripted model + deterministic registry fixture; not live OpenAI, Sepolia, CRE, Ledger, or Speculos",
+      "scripted model + deterministic registry fixture; not live Gemini, Sepolia, CRE, Ledger, or Speculos",
     demoClock: "2026-09-07T10:00:00.000Z",
     scenarios: traces,
   };

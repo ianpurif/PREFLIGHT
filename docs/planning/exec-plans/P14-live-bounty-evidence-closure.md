@@ -70,8 +70,8 @@ the final human authorization boundary; no physical-device result is inferred.
   clearance entity. The strict API reader returned `MATCHED`; indexing metadata reported no
   indexing errors. This is live Studio evidence and is not labelled Gateway/decentralized evidence.
 - 2026-09-09: the live-account agent command was attempted with the exact account clearance and
-  Studio provider. It failed closed before model execution because `OPENAI_API_KEY` and
-  `ROVAULTA_AGENT_MODEL` are absent. No model, Ledger signature, or authorization is claimed.
+  Studio provider. It failed closed before model execution because `GEMINI_API_KEY` is absent. No
+  model, Ledger signature, or authorization is claimed.
 - 2026-09-09: Graph provider tests cover the direct Studio endpoint and malformed URL rejection;
   existing Ledger software tests pass. Physical Ledger and official Clear Signing Tester access
   remain external blockers.

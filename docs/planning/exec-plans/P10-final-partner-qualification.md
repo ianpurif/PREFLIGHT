@@ -10,7 +10,7 @@ release boundary with hardware evidence called out separately.
 ## Non-goals
 
 - No P11/P12 product features, robot control, payments, Key Ring, Substreams, Subgraph MCP, or UI redesign.
-- No fabricated live CRE, Graph, OpenAI, Speculos, or physical Ledger evidence.
+- No fabricated live CRE, Graph, Gemini, Speculos, or physical Ledger evidence.
 - No confidential envelope, blind, policy, credentials, or internal evaluation diagnostics in an API
   callback or browser response.
 
@@ -51,7 +51,7 @@ release boundary with hardware evidence called out separately.
 - Official CRE CLI/gateway credentials and a deployed workflow/result callback are not configured in the
   current environment.
 - The Graph API key, hosted subgraph ID, and live account-created clearance response are not configured.
-- OpenAI credentials/model evidence is unavailable.
+- Gemini API key/model evidence is unavailable.
 - Ledger official Tester access and physical/Clear Signing evidence remain unavailable.
 - Start Fresh versus Continuity prize-pool eligibility still depends on event-start evidence and track
   selection; implementation alone cannot establish it.

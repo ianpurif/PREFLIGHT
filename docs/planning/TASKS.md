@@ -50,7 +50,7 @@
 - [ ] physical hardware evidence
 
 ## P5.2 — AI deployment-agent closure
-- [x] narrow real provider abstraction and OpenAI Responses strict tool-calling adapter
+- [x] narrow real provider abstraction and Gemini 2.5 Flash strict tool-calling adapter
 - [x] exact public catalog resolution and immutable site/robot/build binding
 - [x] host-owned ordered tool/capability state machine
 - [x] live public Sepolia clearance inspection and existing `/release/prepare` authority reuse
@@ -58,9 +58,9 @@
 - [x] exact consumed-P5 authorization status correlation
 - [x] structured public/non-secret attempt audit
 - [x] unsafe, corrected, mutated, revoked, expired, adversarial, injection, and determinism tests
-- [x] finite public request grammar, conflicting-target rejection, raw-text non-disclosure, and provider `store: false`
+- [x] finite public request grammar, conflicting-target rejection, and raw-text non-disclosure
 - [x] local A/B/C agent evidence and live read-only Sepolia blocked-state evidence
-- [ ] external OpenAI model execution evidence — environment lacks provider key/model
+- [ ] external Gemini model execution evidence — environment lacks Gemini API key
 
 ## P6 — Demo UI / digital twin
 - [x] deterministic warehouse scene
@@ -99,7 +99,7 @@
 - [ ] provision request-scoped CRE secrets and capture a completed account-created CRE result (optional live path; not required for Chainlink simulation qualification)
 - [x] deploy/index the Rovaulta Sepolia subgraph and capture live Graph-provider evidence
 - [ ] run a real account-backed Graph `MATCHED` preparation through P5/Ledger handoff
-- [ ] obtain external OpenAI model execution evidence (provider key/model unavailable locally)
+- [ ] obtain external Gemini model execution evidence (API key unavailable locally)
 
 ## P10 — Final partner qualification
 - [x] versioned canonical CRE result callback with HMAC authentication and public-only payload
@@ -111,7 +111,7 @@
 - [ ] provision deployed CRE site/callback secrets and capture account-created completion (optional live path; not required for Chainlink simulation qualification)
 - [x] deploy/index the Sepolia subgraph and capture live Subgraph Studio `MATCHED` evidence
 - [ ] capture account-backed Graph `MATCHED` → P5/Ledger-required execution
-- [ ] capture external OpenAI execution if required by the selected submission
+- [ ] capture external Gemini execution if required by the selected submission
 - [ ] capture official Ledger Clear Signing/physical-device evidence if required by the selected pool
 
 ## P11 — The Graph qualification
@@ -169,3 +169,13 @@
 - [x] provide a safe clean-checkout setup template/generator and strict actionable setup-file validation
 - [x] run the mode with a real operator account and capture one account-owned simulated `CLEAR` with explicit official CLI provenance
 - [x] use that stored `CLEAR` with P12 to create a real Sepolia clearance and capture Graph indexing
+
+## P15 — Gemini deployment-agent provider migration
+- [x] replace the legacy provider adapter with the official `@google/genai` SDK
+- [x] default to `gemini-2.5-flash` with explicit `GEMINI_MODEL` override
+- [x] preserve strict host-selected function calling and the existing agent/tool/state-machine boundary
+- [x] preserve Graph gating, P5 preparation, Ledger human authorization, and fail-closed errors
+- [x] keep `GEMINI_API_KEY` server-side and exclude confidential CRE data from model context
+- [x] update runtime configuration, README, architecture/evidence/AI documentation, and scaffold checks
+- [x] add adapter regression tests for tool shape, malformed output, failure redaction, and missing credentials
+- [ ] run a real Gemini-backed account-agent execution when an approved API key and live account configuration are available

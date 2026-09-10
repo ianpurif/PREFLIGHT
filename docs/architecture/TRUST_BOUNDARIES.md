@@ -61,7 +61,7 @@ invocation; revoked/expired D variants remain test-only evidence.
 
 P5.2 treats the model as an untrusted orchestrator. The host first matches the entire input against
 finite public request forms generated from the trusted catalog, discards raw text, and exposes only
-the resulting canonical public request to a provider with `store: false`. A host-owned bounded state
+the resulting canonical public request to a provider. A host-owned bounded state
 machine then exposes one strict next tool at a time. Only deployment-reference extraction accepts
 model arguments, and those aliases must resolve to the host-locked canonical target. Signer identity
 comes from operator context. Later tools accept no replacement site, robot, build, clearance, chain,

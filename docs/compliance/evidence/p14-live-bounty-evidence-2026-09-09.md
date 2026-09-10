@@ -76,7 +76,7 @@ The machine-readable public projection is in
 
 The live Graph context is verified independently. The normal account-agent evidence command was
 attempted with the account-owned public clearance and the live Studio provider, but stopped before
-model execution because `OPENAI_API_KEY` and `ROVAULTA_AGENT_MODEL` are not configured. No model
+model execution because `GEMINI_API_KEY` is not configured. No model
 execution, agent decision, Ledger signature, or authorization is claimed from that blocked run.
 
 Ledger software tests remain green and the existing Speculos evidence remains partial. Physical

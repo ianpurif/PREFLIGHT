@@ -57,10 +57,7 @@ test("P3-P9 are load-bearing and the product boundary remains non-authoritative"
   const catalog = await readFile(new URL("apps/api/src/agent/catalog.ts", root), "utf8");
   const creClient = await readFile(new URL("apps/api/src/evaluation/cre-client.ts", root), "utf8");
   const graphProvider = await readFile(new URL("apps/api/src/graph/provider.ts", root), "utf8");
-  const agentProvider = await readFile(
-    new URL("apps/api/src/agent/openai-responses-model.ts", root),
-    "utf8",
-  );
+  const agentProvider = await readFile(new URL("apps/api/src/agent/gemini-model.ts", root), "utf8");
   const tools = await readFile(new URL("apps/api/src/agent/tools.ts", root), "utf8");
   const web = await readFile(new URL("apps/web/src/app/page.tsx", root), "utf8");
   const landing = await readFile(new URL("apps/web/src/app/landing-page.tsx", root), "utf8");
@@ -128,7 +125,9 @@ test("P3-P9 are load-bearing and the product boundary remains non-authoritative"
   assert.match(graphProvider, /TheGraphClearanceReader/);
   assert.match(graphProvider, /GRAPH_UNAVAILABLE/);
   assert.match(agent, /getGraphContext/);
-  assert.match(agentProvider, /store: false/);
+  assert.match(agentProvider, /FunctionCallingConfigMode\.ANY/);
+  assert.match(agentProvider, /allowedFunctionNames/);
+  assert.match(agentProvider, /parametersJsonSchema/);
   assert.doesNotMatch(agent, /this\.#releaseService\.consume/);
   for (const name of [
     "resolveDeploymentTarget",

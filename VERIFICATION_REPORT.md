@@ -69,7 +69,7 @@ clearance/intent metadata, tool order, and Ledger status.
   baseline clearance is retained; agent returns `BLOCKED / CLEARANCE_BINDING_MISMATCH`; CRE is
   marked not run and Ledger remains `NOT_REQUESTED`.
 
-The rehearsal is explicitly not live OpenAI, Sepolia, CRE, Ledger, or Speculos execution. The
+The rehearsal is explicitly not live Gemini, Sepolia, CRE, Ledger, or Speculos execution. The
 dashboard reset clears the prepared session handoff on mount and scenario changes, and ignores a
 late agent response after reset/mutation. P7 Playwright coverage runs the clean startup → reset →
 A → reset → B/prepared handoff → reset → C → repeated C sequence without sleeps or developer paths.
@@ -133,8 +133,8 @@ harness and only place that may begin Ledger signing.
 
 ## P5.2 AI deployment-agent result
 
-The API now contains a real provider boundary and dependency-free OpenAI Responses adapter using
-strict function calls with `store: false`. Before the provider is invoked, the host matches the
+The API now contains a real provider boundary and official Gemini adapter using strict function
+calls. Before the provider is invoked, the host matches the
 whole deployment input against finite forms generated from the public catalog, resolves the exact
 target, discards raw text, and provides only a canonical public projection. The host gives the model
 exactly one next tool and enforces this sequence:
@@ -170,7 +170,7 @@ See `docs/compliance/evidence/p5.2-ai-deployment-agent-2026-09-07.md` and ADR-00
 
 Independent adversarial review initially identified a conflicting-target and raw-text-disclosure
 gap. The final controller now uses a finite catalog grammar, raw-text discard, canonical provider/
-audit projection, `store: false`, and exact first-tool target comparison; targeted negative tests
+audit projection, and exact first-tool target comparison; targeted negative tests
 cover a negated second target and a non-keyword private-context canary.
 
 ## P5.1 Speculos and ERC-7730 result
@@ -235,7 +235,7 @@ bun --cwd apps/api test test/application-lifecycle.test.ts test/server.test.ts t
 Those tests use injected Graph/CRE responses and are not live partner evidence. The current
 environment has no `ROVAULTA_CRE_GATEWAY_URL`, `CHAINLINK_CRE_WORKFLOW_ID`,
 `CHAINLINK_CRE_TRIGGER_PRIVATE_KEY`, `THE_GRAPH_API_KEY`, `THE_GRAPH_SUBGRAPH_ID`, RPC endpoint, or
-OpenAI provider/model. The required next external steps are documented in
+Gemini provider key/model. The required next external steps are documented in
 `docs/partners/THE_GRAPH.md`, `docs/partners/CHAINLINK.md`, and
 `docs/planning/exec-plans/P9-partner-bounty-qualification.md`.
 
@@ -515,7 +515,7 @@ or decentralized-network evidence. The direct live query was also captured by th
 script; no entity was manually inserted.
 
 The account-agent evidence command stopped fail-closed before model execution because
-`OPENAI_API_KEY` and `ROVAULTA_AGENT_MODEL` are absent. No model output, `LEDGER_APPROVAL_REQUIRED`
+`GEMINI_API_KEY` is absent. No model output, `LEDGER_APPROVAL_REQUIRED`
 handoff, Ledger signature, physical approval, Gateway publication, or live CRE/DON execution is
 claimed. The Ledger adapter test suite remains green; physical and official Tester evidence remain
 external prerequisites.

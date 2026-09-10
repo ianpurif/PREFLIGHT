@@ -5,7 +5,7 @@
 - **Offline deterministic rehearsal:** the checked-in P2 evaluator, a scripted P5.2 model, a
   deterministic local registry reader, fixed block timestamp, fixed attempt IDs, and a demo-only
   fixed nonce factory.
-- **Not live partner execution:** this artifact is not an OpenAI call, positive Sepolia read/write,
+- **Not live partner execution:** this artifact is not a Gemini call, positive Sepolia read/write,
   Chainlink CRE run, Ledger signature/consumption, Speculos execution, or robot activation.
 - **Public-only output:** no confidential envelope, blind, private rule, threshold, geometry,
   credential, signature, or raw model/request payload is recorded.
@@ -31,7 +31,7 @@ The public manifest and last-run trace are generated; no JSON fixture is manuall
 - demo clock: `2026-09-07T10:00:00.000Z`
 - P2 evaluator: `@rovaulta/simulation-core` deterministic fixture
 - registry reader: fixed local snapshot, Sepolia-shaped metadata only
-- external calls: OpenAI **not used**; Sepolia **not used**; CRE **recorded evidence only**;
+- external calls: Gemini **not used**; Sepolia **not used**; CRE **recorded evidence only**;
   Ledger/Speculos **not used**
 
 ## Public scenario results

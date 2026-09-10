@@ -17,10 +17,10 @@ security policy.
 
 ## Decision
 
-The deployment agent lives in `apps/api`, behind a narrow provider interface. A real OpenAI
-Responses adapter supports strict function calling; deterministic scripted providers are injected
-only by tests/evidence. Missing production provider configuration fails without a mock fallback.
-The adapter requests `store: false` and sends only an allowlisted canonical public projection.
+The deployment agent lives in `apps/api`, behind a narrow provider interface. The official Google
+Gen AI (`@google/genai`) Gemini adapter supports strict function calling; deterministic scripted
+providers are injected only by tests/evidence. Missing production provider configuration fails
+without a mock fallback. The adapter sends only an allowlisted canonical public projection.
 
 The host accepts a bounded natural-language deployment form generated from the public catalog (for
 example, `Deploy <build> for <robot> to <site>.`). It matches the whole input locally against exact

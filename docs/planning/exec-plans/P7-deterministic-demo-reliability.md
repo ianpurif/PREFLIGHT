@@ -12,7 +12,7 @@ protocol semantics.
 
 - No P8 submission work, robot activation, execution, new partner, contract, CRE, or Ledger
   feature.
-- No production fallback from a missing OpenAI/Sepolia provider to the rehearsal.
+- No production fallback from a missing Gemini/Sepolia provider to the rehearsal.
 - No claim of live positive Sepolia clearance, live CRE DON execution, physical Ledger
   approval, or external model execution.
 - No weakening of P1–P6 binding, signer, nonce, replay, or confidentiality semantics.

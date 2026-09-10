@@ -2,7 +2,15 @@
 
 ## Phase
 
-**P1–P8 software is implemented. P5.2 adds the narrow AI deployment-agent workflow, deterministic tool/capability boundary, public audit projection, local positive/adversarial evidence, and a live read-only Sepolia blocked-state trace. P6 adds the deterministic digital twin over a server-side public projection of the existing P2/P3 fixture. P7 adds an offline fixed-clock A/B/C rehearsal, demo-owned idempotent reset, stale-browser protection, and reliable Playwright flow coverage. P8 provides the account-backed product lifecycle: authenticated onboarding, persisted site/robot/build/evaluation/release records, encrypted private policy storage, server-side evaluation, and a truthful P5/P5.2 release boundary. P7 fixtures are development/test-only and are not normal account data. The real provider adapter is implemented, but no external model call is captured because provider credentials/model are absent. P5.1 has official Speculos transport, actual Ethereum app/address UI smoke, ERC-7730 v2 validation, real pre-sign C, and invalid/unregistered D. Authenticated Clear Signing A/B/E/F and physical Ledger evidence remain externally blocked.**
+**P1–P8 software is implemented. P5.2 adds the narrow AI deployment-agent workflow, deterministic tool/capability boundary, public audit projection, local positive/adversarial evidence, and a live read-only Sepolia blocked-state trace. P6 adds the deterministic digital twin over a server-side public projection of the existing P2/P3 fixture. P7 adds an offline fixed-clock A/B/C rehearsal, demo-owned idempotent reset, stale-browser protection, and reliable Playwright flow coverage. P8 provides the account-backed product lifecycle: authenticated onboarding, persisted site/robot/build/evaluation/release records, encrypted private policy storage, server-side evaluation, and a truthful P5/P5.2 release boundary. P7 fixtures are development/test-only and are not normal account data. The official Gemini provider adapter is implemented, but no external model call is captured because `GEMINI_API_KEY` is absent. P5.1 has official Speculos transport, actual Ethereum app/address UI smoke, ERC-7730 v2 validation, real pre-sign C, and invalid/unregistered D. Authenticated Clear Signing A/B/E/F and physical Ledger evidence remain externally blocked.**
+
+**P15 replaces the deployment-agent provider without changing its authority model:** the API now uses
+the official Google Gen AI SDK (`@google/genai`) with `gemini-2.5-flash` as the default model. The
+host still sends only the canonical public request and public observations, forces one host-selected
+function per turn, and leaves Graph checks, P5 preparation, and Ledger authorization unchanged.
+`GEMINI_API_KEY` is server-only; no confidential CRE policy, envelope, blind, credential, signature,
+or raw model output enters the agent context or public audit. A real Gemini execution remains
+external until an operator supplies the API key and the existing live account/Graph configuration.
 
 **P9 partner qualification slice is implemented and now has public live Graph evidence:** the normal
 account evaluation boundary uses an official Chainlink CRE HTTP JSON-RPC/JWT client and never falls
@@ -23,7 +31,7 @@ exposing the result to the owning account, and the web workspace polls the expli
 The workflow uses the official HTTP capability only when this public-result delivery is configured;
 it never sends the private envelope, blind, policy, or internal report. The authenticated P13
 simulation remains the selected Chainlink qualification path. A real Sepolia clearance and live
-Subgraph Studio `MATCHED` response are now captured; deployed callback completion, external OpenAI
+Subgraph Studio `MATCHED` response are now captured; deployed callback completion, external Gemini
 execution, and Ledger hardware evidence remain external.**
 
 **P11 hardens and operationalizes The Graph qualification path:** the repository now has pinned
@@ -129,7 +137,7 @@ still fail closed when its external configuration is absent.**
   validating every public binding. This is live Studio evidence, not Gateway or decentralized-network
   evidence, and no Graph entity was manually inserted.
 - The account-agent command was attempted with the live Studio provider and exact public clearance,
-  but failed closed before model execution because `OPENAI_API_KEY` and `ROVAULTA_AGENT_MODEL` are
+  but failed closed before model execution because `GEMINI_API_KEY` is
   absent. No AI output, `LEDGER_APPROVAL_REQUIRED` handoff, signature, or authorization is claimed.
 - Ledger adapter tests remain green and existing Speculos evidence remains partial. Physical-device
   approval and official Clear Signing Tester A/B/E/F evidence require external hardware/access.
@@ -256,8 +264,8 @@ identities and require an intentional redeploy when their configured workflow na
 
 ## P5.2 implementation now present
 
-- A narrow OpenAI Responses function-calling adapter supports one strict tool per turn, sends only
-  a host-generated public request with `store: false`, and fails without a deterministic/mock
+- A narrow Gemini function-calling adapter supports one strict tool per turn, sends only
+  a host-generated public request, and fails without a deterministic/mock
   production fallback when configuration is missing.
 - A host-owned state machine enforces
   `resolve target → context → evaluation → clearance → release prepare → Ledger status`.
@@ -343,7 +351,7 @@ make UI state authoritative, or turn the offline rehearsal into a live-partner c
 agent audit history may be considered later without changing P5 nonce authority.
 
 External evidence remains separately open: run the real provider adapter when an approved
-`OPENAI_API_KEY` and explicit `ROVAULTA_AGENT_MODEL` are available; obtain legitimate Ledger
+`GEMINI_API_KEY` is available; obtain legitimate Ledger
 Tester/application-origin/accepted-descriptor access for Speculos A/B/E/F; and capture physical
 Ledger cases when hardware is available. Do not fabricate these results or block deterministic P6
 UI work on claims that have already been explicitly scoped as external limitations.
