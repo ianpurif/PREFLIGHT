@@ -379,6 +379,7 @@ interface SetupFormState {
   readonly siteName: string;
   readonly location: string;
   readonly robotName: string;
+  readonly robotId: string;
   readonly version: string;
   readonly label: string;
   readonly buildMode: "existing" | "source";
@@ -407,6 +408,7 @@ const INITIAL_SETUP: SetupFormState = {
   siteName: "",
   location: "",
   robotName: "",
+  robotId: "",
   version: "",
   label: "",
   buildMode: "existing",
@@ -439,6 +441,7 @@ function SetupView({
   readonly refresh: () => Promise<void>;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [form, setForm] = useState<SetupFormState>(INITIAL_SETUP);
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -525,6 +528,8 @@ function SetupView({
       ? /^sha256:[0-9a-f]{64}$/.test(form.artifactDigest.trim().toLowerCase())
       : sourceBuildReady;
   const existingSite = data.sites[0];
+  if (existingSite !== undefined && searchParams.get("mode") === "build")
+    return <BuildOnlyView data={data} site={existingSite} refresh={refresh} />;
   if (existingSite !== undefined) {
     const site = existingSite;
     return (
@@ -937,6 +942,293 @@ function SetupView({
   );
 }
 
+function BuildOnlyView({
+  data,
+  site,
+  refresh,
+}: {
+  readonly data: WorkspaceData;
+  readonly site: Site;
+  readonly refresh: () => Promise<void>;
+}) {
+  const router = useRouter();
+  const [form, setForm] = useState<SetupFormState>({
+    ...INITIAL_SETUP,
+    robotId: data.robots[0]?.id ?? "",
+  });
+  const [buildMode, setBuildMode] = useState<SetupFormState["buildMode"]>("existing");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const update = (field: keyof SetupFormState, value: string) =>
+    setForm((current) => ({ ...current, [field]: value }));
+  const sourceBuildReady =
+    /^https:\/\/(?:github\.com|gitlab\.com)\/[^?#\s]+$/.test(form.sourceRepository.trim()) &&
+    /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/.test(form.sourceRevision.trim()) &&
+    /^(?:bun|node|npm)(?:\s+[A-Za-z0-9_./:@=+-]+)*$/.test(form.buildCommand.trim()) &&
+    ((form.runtime === "bun" && form.buildCommand.trim().startsWith("bun")) ||
+      (form.runtime === "node" &&
+        (form.buildCommand.trim().startsWith("node") ||
+          form.buildCommand.trim().startsWith("npm"))));
+  const buildReady =
+    buildMode === "existing"
+      ? /^sha256:[0-9a-f]{64}$/.test(form.artifactDigest.trim().toLowerCase())
+      : sourceBuildReady;
+  async function submit() {
+    const robotId = form.robotId || data.robots[0]?.id;
+    if (robotId === undefined) {
+      setError("Create a robot before registering a build.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const base = {
+        robotId,
+        version: form.version,
+        label: form.label,
+        route: {
+          start: { xMm: Number(form.startX), yMm: Number(form.startY) },
+          end: { xMm: Number(form.endX), yMm: Number(form.endY) },
+          speedMmPerSecond: Number(form.speed),
+        },
+      };
+      await apiFetch<{ build: Build }>(
+        buildMode === "source" ? `/sites/${site.id}/source-builds` : `/sites/${site.id}/builds`,
+        {
+          method: "POST",
+          body: jsonBody(
+            buildMode === "source"
+              ? {
+                  ...base,
+                  sourceRepository: form.sourceRepository,
+                  sourceRevision: form.sourceRevision,
+                  buildCommand: form.buildCommand,
+                  runtime: form.runtime,
+                }
+              : { ...base, artifactDigest: form.artifactDigest },
+          ),
+        },
+      );
+      await refresh();
+      router.push("/app/builds");
+    } catch (reason) {
+      setError(reason instanceof ApiError ? reason.message : "The build could not be registered.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="product-view setup-view">
+      <div className="view-heading-row">
+        <div>
+          <p className="view-eyebrow">Add build</p>
+          <h1>Choose how Rovaulta identifies this build.</h1>
+          <p className="view-lede">
+            This adds a build to {site.name} without changing existing build records or the private
+            evaluation policy.
+          </p>
+        </div>
+        <Link className="button-secondary" href="/app/builds">
+          Back to builds
+        </Link>
+      </div>
+      <section className="real-onboarding-card">
+        {error ? <ErrorNotice message={error} /> : null}
+        <div className="real-form-grid">
+          <label>
+            Robot
+            <select
+              value={form.robotId}
+              onChange={(event) => update("robotId", event.target.value)}
+            >
+              {data.robots.map((robot) => (
+                <option value={robot.id} key={robot.id}>
+                  {robot.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Build version
+            <input
+              value={form.version}
+              onChange={(event) => update("version", event.target.value)}
+              placeholder="2026.09.12"
+              required
+            />
+          </label>
+          <label>
+            Build label
+            <input
+              value={form.label}
+              onChange={(event) => update("label", event.target.value)}
+              placeholder="Release candidate"
+              required
+            />
+          </label>
+          <fieldset>
+            <legend>Build</legend>
+            <div className="real-choice-grid">
+              <label className="real-choice-card">
+                <input
+                  type="radio"
+                  name="additional-build-mode"
+                  checked={buildMode === "existing"}
+                  onChange={() => setBuildMode("existing")}
+                />
+                <span>
+                  <strong>Use Existing Build</strong>
+                  <small>Keep the current build-number and declared artifact flow.</small>
+                </span>
+              </label>
+              <label className="real-choice-card">
+                <input
+                  type="radio"
+                  name="additional-build-mode"
+                  checked={buildMode === "source"}
+                  onChange={() => setBuildMode("source")}
+                />
+                <span>
+                  <strong>Build From Source</strong>
+                  <small>Build this exact commit in the isolated runner.</small>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+          {buildMode === "existing" ? (
+            <label>
+              Artifact digest
+              <input
+                value={form.artifactDigest}
+                onChange={(event) => update("artifactDigest", event.target.value)}
+                placeholder="sha256:…"
+                required
+              />
+            </label>
+          ) : (
+            <fieldset>
+              <legend>Source build</legend>
+              <label>
+                Repository
+                <input
+                  value={form.sourceRepository}
+                  onChange={(event) => update("sourceRepository", event.target.value)}
+                  placeholder="https://github.com/org/repository"
+                  type="url"
+                  required
+                />
+              </label>
+              <label>
+                Revision / commit
+                <input
+                  value={form.sourceRevision}
+                  onChange={(event) => update("sourceRevision", event.target.value)}
+                  placeholder="40 or 64 character commit SHA"
+                  spellCheck={false}
+                  required
+                />
+              </label>
+              <div className="real-inline-fields">
+                <label>
+                  Runtime
+                  <select
+                    value={form.runtime}
+                    onChange={(event) => update("runtime", event.target.value)}
+                  >
+                    <option value="bun">Bun</option>
+                    <option value="node">Node</option>
+                  </select>
+                </label>
+                <label>
+                  Build command
+                  <input
+                    value={form.buildCommand}
+                    onChange={(event) => update("buildCommand", event.target.value)}
+                    placeholder="bun run build"
+                    spellCheck={false}
+                    required
+                  />
+                </label>
+              </div>
+              <span className="field-help">
+                Frozen lockfile installation is required; a failed install cannot fall back to an
+                unlocked dependency install.
+              </span>
+            </fieldset>
+          )}
+          <fieldset>
+            <legend>Declared route for evaluation</legend>
+            <div className="real-inline-fields">
+              <label>
+                Start X
+                <input
+                  type="number"
+                  value={form.startX}
+                  onChange={(event) => update("startX", event.target.value)}
+                />
+              </label>
+              <label>
+                Start Y
+                <input
+                  type="number"
+                  value={form.startY}
+                  onChange={(event) => update("startY", event.target.value)}
+                />
+              </label>
+              <label>
+                End X
+                <input
+                  type="number"
+                  value={form.endX}
+                  onChange={(event) => update("endX", event.target.value)}
+                />
+              </label>
+              <label>
+                End Y
+                <input
+                  type="number"
+                  value={form.endY}
+                  onChange={(event) => update("endY", event.target.value)}
+                />
+              </label>
+              <label>
+                Speed (mm/s)
+                <input
+                  type="number"
+                  value={form.speed}
+                  onChange={(event) => update("speed", event.target.value)}
+                />
+              </label>
+            </div>
+          </fieldset>
+          <div className="real-form-actions">
+            <button
+              type="button"
+              className="button-secondary"
+              onClick={() => router.push("/app/builds")}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="view-primary-action"
+              onClick={() => void submit()}
+              disabled={busy || !form.version.trim() || !form.label.trim() || !buildReady}
+            >
+              {busy
+                ? buildMode === "source"
+                  ? "Starting isolated build…"
+                  : "Saving build…"
+                : "Register build"}{" "}
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function BuildsView({
   data,
   refresh,
@@ -981,7 +1273,7 @@ function BuildsView({
           title="No builds registered"
           body="Return to site setup to register the first build for this account."
           action={
-            <Link className="view-primary-action" href="/app/setup">
+            <Link className="view-primary-action" href="/app/setup?mode=build">
               Register first build <span aria-hidden="true">→</span>
             </Link>
           }
@@ -999,6 +1291,9 @@ function BuildsView({
             provenance that the exact evaluation binds to.
           </p>
         </div>
+        <Link className="view-primary-action" href="/app/setup?mode=build">
+          Add build <span aria-hidden="true">→</span>
+        </Link>
       </div>
       <ul className="real-list">
         {data.builds.map((build) => (
