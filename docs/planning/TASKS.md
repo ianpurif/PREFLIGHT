@@ -143,6 +143,7 @@
 - [x] existing evaluation/clearance/Ledger path consumes only successful source builds
 - [x] minimal source-build UX and evidence/details projection
 - [x] real Bun BuildKit proof and targeted verification
+- [x] diagnose and fix Windows Docker Desktop `buildx` plugin resolution
 - [ ] full repository verification
 
 ## P12 — Account-backed Sepolia clearance issuance
