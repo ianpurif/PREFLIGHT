@@ -4,14 +4,18 @@
 
 **Best AI Tooling or AI Use Case with The Graph — From Scratch**.
 
-### Pool-eligibility caveat
+### Start Fresh / From Scratch eligibility
 
-The official prize wording treats “From Scratch” as a Start Fresh pool: project-specific code must
-begin after the event start, while pre-existing projects belong in Continuity. Rovaulta's repository
-was initialized on 2026-09-05, but this checkout does not contain independently verified event-start
-evidence or a submitted track selection. The implementation below is qualification work, not a claim
-that the Start Fresh pool is already eligible. The submission must document the original work and
-select the correct pool before claiming this prize.
+The project maintainer declares that Rovaulta was started during ETHOnline 2026, that no
+project-specific Rovaulta code existed before the event, and that no pre-existing project-specific
+work is being submitted. The repository corroborates the origin with first commit `c03c89a`
+(`2026-09-05`, `initialize`) followed by the chronological Rovaulta implementation history.
+
+Rovaulta is therefore submitted to the **Start Fresh / From Scratch** pool. The declaration and
+repository corroboration are recorded in
+[`graph-start-fresh-eligibility-2026-09-11.md`](../compliance/evidence/graph-start-fresh-eligibility-2026-09-11.md).
+Git history cannot independently prove the event calendar or work held in another private location,
+so the maintainer's event submission record remains the authoritative external eligibility artifact.
 
 Rovaulta uses The Graph as a load-bearing public-context source for its account-backed deployment
 agent. The agent does not treat a local catalog or a browser assertion as proof that a release is
@@ -45,8 +49,8 @@ The operator has deployed the current manifest as `rovaulta-registry` version `0
 Sepolia. After the first real account-owned clearance was recorded, the hosted Subgraph Studio
 endpoint returned the exact public entity and the API reader validated it as `MATCHED`. This is
 Subgraph Studio provider evidence; it is not a Gateway or decentralized-network claim. The redacted
-result is recorded in `docs/compliance/evidence/p14-live-bounty-evidence-2026-09-09.md`. The Gateway
-subgraph ID and model-backed agent handoff remain external evidence items.
+result is recorded in `docs/compliance/evidence/p14-live-bounty-evidence-2026-09-09.md`, and the
+model-backed handoff is recorded in the P15 artifact. Gateway publication remains unclaimed.
 
 The indexed entity contains only public P4 registry fields: exact P1 binding hashes, the verdict,
 issuer, timestamps, revocation state, and the indexing block identity. Private safety envelopes,

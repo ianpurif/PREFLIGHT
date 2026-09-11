@@ -563,6 +563,23 @@ because the Ledger-issued origin/accepted-descriptor path is unavailable. No sig
 
 **Evidence:** [`p5-ledger-speculos-browser-boundary-2026-09-11.md`](../compliance/evidence/p5-ledger-speculos-browser-boundary-2026-09-11.md).
 
+## 2026-09-11 — Final submission preparation and Graph pool declaration
+
+**Tool:** OpenAI Codex using the Rovaulta partner-compliance and verification-loop guidance.
+
+**Human direction:** Publish only the finished implementation, record the maintainer's ETHOnline
+2026 Start Fresh / From Scratch declaration, and do not add product features or claim physical Ledger
+or live CRE capabilities.
+
+**AI-assisted output:** Added the explicit project-origin evidence artifact, reconciled the Graph
+partner contract, current-state/task board, README, and evidence matrix, and verified tracked-secret
+hygiene before publication. No runtime, contract, workflow, evaluator, Graph provider, Gemini, or
+Ledger behavior changed.
+
+**Evidence boundary:** The Start Fresh statement is a maintainer declaration corroborated by the
+repository's first commit and chronology; the event submission record remains the authoritative
+external eligibility material. The 2–4 minute demo remains an unrecorded submission asset.
+
 ## 2026-09-11 — Final three-bounty qualification audit
 
 **Tool:** OpenAI Codex using the Rovaulta partner-compliance and verification-loop guidance.

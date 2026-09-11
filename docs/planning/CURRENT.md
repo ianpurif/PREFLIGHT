@@ -45,8 +45,10 @@ real account-backed agent path without printing credentials. The account agent a
 and injected critical tests are green. The hosted `rovaulta-registry` deployment is live on Sepolia,
 one real clearance is indexed, and both the direct Studio query and strict API reader return
 `MATCHED` for the exact digest. This is labelled Studio evidence, not Gateway/decentralized evidence.
-The model-backed agent handoff is captured in the P15 evidence artifact. The 2–4 minute demo, Gateway
-subgraph ID, and Start Fresh pool eligibility remain external blockers and are not claimed.**
+The model-backed agent handoff is captured in the P15 evidence artifact. Start Fresh / From Scratch
+eligibility is documented by the maintainer-origin declaration and repository chronology in the
+Graph eligibility artifact. The 2–4 minute demo and Gateway subgraph ID remain external/non-required
+items and are not claimed.**
 
 **P12 adds the missing operator path from account data to the deployed registry:** a validated
 account-owned public `CLEAR` evaluation can now be converted through the canonical P1 clearance

@@ -16,9 +16,9 @@ publish its private safety envelope, and the deployment agent cannot approve a r
   > clearance, a live The Graph Subgraph Studio `MATCHED` check, and a real Gemini tool-calling run
   > that reaches the existing Ledger-required handoff. The committed artifacts distinguish simulation
   > from live CRE/DON execution and distinguish Speculos from physical Ledger evidence. Live CRE
-  > gateway/DON delivery, physical Clear Signing, the final showcase assets, and Start Fresh eligibility
-  > remain open and are not presented as completed proof. The public GitHub branch must be synchronized
-  > with this checkout before submission.
+  > gateway/DON delivery, physical Clear Signing, and the final showcase assets remain open and are not
+  > presented as completed proof. Start Fresh / From Scratch eligibility is documented as a maintainer
+  > declaration with repository-history corroboration in the [eligibility artifact](docs/compliance/evidence/graph-start-fresh-eligibility-2026-09-11.md).
 
 [Product path](#use-the-product) · [How it works](#how-it-works) · [Partner proof](#partner-integrations) · [Testing](#testing) · [Known limits](#current-status-and-known-limits)
 
@@ -216,7 +216,7 @@ These partners answer different questions:
 | Partner       | Question                                                                    | Actual use in Rovaulta                                                                                                                                            | Current proof                                                                                                                                               |
 | ------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Chainlink CRE | Can the site evaluate an exact build without exposing its private envelope? | The confidential workflow fetches a site-bound secret inside `handlerInTee`, invokes the deterministic evaluator, and releases only the minimal result. The account API uses the official gateway boundary or the explicit authenticated CLI simulation mode. | Current-source authenticated CLI simulation records unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`; one account-owned simulated `CLEAR` is persisted with explicit simulation provenance. Live gateway completion remains unconfigured. |
-| The Graph    | Can the agent use current public registry context before preparing a release? | A pinned, buildable Sepolia subgraph indexes public `RovaultaRegistry` events. The account-backed agent requires an exact live `MATCHED` Graph context before P5. | Real clearance is indexed, the Studio provider returns `MATCHED`, and the live Gemini run consumes that context before `prepareDeploymentIntent`; Gateway publication, public demo, and Start Fresh eligibility remain open. |
+| The Graph    | Can the agent use current public registry context before preparing a release? | A pinned, buildable Sepolia subgraph indexes public `RovaultaRegistry` events. The account-backed agent requires an exact live `MATCHED` Graph context before P5. | Real clearance is indexed, the Studio provider returns `MATCHED`, and the live Gemini run consumes that context before `prepareDeploymentIntent`; Gateway publication is not claimed. Start Fresh eligibility is documented separately. |
 | Ledger        | Who can authorize the exact release after it passes?                        | The browser uses Ledger DMK, WebHID or test-only Speculos, the Ethereum signer kit, and full EIP-712 intent checks. The agent stops at `LEDGER_APPROVAL_REQUIRED`. | Software and partial Speculos evidence are recorded. Physical Clear Signing and official Tester cases remain blocked by missing external access.            |
 
 Without Chainlink's confidential execution, the site would need to hand its private rules to the
@@ -571,8 +571,9 @@ rules onchain as part of these improvements.
 
 ## Team, credits, and license
 
-Rovaulta is an independent ETHGlobal From Scratch project. The repository records its AI-assisted
-development and evidence process in [`docs/ai/AI_USAGE.md`](docs/ai/AI_USAGE.md). Chainlink CRE and
+Rovaulta is an independent ETHGlobal From Scratch project, supported by the maintainer-origin
+declaration and repository chronology in [`graph-start-fresh-eligibility-2026-09-11.md`](docs/compliance/evidence/graph-start-fresh-eligibility-2026-09-11.md).
+The repository records its AI-assisted development and evidence process in [`docs/ai/AI_USAGE.md`](docs/ai/AI_USAGE.md). Chainlink CRE and
 Ledger are used through their documented SDKs and hardware/application boundaries; their names and
 marks remain the property of their respective owners.
 

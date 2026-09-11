@@ -124,8 +124,8 @@
 - [x] critical tests for provider request shape, malformed public data, non-matched states, and P5 handoff
 - [x] deploy/index the subgraph through a real Graph provider and record hosted identity (`rovaulta-registry` v0.1.0, Sepolia, 100% sync, one real account clearance indexed)
 - [x] capture a live Subgraph Studio `MATCHED` response for an account-created Sepolia clearance
-- [ ] capture the live Graph result changing the account-agent outcome and reaching `LEDGER_APPROVAL_REQUIRED`
-- [ ] verify and document Start Fresh pool eligibility with the event submission record
+- [x] capture the live Graph result changing the account-agent outcome and reaching `LEDGER_APPROVAL_REQUIRED`
+- [x] document Start Fresh / From Scratch eligibility declaration and repository chronology; retain the event submission record as the external authoritative artifact
 - [ ] record a 2–4 minute public demo showing the live provider-to-agent decision
 
 ### Remaining submission evidence

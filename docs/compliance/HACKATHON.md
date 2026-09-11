@@ -1,6 +1,8 @@
 # Hackathon Integrity Checklist
 
-This repository is intended for the Classic / From Scratch track.
+This repository is submitted to the Classic / From Scratch track. The project-origin declaration and
+repository chronology are recorded in
+[`graph-start-fresh-eligibility-2026-09-11.md`](evidence/graph-start-fresh-eligibility-2026-09-11.md).
 
 - Project-specific implementation begins during the hackathon.
 - Public libraries/starter kits may be used and must remain transparent.
