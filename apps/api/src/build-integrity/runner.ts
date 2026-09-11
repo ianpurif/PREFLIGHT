@@ -46,9 +46,9 @@ const DEFAULT_MAX_SOURCE_ENTRIES = 50_000;
 const DEFAULT_MAX_SOURCE_BYTES = 512 * 1024 * 1024;
 const BUILDER_ID = "https://rovaulta.dev/builders/rovaulta-buildkit/v1";
 
-function defaultDockerBinary(): string {
+function defaultDockerBinary(environment: NodeJS.ProcessEnv = process.env): string {
   if (process.platform !== "win32") return "docker";
-  for (const root of [process.env.ProgramW6432, process.env.ProgramFiles]) {
+  for (const root of [environment.ProgramW6432, environment.ProgramFiles]) {
     if (root === undefined || root.trim() === "") continue;
     const candidate = join(root, "Docker", "Docker", "resources", "bin", "docker.exe");
     if (existsSync(candidate)) return candidate;
@@ -933,7 +933,7 @@ export function createBuildRunnerFromEnvironment(
     dockerBinary: environmentValue(
       environment,
       "ROVAULTA_BUILD_DOCKER_BINARY",
-      defaultDockerBinary(),
+      defaultDockerBinary(environment),
     ),
     timeoutMs: timeoutSeconds * 1_000,
     memory,
