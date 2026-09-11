@@ -88,7 +88,11 @@ test.skipIf(!runRealBuildKitTests)(
     }
     const artifactDirectory = await mkdtemp(join(tmpdir(), "rovaulta-real-artifacts-"));
     try {
-      const result = await new DockerBuildRunner({ artifactDirectory }).run({
+      const result = await new DockerBuildRunner({
+        artifactDirectory,
+        installNetwork:
+          process.env.ROVAULTA_REAL_BUILD_INSTALL_NETWORK === "default" ? "default" : "none",
+      }).run({
         buildId: `robot-build:${"b".repeat(32)}`,
         sourceRepository,
         sourceRevision,
@@ -102,8 +106,29 @@ test.skipIf(!runRealBuildKitTests)(
       expect(result.evidence.provenance.subject[0].digest.sha256).toBe(
         result.artifactDigest.slice("sha256:".length),
       );
+      if (process.env.ROVAULTA_REAL_BUILD_EVIDENCE === "true") {
+        console.log(
+          JSON.stringify(
+            {
+              sourceRepository: result.evidence.sourceRepository,
+              sourceRevision: result.evidence.sourceRevision,
+              sourceSnapshotDigest: result.evidence.sourceSnapshotDigest,
+              lockfileDigest: result.evidence.lockfileDigest,
+              artifactDigest: result.artifactDigest,
+              buildCommand: result.evidence.buildCommand,
+              builder: result.evidence.builder,
+              runtime: result.evidence.runtime,
+              provenanceSubjectDigest: result.evidence.provenance.subject[0].digest.sha256,
+              provenancePredicateType: result.evidence.provenance.predicateType,
+            },
+            null,
+            2,
+          ),
+        );
+      }
     } finally {
       await rm(artifactDirectory, { recursive: true, force: true });
     }
   },
+  15 * 60_000,
 );

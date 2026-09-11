@@ -9,9 +9,18 @@ import {
   parseSha256Digest,
 } from "@rovaulta/domain";
 import { evaluateSimulation } from "@rovaulta/simulation-core";
-import { ApplicationStore, type PublicBuild } from "../src/application/index.js";
-import type { BuildRunner, BuildRunnerResult } from "../src/build-integrity/index.js";
-import { BuildRunnerError } from "../src/build-integrity/index.js";
+import {
+  ApplicationStore,
+  createClearanceRecordFromEvaluation,
+  type PublicBuild,
+  type PublicEvaluation,
+} from "../src/application/index.js";
+import {
+  type BuildRunner,
+  BuildRunnerError,
+  type BuildRunnerResult,
+  DockerBuildRunner,
+} from "../src/build-integrity/index.js";
 import { buildServer } from "../src/server.js";
 
 const KEY = Uint8Array.from({ length: 32 }, (_, index) => index + 1);
@@ -109,7 +118,7 @@ async function resultFor(input: {
               digest: { sha256: "bb".repeat(32) },
             },
             {
-              uri: `buildkit-image:moby/buildkit:v0.24.0@sha256:${"cc".repeat(32)}`,
+              uri: `buildkit-image:moby/buildkit:v0.30.0@sha256:${"cc".repeat(32)}`,
               digest: { sha256: "cc".repeat(32) },
             },
             {
@@ -189,6 +198,21 @@ async function waitForBuild(
     await new Promise((resolve) => setTimeout(resolve, 0));
   }
   throw new Error("source build did not settle");
+}
+
+async function waitForBuildWithDeadline(
+  store: ApplicationStore,
+  accountId: string,
+  buildId: string,
+  timeoutMs: number,
+): Promise<PublicBuild> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const build = store.listAllBuilds(accountId).find((candidate) => candidate.id === buildId);
+    if (build !== undefined && build.buildStatus !== "BUILDING") return build;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error("real source build did not settle before the test deadline");
 }
 
 describe("optional source build lifecycle", () => {
@@ -306,4 +330,116 @@ describe("optional source build lifecycle", () => {
     expect(hidden.statusCode).toBe(404);
     await app.close();
   });
+
+  const runRealLifecycle =
+    process.env.ROVAULTA_RUN_REAL_BUILDKIT_TESTS === "true" &&
+    process.env.ROVAULTA_RUN_REAL_BUILD_LIFECYCLE_TESTS === "true";
+
+  test.skipIf(!runRealLifecycle)(
+    "feeds a real source artifact through evaluation and exact clearance binding",
+    async () => {
+      const sourceRepository = process.env.ROVAULTA_REAL_BUILD_REPOSITORY;
+      const sourceRevision = process.env.ROVAULTA_REAL_BUILD_REVISION;
+      if (sourceRepository === undefined || sourceRevision === undefined) {
+        throw new Error(
+          "ROVAULTA_REAL_BUILD_REPOSITORY and ROVAULTA_REAL_BUILD_REVISION are required",
+        );
+      }
+      const artifactDirectory = await mkdtemp(join(tmpdir(), "rovaulta-real-lifecycle-artifacts-"));
+      const store = new ApplicationStore({
+        dbPath: ":memory:",
+        policyKey: KEY,
+        artifactDirectory,
+      });
+      const app = buildServer({
+        applicationStore: store,
+        buildRunner: new DockerBuildRunner({
+          artifactDirectory,
+          installNetwork:
+            process.env.ROVAULTA_REAL_BUILD_INSTALL_NETWORK === "default" ? "default" : "none",
+        }),
+        evaluationExecutor: { evaluate: async (input) => evaluateSimulation(input) },
+      });
+      try {
+        const session = await register(app, "real-source@example.test");
+        const account = store.accountForSession(ApplicationStore.readSessionCookie(session));
+        if (account === null) throw new Error("real lifecycle account was not found");
+        const { site, robot } = await target(app, session);
+        const sourceResponse = await app.inject({
+          method: "POST",
+          url: `/sites/${site.id}/source-builds`,
+          headers: sessionHeaders(session),
+          payload: {
+            robotId: robot.id,
+            version: "real-source-2026.09.12",
+            label: "Real source build",
+            sourceRepository,
+            sourceRevision,
+            buildCommand: process.env.ROVAULTA_REAL_BUILD_COMMAND ?? "bun run build",
+            runtime: "bun",
+            route: {
+              start: { xMm: 100, yMm: 100 },
+              end: { xMm: 900, yMm: 100 },
+              speedMmPerSecond: 400,
+            },
+          },
+        });
+        expect(sourceResponse.statusCode).toBe(202);
+        const queued = JSON.parse(sourceResponse.body).build as PublicBuild;
+        const completed = await waitForBuildWithDeadline(store, account.id, queued.id, 15 * 60_000);
+        expect(completed.buildStatus).toBe("BUILD_SUCCEEDED");
+        if (completed.artifactDigest === null || completed.robotBuildDigest === null) {
+          throw new Error("real source build did not produce authoritative digests");
+        }
+        expect(completed.artifactDigest).toMatch(/^sha256:[0-9a-f]{64}$/);
+        expect(completed.provenance?.subject[0]?.digest.sha256).toBe(
+          completed.artifactDigest?.slice("sha256:".length),
+        );
+
+        const evaluationResponse = await app.inject({
+          method: "POST",
+          url: "/evaluations",
+          headers: sessionHeaders(session),
+          payload: { siteId: site.id, robotId: robot.id, buildId: queued.id },
+        });
+        expect(evaluationResponse.statusCode).toBe(201);
+        const evaluation = JSON.parse(evaluationResponse.body).evaluation as PublicEvaluation;
+        expect(evaluation.verdict).toBe("CLEAR");
+        expect(evaluation.robotBuildDigest).toBe(completed.robotBuildDigest);
+        const clearance = createClearanceRecordFromEvaluation(evaluation, {
+          clearanceId: "clearance:real-source-build",
+          issuedAt: evaluation.evaluatedAt,
+          expiresAt: String(Number(evaluation.evaluatedAt) + 3_600),
+        });
+        const deploymentContext = store.getDeploymentContext(
+          account.id,
+          evaluation.evaluationId,
+          clearance,
+        );
+        expect(String(deploymentContext.clearance.inputs.robotBuildDigest)).toBe(
+          completed.robotBuildDigest,
+        );
+        if (process.env.ROVAULTA_REAL_BUILD_EVIDENCE === "true") {
+          console.log(
+            JSON.stringify(
+              {
+                buildId: completed.id,
+                artifactDigest: completed.artifactDigest,
+                robotBuildDigest: completed.robotBuildDigest,
+                evaluationId: evaluation.evaluationId,
+                verdict: evaluation.verdict,
+                clearanceRobotBuildDigest: deploymentContext.clearance.inputs.robotBuildDigest,
+              },
+              null,
+              2,
+            ),
+          );
+        }
+      } finally {
+        await app.close();
+        await rm(artifactDirectory, { recursive: true, force: true });
+      }
+    },
+    15 * 60_000,
+  );
 });

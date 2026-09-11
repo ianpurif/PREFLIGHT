@@ -583,7 +583,7 @@ describe("versioned domain-separated digests", () => {
               digest: { sha256: "66".repeat(32) },
             },
             {
-              uri: `buildkit-image:moby/buildkit:v0.24.0@sha256:${"77".repeat(32)}`,
+              uri: `buildkit-image:moby/buildkit:v0.30.0@sha256:${"77".repeat(32)}`,
               digest: { sha256: "77".repeat(32) },
             },
             {
