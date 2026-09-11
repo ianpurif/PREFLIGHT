@@ -306,11 +306,15 @@ export function parseImageDigest(image: string, output: string): string {
 }
 
 function failedBuildStep(output: string): string {
-  const marker = 'ERROR: process "';
   const endMarker = '" did not complete successfully';
-  const start = output.lastIndexOf(marker);
-  if (start < 0) return "";
-  const commandStart = start + marker.length;
+  const markers = ['ERROR: process "', 'failed to solve: process "'];
+  const matches = markers
+    .map((marker) => ({ marker, start: output.lastIndexOf(marker) }))
+    .filter((match) => match.start >= 0)
+    .sort((left, right) => right.start - left.start);
+  const match = matches[0];
+  if (match === undefined) return "";
+  const commandStart = match.start + match.marker.length;
   const end = output.indexOf(endMarker, commandStart);
   return end < 0 ? "" : output.slice(commandStart, end);
 }

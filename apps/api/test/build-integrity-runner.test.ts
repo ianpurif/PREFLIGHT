@@ -23,10 +23,10 @@ const validRequest = {
 
 describe("source-build boundary validation", () => {
   test("pins Buildx image output across stream and line-ending variants", () => {
-    const digest = "sha256:" + "a".repeat(64);
-    expect(parseImageDigest("oven/bun:1.4.1", `Name: oven/bun:1.4.1\r\nDigest:    ${digest}\r\n`)).toBe(
-      `oven/bun:1.4.1@${digest}`,
-    );
+    const digest = `sha256:${"a".repeat(64)}`;
+    expect(
+      parseImageDigest("oven/bun:1.4.1", `Name: oven/bun:1.4.1\r\nDigest:    ${digest}\r\n`),
+    ).toBe(`oven/bun:1.4.1@${digest}`);
     expect(parseImageDigest("docker/dockerfile:1.7", `warning\nDigest: ${digest}\n`)).toBe(
       `docker/dockerfile:1.7@${digest}`,
     );
@@ -34,11 +34,17 @@ describe("source-build boundary validation", () => {
 
   test("classifies only the failed BuildKit step", () => {
     const output = [
-      '#10 [build 4/7] RUN --network=default bun install --frozen-lockfile --ignore-scripts',
+      "#10 [build 4/7] RUN --network=default bun install --frozen-lockfile --ignore-scripts",
       "#10 DONE",
       '#11 ERROR: process "/bin/sh -c /bin/sh -c \\"bun run build\\"" did not complete successfully',
     ].join("\n");
     expect(classifyBuildFailure(output, "bun run build")).toBe("command");
+    expect(
+      classifyBuildFailure(
+        'ERROR: failed to solve: process "/bin/sh -c /bin/sh -c \\"bun run build\\"" did not complete successfully',
+        "bun run build",
+      ),
+    ).toBe("command");
     expect(
       classifyBuildFailure(
         '#10 ERROR: process "/bin/sh -c bun install --frozen-lockfile --ignore-scripts" did not complete successfully',
