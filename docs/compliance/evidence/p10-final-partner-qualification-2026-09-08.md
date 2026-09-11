@@ -45,3 +45,9 @@ tests.
 P10 local evidence covers protocol parsing, canonical serialization, TEE callback leakage, API
 pending state, HMAC authentication, exact bindings, idempotency, and browser pending polling. It does
 not substitute for live CRE, live Graph, external Gemini, or Ledger hardware evidence.
+
+## Final submission follow-up — 2026-09-11
+
+This artifact is an as-of-2026-09-09 qualification snapshot. Subsequent P14/P15 live evidence and
+the maintainer-origin Start Fresh / From Scratch declaration are recorded in the current evidence
+matrix and [`graph-start-fresh-eligibility-2026-09-11.md`](graph-start-fresh-eligibility-2026-09-11.md).

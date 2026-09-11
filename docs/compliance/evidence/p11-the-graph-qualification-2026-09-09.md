@@ -113,3 +113,12 @@ Follow-up evidence captured on 2026-09-10 is in
 the real Gemini provider consumed this live `MATCHED` context and reached
 `LEDGER_APPROVAL_REQUIRED`. The historical model-blocked row above is retained as-of its capture
 date; no physical Ledger approval is claimed.
+
+## Final submission follow-up — 2026-09-11
+
+The historical eligibility row above is retained as-of its 2026-09-09 capture. The current
+Start Fresh / From Scratch declaration and repository chronology are recorded in
+[`graph-start-fresh-eligibility-2026-09-11.md`](graph-start-fresh-eligibility-2026-09-11.md), and
+the current matrix marks the selected Graph pool `PASS` on that declaration. The event submission
+record remains the authoritative external eligibility material; no independent event-calendar proof
+is implied by this follow-up.
