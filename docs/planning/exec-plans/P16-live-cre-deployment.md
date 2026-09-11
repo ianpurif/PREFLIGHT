@@ -77,9 +77,8 @@ working qualification path.
 - [ ] Provision declared Vault secrets through the official CLI.
 - [x] Exercise the live account gateway boundary and capture its external blocker.
 - [x] Capture redacted evidence and update docs/status.
-- [x] Run simulation, targeted tests, full verification, and `git diff --check`; the simulation rerun
-  is blocked by the current logged-out CRE CLI session and remains covered by the committed P13
-  authenticated evidence.
+- [x] Run simulation, targeted tests, full verification, and `git diff --check`; a fresh
+  authenticated CLI rerun produced unsafe `HOLD`, corrected `CLEAR`, and tampered `REJECT`.
 - [x] Complete an independent read-only partner/security review; no high-severity finding or
   secret-leakage/false-live-claim issue was identified. The reviewer noted only that bounded
   provider error text is intentionally surfaced to API clients.
@@ -104,6 +103,9 @@ be converted into a simulated success.
   `docs/compliance/evidence/chainlink-cre-p16-live-deployment-2026-09-11.md`. The remaining
   dependency is Chainlink-side workflow visibility/Confidential Workflow access plus interactive
   Vault authorization; no local bypass is appropriate.
+- A fresh authenticated `bun run --cwd apps/api evidence:cre-simulation` run completed all three
+  existing cases with public `HOLD`, `CLEAR`, and `REJECT` results. It remains simulation evidence,
+  not live execution evidence.
 
 ## Verification run — 2026-09-11
 
@@ -117,5 +119,5 @@ be converted into a simulated success.
   passed.
 - `bun run verify`: passed.
 - `git diff --check`: passed.
-- A fresh official simulation attempt failed closed before workflow execution because the WSL CRE
-  CLI session is logged out and no `CRE_API_KEY` is present; no result or secret was captured.
+- A fresh official simulation rerun completed with public `HOLD`, `CLEAR`, and `REJECT` results;
+  no confidential value or raw CLI output was captured.

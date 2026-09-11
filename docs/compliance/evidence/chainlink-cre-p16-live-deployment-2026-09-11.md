@@ -55,8 +55,24 @@ confidential value appeared in terminal output or evidence.
 - Live CRE execution: **BLOCKED** (the enterprise gateway did not resolve the deployed private
   workflow ID).
 - Live callback and account-owned live verdicts: **BLOCKED** because execution did not start.
-- P13 simulation regression: remains the separate authenticated CLI evidence path and was not
-  re-labelled as live deployment evidence.
+- P13 simulation regression: **PASS** through a fresh authenticated CLI run on 2026-09-11; the
+  separate simulation evidence path produced `HOLD`, `CLEAR`, and `REJECT` with no confidential
+  fields in the public results. This was not re-labelled as live deployment evidence.
+
+## Fresh simulation regression check — 2026-09-11
+
+The official CRE CLI v1.32.0 was authenticated with the same `staging-settings` target and ran
+the existing workflow separately for the unsafe, corrected, and tampered fixtures. The redacted
+public outcomes were:
+
+| Case | Public outcome | Confidential fields exposed |
+| --- | --- | --- |
+| Unsafe fixture | `EVALUATED` / `HOLD` | No |
+| Corrected fixture | `EVALUATED` / `CLEAR` | No |
+| Tampered commitment | `REJECT` / `CONFIDENTIAL_EVALUATION_REJECTED` | No |
+
+No live workflow execution ID was returned by this simulation, and the run does not establish
+live DON, Vault, Nitro, callback, or account-owned evaluation evidence.
 
 The remaining external investigation is Chainlink-side private-registry/enterprise-gateway
 workflow visibility or Confidential Workflow access for this organization. This repository does

@@ -562,8 +562,8 @@ live account evaluation was persisted. This deployment record is not live DON ex
 
 The exact redacted command and result are in
 `docs/compliance/evidence/chainlink-cre-p16-live-deployment-2026-09-11.md`. A fresh official
-simulation rerun also failed closed before workflow execution because the WSL CRE CLI session is
-currently logged out and no `CRE_API_KEY` is present; the committed P13 authenticated simulation
-artifact remains the qualification evidence. After the bounded gateway-diagnostic fix, all 72 API,
+simulation rerun completed successfully with public `HOLD`, `CLEAR`, and `REJECT` outcomes; it
+remains separate simulation evidence and does not claim live execution. After the bounded
+gateway-diagnostic fix, all 72 API,
 32 CRE, domain/simulation, full repository, typecheck, build, contract, scaffold, and verification
 checks passed. The only lint output is the repository's existing CSS specificity warning set.
