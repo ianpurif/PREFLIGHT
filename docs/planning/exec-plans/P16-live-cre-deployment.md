@@ -107,6 +107,21 @@ be converted into a simulated success.
   existing cases with public `HOLD`, `CLEAR`, and `REJECT` results. It remains simulation evidence,
   not live execution evidence.
 
+### Follow-up identity and gateway verification — 2026-09-11
+
+- CRE CLI v1.33.0 `workflow list`/`workflow get` still report the deployed workflow as `ACTIVE` in
+  the private registry with the exact recorded ID; the UI also reports zero executions.
+- `cre workflow hash` with the tracked staging config reproduced binary hash
+  `e3b7053930fc7f38b7214e503c4bc411c27f1e7b50d98d93651193c59bb8004e`, config hash
+  `1977468021a54d7aba103f15adfb1873479a60acaa4bb84e3830249162e92478`, and the deployed workflow
+  ID. The public signer derived from the ignored trigger key matches the deployed authorized key.
+- An independent minimal signed `workflows.execute` request to the private enterprise gateway
+  returned the same HTTP 400 / JSON-RPC `-32600` workflow lookup error; no `ACCEPTED` response or
+  execution identifier was created. This rules out local ID/target/config/signer drift as the cause.
+- The tracked staging config now matches the active deployment. No redeploy was made because the
+  failure occurs before execution. The current Vault selector and the HTTPS result callback remain
+  separate post-acceptance prerequisites; no secret or callback value was exposed.
+
 ## Verification run — 2026-09-11
 
 - Targeted API gateway diagnostics: 7 tests passed.
@@ -121,3 +136,7 @@ be converted into a simulated success.
 - `git diff --check`: passed.
 - A fresh official simulation rerun completed with public `HOLD`, `CLEAR`, and `REJECT` results;
   no confidential value or raw CLI output was captured.
+- The current tracked configuration was hash-checked after alignment, and a post-alignment
+  authenticated CRE CLI v1.33.0 rerun completed with public `HOLD`, `CLEAR`, and `REJECT` results;
+  no confidential value or raw CLI output was captured. The ignored redacted artifact is
+  `.data/cre-simulation/20260911154644464-6a5140c7/evidence.json`.

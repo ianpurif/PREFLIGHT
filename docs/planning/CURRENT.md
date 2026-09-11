@@ -182,6 +182,16 @@ site-secret provisioning helper remain available and fail closed at that externa
   exact public command/result and remaining external Chainlink registry/Confidential Workflow
   visibility dependency are in
   `docs/compliance/evidence/chainlink-cre-p16-live-deployment-2026-09-11.md`.
+- A CRE CLI v1.33.0 control-plane check still reports the exact workflow as `ACTIVE` in the private
+  registry, and `cre workflow hash` with the tracked staging config reproduces the deployed binary,
+  config, and workflow hashes. The authorized signer address also matches the deployed trigger.
+  An independent minimal signed gateway request returned the same HTTP 400 / `-32600` lookup error,
+  while `cre execution list` remained empty. The local source/deployment alignment is therefore
+  fixed and no redeploy is claimed; workflow visibility/access remains a Chainlink-side blocker.
+- The current site-bound Vault selector is not in the tracked secrets manifest, and the active
+  deployment has no HTTPS result-delivery callback configuration. These must be completed only
+  after the gateway resolves the workflow; no Vault value, callback secret, or confidential payload
+  was created, printed, or committed.
 - `apps/api/src/evaluation/cre-client.ts` now returns bounded provider status/code/message details
   for this fail-closed rejection; it never includes signed request bytes, credentials, or private
   CRE inputs. The P13 simulation path remains unchanged.

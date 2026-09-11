@@ -78,6 +78,17 @@ The API now includes bounded public gateway diagnostics (HTTP status, provider c
 provider message) while continuing to fail closed; signed request material and confidential inputs
 are never returned. The simulation executor and P13 evidence remain unchanged.
 
+The follow-up control-plane check with CRE CLI v1.33.0 returned the same `ACTIVE` private workflow
+and exact ID. Hashing the tracked staging configuration reproduced the deployed binary hash
+`e3b7053930fc7f38b7214e503c4bc411c27f1e7b50d98d93651193c59bb8004e`, config hash
+`1977468021a54d7aba103f15adfb1873479a60acaa4bb84e3830249162e92478`, and workflow ID. The
+derived trigger signer matched the public authorized key. A separate minimal signed request to
+`https://01.enterprise-gateway.zone-a.cre.chain.link/` still returned HTTP 400 / JSON-RPC
+`-32600` (`Workflow not found`) and no execution ID; this rules out local workflow-ID/config drift
+but does not establish live CRE execution. The current site-bound Vault selector still requires
+interactive private-registry authorization, and the deployed config has no HTTPS result callback;
+neither secret provisioning nor live callback completion is claimed.
+
 ### Account-owned official CLI simulation mode
 
 The normal API can also run with `ROVAULTA_CRE_EXECUTION_MODE=simulation` when an operator needs a

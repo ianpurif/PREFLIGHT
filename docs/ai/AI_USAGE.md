@@ -615,3 +615,20 @@ execution remains blocked by Chainlink-side workflow visibility or Confidential 
 authenticated P13 simulation evidence remains separate and unchanged.
 
 **Evidence:** [`chainlink-cre-p16-live-deployment-2026-09-11.md`](../compliance/evidence/chainlink-cre-p16-live-deployment-2026-09-11.md).
+
+## 2026-09-11 — P16 deployment identity follow-up
+
+**Tool:** OpenAI Codex using the official CRE CLI v1.33.0 and Chainlink private-workflow trigger
+documentation.
+
+**AI-assisted output:** Rechecked the private-registry workflow from the control plane and UI,
+reproduced the deployed binary/config/workflow hashes from the tracked staging config, compared the
+public trigger signer, and sent an independent minimal signed gateway request. The gateway returned
+the same pre-execution `Workflow not found` error and no execution was created. The staging config
+was aligned with the active deployment without redeploying or exposing any key or confidential input.
+
+**Evidence boundary:** This follow-up rules out local workflow identity, target, signer, and source
+configuration drift but does not prove live CRE execution. Vault consent, site-secret provisioning,
+callback configuration, and Chainlink private-gateway visibility remain external prerequisites.
+
+**Evidence:** [`chainlink-cre-p16-live-deployment-2026-09-11.md`](../compliance/evidence/chainlink-cre-p16-live-deployment-2026-09-11.md).

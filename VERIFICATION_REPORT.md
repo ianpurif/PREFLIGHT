@@ -567,3 +567,15 @@ remains separate simulation evidence and does not claim live execution. After th
 gateway-diagnostic fix, all 72 API,
 32 CRE, domain/simulation, full repository, typecheck, build, contract, scaffold, and verification
 checks passed. The only lint output is the repository's existing CSS specificity warning set.
+
+After aligning the tracked staging config, CRE CLI v1.33.0 re-ran the authenticated unsafe,
+corrected, and tampered simulations successfully as `HOLD`, `CLEAR`, and `REJECT`. The redacted
+ignored artifact is `.data/cre-simulation/20260911154644464-6a5140c7/evidence.json`; it contains no
+raw CLI output or confidential fields.
+
+The follow-up CRE CLI v1.33.0 check reproduced the active deployment's binary, config, and workflow
+hashes from the tracked staging config, matched the public authorized trigger signer, and repeated
+the independent gateway smoke test. The private gateway still returned HTTP 400 / JSON-RPC `-32600`
+before execution, so no live callback or verdict is claimed. The staging-config alignment is
+committed separately; Vault consent, site-secret provisioning, and an HTTPS callback remain external
+post-acceptance prerequisites.
