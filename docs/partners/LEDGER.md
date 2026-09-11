@@ -108,6 +108,15 @@ That signer comes from Speculos's deterministic test seed. It is public test ide
 
 The official ERC-7730 Tester wrapper exited `1` because `GATING_TOKEN` was not set. The direct implicit test token was not used. The Tester also discards its signature, so completing Rovaulta A/B/E/F separately requires an application origin token plus an accepted/served descriptor or another official descriptor-resolution path that returns the real signature. Real `/release/prepare` runs already prove C (`CLEARANCE_BINDING_MISMATCH`) and invalid/unregistered D (`CLEARANCE_NOT_FOUND`) before signer invocation. Physical evidence is not captured; there is no connected physical-device model, firmware, approval, or rejection evidence.
 
+On 2026-09-11 the clean WSL2 Speculos process was restarted and the repository smoke command
+completed against the checksum-verified app. The authenticated browser `/p5-ledger` route then
+connected through the same DMK/Context Module/Signer Kit path, prepared an exact intent against
+the live Sepolia snapshot at block `11679749`, and returned the public session identity above.
+Changing only the public build digest was rejected at the pre-sign boundary as
+`MALFORMED_REQUEST`; the adapter never requested a signature. The valid path stopped at
+`CLEAR_SIGNING_UNAVAILABLE` because no Ledger-issued origin token or accepted/served descriptor is
+configured. This is genuine emulator/pre-sign evidence, not a signature or a `ReleaseAuthorization`.
+
 Remaining Speculos closure cases are valid approval, emulator refusal, consumed-signature replay rejection, and post-sign field tampering rejection. Physical A–F remain separate. Evidence may include only public fields/signature hash and must never expose PIN, recovery phrase, private key, origin token, or credentials.
 
 ## Switching between Speculos and WebHID

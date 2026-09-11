@@ -202,6 +202,17 @@ invalid/unregistered D variant queried the deployed Sepolia registry and returne
 CLEARANCE_NOT_FOUND`. Neither invoked signing. Revoked/expired D remain deterministic test evidence
 only.
 
+On 2026-09-11 a clean Speculos process was restarted and `evidence:speculos-smoke` passed again.
+The authenticated browser `/p5-ledger` route connected through the same official simulator path,
+prepared an exact intent against Sepolia block `11679749`, and rejected a public build-digest
+mutation as `MALFORMED_REQUEST` before any signer request. The valid path then returned
+`CLEAR_SIGNING_UNAVAILABLE` because the Ledger-issued origin token and accepted/served descriptor
+are not configured. No signature, `ReleaseAuthorization`, physical-device, or Secure Element
+claim is made. The redacted trace is in
+`docs/compliance/evidence/p5-ledger-speculos-browser-boundary-2026-09-11.md`. The standalone
+presign harness was also rerun but returned `PERSISTENCE_UNAVAILABLE` without an authenticated
+application store; it is not counted as a new C/D pass.
+
 ## P9 partner qualification slice
 
 The normal account path now uses the partner boundaries rather than a fixture-only shortcut:

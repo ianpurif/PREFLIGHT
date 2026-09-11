@@ -470,6 +470,9 @@ These artifacts are intentionally separated by trust boundary:
   — exact intent, registry checks, signer policy, nonce, and replay boundaries.
 - [P5 Speculos partial evidence](docs/compliance/evidence/p5-ledger-speculos-partial-2026-09-07.md)
   — emulator transport/app/address smoke and pre-sign denials; not physical hardware proof.
+- [P5 Speculos browser-boundary evidence](docs/compliance/evidence/p5-ledger-speculos-browser-boundary-2026-09-11.md)
+  — clean emulator restart, authenticated exact-intent preparation, public mutation rejection,
+  and the fail-closed origin-token/descriptor boundary; no signature or physical-device claim.
 - [P5.2 agent evidence](docs/compliance/evidence/p5.2-ai-deployment-agent-2026-09-07.md)
   — bounded orchestration and Ledger-required handoff.
 - [P7 deterministic rehearsal](docs/compliance/evidence/p7-deterministic-demo-2026-09-07.md)

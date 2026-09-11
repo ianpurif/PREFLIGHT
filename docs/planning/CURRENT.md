@@ -344,7 +344,7 @@ identities and require an intentional redeploy when their configured workflow na
 - Clearance is checked before signing and again before nonce consumption. Revocation or expiry between checks denies authorization.
 - The browser adapter uses pinned Ledger DMK, WebHID and Speculos Device Transport Kits, Context Module, and Ethereum Device Signer Kit packages behind an exact `webhid | speculos` selection. Both transports retain one connection/address/context/signing path; Speculos is rejected outside `development`/`test`.
 - The runtime Clear Signing guard requires successful resolution for the exact chain, registry, 15-field schema, filter count, and every display path before signing may proceed. Partial/mismatched context and the signer kit's legacy typed-data fallback state are cancelled and rejected. There is no personal-sign, raw-transaction, hashed-EIP-712, backend-key, or frontend-boolean fallback.
-- A minimal `/p5-ledger` operator harness defaults to production WebHID and can opt into a loopback Ledger Speculos official device simulator only in development/test. It does not activate a robot or implement the P6 digital twin.
+- A minimal `/p5-ledger` operator harness defaults to production WebHID and can opt into a loopback Ledger Speculos official device simulator only in development/test. It does not activate a robot or implement the P6 digital twin. The 2026-09-11 authenticated browser trace reached exact intent preparation against Sepolia and then failed closed at `CLEAR_SIGNING_UNAVAILABLE` because the Ledger-issued origin/accepted-descriptor path is not configured.
 - Speculos `0.27.0` executed the official Ethereum `1.22.3` Nano S Plus ELF. DMK discovery, actual emulator address review/confirmation, and public session identity were captured without a seed or secret.
 - The candidate descriptor now uses active ERC-7730 v2 and passes official `erc7730 1.0.7` lint with no issues. This is validation, not Ledger registry acceptance or display evidence.
 - `/release/prepare` remains the deterministic proposal authority. P5.2 now calls it through the
@@ -356,6 +356,16 @@ identities and require an intentional redeploy when their configured workflow na
 The official Clear Signing Tester wrapper was invoked and failed closed with `Error: GATING_TOKEN environment variable not set` (exit `1`). Its direct implicit test-token fallback was not used. The Tester is also a separate display harness that discards the signature: its gating token is not a substitute for Rovaulta's Ledger origin token/accepted descriptor. Consequently the structured deployment-intent display and Speculos cases A/B/E/F have **not** been run. A deliberate unexpired Sepolia demo `CLEAR` record for the Speculos signer would also be required for Case A; no contract write was made.
 
 Case C and the invalid/unregistered D variant were executed through the real `/release/prepare` boundary using the public Speculos test address. Build substitution returned `403 CLEARANCE_BINDING_MISMATCH`; the deliberately unregistered fixture reached the deployed Sepolia registry and returned `403 CLEARANCE_NOT_FOUND`. Both stopped before device signing. Real revoked/expired D variants remain uncaptured, although deterministic tests cover them.
+
+The 2026-09-11 clean-emulator run also exercised the authenticated browser `/p5-ledger` path:
+the official Speculos session was discovered and the exact public intent was prepared against
+Sepolia block `11679749`. A public build-digest mutation returned `MALFORMED_REQUEST` before any
+signer request. The valid path stopped at `CLEAR_SIGNING_UNAVAILABLE` because the Ledger-issued
+origin token and accepted/served descriptor are unavailable. The standalone presign evidence
+harness returned `PERSISTENCE_UNAVAILABLE` without an authenticated application store; that
+rerun is not treated as a successful C/D result and the 2026-09-07 artifact remains the source
+for those recorded API responses. See
+`docs/compliance/evidence/p5-ledger-speculos-browser-boundary-2026-09-11.md`.
 
 Physical cases A–F also have **not** been run. The local environment has no configured Ledger-issued origin token and no evidence that Ledger accepted/serves the candidate descriptor for this origin. No physical Ledger model, firmware, approval, or rejection was captured.
 

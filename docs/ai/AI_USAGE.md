@@ -543,3 +543,22 @@ No fallback, mock, signing, or authorization capability was introduced. Physical
 Signing evidence remain unperformed and are not claimed.
 
 **Evidence:** [`p15-live-gemini-graph-ledger-boundary-2026-09-10.md`](../compliance/evidence/p15-live-gemini-graph-ledger-boundary-2026-09-10.md).
+
+## 2026-09-11 — Ledger Speculos browser-boundary evidence
+
+**Tool:** OpenAI Codex using the Rovaulta partner-compliance and verification-loop skills plus the
+official Ledger Speculos, DMK, Device Transport Kit, Context Module, and Ethereum Signer Kit
+packages already pinned in the repository.
+
+**Human direction:** Exercise the existing `/p5-ledger` flow against the official emulator without
+physical Ledger hardware, origin-token bypasses, blind signing, or changes to the authorization
+architecture.
+
+**AI-assisted output:** A clean WSL2 Speculos process was started with the checksum-verified public
+Ethereum app. The repository smoke command and authenticated browser connection completed; the
+exact public release intent reached the Sepolia pre-sign gate, and a public build-digest mutation
+was rejected before signer invocation. The valid path failed closed at `CLEAR_SIGNING_UNAVAILABLE`
+because the Ledger-issued origin/accepted-descriptor path is unavailable. No signature,
+`ReleaseAuthorization`, physical-device, or Secure Element claim was added.
+
+**Evidence:** [`p5-ledger-speculos-browser-boundary-2026-09-11.md`](../compliance/evidence/p5-ledger-speculos-browser-boundary-2026-09-11.md).
