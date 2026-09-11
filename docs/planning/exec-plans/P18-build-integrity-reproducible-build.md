@@ -119,9 +119,10 @@ the canonical public evidence projection.
 
 ## Risks and rollback
 
-- Docker/buildx is not installed in the native Windows shell used by the API checkout. The
-  implementation fails closed there; live acceptance was completed through an equivalent WSL
-  Docker/BuildKit daemon. Deployment still requires an operator-managed isolated builder.
+- The runner depends on an operator-managed Docker/BuildKit daemon. On Windows it autodetects
+  Docker Desktop and preserves only the host CLI/plugin configuration variables needed to invoke
+  `docker buildx`; if the daemon or plugin is unavailable, the source build fails closed without
+  evaluating the artifact. WSL Docker socket permissions remain an operator setup concern.
 - In-process job orchestration is intentionally single-node MVP behavior. A durable queue/worker is
   a later operational change, not silently introduced here.
 - Local artifact storage is private `.data` storage for this MVP; no download endpoint is exposed.
@@ -154,8 +155,9 @@ the canonical public evidence projection.
 - `ROVAULTA_RUN_REAL_BUILDKIT_TESTS=true ROVAULTA_REAL_BUILD_REPOSITORY=https://github.com/elysiajs/elysia
   ROVAULTA_REAL_BUILD_REVISION=e037eca710e7ad193be09cc6615ab0dbe54af914
   ROVAULTA_REAL_BUILD_COMMAND="bun run build" ROVAULTA_REAL_BUILD_INSTALL_NETWORK=default
-  bun test apps/api/test/build-integrity-runner.test.ts` — passed (10 tests, 0 failures, 0 skips).
-  This used the exact public Elysia commit, Bun 1.4.1, Docker BuildKit v0.30.0, and asserted the
+  bun test apps/api/test/build-integrity-runner.test.ts` — passed (12 tests, 0 failures, 0 skips).
+  This used the exact public Elysia commit, Bun 1.4.1, Docker Desktop Buildx 0.36.1, BuildKit
+  v0.30.0, and asserted the
   actual exported artifact digest equals the in-toto subject digest.
 - Detailed live values and the combined exact-binding test trail are recorded in
   [`P18 live evidence`](../../compliance/evidence/build-integrity-p18-2026-09-12.md).
@@ -166,10 +168,12 @@ the canonical public evidence projection.
 - `bun x tsc --noEmit -p packages/domain/tsconfig.json` — passed.
 - `bun x tsc --noEmit -p apps/api/tsconfig.test.json` — passed.
 - `bun x tsc --noEmit -p apps/web/tsconfig.json` — passed.
-- The live proof used a root-owned Docker Engine/Buildx daemon inside WSL because Docker Desktop
-  elevation was unavailable on the Windows host. Production still requires an equivalently isolated
-  Docker/BuildKit daemon with controlled package-registry egress; the test opt-in used
-  `ROVAULTA_REAL_BUILD_INSTALL_NETWORK=default` only for that local proof.
+- The live proof used Docker Desktop's `docker-container` BuildKit driver on Windows. Production
+  still requires an equivalently isolated Docker/BuildKit daemon with controlled package-registry
+  egress; the test opt-in used `ROVAULTA_REAL_BUILD_INSTALL_NETWORK=default` only for that local
+  proof. The exact old Rovaulta revision from the incident was separately replayed: image resolution
+  now succeeds, but that immutable snapshot fails later because its simulation-core TypeScript
+  configuration lacks the `URL` lib and therefore cannot be claimed as a successful current build.
 - `bun run lint` reaches the existing CSS specificity warnings but exits successfully; direct
   affected-workspace TypeScript checks pass.
 - `bun run verify` remains blocked by the pre-existing workspace-local `typescript` junction whose

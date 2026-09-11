@@ -20,6 +20,13 @@
   frozen Bun installation and `bun run build` in BuildKit and asserting the exported artifact and
   provenance subject digests. The gated live lifecycle test then promoted that artifact through the
   existing evaluation path and exact clearance binding with a `CLEAR` result.
+- The 2026-09-12 Windows regression investigation found that the Docker executable was present but
+  the runner's sanitized child environment omitted Docker Desktop's plugin/configuration locations;
+  `docker buildx` therefore failed before image inspection and was misreported as runtime-image
+  resolution. The runner now preserves those host CLI variables, autodetects Docker Desktop, and
+  fails daemon-unavailability closed. The immutable historical Rovaulta revision from the report
+  now reaches BuildKit but still fails in its own old TypeScript configuration, so a newly published
+  source revision is required for users to build the corrected repository state.
 - The runner now pins the runtime/frontend/BuildKit images, uses the official BuildKit metadata file,
   defaults dependency installation to `--network=none`, disables lifecycle scripts, bounds source
   size/concurrency, and re-hashes the exact artifact path before promotion. Provenance mutations and

@@ -24,13 +24,16 @@ Ledger binding, and prove the path with a real Bun build where the environment p
 
 **AI-assisted output:** Research/decision record, versioned source-build integrity protocol,
 BuildKit-backed runner orchestration, account-scoped job/status persistence, additive API/UI flow,
-critical tests, and verification evidence. Earthly was not adopted because its official repository
-states it is no longer actively maintained. No private safety policy, CRE secret, Ledger key, raw
-build log, or credential is intentionally sent to the runner or persisted as public evidence. The
-explicit live proof used the public Elysia commit `e037eca710e7ad193be09cc6615ab0dbe54af914`
-through a WSL Docker/BuildKit daemon; the runner passed frozen install, real build, artifact export,
-and provenance-subject digest assertions. A gated lifecycle proof then passed the real result through
-the existing evaluation and exact clearance binding with `CLEAR`.
+critical tests, regression diagnosis, and verification evidence. Earthly was not adopted because its
+official repository states it is no longer actively maintained. No private safety policy, CRE secret,
+Ledger key, raw build log, or credential is intentionally sent to the runner or persisted as public
+evidence. The explicit live proof used the public Elysia commit `e037eca710e7ad193be09cc6615ab0dbe54af914`
+through Docker Desktop's isolated BuildKit driver; the runner passed frozen install, real build,
+artifact export, and provenance-subject digest assertions. A gated lifecycle proof then passed the
+real result through the existing evaluation and exact clearance binding with `CLEAR`. The follow-up
+regression investigation found missing Windows Docker plugin/configuration variables in the sanitized
+child environment, corrected autodetection/configuration handling, and separately identified the old
+Rovaulta revision's own TypeScript `URL` configuration failure after image resolution was fixed.
 
 ## 2026-09-09 — P12 account-backed Sepolia clearance issuance
 
