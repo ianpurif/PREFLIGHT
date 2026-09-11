@@ -690,6 +690,9 @@ function parseSourceBuildInput(input: {
 function publicBuild(row: BuildRow, integrity: BuildIntegrityRow | null = null): PublicBuild {
   const descriptor = parseRobotBuildDescriptor(JSON.parse(row.descriptor_json));
   const route = JSON.parse(row.route_json) as PublicBuild["route"];
+  if (descriptor.robotId !== row.robot_id || descriptor.robotBuildId !== row.id) {
+    throw new ApplicationError("PERSISTENCE_UNAVAILABLE", "Build descriptor binding is invalid");
+  }
   const common = {
     id: row.id,
     siteId: row.site_id,
@@ -1754,6 +1757,9 @@ export class ApplicationStore {
     if (integrity !== null) publicBuild(build, integrity);
     const policy = decryptPolicy(site.policy_ciphertext, this.#policyKey);
     const descriptor = parseRobotBuildDescriptor(JSON.parse(build.descriptor_json));
+    if (descriptor.robotId !== robot.id || descriptor.robotBuildId !== build.id) {
+      throw new ApplicationError("PERSISTENCE_UNAVAILABLE", "Build descriptor binding is invalid");
+    }
     const traces = parseRobotBehaviorTraceSuite(JSON.parse(build.trace_json));
     const request = parseEvaluationRequest({
       schemaVersion: EVALUATION_REQUEST_SCHEMA_VERSION,

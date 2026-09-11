@@ -57,7 +57,7 @@ function resultFor(input: {
     runtime: {
       name: "bun",
       version: "1.4.1",
-      image: "oven/bun:1.4.1@sha256:" + "aa".repeat(32),
+      image: `oven/bun:1.4.1@sha256:${"aa".repeat(32)}`,
     },
     buildStatus: "BUILD_SUCCEEDED",
     provenance: {
