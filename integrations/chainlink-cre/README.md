@@ -66,6 +66,14 @@ request-scoped site secret, or the HTTPS callback transport are missing.
 This account-facing gateway path is an optional live upgrade; it is not required for the Chainlink
 prize because the authenticated CRE CLI simulation path above is the selected qualification path.
 
+On 2026-09-11 the existing workflow was deployed to the Chainlink-hosted private registry with CRE
+CLI v1.32.0 and reached `ACTIVE` under workflow ID
+`0034106c2d141e81f34ae5b3cf7f71e133137e2dc1ff1d042ffdda86f34d2144`. The first signed request sent
+through the enterprise gateway returned HTTP 400 / JSON-RPC `-32600` (`Workflow not found`) before
+an execution was created. This is a deployment record, not live execution evidence. The exact
+redacted result is recorded in
+[`chainlink-cre-p16-live-deployment-2026-09-11.md`](../../docs/compliance/evidence/chainlink-cre-p16-live-deployment-2026-09-11.md).
+
 For a real account-created evaluation, the account API first creates the site and returns only its
 public identifier/commitment. The facility operator must provision the matching private envelope
 and blind under the exact selector emitted by `siteSecretId(siteId)` using the approved CRE Vault

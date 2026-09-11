@@ -594,3 +594,24 @@ Gemini default. No runtime, contract, workflow, evaluator, Graph, or Ledger beha
 **Evidence boundary:** The audit keeps Subgraph Studio distinct from Gateway, CRE simulation distinct
 from live DON execution, and Speculos distinct from physical Ledger evidence. The remaining
 submission blockers are documented rather than hidden.
+
+## 2026-09-11 — P16 live CRE deployment boundary
+
+**Tool:** OpenAI Codex using the Rovaulta CRE execution-plan, partner-compliance, and verification-loop
+skills plus the official Chainlink CRE deployment and HTTP-trigger documentation.
+
+**Human direction:** Deploy the existing `handlerInTee` workflow now that Deploy Access is enabled,
+exercise the real account gateway path, preserve simulation as an explicit regression path, and never
+fabricate a workflow ID, execution, callback, or verdict.
+
+**AI-assisted output:** Selected the private registry explicitly, deployed the existing workflow with
+the official CRE CLI, recorded its active workflow identity, added bounded public gateway diagnostics,
+and exercised the existing signed account request. The enterprise gateway returned a workflow-lookup
+error before execution, so no live result or callback was persisted and no confidential data was
+captured.
+
+**Evidence boundary:** The private-registry deployment is real and active, but live DON/Vault/Nitro
+execution remains blocked by Chainlink-side workflow visibility or Confidential Workflow access. The
+authenticated P13 simulation evidence remains separate and unchanged.
+
+**Evidence:** [`chainlink-cre-p16-live-deployment-2026-09-11.md`](../compliance/evidence/chainlink-cre-p16-live-deployment-2026-09-11.md).
