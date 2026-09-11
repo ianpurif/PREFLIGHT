@@ -1,7 +1,7 @@
 import { execFile as execFileCallback } from "node:child_process";
 import { createHash } from "node:crypto";
 import type { Dirent } from "node:fs";
-import { createReadStream } from "node:fs";
+import { createReadStream, existsSync } from "node:fs";
 import { copyFile, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -45,6 +45,16 @@ const DEFAULT_MAX_CONCURRENT_BUILDS = 2;
 const DEFAULT_MAX_SOURCE_ENTRIES = 50_000;
 const DEFAULT_MAX_SOURCE_BYTES = 512 * 1024 * 1024;
 const BUILDER_ID = "https://rovaulta.dev/builders/rovaulta-buildkit/v1";
+
+function defaultDockerBinary(): string {
+  if (process.platform !== "win32") return "docker";
+  for (const root of [process.env.ProgramW6432, process.env.ProgramFiles]) {
+    if (root === undefined || root.trim() === "") continue;
+    const candidate = join(root, "Docker", "Docker", "resources", "bin", "docker.exe");
+    if (existsSync(candidate)) return candidate;
+  }
+  return "docker";
+}
 
 interface SnapshotContext {
   readonly root: string;
@@ -912,7 +922,11 @@ export function createBuildRunnerFromEnvironment(
     4 * 1024 * 1024 * 1024,
   );
   return new DockerBuildRunner({
-    dockerBinary: environmentValue(environment, "ROVAULTA_BUILD_DOCKER_BINARY", "docker"),
+    dockerBinary: environmentValue(
+      environment,
+      "ROVAULTA_BUILD_DOCKER_BINARY",
+      defaultDockerBinary(),
+    ),
     timeoutMs: timeoutSeconds * 1_000,
     memory,
     cpuQuota,
