@@ -197,6 +197,11 @@ site-secret provisioning helper remain available and fail closed at that externa
   JSON-RPC `-32600` (`Workflow not found`). `cre execution list` remained empty. This rules out the
   Rovaulta application request path as the cause; the live blocker is the Chainlink private
   execution plane/registry visibility.
+- The same v1.33.0 audit found one current `ACTIVE` workflow record, the current ID in configuration,
+  latest deployment `68d13f61-60b8-453c-8ee8-62c088cbebbf`, and a source/config hash that reproduces
+  that ID. The compiled source registers one `http-trigger@1.0.0-alpha` `handlerInTee` entry with
+  the matching authorized signer and Nitro requirement. No stale-ID or missing-trigger fix was
+  justified, so no redeploy was performed.
 - `apps/api/src/evaluation/cre-client.ts` now returns bounded provider status/code/message details
   for this fail-closed rejection; it never includes signed request bytes, credentials, or private
   CRE inputs. The P13 simulation path remains unchanged.

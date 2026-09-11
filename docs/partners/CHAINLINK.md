@@ -96,6 +96,15 @@ empty. This reproduces the application failure outside Rovaulta and isolates the
 to private-registry execution-plane visibility/access. No execution, callback, or live verdict is
 claimed.
 
+The follow-up control-plane audit found no stale ID or missing local HTTP registration: the private
+registry has one active workflow record, its latest deployment is
+`68d13f61-60b8-453c-8ee8-62c088cbebbf` at `2026-09-11T14:12:55Z`, and the official `workflow hash`
+of the tracked staging source/config reproduces the active workflow ID. The workflow test verifies
+one `http-trigger@1.0.0-alpha` `handlerInTee` entry with the matching EVM signer and Nitro
+`us-west-2` requirement. Since the direct gateway still fails before trigger authorization, no
+redeploy or trigger workaround is justified; the remaining dependency is Chainlink private
+execution-plane visibility/access.
+
 ### Account-owned official CLI simulation mode
 
 The normal API can also run with `ROVAULTA_CRE_EXECUTION_MODE=simulation` when an operator needs a

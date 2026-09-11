@@ -578,6 +578,12 @@ private gateway, exact workflow ID, and schema-valid public fixture. It reproduc
 JSON-RPC `-32600` (`Workflow not found`); execution history remained empty. This confirms the live
 blocker is outside the Rovaulta request path.
 
+The current-ID/trigger audit then found one active private-registry workflow record and the latest
+deployment UUID `68d13f61-60b8-453c-8ee8-62c088cbebbf` at `2026-09-11T14:12:55Z`. The tracked source
+and staging config hash to the same workflow ID, and the SDK workflow test verifies the single
+`http-trigger@1.0.0-alpha` `handlerInTee` registration, signer, and Nitro requirement. No stale-ID
+or missing-trigger fix was justified; no redeploy was performed.
+
 The follow-up CRE CLI v1.33.0 check reproduced the active deployment's binary, config, and workflow
 hashes from the tracked staging config, matched the public authorized trigger signer, and repeated
 the independent gateway smoke test. The private gateway still returned HTTP 400 / JSON-RPC `-32600`

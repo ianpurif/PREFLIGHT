@@ -132,6 +132,21 @@ be converted into a simulated success.
   registry-visibility blocker, not a Rovaulta request-construction failure. No callback or manual
   execution was attempted.
 
+### Current ID and HTTP-trigger audit — 2026-09-12
+
+- `cre workflow list -T staging-settings --registry private` returned exactly one active
+  `rovaulta-confidential-evaluation-staging` workflow. Its ID matches the current Rovaulta setting,
+  and `cre workflow get` reports the latest deployment UUID
+  `68d13f61-60b8-453c-8ee8-62c088cbebbf` at `2026-09-11T14:12:55Z`, with zero executions.
+- `cre workflow hash` with the tracked staging config reproduced the active workflow ID and the
+  recorded binary/config hashes. No later deployment/update or stale ID was found.
+- The deployed artifact's source-level registration is covered by the official SDK workflow test:
+  one `http-trigger@1.0.0-alpha` handler, the matching EVM authorized key, Nitro `us-west-2`, and
+  `evaluateInTee`. The hash match ties that tested source/config to the active deployment.
+- A fresh direct signed gateway request still returned `HTTP 400 / -32600 Workflow not found`, so
+  no trigger acceptance, execution ID, callback, or live verdict exists. Redeploying without a
+  Chainlink-side visibility change would not address this pre-execution failure.
+
 ## Verification run — 2026-09-11
 
 - Targeted API gateway diagnostics: 7 tests passed.

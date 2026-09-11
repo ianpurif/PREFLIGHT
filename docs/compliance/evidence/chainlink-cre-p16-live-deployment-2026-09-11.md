@@ -153,3 +153,42 @@ Rovaulta application transport.
 The remaining external investigation is Chainlink-side private-registry/enterprise-gateway
 workflow visibility or Confidential Workflow access for this organization. This repository does
 not bypass that boundary or claim live DON execution.
+
+## Current deployment and trigger audit — 2026-09-12
+
+The support-reported stale-ID and missing-HTTP-trigger hypotheses were checked with the current
+official CRE CLI v1.33.0 before considering any redeploy:
+
+| Check | Public result |
+| --- | --- |
+| `cre workflow list -T staging-settings --registry private` | one `ACTIVE` workflow named `rovaulta-confidential-evaluation-staging` |
+| Current workflow ID | `0034106c2d141e81f34ae5b3cf7f71e133137e2dc1ff1d042ffdda86f34d2144` |
+| Workflow UUID | `899a1b18-97aa-4fd9-a26b-1022fa900417` |
+| Latest deployment UUID | `68d13f61-60b8-453c-8ee8-62c088cbebbf` |
+| Latest deployment | `ACTIVE`, `2026-09-11T14:12:55Z` |
+| Workflow registration | `2026-09-11T14:12:54Z` |
+| Executed at / execution count | `null` / `0` |
+
+`cre workflow get` returned the same latest deployment and ID. The ID in the operator's current
+configuration is identical to this control-plane value, so no stale-ID update was made. The
+official `cre workflow hash` command using the tracked staging config reproduced the same deployed
+identity: binary `e3b7053930fc7f38b7214e503c4bc411c27f1e7b50d98d93651193c59bb8004e`, config
+`1977468021a54d7aba103f15adfb1873479a60acaa4bb84e3830249162e92478`, and workflow ID above.
+
+The tracked source registers exactly one `handlerInTee` entry backed by
+`HTTPCapability().trigger(...)`, with the deployed EVM signer and Nitro `us-west-2` requirement.
+The CRE SDK workflow test passes the capability ID `http-trigger@1.0.0-alpha`, authorized key,
+TEE requirement, and `evaluateInTee` callback checks. Because the official compiled binary/config
+hash reproduces the active workflow ID, this verifies the deployed artifact is the current source
+whose subscription includes the HTTP trigger; no local missing-trigger or redeploy fix is indicated.
+
+A fresh independent signed request using the documented private gateway, current ID, schema-valid
+public corrected input, and the matching signer again returned HTTP `400` / JSON-RPC `-32600`
+(`Workflow not found`). `cre execution list` remained `[]`. The gateway fails before trigger
+authorization or workflow execution, so live trigger acceptance cannot be proven from this
+organization's private execution plane.
+
+Conclusion: the ID is current, the deployed artifact contains the expected HTTP handler, and the
+authorized signer matches. No workflow update or redeploy was performed. The remaining blocker is
+the Chainlink private-registry/enterprise-gateway execution-plane visibility or access path, not a
+Rovaulta ID, trigger registration, signer, or request-format mismatch.
