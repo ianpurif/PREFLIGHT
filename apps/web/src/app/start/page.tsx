@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { OnboardingFlow } from "../onboarding-flow";
+import { OnboardingFlow, StartAccountEntryLoading } from "../onboarding-flow";
 
 export const metadata = {
   title: "Get started — Rovaulta",
@@ -8,19 +8,8 @@ export const metadata = {
 
 export default function StartPage() {
   return (
-    <Suspense fallback={<AccountEntryLoading />}>
+    <Suspense fallback={<StartAccountEntryLoading />}>
       <OnboardingFlow />
     </Suspense>
-  );
-}
-
-function AccountEntryLoading() {
-  return (
-    <main className="product-loading" id="main-content">
-      <div className="real-loading-card">
-        <h1>Loading account entry</h1>
-        <p>Preparing your secure workspace session.</p>
-      </div>
-    </main>
   );
 }

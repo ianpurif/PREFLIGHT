@@ -1,212 +1,254 @@
 import Link from "next/link";
+import styles from "./landing-page.module.css";
 
-const steps = [
+const stages = [
   {
     number: "01",
-    title: "Set the target",
-    body: "Choose the site, robot, and software build you are preparing to release.",
+    title: "Declare the target",
+    body: "Bind a site, robot, and software build to one release request.",
   },
   {
     number: "02",
-    title: "Evaluate privately",
-    body: "Run the exact build through the site's confidential evaluation workflow.",
+    title: "Evaluate in private",
+    body: "Run the declared behavior against the facility's confidential envelope.",
   },
   {
     number: "03",
-    title: "Understand the result",
-    body: "See why a build is held or cleared without exposing the site's private rules.",
+    title: "Inspect the result",
+    body: "Review the public evidence without exposing restricted rules or geometry.",
   },
   {
     number: "04",
-    title: "Approve the release",
-    body: "A human reviews the exact release details and confirms them on Ledger hardware.",
+    title: "Approve on device",
+    body: "A human confirms the exact release intent on Ledger before the gate opens.",
+  },
+] as const;
+
+const boundarySignals = [
+  {
+    number: "01",
+    title: "Exact-build binding",
+    body: "A changed artifact cannot inherit an earlier clearance.",
+  },
+  {
+    number: "02",
+    title: "Private evaluation",
+    body: "Private site rules stay inside the evaluation boundary.",
+  },
+  {
+    number: "03",
+    title: "Human release gate",
+    body: "Automation prepares; the operator approves the final intent.",
   },
 ] as const;
 
 export function LandingPage() {
   return (
-    <main className="landing-page" id="main-content">
-      <div className="landing-noise" aria-hidden="true" />
-      <header className="landing-nav">
-        <Link className="brand-lockup" href="/" aria-label="Rovaulta home">
-          <span className="brand-mark" aria-hidden="true">
+    <main className={styles.page} id="main-content">
+      <div className={styles.gridField} aria-hidden="true" />
+      <div className={styles.topRule} aria-hidden="true" />
+
+      <header className={styles.nav}>
+        <Link className={styles.brand} href="/" aria-label="Rovaulta home">
+          <span className={styles.mark} aria-hidden="true">
             R
           </span>
-          <span>
+          <span className={styles.brandText}>
             <strong>Rovaulta</strong>
-            <small>Deployment safety</small>
+            <small>Release control for robots</small>
           </span>
         </Link>
-        <nav className="landing-nav-links" aria-label="Primary navigation">
-          <a href="#how-it-works">How it works</a>
-          <a href="#boundaries">Safety boundaries</a>
+
+        <nav className={styles.navLinks} aria-label="Primary navigation">
+          <a href="#how-it-works">Workflow</a>
+          <a href="#boundaries">Boundaries</a>
           <Link href="/app/evidence">Technical evidence</Link>
         </nav>
-        <Link className="nav-quiet-link" href="/start">
+
+        <Link className={`${styles.button} ${styles.navAction}`} href="/start">
           Get started <span aria-hidden="true">↗</span>
         </Link>
       </header>
 
-      <section className="landing-hero" aria-labelledby="landing-title">
-        <div className="landing-hero-copy">
-          <p className="landing-eyebrow">
-            <span className="eyebrow-dot" aria-hidden="true" />
-            Deployment gate for autonomous warehouse robots
+      <section className={styles.hero} aria-labelledby="landing-title">
+        <div className={styles.heroCopy}>
+          <p className={styles.eyebrow}>
+            <span className={styles.eyebrowMark} aria-hidden="true" />
+            Robot software release control / 01
           </p>
           <h1 id="landing-title">
             Release the build
-            <br />
-            you <em>actually evaluated.</em>
+            <span className={styles.heroTitleAccent}> you actually evaluated.</span>
           </h1>
-          <p className="landing-lede">
-            Rovaulta checks an exact robot software build against a site&apos;s private evaluation
-            rules, then gives a human the final say before release.
+          <p className={styles.lede}>
+            Rovaulta verifies an exact robot build against a site's private evaluation envelope,
+            then keeps a human in control of the release decision.
           </p>
-          <div className="landing-actions">
-            <Link className="landing-primary-action" href="/start">
-              Get started <span aria-hidden="true">→</span>
+          <div className={styles.actions}>
+            <Link className={`${styles.button} ${styles.primaryAction}`} href="/start">
+              Open the operator console <span aria-hidden="true">→</span>
             </Link>
-            <a className="landing-secondary-action" href="#how-it-works">
-              See how it works
+            <a className={`${styles.button} ${styles.secondaryAction}`} href="#how-it-works">
+              See the workflow <span aria-hidden="true">↓</span>
             </a>
           </div>
-          <p className="landing-note">
-            Built for safety engineers, integrators, and teams shipping AMR software into real
-            facilities.
+          <p className={styles.disclaimer}>
+            <span className={styles.disclaimerMark} aria-hidden="true">
+              ↳
+            </span>
+            Simulation is evidence for a defined envelope, not a guarantee of physical robot safety.
           </p>
         </div>
 
-        <div className="landing-hero-visual" role="img" aria-label="Rovaulta release flow preview">
-          <div className="hero-visual-topline">
-            <span>RELEASE REVIEW</span>
-            <span className="hero-visual-live">
-              <i aria-hidden="true" /> Example review
+        <section
+          className={styles.heroVisual}
+          aria-labelledby="review-title"
+          aria-describedby="review-summary"
+        >
+          <div className={styles.visualHeader}>
+            <span>Illustrative release review</span>
+            <span className={styles.visualStatus}>
+              <i aria-hidden="true" />
+              CONTROL PLANE / READY
             </span>
           </div>
-          <div className="hero-build-card">
-            <div className="hero-build-meta">
-              <span className="build-status-mark" aria-hidden="true">
-                ✓
+
+          <div className={styles.visualBody}>
+            <div className={styles.visualIntro}>
+              <span className={styles.visualKicker} id="review-title">
+                Release request
               </span>
+              <span className={styles.visualMeta}>PUBLIC PROJECTION · NOT A LIVE CLEARANCE</span>
+            </div>
+
+            <p className={styles.srOnly} id="review-summary">
+              Public projection for the exact warehouse-nav candidate-17 build. The site commitment
+              is bound and the current boundary is human approval required. Status: hold. This is
+              not a live clearance.
+            </p>
+
+            <div className={styles.buildIdentity}>
               <div>
-                <span className="hero-card-label">Exact build</span>
-                <strong>Robot build / Candidate release</strong>
+                <span className={styles.fieldLabel}>Exact build</span>
+                <strong>warehouse-nav / candidate-17</strong>
               </div>
-              <span className="hero-clear-pill">CLEAR</span>
+              <code>build_7F2A…19C4</code>
             </div>
-            <div className="hero-build-route" aria-hidden="true">
-              <span className="route-node route-node-start" />
-              <span className="route-line route-line-one" />
-              <span className="route-node route-node-mid" />
-              <span className="route-line route-line-two" />
-              <span className="route-node route-node-end" />
+
+            <div className={styles.route}>
+              <div className={styles.routeStep}>
+                <span className={`${styles.routeMarker} ${styles.routeMarkerDone}`}>✓</span>
+                <span>Declared</span>
+              </div>
+              <span className={styles.routeLine} />
+              <div className={styles.routeStep}>
+                <span className={`${styles.routeMarker} ${styles.routeMarkerDone}`}>✓</span>
+                <span>Evaluated</span>
+              </div>
+              <span className={`${styles.routeLine} ${styles.routeLinePending}`} />
+              <div className={styles.routeStep}>
+                <span className={`${styles.routeMarker} ${styles.routeMarkerCurrent}`}>03</span>
+                <span>Approved</span>
+              </div>
             </div>
-            <div className="hero-build-footer">
-              <span>Site target</span>
-              <span>Evaluator version · expiry checked</span>
+
+            <div className={styles.gateFrame}>
+              <div className={styles.gateSignal} aria-hidden="true">
+                <span className={styles.gateSignalDot} />
+              </div>
+              <div className={styles.gateCopy}>
+                <span className={styles.fieldLabel}>Current boundary</span>
+                <strong>Human approval required</strong>
+                <small>The exact intent is reviewed on Ledger hardware.</small>
+              </div>
+              <span className={styles.gateTag}>HOLD</span>
             </div>
+
+            <dl className={styles.visualFacts}>
+              <div>
+                <dt>Site commitment</dt>
+                <dd>bound</dd>
+              </div>
+              <div>
+                <dt>Evaluator</dt>
+                <dd>warehouse-rules-v1</dd>
+              </div>
+              <div>
+                <dt>Next action</dt>
+                <dd>operator review</dd>
+              </div>
+            </dl>
           </div>
-          <div className="hero-flow-list">
-            <div className="hero-flow-row is-complete">
-              <span className="hero-flow-icon" aria-hidden="true">
-                ✓
-              </span>
-              <span>Confidential evaluation complete</span>
-              <strong>CLEAR</strong>
-            </div>
-            <div className="hero-flow-row is-current">
-              <span className="hero-flow-icon" aria-hidden="true">
-                2
-              </span>
-              <span>Human release review</span>
-              <strong>WAITING</strong>
-            </div>
-            <div className="hero-flow-row is-muted">
-              <span className="hero-flow-icon" aria-hidden="true">
-                3
-              </span>
-              <span>Robot activation</span>
-              <strong>NOT STARTED</strong>
-            </div>
-          </div>
-          <div className="hero-privacy-note">
-            <span className="privacy-lock" aria-hidden="true">
-              ◇
-            </span>
-            Private site rules stay inside the evaluation boundary.
-          </div>
-        </div>
+        </section>
       </section>
 
-      <section className="landing-proof-strip" aria-label="Product principles">
-        <div>
-          <span className="proof-number">01</span>
-          <strong>Exact-build binding</strong>
-          <span>A clearance cannot be reused for a changed artifact.</span>
-        </div>
-        <div>
-          <span className="proof-number">02</span>
-          <strong>Private evaluation</strong>
-          <span>Rules and restricted geometry are never sent to the browser.</span>
-        </div>
-        <div>
-          <span className="proof-number">03</span>
-          <strong>Human release gate</strong>
-          <span>Automation prepares the release; a person approves the exact intent.</span>
-        </div>
+      <section className={styles.signalStrip} aria-label="Rovaulta product boundaries">
+        {boundarySignals.map((signal) => (
+          <div className={styles.signal} key={signal.number}>
+            <span className={styles.signalNumber}>{signal.number}</span>
+            <div>
+              <strong>{signal.title}</strong>
+              <p>{signal.body}</p>
+            </div>
+          </div>
+        ))}
       </section>
 
-      <section className="landing-section" id="how-it-works" aria-labelledby="how-title">
-        <div className="landing-section-heading">
-          <p className="landing-eyebrow">A clear path to release</p>
-          <h2 id="how-title">Safety evidence before a button can ship.</h2>
+      <section className={styles.section} id="how-it-works" aria-labelledby="how-title">
+        <div className={styles.sectionHeading}>
+          <p className={styles.eyebrow}>A controlled path to release</p>
+          <h2 id="how-title">Evidence first. Authorization last.</h2>
           <p>
-            Rovaulta keeps the operational question in focus: did this build pass this site&apos;s
-            rules, and has the right person approved this exact release?
+            The workflow is intentionally linear: establish the exact target, evaluate it inside the
+            right boundary, and stop for human confirmation before release.
           </p>
         </div>
-        <div className="landing-step-grid">
-          {steps.map((step) => (
-            <article className="landing-step-card" key={step.number}>
-              <span className="step-number">{step.number}</span>
-              <h3>{step.title}</h3>
-              <p>{step.body}</p>
+
+        <div className={styles.stageList}>
+          {stages.map((stage) => (
+            <article className={styles.stage} key={stage.number}>
+              <span className={styles.stageNumber}>{stage.number}</span>
+              <div>
+                <h3>{stage.title}</h3>
+                <p>{stage.body}</p>
+              </div>
+              <span className={styles.stageArrow} aria-hidden="true">
+                ↗
+              </span>
             </article>
           ))}
         </div>
       </section>
 
-      <section
-        className="landing-boundary-section"
-        id="boundaries"
-        aria-labelledby="boundary-title"
-      >
+      <section className={styles.boundarySection} id="boundaries" aria-labelledby="boundary-title">
         <div>
-          <p className="landing-eyebrow">Designed to fail closed</p>
+          <p className={styles.eyebrow}>Designed to fail closed</p>
           <h2 id="boundary-title">Useful automation. Clear limits.</h2>
         </div>
-        <div className="boundary-copy">
+        <div className={styles.boundaryCopy}>
           <p>
-            Rovaulta can explain a result, prepare a release, and show the evidence behind it. It
-            cannot see the private safety envelope, turn a hold into a clear, or sign on behalf of
-            an operator.
+            Rovaulta can explain a public result and prepare an exact release request. It cannot see
+            a facility's private rules, turn a hold into a clear, or sign on behalf of an operator.
           </p>
-          <Link href="/app/evidence" className="text-link">
-            See the evidence boundaries <span aria-hidden="true">→</span>
+          <Link className={styles.textLink} href="/app/evidence">
+            Read the evidence boundaries <span aria-hidden="true">→</span>
           </Link>
         </div>
       </section>
 
-      <footer className="landing-footer">
-        <div className="brand-lockup brand-lockup-footer">
-          <span className="brand-mark" aria-hidden="true">
-            P
+      <footer className={styles.footer}>
+        <div className={styles.footerBrand}>
+          <span className={styles.mark} aria-hidden="true">
+            R
           </span>
-          <span>
+          <span className={styles.brandText}>
             <strong>Rovaulta</strong>
             <small>Confidential deployment gate</small>
           </span>
         </div>
+        <span className={styles.footerTagline}>
+          Exact build · private evaluation · human approval
+        </span>
         <Link href="/start">Start a workspace →</Link>
       </footer>
     </main>
