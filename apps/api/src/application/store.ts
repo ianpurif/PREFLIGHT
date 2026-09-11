@@ -1443,13 +1443,8 @@ export class ApplicationStore {
       trace_json: canonicalSerialize(traces),
     };
     try {
-      this.#database.run("BEGIN");
-      this.#database
-        .query(
-          "UPDATE builds SET descriptor_json = ?, trace_json = ? WHERE id = ? AND account_id = ?",
-        )
-        .run(updatedBuild.descriptor_json, updatedBuild.trace_json, build.id, accountId);
-      this.#database
+      this.#database.run("BEGIN IMMEDIATE");
+      const integrityUpdate = this.#database
         .query(
           "UPDATE build_integrity SET status = ?, artifact_path = ?, integrity_json = ?, error_code = ?, error_message = ?, updated_at = ? WHERE build_id = ? AND account_id = ? AND status = ?",
         )
@@ -1464,6 +1459,17 @@ export class ApplicationStore {
           accountId,
           "BUILDING",
         );
+      if (integrityUpdate.changes !== 1) {
+        throw new ApplicationError("CONFLICT", "Source build is no longer running");
+      }
+      const buildUpdate = this.#database
+        .query(
+          "UPDATE builds SET descriptor_json = ?, trace_json = ? WHERE id = ? AND account_id = ?",
+        )
+        .run(updatedBuild.descriptor_json, updatedBuild.trace_json, build.id, accountId);
+      if (buildUpdate.changes !== 1) {
+        throw new ApplicationError("PERSISTENCE_UNAVAILABLE", "Source build could not be promoted");
+      }
       this.#database.run("COMMIT");
     } catch (error) {
       try {
