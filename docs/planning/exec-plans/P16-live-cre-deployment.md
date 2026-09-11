@@ -77,7 +77,9 @@ working qualification path.
 - [ ] Provision declared Vault secrets through the official CLI.
 - [x] Exercise the live account gateway boundary and capture its external blocker.
 - [x] Capture redacted evidence and update docs/status.
-- [ ] Run simulation, targeted tests, full verification, and `git diff --check`.
+- [x] Run simulation, targeted tests, full verification, and `git diff --check`; the simulation rerun
+  is blocked by the current logged-out CRE CLI session and remains covered by the committed P13
+  authenticated evidence.
 - [ ] Complete an independent read-only partner/security review.
 
 ## Verification evidence
@@ -100,3 +102,18 @@ be converted into a simulated success.
   `docs/compliance/evidence/chainlink-cre-p16-live-deployment-2026-09-11.md`. The remaining
   dependency is Chainlink-side workflow visibility/Confidential Workflow access plus interactive
   Vault authorization; no local bypass is appropriate.
+
+## Verification run — 2026-09-11
+
+- Targeted API gateway diagnostics: 7 tests passed.
+- Chainlink CRE package: 32 tests passed; typecheck passed after repairing the local Windows
+  workspace link to the root TypeScript toolchain.
+- Domain and simulation-core suites: 91 tests passed.
+- Full repository tests: 12 tasks passed (all package tests green).
+- `bun run lint`: passed with the repository's existing CSS specificity warnings.
+- `bun run typecheck`, `bun run build`, `bun run contracts:test`, and `bun run verify:scaffold`:
+  passed.
+- `bun run verify`: passed.
+- `git diff --check`: passed.
+- A fresh official simulation attempt failed closed before workflow execution because the WSL CRE
+  CLI session is logged out and no `CRE_API_KEY` is present; no result or secret was captured.
