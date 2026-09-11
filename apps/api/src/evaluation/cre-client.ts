@@ -113,8 +113,12 @@ function safeGatewayError(value: unknown): string | undefined {
       : undefined;
   const message =
     typeof record.message === "string"
-      ? record.message
-          .replaceAll(/[\u0000-\u001f\u007f]/g, " ")
+      ? [...record.message]
+          .map((character) => {
+            const codePoint = character.codePointAt(0) ?? 0;
+            return codePoint <= 0x1f || codePoint === 0x7f ? " " : character;
+          })
+          .join("")
           .trim()
           .slice(0, 240)
       : undefined;
