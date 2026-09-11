@@ -6,6 +6,8 @@ export type ApplicationErrorCode =
   | "NOT_FOUND"
   | "FORBIDDEN"
   | "CONFLICT"
+  | "BUILD_NOT_READY"
+  | "BUILD_FAILED"
   | "POLICY_UNAVAILABLE"
   | "EVALUATION_UNAVAILABLE"
   | "PERSISTENCE_UNAVAILABLE";

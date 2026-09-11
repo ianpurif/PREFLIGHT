@@ -19,13 +19,17 @@ import {
 } from "@rovaulta/chainlink-cre/protocol";
 import {
   assertEvaluationResultBindings,
+  type BuildIntegrityEvidence,
+  type BuildProvenanceStatement,
   canonicalSerialize,
+  digestBuildIntegrity,
   digestRobotBuild,
   digestSafetyEnvelopeCommitment,
   EVALUATION_INPUTS_SCHEMA_VERSION,
   EVALUATION_REQUEST_SCHEMA_VERSION,
   PROTOCOL_VERSION,
   ProtocolError,
+  parseBuildIntegrityEvidence,
   parseClearanceRecord,
   parseEvaluationRequest,
   parseEvaluatorVersionId,
@@ -36,6 +40,7 @@ import {
   parseUnixTimestamp,
   ROBOT_BUILD_SCHEMA_VERSION,
   type RobotBuildDescriptor,
+  SOURCE_ROBOT_BUILD_SCHEMA_VERSION,
 } from "@rovaulta/domain";
 import {
   CONFIDENTIAL_EVALUATION_ENVELOPE_VERSION,
@@ -49,6 +54,7 @@ import {
   SCENARIO_GENERATOR_VERSION,
   WAREHOUSE_EVALUATOR_VERSION,
 } from "@rovaulta/simulation-core";
+import type { BuildRunnerResult, SourceBuildRuntime } from "../build-integrity/index.js";
 import type {
   ConfidentialEvaluationInput,
   ConfidentialEvaluationReport,
@@ -108,8 +114,24 @@ export interface PublicBuild {
   readonly robotId: string;
   readonly version: string;
   readonly label: string;
-  readonly artifactDigest: string;
-  readonly robotBuildDigest: string;
+  readonly buildMode: "EXISTING" | "SOURCE";
+  readonly buildStatus: "BUILDING" | "BUILD_SUCCEEDED" | "BUILD_FAILED";
+  readonly artifactDigest: string | null;
+  readonly robotBuildDigest: string | null;
+  readonly sourceRepository: string | null;
+  readonly sourceRevision: string | null;
+  readonly sourceSnapshotDigest: string | null;
+  readonly buildCommand: string | null;
+  readonly lockfileDigest: string | null;
+  readonly builder: Readonly<{ readonly id: string; readonly version: string }> | null;
+  readonly runtime: Readonly<{
+    readonly name: "bun" | "node";
+    readonly version: string;
+    readonly image: string;
+  }> | null;
+  readonly provenance: BuildProvenanceStatement | null;
+  readonly buildErrorCode: string | null;
+  readonly buildErrorMessage: string | null;
   readonly route: Readonly<{
     readonly start: Readonly<{ readonly xMm: number; readonly yMm: number }>;
     readonly end: Readonly<{ readonly xMm: number; readonly yMm: number }>;
@@ -200,6 +222,26 @@ interface BuildRow {
   trace_json: string;
   route_json: string;
   created_at: string;
+}
+
+type SourceBuildStatus = "BUILDING" | "BUILD_SUCCEEDED" | "BUILD_FAILED";
+
+interface BuildIntegrityRow {
+  build_id: string;
+  account_id: string;
+  site_id: string;
+  robot_id: string;
+  source_repository: string;
+  source_revision: string;
+  build_command: string;
+  runtime: SourceBuildRuntime;
+  status: SourceBuildStatus;
+  artifact_path: string | null;
+  integrity_json: string | null;
+  error_code: string | null;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 interface EvaluationRow {
@@ -558,20 +600,190 @@ function publicRobot(row: RobotRow): PublicRobot {
   });
 }
 
-function publicBuild(row: BuildRow): PublicBuild {
+function buildTraceSuite(
+  robotId: string,
+  buildId: string,
+  descriptor: RobotBuildDescriptor,
+  start: Readonly<{ readonly xMm: number; readonly yMm: number }>,
+  end: Readonly<{ readonly xMm: number; readonly yMm: number }>,
+  speed: number,
+): RobotBehaviorTraceSuite {
+  return parseRobotBehaviorTraceSuite({
+    schemaVersion: ROBOT_TRACE_SUITE_VERSION,
+    robotId,
+    robotBuildId: buildId,
+    robotBuildDigest: digestRobotBuild(descriptor),
+    traces: [
+      "scenario:restricted-route",
+      "scenario:human-zone-speed",
+      "scenario:heavy-payload-route",
+    ].map((scenarioId) => ({
+      scenarioId,
+      steps: [
+        { stepIndex: 0, position: start, speedMmPerSecond: 0 },
+        { stepIndex: 1, position: end, speedMmPerSecond: speed },
+      ],
+    })),
+  });
+}
+
+const SOURCE_COMMIT_PATTERN = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
+const SOURCE_BUILD_COMMAND_PATTERN = /^(?:bun|node|npm)(?:\s+[A-Za-z0-9_./:@=+-]+)*$/;
+
+function parseSourceBuildInput(input: {
+  readonly sourceRepository: unknown;
+  readonly sourceRevision: unknown;
+  readonly buildCommand: unknown;
+  readonly runtime: unknown;
+}): {
+  readonly sourceRepository: string;
+  readonly sourceRevision: string;
+  readonly buildCommand: string;
+  readonly runtime: SourceBuildRuntime;
+} {
+  if (typeof input.sourceRepository !== "string")
+    throw new ApplicationError("INVALID_INPUT", "Source repository is required");
+  let sourceUrl: URL;
+  try {
+    sourceUrl = new URL(input.sourceRepository.trim());
+  } catch {
+    throw new ApplicationError("INVALID_INPUT", "Source repository must be an HTTPS URL");
+  }
+  if (
+    sourceUrl.protocol !== "https:" ||
+    sourceUrl.username !== "" ||
+    sourceUrl.password !== "" ||
+    sourceUrl.search !== "" ||
+    sourceUrl.hash !== "" ||
+    !["github.com", "gitlab.com"].includes(sourceUrl.hostname.toLowerCase())
+  ) {
+    throw new ApplicationError("INVALID_INPUT", "Source repository host is not allowed");
+  }
+  const sourceRepository = sourceUrl.toString().replace(/\/$/, "");
+  if (typeof input.sourceRevision !== "string" || !SOURCE_COMMIT_PATTERN.test(input.sourceRevision))
+    throw new ApplicationError("INVALID_INPUT", "Source revision must be an exact commit SHA");
+  if (typeof input.buildCommand !== "string")
+    throw new ApplicationError("INVALID_INPUT", "Build command is required");
+  const buildCommand = input.buildCommand.trim();
+  if (!SOURCE_BUILD_COMMAND_PATTERN.test(buildCommand))
+    throw new ApplicationError("INVALID_INPUT", "Build command contains unsupported shell syntax");
+  if (input.runtime !== "bun" && input.runtime !== "node")
+    throw new ApplicationError("INVALID_INPUT", "Runtime must be bun or node");
+  const commandRuntime = buildCommand.split(/\s+/, 1)[0];
+  if (
+    (input.runtime === "bun" && commandRuntime !== "bun") ||
+    (input.runtime === "node" && commandRuntime !== "node" && commandRuntime !== "npm")
+  ) {
+    throw new ApplicationError(
+      "INVALID_INPUT",
+      "Build command does not match the selected runtime",
+    );
+  }
+  return {
+    sourceRepository,
+    sourceRevision: input.sourceRevision,
+    buildCommand,
+    runtime: input.runtime,
+  };
+}
+
+function publicBuild(row: BuildRow, integrity: BuildIntegrityRow | null = null): PublicBuild {
   const descriptor = parseRobotBuildDescriptor(JSON.parse(row.descriptor_json));
   const route = JSON.parse(row.route_json) as PublicBuild["route"];
-  return Object.freeze({
+  const common = {
     id: row.id,
     siteId: row.site_id,
     robotId: row.robot_id,
     version: row.version,
     label: row.label,
-    artifactDigest: descriptor.artifactDigest,
-    robotBuildDigest: digestRobotBuild(descriptor),
     route,
     createdAt: row.created_at,
-  });
+  };
+  if (integrity === null) {
+    return Object.freeze({
+      ...common,
+      buildMode: "EXISTING",
+      buildStatus: "BUILD_SUCCEEDED",
+      artifactDigest: descriptor.artifactDigest,
+      robotBuildDigest: digestRobotBuild(descriptor),
+      sourceRepository: null,
+      sourceRevision: null,
+      sourceSnapshotDigest: null,
+      buildCommand: null,
+      lockfileDigest: null,
+      builder: null,
+      runtime: null,
+      provenance: null,
+      buildErrorCode: null,
+      buildErrorMessage: null,
+    });
+  }
+
+  if (integrity.status !== "BUILD_SUCCEEDED") {
+    return Object.freeze({
+      ...common,
+      buildMode: "SOURCE",
+      buildStatus: integrity.status,
+      artifactDigest: null,
+      robotBuildDigest: null,
+      sourceRepository: integrity.source_repository,
+      sourceRevision: integrity.source_revision,
+      sourceSnapshotDigest: null,
+      buildCommand: integrity.build_command,
+      lockfileDigest: null,
+      builder: null,
+      runtime: null,
+      provenance: null,
+      buildErrorCode: integrity.error_code,
+      buildErrorMessage: integrity.error_message,
+    });
+  }
+
+  if (integrity.integrity_json === null) {
+    throw new ApplicationError(
+      "PERSISTENCE_UNAVAILABLE",
+      "Successful source build evidence is unavailable",
+    );
+  }
+  try {
+    const evidence = parseBuildIntegrityEvidence(JSON.parse(integrity.integrity_json));
+    if (
+      evidence.buildId !== row.id ||
+      evidence.sourceRepository !== integrity.source_repository ||
+      evidence.sourceRevision !== integrity.source_revision ||
+      evidence.buildCommand !== integrity.build_command ||
+      evidence.runtime.name !== integrity.runtime ||
+      descriptor.schemaVersion !== SOURCE_ROBOT_BUILD_SCHEMA_VERSION ||
+      descriptor.buildIntegrityDigest === undefined ||
+      digestBuildIntegrity(evidence) !== descriptor.buildIntegrityDigest ||
+      evidence.artifactDigest !== descriptor.artifactDigest
+    ) {
+      throw new Error("source build binding mismatch");
+    }
+    return Object.freeze({
+      ...common,
+      buildMode: "SOURCE",
+      buildStatus: "BUILD_SUCCEEDED",
+      artifactDigest: descriptor.artifactDigest,
+      robotBuildDigest: digestRobotBuild(descriptor),
+      sourceRepository: evidence.sourceRepository,
+      sourceRevision: evidence.sourceRevision,
+      sourceSnapshotDigest: evidence.sourceSnapshotDigest,
+      buildCommand: evidence.buildCommand,
+      lockfileDigest: evidence.lockfileDigest,
+      builder: evidence.builder,
+      runtime: evidence.runtime,
+      provenance: evidence.provenance,
+      buildErrorCode: null,
+      buildErrorMessage: null,
+    });
+  } catch (error) {
+    if (error instanceof ApplicationError) throw error;
+    throw new ApplicationError(
+      "PERSISTENCE_UNAVAILABLE",
+      "Successful source build evidence is invalid",
+    );
+  }
 }
 
 function publicEvaluation(row: EvaluationRow): PublicEvaluation {
@@ -654,6 +866,24 @@ export class ApplicationStore {
           route_json TEXT NOT NULL,
           created_at TEXT NOT NULL,
           UNIQUE(account_id, id)
+        ) STRICT;
+        CREATE TABLE IF NOT EXISTS build_integrity (
+          build_id TEXT PRIMARY KEY REFERENCES builds(id) ON DELETE CASCADE,
+          account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+          site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+          robot_id TEXT NOT NULL REFERENCES robots(id) ON DELETE CASCADE,
+          source_repository TEXT NOT NULL,
+          source_revision TEXT NOT NULL,
+          build_command TEXT NOT NULL,
+          runtime TEXT NOT NULL,
+          status TEXT NOT NULL,
+          artifact_path TEXT,
+          integrity_json TEXT,
+          error_code TEXT,
+          error_message TEXT,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          UNIQUE(account_id, build_id)
         ) STRICT;
         CREATE TABLE IF NOT EXISTS evaluations (
           id TEXT PRIMARY KEY,
@@ -921,12 +1151,11 @@ export class ApplicationStore {
       readonly route: unknown;
     },
   ): PublicBuild {
-    const site = this.#siteRow(accountId, siteId);
-    if (typeof input.robotId !== "string")
-      throw new ApplicationError("INVALID_INPUT", "Robot id is required");
-    const robot = this.#robotRow(accountId, site.id, input.robotId);
-    const version = parseText(input.version, "Build version", 1, 80);
-    const label = parseText(input.label, "Build label", 1, 120);
+    const { site, robot, version, label, start, end, speed } = this.#parseBuildCreationInput(
+      accountId,
+      siteId,
+      input,
+    );
     let artifactDigest: RobotBuildDescriptor["artifactDigest"];
     try {
       artifactDigest = parseSha256Digest(input.artifactDigest, "artifactDigest");
@@ -936,30 +1165,6 @@ export class ApplicationStore {
         "Artifact digest must be sha256:<64 lowercase hex characters>",
       );
     }
-    if (input.route === null || typeof input.route !== "object" || Array.isArray(input.route))
-      throw new ApplicationError("INVALID_INPUT", "A route is required");
-    const route = input.route as Record<string, unknown>;
-    const start = parsePoint(route.start, "route.start");
-    const end = parsePoint(route.end, "route.end");
-    const speed = parseInteger(route.speedMmPerSecond, "Route speed", 0, 1_000_000);
-    const policy = decryptPolicy(site.policy_ciphertext, this.#policyKey);
-    const bounds = policy.envelope.warehouseBounds;
-    for (const [point, labelName] of [
-      [start, "route.start"],
-      [end, "route.end"],
-    ] as const) {
-      if (
-        point.xMm < bounds.minXmm ||
-        point.xMm > bounds.maxXmm ||
-        point.yMm < bounds.minYmm ||
-        point.yMm > bounds.maxYmm
-      ) {
-        throw new ApplicationError(
-          "INVALID_INPUT",
-          `${labelName} must be inside the warehouse bounds`,
-        );
-      }
-    }
     const buildId = id("robot-build");
     const descriptor: RobotBuildDescriptor = parseRobotBuildDescriptor({
       schemaVersion: ROBOT_BUILD_SCHEMA_VERSION,
@@ -967,23 +1172,7 @@ export class ApplicationStore {
       robotBuildId: buildId,
       artifactDigest,
     });
-    const traces: RobotBehaviorTraceSuite = parseRobotBehaviorTraceSuite({
-      schemaVersion: ROBOT_TRACE_SUITE_VERSION,
-      robotId: robot.id,
-      robotBuildId: buildId,
-      robotBuildDigest: digestRobotBuild(descriptor),
-      traces: [
-        "scenario:restricted-route",
-        "scenario:human-zone-speed",
-        "scenario:heavy-payload-route",
-      ].map((scenarioId) => ({
-        scenarioId,
-        steps: [
-          { stepIndex: 0, position: start, speedMmPerSecond: 0 },
-          { stepIndex: 1, position: end, speedMmPerSecond: speed },
-        ],
-      })),
-    });
+    const traces = buildTraceSuite(robot.id, buildId, descriptor, start, end, speed);
     const createdAt = this.#now();
     const row: BuildRow = {
       id: buildId,
@@ -1016,6 +1205,264 @@ export class ApplicationStore {
     return publicBuild(row);
   }
 
+  createSourceBuild(
+    accountId: string,
+    siteId: string,
+    input: {
+      readonly robotId: unknown;
+      readonly version: unknown;
+      readonly label: unknown;
+      readonly sourceRepository: unknown;
+      readonly sourceRevision: unknown;
+      readonly buildCommand: unknown;
+      readonly runtime: unknown;
+      readonly route: unknown;
+    },
+  ): PublicBuild {
+    const { site, robot, version, label, start, end, speed } = this.#parseBuildCreationInput(
+      accountId,
+      siteId,
+      input,
+    );
+    const source = parseSourceBuildInput(input);
+    const buildId = id("robot-build");
+    const placeholderArtifactDigest = parseSha256Digest(`sha256:${"0".repeat(64)}`);
+    const descriptor = parseRobotBuildDescriptor({
+      schemaVersion: ROBOT_BUILD_SCHEMA_VERSION,
+      robotId: robot.id,
+      robotBuildId: buildId,
+      artifactDigest: placeholderArtifactDigest,
+    });
+    const traces = buildTraceSuite(robot.id, buildId, descriptor, start, end, speed);
+    const createdAt = this.#now();
+    const row: BuildRow = {
+      id: buildId,
+      account_id: accountId,
+      site_id: site.id,
+      robot_id: robot.id,
+      version,
+      label,
+      descriptor_json: canonicalSerialize(descriptor),
+      trace_json: canonicalSerialize(traces),
+      route_json: canonicalSerialize({ start, end, speedMmPerSecond: speed }),
+      created_at: createdAt,
+    };
+    const integrity: BuildIntegrityRow = {
+      build_id: buildId,
+      account_id: accountId,
+      site_id: site.id,
+      robot_id: robot.id,
+      source_repository: source.sourceRepository,
+      source_revision: source.sourceRevision,
+      build_command: source.buildCommand,
+      runtime: source.runtime,
+      status: "BUILDING",
+      artifact_path: null,
+      integrity_json: null,
+      error_code: null,
+      error_message: null,
+      created_at: createdAt,
+      updated_at: createdAt,
+    };
+    try {
+      this.#database.run("BEGIN");
+      this.#database
+        .query(
+          "INSERT INTO builds (id, account_id, site_id, robot_id, version, label, descriptor_json, trace_json, route_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        )
+        .run(
+          row.id,
+          row.account_id,
+          row.site_id,
+          row.robot_id,
+          row.version,
+          row.label,
+          row.descriptor_json,
+          row.trace_json,
+          row.route_json,
+          row.created_at,
+        );
+      this.#database
+        .query(
+          "INSERT INTO build_integrity (build_id, account_id, site_id, robot_id, source_repository, source_revision, build_command, runtime, status, artifact_path, integrity_json, error_code, error_message, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        )
+        .run(
+          integrity.build_id,
+          integrity.account_id,
+          integrity.site_id,
+          integrity.robot_id,
+          integrity.source_repository,
+          integrity.source_revision,
+          integrity.build_command,
+          integrity.runtime,
+          integrity.status,
+          integrity.artifact_path,
+          integrity.integrity_json,
+          integrity.error_code,
+          integrity.error_message,
+          integrity.created_at,
+          integrity.updated_at,
+        );
+      this.#database.run("COMMIT");
+    } catch (error) {
+      try {
+        this.#database.run("ROLLBACK");
+      } catch {
+        // Preserve the original failure without exposing SQLite details.
+      }
+      if (error instanceof ApplicationError) throw error;
+      throw new ApplicationError("PERSISTENCE_UNAVAILABLE", "Source build could not be stored");
+    }
+    return publicBuild(row, integrity);
+  }
+
+  completeSourceBuild(accountId: string, buildId: string, result: BuildRunnerResult): PublicBuild {
+    assertAccountId(accountId);
+    const currentIntegrity = this.#buildIntegrityRow(accountId, buildId);
+    if (currentIntegrity === null)
+      throw new ApplicationError("NOT_FOUND", "Source build was not found");
+    const build = this.#buildRow(
+      accountId,
+      currentIntegrity.site_id,
+      currentIntegrity.robot_id,
+      buildId,
+    );
+    if (currentIntegrity.status === "BUILD_SUCCEEDED") return publicBuild(build, currentIntegrity);
+    if (currentIntegrity.status !== "BUILDING")
+      throw new ApplicationError("CONFLICT", "Source build is no longer running");
+
+    let evidence: BuildIntegrityEvidence;
+    try {
+      evidence = parseBuildIntegrityEvidence(result.evidence);
+    } catch {
+      throw new ApplicationError("BUILD_FAILED", "Source build evidence is invalid");
+    }
+    if (
+      evidence.buildId !== build.id ||
+      evidence.sourceRepository !== currentIntegrity.source_repository ||
+      evidence.sourceRevision !== currentIntegrity.source_revision ||
+      evidence.buildCommand !== currentIntegrity.build_command ||
+      evidence.runtime.name !== currentIntegrity.runtime ||
+      evidence.artifactDigest !== result.artifactDigest ||
+      typeof result.artifactPath !== "string" ||
+      result.artifactPath.trim().length === 0
+    ) {
+      throw new ApplicationError(
+        "BUILD_FAILED",
+        "Source build evidence does not match the build job",
+      );
+    }
+
+    const route = JSON.parse(build.route_json) as PublicBuild["route"];
+    const descriptor = parseRobotBuildDescriptor({
+      schemaVersion: SOURCE_ROBOT_BUILD_SCHEMA_VERSION,
+      robotId: build.robot_id,
+      robotBuildId: build.id,
+      artifactDigest: evidence.artifactDigest,
+      buildIntegrityDigest: digestBuildIntegrity(evidence),
+    });
+    const traces = buildTraceSuite(
+      build.robot_id,
+      build.id,
+      descriptor,
+      parsePoint(route.start, "route.start"),
+      parsePoint(route.end, "route.end"),
+      parseInteger(route.speedMmPerSecond, "Route speed", 0, 1_000_000),
+    );
+    const updatedAt = this.#now();
+    const updatedIntegrity: BuildIntegrityRow = {
+      ...currentIntegrity,
+      status: "BUILD_SUCCEEDED",
+      artifact_path: result.artifactPath,
+      integrity_json: canonicalSerialize(evidence),
+      error_code: null,
+      error_message: null,
+      updated_at: updatedAt,
+    };
+    const updatedBuild: BuildRow = {
+      ...build,
+      descriptor_json: canonicalSerialize(descriptor),
+      trace_json: canonicalSerialize(traces),
+    };
+    try {
+      this.#database.run("BEGIN");
+      this.#database
+        .query(
+          "UPDATE builds SET descriptor_json = ?, trace_json = ? WHERE id = ? AND account_id = ?",
+        )
+        .run(updatedBuild.descriptor_json, updatedBuild.trace_json, build.id, accountId);
+      this.#database
+        .query(
+          "UPDATE build_integrity SET status = ?, artifact_path = ?, integrity_json = ?, error_code = ?, error_message = ?, updated_at = ? WHERE build_id = ? AND account_id = ? AND status = ?",
+        )
+        .run(
+          updatedIntegrity.status,
+          updatedIntegrity.artifact_path,
+          updatedIntegrity.integrity_json,
+          updatedIntegrity.error_code,
+          updatedIntegrity.error_message,
+          updatedIntegrity.updated_at,
+          updatedIntegrity.build_id,
+          accountId,
+          "BUILDING",
+        );
+      this.#database.run("COMMIT");
+    } catch (error) {
+      try {
+        this.#database.run("ROLLBACK");
+      } catch {
+        // Preserve the original failure without exposing SQLite details.
+      }
+      if (error instanceof ApplicationError) throw error;
+      throw new ApplicationError(
+        "PERSISTENCE_UNAVAILABLE",
+        "Source build completion could not be stored",
+      );
+    }
+    return publicBuild(updatedBuild, updatedIntegrity);
+  }
+
+  failSourceBuild(
+    accountId: string,
+    buildId: string,
+    errorCode: string,
+    errorMessage: string,
+  ): PublicBuild {
+    assertAccountId(accountId);
+    const currentIntegrity = this.#buildIntegrityRow(accountId, buildId);
+    if (currentIntegrity === null)
+      throw new ApplicationError("NOT_FOUND", "Source build was not found");
+    const build = this.#buildRow(
+      accountId,
+      currentIntegrity.site_id,
+      currentIntegrity.robot_id,
+      buildId,
+    );
+    if (currentIntegrity.status === "BUILD_FAILED") return publicBuild(build, currentIntegrity);
+    if (currentIntegrity.status === "BUILD_SUCCEEDED") return publicBuild(build, currentIntegrity);
+    const updatedIntegrity: BuildIntegrityRow = {
+      ...currentIntegrity,
+      status: "BUILD_FAILED",
+      error_code: errorCode.slice(0, 80),
+      error_message: errorMessage.slice(0, 240),
+      updated_at: this.#now(),
+    };
+    this.#database
+      .query(
+        "UPDATE build_integrity SET status = ?, error_code = ?, error_message = ?, updated_at = ? WHERE build_id = ? AND account_id = ? AND status = ?",
+      )
+      .run(
+        updatedIntegrity.status,
+        updatedIntegrity.error_code,
+        updatedIntegrity.error_message,
+        updatedIntegrity.updated_at,
+        updatedIntegrity.build_id,
+        accountId,
+        "BUILDING",
+      );
+    return publicBuild(build, updatedIntegrity);
+  }
+
   listBuilds(accountId: string, siteId: string): readonly PublicBuild[] {
     this.#siteRow(accountId, siteId);
     return Object.freeze(
@@ -1024,7 +1471,7 @@ export class ApplicationStore {
           "SELECT * FROM builds WHERE account_id = ? AND site_id = ? ORDER BY created_at, id",
         )
         .all(accountId, siteId)
-        .map(publicBuild),
+        .map((row) => publicBuild(row, this.#buildIntegrityRow(accountId, row.id))),
     );
   }
 
@@ -1036,7 +1483,7 @@ export class ApplicationStore {
           "SELECT * FROM builds WHERE account_id = ? ORDER BY created_at, id",
         )
         .all(accountId)
-        .map(publicBuild),
+        .map((row) => publicBuild(row, this.#buildIntegrityRow(accountId, row.id))),
     );
   }
 
@@ -1297,6 +1744,14 @@ export class ApplicationStore {
     const site = this.#siteRow(accountId, input.siteId);
     const robot = this.#robotRow(accountId, site.id, input.robotId);
     const build = this.#buildRow(accountId, site.id, robot.id, input.buildId);
+    const integrity = this.#buildIntegrityRow(accountId, build.id);
+    if (integrity?.status === "BUILDING") {
+      throw new ApplicationError("BUILD_NOT_READY", "Source build is still running");
+    }
+    if (integrity?.status === "BUILD_FAILED") {
+      throw new ApplicationError("BUILD_FAILED", "Source build did not complete successfully");
+    }
+    if (integrity !== null) publicBuild(build, integrity);
     const policy = decryptPolicy(site.policy_ciphertext, this.#policyKey);
     const descriptor = parseRobotBuildDescriptor(JSON.parse(build.descriptor_json));
     const traces = parseRobotBehaviorTraceSuite(JSON.parse(build.trace_json));
@@ -1554,6 +2009,57 @@ export class ApplicationStore {
     return null;
   }
 
+  #parseBuildCreationInput(
+    accountId: string,
+    siteId: string,
+    input: {
+      readonly robotId: unknown;
+      readonly version: unknown;
+      readonly label: unknown;
+      readonly route: unknown;
+    },
+  ): {
+    readonly site: SiteRow;
+    readonly robot: RobotRow;
+    readonly version: string;
+    readonly label: string;
+    readonly start: ReturnType<typeof parsePoint>;
+    readonly end: ReturnType<typeof parsePoint>;
+    readonly speed: number;
+  } {
+    const site = this.#siteRow(accountId, siteId);
+    if (typeof input.robotId !== "string")
+      throw new ApplicationError("INVALID_INPUT", "Robot id is required");
+    const robot = this.#robotRow(accountId, site.id, input.robotId);
+    const version = parseText(input.version, "Build version", 1, 80);
+    const label = parseText(input.label, "Build label", 1, 120);
+    if (input.route === null || typeof input.route !== "object" || Array.isArray(input.route))
+      throw new ApplicationError("INVALID_INPUT", "A route is required");
+    const route = input.route as Record<string, unknown>;
+    const start = parsePoint(route.start, "route.start");
+    const end = parsePoint(route.end, "route.end");
+    const speed = parseInteger(route.speedMmPerSecond, "Route speed", 0, 1_000_000);
+    const policy = decryptPolicy(site.policy_ciphertext, this.#policyKey);
+    const bounds = policy.envelope.warehouseBounds;
+    for (const [point, labelName] of [
+      [start, "route.start"],
+      [end, "route.end"],
+    ] as const) {
+      if (
+        point.xMm < bounds.minXmm ||
+        point.xMm > bounds.maxXmm ||
+        point.yMm < bounds.minYmm ||
+        point.yMm > bounds.maxYmm
+      ) {
+        throw new ApplicationError(
+          "INVALID_INPUT",
+          `${labelName} must be inside the warehouse bounds`,
+        );
+      }
+    }
+    return { site, robot, version, label, start, end, speed };
+  }
+
   #siteRow(accountId: string, siteId: string): SiteRow {
     assertAccountId(accountId);
     const row = this.#database
@@ -1584,6 +2090,15 @@ export class ApplicationStore {
     if (row === null || row === undefined)
       throw new ApplicationError("NOT_FOUND", "Build was not found");
     return row;
+  }
+
+  #buildIntegrityRow(accountId: string, buildId: string): BuildIntegrityRow | null {
+    const row = this.#database
+      .query<BuildIntegrityRow, [string, string]>(
+        "SELECT * FROM build_integrity WHERE account_id = ? AND build_id = ?",
+      )
+      .get(accountId, buildId);
+    return row ?? null;
   }
 }
 

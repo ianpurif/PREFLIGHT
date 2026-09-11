@@ -1,5 +1,6 @@
 import { createDeploymentAgentFromEnvironment } from "./agent/index.js";
 import { createApplicationStoreFromEnvironment } from "./application/index.js";
+import { createBuildRunnerFromEnvironment } from "./build-integrity/index.js";
 import { createEvaluationExecutorFromEnvironment } from "./evaluation/index.js";
 import { createReleaseServiceFromEnvironment } from "./release/index.js";
 import { buildServer } from "./server";
@@ -17,11 +18,13 @@ const deploymentAgent =
     ? createDeploymentAgentFromEnvironment(releaseService, process.env, applicationStore)
     : undefined;
 const evaluationExecutor = createEvaluationExecutorFromEnvironment();
+const buildRunner = createBuildRunnerFromEnvironment(process.env);
 const app = buildServer({
   ...(releaseService === undefined ? {} : { releaseService }),
   ...(deploymentAgent === undefined ? {} : { deploymentAgent }),
   applicationStore,
   evaluationExecutor,
+  buildRunner,
 });
 const port = Number(process.env.PORT ?? 4000);
 

@@ -8,6 +8,7 @@ import { parseClearanceRecord } from "@rovaulta/domain";
 import Fastify, { type FastifyReply } from "fastify";
 import { type DeploymentAgent, DeploymentAgentError } from "./agent/index.js";
 import { ApplicationError, ApplicationStore, type PublicEvaluation } from "./application/index.js";
+import { type BuildRunner, BuildRunnerError } from "./build-integrity/index.js";
 import { readEnvironment } from "./environment.js";
 import { type ConfidentialEvaluationExecutor, CreEvaluationError } from "./evaluation/index.js";
 import type { ReleaseService } from "./release/index.js";
@@ -75,6 +76,7 @@ export function buildServer(
     deploymentAgent?: DeploymentAgent;
     applicationStore?: ApplicationStore;
     evaluationExecutor?: ConfidentialEvaluationExecutor;
+    buildRunner?: BuildRunner;
     environment?: NodeJS.ProcessEnv;
   } = {},
 ) {
@@ -86,6 +88,7 @@ export function buildServer(
   const releaseService = options.releaseService;
   const deploymentAgent = options.deploymentAgent;
   const applicationStore = options.applicationStore;
+  const buildRunner = options.buildRunner;
   // P2 is never an application fallback. Tests may inject it explicitly; the production entrypoint
   // always supplies the CRE transport. Missing CRE configuration therefore fails closed.
   const evaluationExecutor: ConfidentialEvaluationExecutor = options.evaluationExecutor ?? {
@@ -174,7 +177,10 @@ export function buildServer(
       const status =
         error.code === "AUTH_REQUIRED" || error.code === "INVALID_CREDENTIALS"
           ? 401
-          : error.code === "DUPLICATE_ACCOUNT" || error.code === "CONFLICT"
+          : error.code === "DUPLICATE_ACCOUNT" ||
+              error.code === "CONFLICT" ||
+              error.code === "BUILD_NOT_READY" ||
+              error.code === "BUILD_FAILED"
             ? 409
             : error.code === "NOT_FOUND"
               ? 404
@@ -361,6 +367,67 @@ export function buildServer(
         route: body.route,
       }),
     });
+  });
+
+  app.post("/sites/:siteId/source-builds", async (request, reply) => {
+    const accountId = requireAccount(request, reply);
+    if (accountId === null) return undefined;
+    const params = request.params as { siteId?: unknown };
+    if (typeof params.siteId !== "string") return rejectMalformed(reply);
+    const body = expectBody(request.body, [
+      "robotId",
+      "version",
+      "label",
+      "sourceRepository",
+      "sourceRevision",
+      "buildCommand",
+      "runtime",
+      "route",
+    ]);
+    if (body === null) return rejectMalformed(reply);
+    const store = requireStore();
+    const build = store.createSourceBuild(accountId, params.siteId, {
+      robotId: body.robotId,
+      version: body.version,
+      label: body.label,
+      sourceRepository: body.sourceRepository,
+      sourceRevision: body.sourceRevision,
+      buildCommand: body.buildCommand,
+      runtime: body.runtime,
+      route: body.route,
+    });
+    if (buildRunner === undefined) {
+      return reply.code(202).send({
+        build: store.failSourceBuild(
+          accountId,
+          build.id,
+          "BUILD_RUNNER_UNAVAILABLE",
+          "The source build runner is not configured",
+        ),
+      });
+    }
+    void (async () => {
+      try {
+        const result = await buildRunner.run({
+          buildId: build.id,
+          sourceRepository: body.sourceRepository as string,
+          sourceRevision: body.sourceRevision as string,
+          buildCommand: body.buildCommand as string,
+          runtime: body.runtime as "bun" | "node",
+        });
+        store.completeSourceBuild(accountId, build.id, result);
+      } catch (error) {
+        const code = error instanceof BuildRunnerError ? error.code : "SANDBOX_FAILED";
+        const message = error instanceof BuildRunnerError ? error.message : "Source build failed";
+        try {
+          store.failSourceBuild(accountId, build.id, code, message);
+        } catch {
+          // The build record is already immutable from the caller's perspective; do not leak
+          // asynchronous persistence details into the request response.
+        }
+      }
+    })();
+    return reply.code(202).send({ build });
   });
 
   app.get("/evaluations", async (request, reply) => {
