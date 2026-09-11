@@ -142,7 +142,8 @@
 - [x] existing build-number route remains compatible
 - [x] existing evaluation/clearance/Ledger path consumes only successful source builds
 - [x] minimal source-build UX and evidence/details projection
-- [ ] real Bun BuildKit proof and targeted/full verification
+- [x] real Bun BuildKit proof and targeted verification
+- [ ] full repository verification
 
 ## P12 — Account-backed Sepolia clearance issuance
 - [x] validated public clearance construction from an account-owned `CLEAR` evaluation

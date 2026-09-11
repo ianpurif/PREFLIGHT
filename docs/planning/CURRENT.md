@@ -15,9 +15,11 @@
 - The web workspace exposes `Use Existing Build` and `Build From Source`, polls running jobs, and
   keeps runner/provenance details behind an evidence view. Build failures never become safety
   `REJECT` and cannot be evaluated.
-- Targeted domain, API, runner, and web type checks pass. The real BuildKit/Bun acceptance test is
-  explicit but currently skipped because this host has no Docker/BuildKit installation; no live
-  artifact or digest proof is claimed until the configured builder is available.
+- Targeted domain, API, runner, and web type checks pass. The explicit real-runner test passed with
+  the public Elysia repository at commit `e037eca710e7ad193be09cc6615ab0dbe54af914`, executing
+  frozen Bun installation and `bun run build` in BuildKit and asserting the exported artifact and
+  provenance subject digests. The gated live lifecycle test then promoted that artifact through the
+  existing evaluation path and exact clearance binding with a `CLEAR` result.
 - The runner now pins the runtime/frontend/BuildKit images, uses the official BuildKit metadata file,
   defaults dependency installation to `--network=none`, disables lifecycle scripts, bounds source
   size/concurrency, and re-hashes the exact artifact path before promotion. Provenance mutations and

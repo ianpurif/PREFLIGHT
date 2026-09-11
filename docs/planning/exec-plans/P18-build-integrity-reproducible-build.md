@@ -112,16 +112,16 @@ the canonical public evidence projection.
 - [x] Account store/status/evaluation integration
 - [x] API route and default runner wiring
 - [x] Minimal web selector/status/details view
-- [x] Targeted tests; real Bun BuildKit proof remains environment-blocked
+- [x] Targeted tests and explicit real Bun BuildKit proof
 - [x] Independent read-only review and remediation of runner/provenance findings
 - [ ] Full repository verification loop (blocked by workspace dependency wiring)
-- [ ] Live BuildKit/Bun evidence report and handoff
+- [x] Live BuildKit/Bun evidence report and handoff
 
 ## Risks and rollback
 
-- Docker/buildx is not currently installed on this Windows host. The implementation must fail closed
-  and preserve a truthful `BLOCKED`/`BUILD_FAILED` state; real-runner acceptance remains pending
-  until Docker BuildKit is installed or an equivalent configured builder is supplied.
+- Docker/buildx is not installed in the native Windows shell used by the API checkout. The
+  implementation fails closed there; live acceptance was completed through an equivalent WSL
+  Docker/BuildKit daemon. Deployment still requires an operator-managed isolated builder.
 - In-process job orchestration is intentionally single-node MVP behavior. A durable queue/worker is
   a later operational change, not silently introduced here.
 - Local artifact storage is private `.data` storage for this MVP; no download endpoint is exposed.
@@ -146,17 +146,30 @@ the canonical public evidence projection.
 ## Verification evidence
 
 - `bun test packages/domain/test/protocol.test.ts apps/api/test/build-integrity-runner.test.ts
-  apps/api/test/build-integrity-lifecycle.test.ts` — passed (43 tests, 1 explicit real-runner skip);
+  apps/api/test/build-integrity-lifecycle.test.ts` — passed (43 tests, 2 explicit real-runner
+  skips by default);
   the suite covers legacy compatibility, source promotion, evaluation gating, failure distinction,
   account isolation, actual artifact re-hashing, provenance binding mutations, and the real Bun
   version-output format.
+- `ROVAULTA_RUN_REAL_BUILDKIT_TESTS=true ROVAULTA_REAL_BUILD_REPOSITORY=https://github.com/elysiajs/elysia
+  ROVAULTA_REAL_BUILD_REVISION=e037eca710e7ad193be09cc6615ab0dbe54af914
+  ROVAULTA_REAL_BUILD_COMMAND="bun run build" ROVAULTA_REAL_BUILD_INSTALL_NETWORK=default
+  bun test apps/api/test/build-integrity-runner.test.ts` — passed (10 tests, 0 failures, 0 skips).
+  This used the exact public Elysia commit, Bun 1.4.1, Docker BuildKit v0.30.0, and asserted the
+  actual exported artifact digest equals the in-toto subject digest.
+- Detailed live values and the combined exact-binding test trail are recorded in
+  [`P18 live evidence`](../../compliance/evidence/build-integrity-p18-2026-09-12.md).
+- `ROVAULTA_RUN_REAL_BUILDKIT_TESTS=true ROVAULTA_RUN_REAL_BUILD_LIFECYCLE_TESTS=true ...
+  bun test apps/api/test/build-integrity-lifecycle.test.ts` — passed (3 tests, 0 failures). The
+  real artifact was promoted through the API, evaluated `CLEAR`, and accepted by the existing
+  exact clearance binding; the resulting digests are in the evidence record.
 - `bun x tsc --noEmit -p packages/domain/tsconfig.json` — passed.
 - `bun x tsc --noEmit -p apps/api/tsconfig.test.json` — passed.
 - `bun x tsc --noEmit -p apps/web/tsconfig.json` — passed.
-- Live Docker BuildKit/Bun proof is blocked: `docker`, `buildx`, `buildctl`, `buildkitd`, and Podman
-  are not installed on the current Windows host. The explicit integration test must be run with
-  `ROVAULTA_RUN_REAL_BUILDKIT_TESTS=true`, `ROVAULTA_REAL_BUILD_REPOSITORY`, and
-  `ROVAULTA_REAL_BUILD_REVISION` after a configured Docker/BuildKit builder is available.
+- The live proof used a root-owned Docker Engine/Buildx daemon inside WSL because Docker Desktop
+  elevation was unavailable on the Windows host. Production still requires an equivalently isolated
+  Docker/BuildKit daemon with controlled package-registry egress; the test opt-in used
+  `ROVAULTA_REAL_BUILD_INSTALL_NETWORK=default` only for that local proof.
 - `bun run lint` reaches the existing CSS specificity warnings but exits successfully; direct
   affected-workspace TypeScript checks pass.
 - `bun run verify` remains blocked by the pre-existing workspace-local `typescript` junction whose
