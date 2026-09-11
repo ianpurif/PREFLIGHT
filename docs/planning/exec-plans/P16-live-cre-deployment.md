@@ -80,7 +80,9 @@ working qualification path.
 - [x] Run simulation, targeted tests, full verification, and `git diff --check`; the simulation rerun
   is blocked by the current logged-out CRE CLI session and remains covered by the committed P13
   authenticated evidence.
-- [ ] Complete an independent read-only partner/security review.
+- [x] Complete an independent read-only partner/security review; no high-severity finding or
+  secret-leakage/false-live-claim issue was identified. The reviewer noted only that bounded
+  provider error text is intentionally surfaced to API clients.
 
 ## Verification evidence
 
