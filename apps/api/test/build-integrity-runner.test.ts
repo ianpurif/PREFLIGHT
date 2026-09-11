@@ -6,8 +6,10 @@ import {
   assertLockfileName,
   assertSafeSourceEntries,
   BuildRunnerError,
+  classifyBuildFailure,
   DockerBuildRunner,
   isRuntimeVersion,
+  parseImageDigest,
   validateSourceBuildRequest,
 } from "../src/build-integrity/index.js";
 
@@ -20,6 +22,31 @@ const validRequest = {
 };
 
 describe("source-build boundary validation", () => {
+  test("pins Buildx image output across stream and line-ending variants", () => {
+    const digest = "sha256:" + "a".repeat(64);
+    expect(parseImageDigest("oven/bun:1.4.1", `Name: oven/bun:1.4.1\r\nDigest:    ${digest}\r\n`)).toBe(
+      `oven/bun:1.4.1@${digest}`,
+    );
+    expect(parseImageDigest("docker/dockerfile:1.7", `warning\nDigest: ${digest}\n`)).toBe(
+      `docker/dockerfile:1.7@${digest}`,
+    );
+  });
+
+  test("classifies only the failed BuildKit step", () => {
+    const output = [
+      '#10 [build 4/7] RUN --network=default bun install --frozen-lockfile --ignore-scripts',
+      "#10 DONE",
+      '#11 ERROR: process "/bin/sh -c /bin/sh -c \\"bun run build\\"" did not complete successfully',
+    ].join("\n");
+    expect(classifyBuildFailure(output, "bun run build")).toBe("command");
+    expect(
+      classifyBuildFailure(
+        '#10 ERROR: process "/bin/sh -c bun install --frozen-lockfile --ignore-scripts" did not complete successfully',
+        "bun run build",
+      ),
+    ).toBe("dependency");
+  });
+
   test("accepts the actual Bun and Node version output formats", () => {
     expect(isRuntimeVersion("bun", "1.4.1")).toBe(true);
     expect(isRuntimeVersion("node", "v22.20.0")).toBe(true);

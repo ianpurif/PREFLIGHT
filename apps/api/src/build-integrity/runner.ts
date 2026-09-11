@@ -88,6 +88,13 @@ function runnerEnvironment(): NodeJS.ProcessEnv {
     ComSpec: process.env.ComSpec,
     TMP: process.env.TMP,
     TEMP: process.env.TEMP,
+    HOME: process.env.HOME,
+    USERPROFILE: process.env.USERPROFILE,
+    XDG_CONFIG_HOME: process.env.XDG_CONFIG_HOME,
+    DOCKER_CONFIG: process.env.DOCKER_CONFIG,
+    DOCKER_HOST: process.env.DOCKER_HOST,
+    DOCKER_CONTEXT: process.env.DOCKER_CONTEXT,
+    DOCKER_CERT_PATH: process.env.DOCKER_CERT_PATH,
     LANG: "C",
     BUILDX_METADATA_PROVENANCE: "max",
     GIT_TERMINAL_PROMPT: "0",
@@ -166,6 +173,16 @@ function toolError(
   }
   if (failure.kind === "timeout")
     return new BuildRunnerError("BUILD_TIMEOUT", "The source build timed out");
+  if (
+    /(?:cannot|failed to) connect to the docker (?:api|daemon)|docker_engine|docker\.sock|permission denied.*docker/i.test(
+      failure.output ?? "",
+    )
+  ) {
+    return new BuildRunnerError(
+      "BUILD_RUNNER_UNAVAILABLE",
+      "The Docker daemon is unavailable to the build runner",
+    );
+  }
   return new BuildRunnerError(fallback, message);
 }
 
@@ -278,14 +295,34 @@ async function assertContextSize(root: string, maximumBytes: number): Promise<vo
   }
 }
 
-function parseImageDigest(image: string, output: string): string {
+export function parseImageDigest(image: string, output: string): string {
   const existing = image.match(/@sha256:[0-9a-f]{64}$/i);
   if (existing !== null) return image;
-  const digest = output.match(/^Digest:\s+(sha256:[0-9a-f]{64})$/im)?.[1];
+  const digest = output.match(/^[\t ]*Digest:[\t ]+(sha256:[0-9a-f]{64})[\t ]*\r?$/im)?.[1];
   if (digest === undefined) {
     throw new BuildRunnerError("SANDBOX_FAILED", "The runtime image could not be pinned");
   }
   return `${image}@${digest.toLowerCase()}`;
+}
+
+function failedBuildStep(output: string): string {
+  const marker = 'ERROR: process "';
+  const endMarker = '" did not complete successfully';
+  const start = output.lastIndexOf(marker);
+  if (start < 0) return "";
+  const commandStart = start + marker.length;
+  const end = output.indexOf(endMarker, commandStart);
+  return end < 0 ? "" : output.slice(commandStart, end);
+}
+
+export function classifyBuildFailure(
+  output: string,
+  requestedBuildCommand: string,
+): "dependency" | "command" | undefined {
+  const failedStep = failedBuildStep(output);
+  if (/bun install --frozen-lockfile|npm ci/i.test(failedStep)) return "dependency";
+  if (failedStep.includes(requestedBuildCommand)) return "command";
+  return undefined;
 }
 
 function imageDigest(image: string): string {
@@ -692,7 +729,7 @@ export class DockerBuildRunner implements BuildRunner {
         ["buildx", "imagetools", "inspect", image],
         { timeoutMs: this.#options.timeoutMs, failureCode: "SANDBOX_FAILED" },
       );
-      return parseImageDigest(image, stringOutput(result.stdout));
+      return parseImageDigest(image, `${stringOutput(result.stdout)}\n${result.stderr}`);
     } catch (error) {
       if (error instanceof BuildRunnerError) throw error;
       throw toolError(error, "SANDBOX_FAILED", "The runtime image could not be resolved");
@@ -780,13 +817,14 @@ export class DockerBuildRunner implements BuildRunner {
     } catch (error) {
       if (error instanceof BuildRunnerError) throw error;
       const output = (error as Partial<ToolFailure>).output ?? "";
-      if (/bun install --frozen-lockfile|npm ci/i.test(output)) {
+      const failureKind = classifyBuildFailure(output, input.request.buildCommand);
+      if (failureKind === "dependency") {
         throw new BuildRunnerError(
           "DEPENDENCY_INSTALL_FAILED",
           "Frozen dependency installation failed",
         );
       }
-      if (/ROVAULTA_BUILD_COMMAND|build command/i.test(output)) {
+      if (failureKind === "command") {
         throw new BuildRunnerError("BUILD_COMMAND_FAILED", "The requested build command failed");
       }
       throw toolError(error, "SANDBOX_FAILED", "The isolated BuildKit build failed");
@@ -870,6 +908,7 @@ export function createBuildRunnerFromEnvironment(
     4 * 1024 * 1024 * 1024,
   );
   return new DockerBuildRunner({
+    dockerBinary: environmentValue(environment, "ROVAULTA_BUILD_DOCKER_BINARY", "docker"),
     timeoutMs: timeoutSeconds * 1_000,
     memory,
     cpuQuota,
