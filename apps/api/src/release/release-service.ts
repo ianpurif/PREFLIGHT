@@ -39,6 +39,8 @@ export interface DeploymentProposal {
   readonly robotBuildDigest: unknown;
   readonly clearance: unknown;
   readonly signerAddress: string;
+  /** Set by the authenticated API boundary; omitted only by explicit fixture callers. */
+  readonly accountId?: string;
 }
 
 export interface PreparedReleaseRequest {
@@ -74,6 +76,8 @@ export interface ReleaseAuthorization {
 export interface ConsumeReleaseRequest {
   readonly intent: unknown;
   readonly signature: unknown;
+  /** Set by the authenticated API boundary; omitted only by explicit fixture callers. */
+  readonly accountId?: string;
 }
 
 export type ReleaseAuthorizationStatus =
@@ -252,6 +256,7 @@ export class ReleaseService {
     const prepared = buildDeploymentTypedData(intent, authorizedSigner);
     this.#store.issue({
       nonce: intent.nonce,
+      ...(proposal.accountId === undefined ? {} : { accountId: proposal.accountId }),
       intentJson: canonicalSerialize(intent),
       clearanceJson: canonicalSerialize(clearance),
       authorizedSigner,
@@ -276,7 +281,7 @@ export class ReleaseService {
 
   async consume(input: ConsumeReleaseRequest): Promise<ReleaseAuthorization> {
     const suppliedIntent = parseDeploymentIntent(input.intent);
-    const stored = this.#store.load(suppliedIntent.nonce);
+    const stored = this.#store.load(suppliedIntent.nonce, input.accountId);
     if (stored.state !== "ISSUED")
       return failRelease("REPLAY_REJECTED", "Release nonce was consumed");
     if (canonicalSerialize(suppliedIntent) !== stored.intentJson) {
@@ -328,13 +333,16 @@ export class ReleaseService {
       postcheckBlockNumber: postcheck.blockNumber.toString(),
       postcheckBlockHash: postcheck.blockHash,
     });
-    this.#store.consume(intent.nonce, canonicalSerialize(authorization));
+    this.#store.consume(intent.nonce, canonicalSerialize(authorization), input.accountId);
     return authorization;
   }
 
-  getAuthorizationStatus(prepared: PreparedReleaseRequest): ReleaseAuthorizationStatus {
+  getAuthorizationStatus(
+    prepared: PreparedReleaseRequest,
+    accountId?: string,
+  ): ReleaseAuthorizationStatus {
     const intent = parseDeploymentIntent(prepared.intent);
-    const stored = this.#store.load(intent.nonce);
+    const stored = this.#store.load(intent.nonce, accountId);
     if (
       stored.intentJson !== canonicalSerialize(intent) ||
       stored.protocolIntentDigest !== prepared.protocolIntentDigest ||

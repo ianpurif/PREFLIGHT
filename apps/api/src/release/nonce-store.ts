@@ -5,6 +5,8 @@ import { failRelease } from "@rovaulta/chain-client";
 
 export interface StoredReleaseRequest {
   readonly nonce: string;
+  /** Account ownership is present for normal authenticated requests and absent for explicit fixtures. */
+  readonly accountId?: string;
   readonly intentJson: string;
   readonly clearanceJson: string;
   readonly authorizedSigner: string;
@@ -17,6 +19,7 @@ export interface StoredReleaseRequest {
 
 interface StoredReleaseRow {
   nonce: string;
+  account_id: string | null;
   state: "ISSUED" | "CONSUMED";
   intent_json: string;
   clearance_json: string;
@@ -46,6 +49,7 @@ export class SqliteReleaseStore {
       this.#database.run(`
         CREATE TABLE IF NOT EXISTS release_requests (
           nonce TEXT PRIMARY KEY,
+          account_id TEXT,
           state TEXT NOT NULL CHECK (state IN ('ISSUED', 'CONSUMED')),
           intent_json TEXT NOT NULL,
           clearance_json TEXT NOT NULL,
@@ -58,6 +62,12 @@ export class SqliteReleaseStore {
           authorization_json TEXT
         ) STRICT
       `);
+      const columns = this.#database
+        .query<{ readonly name: string }, []>("PRAGMA table_info(release_requests)")
+        .all();
+      if (!columns.some((column) => column.name === "account_id")) {
+        this.#database.run("ALTER TABLE release_requests ADD COLUMN account_id TEXT");
+      }
     } catch {
       failRelease("PERSISTENCE_UNAVAILABLE", "Durable release store is unavailable");
     }
@@ -68,13 +78,14 @@ export class SqliteReleaseStore {
       this.#database
         .query(`
           INSERT INTO release_requests (
-            nonce, state, intent_json, clearance_json, authorized_signer,
+            nonce, account_id, state, intent_json, clearance_json, authorized_signer,
             protocol_intent_digest, typed_data_digest, precheck_block_number,
             precheck_block_hash, precheck_block_timestamp
-          ) VALUES (?, 'ISSUED', ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, 'ISSUED', ?, ?, ?, ?, ?, ?, ?, ?)
         `)
         .run(
           request.nonce,
+          request.accountId ?? null,
           request.intentJson,
           request.clearanceJson,
           request.authorizedSigner,
@@ -89,7 +100,7 @@ export class SqliteReleaseStore {
     }
   }
 
-  load(nonce: string): LoadedReleaseRequest {
+  load(nonce: string, accountId?: string): LoadedReleaseRequest {
     let row: StoredReleaseRow | null;
     try {
       row = this.#database
@@ -99,8 +110,12 @@ export class SqliteReleaseStore {
       return failRelease("PERSISTENCE_UNAVAILABLE", "Release nonce could not be loaded");
     }
     if (row === null) return failRelease("NONCE_NOT_FOUND", "Release nonce was not issued");
+    if (accountId !== undefined && row.account_id !== accountId) {
+      return failRelease("NONCE_NOT_FOUND", "Release nonce was not issued for this account");
+    }
     return Object.freeze({
       nonce: row.nonce,
+      ...(row.account_id === null ? {} : { accountId: row.account_id }),
       state: row.state,
       intentJson: row.intent_json,
       clearanceJson: row.clearance_json,
@@ -114,16 +129,25 @@ export class SqliteReleaseStore {
     });
   }
 
-  consume(nonce: string, authorizationJson: string): void {
+  consume(nonce: string, authorizationJson: string, accountId?: string): void {
     let changes: number;
     try {
-      const result = this.#database
-        .query(`
-          UPDATE release_requests
-          SET state = 'CONSUMED', authorization_json = ?
-          WHERE nonce = ? AND state = 'ISSUED'
-        `)
-        .run(authorizationJson, nonce);
+      const result =
+        accountId === undefined
+          ? this.#database
+              .query(`
+                UPDATE release_requests
+                SET state = 'CONSUMED', authorization_json = ?
+                WHERE nonce = ? AND state = 'ISSUED'
+              `)
+              .run(authorizationJson, nonce)
+          : this.#database
+              .query(`
+                UPDATE release_requests
+                SET state = 'CONSUMED', authorization_json = ?
+                WHERE nonce = ? AND account_id = ? AND state = 'ISSUED'
+              `)
+              .run(authorizationJson, nonce, accountId);
       changes = result.changes;
     } catch {
       failRelease("PERSISTENCE_UNAVAILABLE", "Release nonce could not be consumed");

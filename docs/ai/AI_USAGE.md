@@ -616,6 +616,24 @@ authenticated P13 simulation evidence remains separate and unchanged.
 
 **Evidence:** [`chainlink-cre-p16-live-deployment-2026-09-11.md`](../compliance/evidence/chainlink-cre-p16-live-deployment-2026-09-11.md).
 
+## 2026-09-12 — Authentication and ownership hardening
+
+**Tool:** OpenAI Codex using the Rovaulta execution-plan and verification-loop guidance plus a
+separate read-only security-review task.
+
+**Human direction:** Re-audit the original authentication prompt from the current repository state,
+then complete sign-in, registration, session persistence, redirects, sign-out, server-side account
+ownership, and user-data isolation without trusting browser state.
+
+**AI-assisted output:** Added session-aware `/start` entry routing, safe internal continuations,
+non-cacheable account responses, explicit sign-out failure handling, account-owned legacy release
+nonces, cross-account regression coverage, and an authenticated/versioned Ledger handoff. The
+explicit development fixture remains separately gated; no production auth bypass was added.
+
+**Evidence boundary:** Local API/browser tests and repository verification prove the implemented
+behavior in this checkout. They do not prove external deployment identity, physical Ledger approval,
+or real-world robot safety.
+
 ## 2026-09-12 — Independent CRE private-gateway probe
 
 **Tool:** OpenAI Codex using the official CRE v1.33.0 HTTP-trigger documentation and a standalone

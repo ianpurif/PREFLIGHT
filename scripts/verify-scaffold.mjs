@@ -80,6 +80,7 @@ const required = [
   "docs/planning/exec-plans/P7-deterministic-demo-reliability.md",
   "docs/compliance/evidence/p7-deterministic-demo-2026-09-07.md",
   "apps/web/src/app/p5-ledger/page.tsx",
+  "apps/web/src/app/p5-ledger/operator-page.tsx",
   ".github/workflows/ci.yml",
   "docs/codex/TOOLS.md",
   ".worktreeinclude",
@@ -359,7 +360,10 @@ const webPage = readFileSync(resolve(root, "apps/web/src/app/page.tsx"), "utf8")
 const landingPage = readFileSync(resolve(root, "apps/web/src/app/landing-page.tsx"), "utf8");
 const onboarding = readFileSync(resolve(root, "apps/web/src/app/onboarding-flow.tsx"), "utf8");
 const apiClient = readFileSync(resolve(root, "apps/web/src/app/api-client.ts"), "utf8");
-const ledgerPage = readFileSync(resolve(root, "apps/web/src/app/p5-ledger/page.tsx"), "utf8");
+const ledgerOperator = readFileSync(
+  resolve(root, "apps/web/src/app/p5-ledger/operator-page.tsx"),
+  "utf8",
+);
 const realWorkspace = readFileSync(resolve(root, "apps/web/src/app/real-workspace.tsx"), "utf8");
 const fixtureRoute = readFileSync(
   resolve(root, "apps/web/src/app/dev-fixtures/evaluate/page.tsx"),
@@ -384,10 +388,10 @@ if (!webPage.includes("LandingPage") || !landingPage.includes("Get started"))
 if (!onboarding.includes("auth/register") || !apiClient.includes('credentials: "include"'))
   throw new Error("P8 account entry must use authenticated API sessions");
 const connectBlock =
-  ledgerPage.match(
+  ledgerOperator.match(
     /async function connect\(\) \{[\s\S]*?\n\x20{2}\}\n\n\x20{2}async function prepare/,
   )?.[0] ?? "";
-if (!ledgerPage.includes('credentials: "include"') || /setPrepared\(null\)/.test(connectBlock))
+if (!ledgerOperator.includes('credentials: "include"') || /setPrepared\(null\)/.test(connectBlock))
   throw new Error("P5 Ledger handoff must preserve the prepared request across connect");
 if (
   !realWorkspace.includes("/releases/prepare") ||

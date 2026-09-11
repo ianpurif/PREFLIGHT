@@ -418,6 +418,7 @@ export class DeploymentAgent {
           ...entry.target,
           clearance: entry.clearance,
           signerAddress: input.signerAddress,
+          ...(input.accountId === undefined ? {} : { accountId: input.accountId }),
         });
       } catch (error) {
         const code = errorCode(error);
@@ -447,7 +448,7 @@ export class DeploymentAgent {
       );
 
       await this.#callTool(attempt, "getLedgerAuthorizationStatus");
-      const status = this.#releaseService.getAuthorizationStatus(prepared);
+      const status = this.#releaseService.getAuthorizationStatus(prepared, input.accountId);
       if (status.status !== "AWAITING_LEDGER") {
         throw new DeploymentAgentError(
           "AGENT_PROTOCOL_VIOLATION",
@@ -486,7 +487,7 @@ export class DeploymentAgent {
         "Deployment attempt is not in this account",
       );
     }
-    const status = this.#releaseService.getAuthorizationStatus(attempt.prepared);
+    const status = this.#releaseService.getAuthorizationStatus(attempt.prepared, accountId);
     if (status.status === "AWAITING_LEDGER") {
       return Object.freeze({
         status: "LEDGER_APPROVAL_REQUIRED",

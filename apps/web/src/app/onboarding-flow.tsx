@@ -1,22 +1,59 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { type Account, ApiError, apiFetch, jsonBody } from "./api-client";
 import styles from "./entry-page.module.css";
 
 type AccountEntryMode = "register" | "sign-in";
+type SessionProbeState = "checking" | "anonymous" | "error";
+
+function safeContinuation(value: string | null): string | null {
+  if (value === "/app" || value?.startsWith("/app/") === true) return value;
+  return null;
+}
 
 function useAccountEntry(initialMode: AccountEntryMode) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const next = safeContinuation(searchParams.get("next"));
   const [mode, setMode] = useState(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const next = searchParams.get("next");
+  const [sessionState, setSessionState] = useState<SessionProbeState>("checking");
+  const [sessionError, setSessionError] = useState<string | null>(null);
+  const [sessionProbe, setSessionProbe] = useState(0);
+  const sessionProbePath = `/auth/me?probe=${sessionProbe}`;
+
+  useEffect(() => {
+    let active = true;
+    setSessionState("checking");
+    setSessionError(null);
+    void apiFetch<{ account: Account }>(sessionProbePath)
+      .then(() => {
+        if (active) router.replace(next ?? "/app");
+      })
+      .catch((reason) => {
+        if (!active) return;
+        if (reason instanceof ApiError && reason.status === 401) {
+          setSessionState("anonymous");
+          return;
+        }
+        setSessionState("error");
+        setSessionError(
+          reason instanceof ApiError
+            ? reason.message
+            : "The account session could not be checked. Try again.",
+        );
+      });
+    return () => {
+      active = false;
+    };
+  }, [next, router, sessionProbePath]);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -28,7 +65,7 @@ function useAccountEntry(initialMode: AccountEntryMode) {
         submittedMode === "register" ? "/auth/register" : "/auth/sign-in",
         { method: "POST", body: jsonBody({ email, password }) },
       );
-      router.push(
+      router.replace(
         next?.startsWith("/app") ? next : submittedMode === "register" ? "/app/setup" : "/app",
       );
     } catch (reason) {
@@ -49,6 +86,9 @@ function useAccountEntry(initialMode: AccountEntryMode) {
     error,
     mode,
     password,
+    retrySessionCheck: () => setSessionProbe((value) => value + 1),
+    sessionError,
+    sessionState,
     setEmail,
     setPassword,
     submit,
@@ -56,13 +96,58 @@ function useAccountEntry(initialMode: AccountEntryMode) {
   };
 }
 
+function AccountSessionFailure({
+  message,
+  onRetry,
+}: {
+  readonly message: string;
+  readonly onRetry: () => void;
+}) {
+  return (
+    <main className="product-loading" id="main-content">
+      <div className="real-loading-card">
+        <h1>Account session unavailable</h1>
+        <p>{message}</p>
+        <button type="button" className="view-primary-action" onClick={onRetry}>
+          Try again
+        </button>
+        <Link className="path-action" href="/">
+          Return to overview
+        </Link>
+      </div>
+    </main>
+  );
+}
+
 export function StartAccountEntry({
   initialMode = "register",
 }: {
   readonly initialMode?: AccountEntryMode;
 }) {
-  const { busy, email, error, mode, password, setEmail, setPassword, submit, switchMode } =
-    useAccountEntry(initialMode);
+  const {
+    busy,
+    email,
+    error,
+    mode,
+    password,
+    retrySessionCheck,
+    sessionError,
+    sessionState,
+    setEmail,
+    setPassword,
+    submit,
+    switchMode,
+  } = useAccountEntry(initialMode);
+
+  if (sessionState === "checking") return <StartAccountEntryLoading />;
+  if (sessionState === "error") {
+    return (
+      <AccountSessionFailure
+        message={sessionError ?? "The account session could not be checked. Try again."}
+        onRetry={retrySessionCheck}
+      />
+    );
+  }
 
   return (
     <main className={styles.page} id="main-content">
@@ -71,12 +156,15 @@ export function StartAccountEntry({
 
       <header className={styles.topbar}>
         <Link className={styles.brand} href="/" aria-label="Back to Rovaulta home">
-          <span className={styles.mark} aria-hidden="true">
-            R
-          </span>
-          <span className={styles.brandText}>
-            <strong>Rovaulta</strong>
-            <small>Release control for robots</small>
+          <span className={styles.brandIdentity}>
+            <Image
+              className={styles.wordmark}
+              src="/brand/rovaulta-wordmark.png"
+              alt=""
+              width={150}
+              height={30}
+            />
+            <span className={styles.brandDescriptor}>Release control for robots</span>
           </span>
         </Link>
         <div className={styles.topbarRight}>
@@ -257,12 +345,15 @@ export function StartAccountEntryLoading() {
 
       <header className={styles.topbar}>
         <Link className={styles.brand} href="/" aria-label="Back to Rovaulta home">
-          <span className={styles.mark} aria-hidden="true">
-            R
-          </span>
-          <span className={styles.brandText}>
-            <strong>Rovaulta</strong>
-            <small>Release control for robots</small>
+          <span className={styles.brandIdentity}>
+            <Image
+              className={styles.wordmark}
+              src="/brand/rovaulta-wordmark.png"
+              alt=""
+              width={150}
+              height={30}
+            />
+            <span className={styles.brandDescriptor}>Release control for robots</span>
           </span>
         </Link>
         <span className={styles.secureStatus}>
@@ -297,18 +388,43 @@ export function AccountEntry({
 }: {
   readonly initialMode?: AccountEntryMode;
 }) {
-  const { busy, email, error, mode, password, setEmail, setPassword, submit, switchMode } =
-    useAccountEntry(initialMode);
+  const {
+    busy,
+    email,
+    error,
+    mode,
+    password,
+    retrySessionCheck,
+    sessionError,
+    sessionState,
+    setEmail,
+    setPassword,
+    submit,
+    switchMode,
+  } = useAccountEntry(initialMode);
+
+  if (sessionState === "checking") return <StartAccountEntryLoading />;
+  if (sessionState === "error") {
+    return (
+      <AccountSessionFailure
+        message={sessionError ?? "The account session could not be checked. Try again."}
+        onRetry={retrySessionCheck}
+      />
+    );
+  }
 
   return (
     <main className="onboarding-page real-account-page" id="main-content">
       <div className="onboarding-topbar">
         <Link className="brand-lockup" href="/" aria-label="Back to Rovaulta home">
-          <span className="brand-mark" aria-hidden="true">
-            R
-          </span>
+          <Image
+            className="brand-wordmark-image"
+            src="/brand/rovaulta-wordmark.png"
+            alt=""
+            width={150}
+            height={30}
+          />
           <span>
-            <strong>Rovaulta</strong>
             <small>Deployment safety</small>
           </span>
         </Link>

@@ -63,7 +63,10 @@ test("P3-P9 are load-bearing and the product boundary remains non-authoritative"
   const landing = await readFile(new URL("apps/web/src/app/landing-page.tsx", root), "utf8");
   const onboarding = await readFile(new URL("apps/web/src/app/onboarding-flow.tsx", root), "utf8");
   const apiClient = await readFile(new URL("apps/web/src/app/api-client.ts", root), "utf8");
-  const ledgerPage = await readFile(new URL("apps/web/src/app/p5-ledger/page.tsx", root), "utf8");
+  const ledgerOperator = await readFile(
+    new URL("apps/web/src/app/p5-ledger/operator-page.tsx", root),
+    "utf8",
+  );
   const realWorkspace = await readFile(
     new URL("apps/web/src/app/real-workspace.tsx", root),
     "utf8",
@@ -148,9 +151,9 @@ test("P3-P9 are load-bearing and the product boundary remains non-authoritative"
   assert.match(landing, /Get started/);
   assert.match(onboarding, /auth\/register/);
   assert.match(apiClient, /credentials: "include"/);
-  assert.match(ledgerPage, /credentials: "include"/);
+  assert.match(ledgerOperator, /credentials: "include"/);
   const connectBlock =
-    ledgerPage.match(
+    ledgerOperator.match(
       /async function connect\(\) \{[\s\S]*?\n\x20{2}\}\n\n\x20{2}async function prepare/,
     )?.[0] ?? "";
   assert.doesNotMatch(connectBlock, /setPrepared\(null\)/);

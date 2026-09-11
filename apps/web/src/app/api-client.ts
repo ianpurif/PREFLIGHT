@@ -90,6 +90,7 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     ...init,
     headers,
     credentials: "include",
+    cache: init.cache ?? "no-store",
   });
   const text = await response.text();
   let payload: unknown = null;

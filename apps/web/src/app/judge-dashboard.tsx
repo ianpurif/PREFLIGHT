@@ -248,7 +248,10 @@ export function JudgeDashboard({
         return;
       }
       const preparedRecord = prepared as Record<string, unknown>;
-      window.sessionStorage.setItem("rovaulta.p5.prepared", JSON.stringify(preparedRecord));
+      window.sessionStorage.setItem(
+        "rovaulta.p5.prepared",
+        JSON.stringify({ version: 1, scope: "demo", prepared: preparedRecord }),
+      );
       setAgent({
         phase: "prepared",
         message:

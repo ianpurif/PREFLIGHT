@@ -35,6 +35,8 @@ import {
 
 const account = privateKeyToAccount(`0x${"01".repeat(32)}`);
 const unauthorized = privateKeyToAccount(`0x${"02".repeat(32)}`);
+const ownerAccountId = "account:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const otherAccountId = "account:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 const inputs = {
   schemaVersion: EVALUATION_INPUTS_SCHEMA_VERSION,
   siteId: parseSiteId("site:p5-api"),
@@ -177,6 +179,29 @@ describe("deterministic P5 release service", () => {
     expect(authorization.intent.robotBuildDigest).toBe(clearance.inputs.robotBuildDigest);
     expect(reader.calls).toBe(2);
     await expectCode(() => gate.consume({ intent: prepared.intent, signature }), "REPLAY_REJECTED");
+  });
+
+  test("binds authenticated release nonces to their owning account", async () => {
+    const gate = service(
+      new ScriptedReader([snapshot(), snapshot(undefined, { blockNumber: 11_700_001n })]),
+    );
+    const prepared = await gate.prepare(proposal({ accountId: ownerAccountId }));
+    const signature = await signPrepared(prepared);
+
+    await expectCode(
+      () => gate.consume({ intent: prepared.intent, signature, accountId: otherAccountId }),
+      "NONCE_NOT_FOUND",
+    );
+    await expectCode(
+      async () => gate.getAuthorizationStatus(prepared, otherAccountId),
+      "NONCE_NOT_FOUND",
+    );
+    const authorization = await gate.consume({
+      intent: prepared.intent,
+      signature,
+      accountId: ownerAccountId,
+    });
+    expect(authorization.intent.siteId).toBe(clearance.inputs.siteId);
   });
 
   test("blocks build/site/robot and unauthorized-signer proposals before chain or Ledger", async () => {

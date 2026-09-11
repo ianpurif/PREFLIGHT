@@ -825,6 +825,20 @@ pre {
   font-weight: 800;
 }
 
+.brand-wordmark-image {
+  display: block;
+  width: 150px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.brand-mark-image {
+  display: block;
+  width: 29px;
+  height: 33px;
+  object-fit: contain;
+}
+
 .landing-nav-links {
   display: flex;
   align-items: center;
@@ -3737,10 +3751,24 @@ pre {
   }
 
   .sidebar-workspace-card,
-  .product-sidebar-bottom,
+  .sidebar-boundary-card,
   .sidebar-label-spaced,
   .product-nav > .sidebar-label:last-of-type {
     display: none;
+  }
+
+  .product-sidebar-bottom {
+    display: grid;
+    gap: 4px;
+  }
+
+  .product-sidebar-bottom .real-error {
+    margin: 0;
+  }
+
+  .real-signout {
+    min-height: 34px;
+    padding: 0 9px;
   }
 
   .product-nav {

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -38,9 +39,13 @@ const navItems: readonly Readonly<{ href: string; label: string; view: ProductVi
 function ProductBrand() {
   return (
     <Link className="brand-lockup product-brand" href="/app" aria-label="Rovaulta workspace home">
-      <span className="brand-mark" aria-hidden="true">
-        R
-      </span>
+      <Image
+        className="brand-mark-image"
+        src="/brand/rovaulta-mark.png"
+        alt=""
+        width={29}
+        height={33}
+      />
       <span>
         <strong>Rovaulta</strong>
         <small>Deployment safety</small>
@@ -87,10 +92,14 @@ function ProductSidebar({
   view,
   data,
   onSignOut,
+  signOutBusy,
+  signOutError,
 }: {
   readonly view: ProductView;
   readonly data: WorkspaceData;
   readonly onSignOut: () => void;
+  readonly signOutBusy: boolean;
+  readonly signOutError: string | null;
 }) {
   const site = data.sites[0];
   return (
@@ -121,6 +130,11 @@ function ProductSidebar({
         </nav>
       </div>
       <div className="product-sidebar-bottom">
+        {signOutError !== null ? (
+          <p className="real-error" role="alert">
+            {signOutError}
+          </p>
+        ) : null}
         <div className="sidebar-boundary-card">
           <span className="sidebar-boundary-icon" aria-hidden="true">
             ◇
@@ -130,8 +144,13 @@ function ProductSidebar({
             <small>Policy rules stay in the API boundary.</small>
           </span>
         </div>
-        <button type="button" className="sidebar-back-link real-signout" onClick={onSignOut}>
-          Sign out
+        <button
+          type="button"
+          className="sidebar-back-link real-signout"
+          onClick={onSignOut}
+          disabled={signOutBusy}
+        >
+          {signOutBusy ? "Signing out…" : "Sign out"}
         </button>
       </div>
     </aside>
@@ -1135,7 +1154,15 @@ function ReleasesView({
         }),
       });
       if (response.status === "LEDGER_APPROVAL_REQUIRED" && response.prepared !== undefined) {
-        window.sessionStorage.setItem("rovaulta.p5.prepared", JSON.stringify(response.prepared));
+        window.sessionStorage.setItem(
+          "rovaulta.p5.prepared",
+          JSON.stringify({
+            version: 1,
+            scope: "account",
+            accountId: data.account.id,
+            prepared: response.prepared,
+          }),
+        );
         setHandoffReady(true);
       }
       await refresh();
@@ -1314,6 +1341,8 @@ export function RealProductApp({ initialView }: { readonly initialView: ProductV
   const [data, setData] = useState<WorkspaceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [signOutBusy, setSignOutBusy] = useState(false);
+  const [signOutError, setSignOutError] = useState<string | null>(null);
   const refresh = useCallback(async () => {
     const me = await apiFetch<{ account: Account }>("/auth/me");
     const sites = (await apiFetch<{ sites: readonly Site[] }>("/sites")).sites;
@@ -1357,8 +1386,19 @@ export function RealProductApp({ initialView }: { readonly initialView: ProductV
     };
   }, [pathname, refresh, router]);
   async function signOut() {
-    await apiFetch("/auth/sign-out", { method: "POST" }).catch(() => undefined);
-    router.replace("/start");
+    if (signOutBusy) return;
+    setSignOutBusy(true);
+    setSignOutError(null);
+    try {
+      await apiFetch("/auth/sign-out", { method: "POST" });
+      window.sessionStorage.removeItem("rovaulta.p5.prepared");
+      router.replace("/start");
+    } catch (reason) {
+      setSignOutError(
+        reason instanceof ApiError ? reason.message : "The session could not be signed out.",
+      );
+      setSignOutBusy(false);
+    }
   }
   if (loading)
     return (
@@ -1384,7 +1424,13 @@ export function RealProductApp({ initialView }: { readonly initialView: ProductV
     );
   return (
     <main className="product-shell" id="main-content" data-product-view={initialView}>
-      <ProductSidebar view={initialView} data={data} onSignOut={() => void signOut()} />
+      <ProductSidebar
+        view={initialView}
+        data={data}
+        onSignOut={() => void signOut()}
+        signOutBusy={signOutBusy}
+        signOutError={signOutError}
+      />
       <div className="product-main">
         <ProductHeader view={initialView} data={data} />
         <div className="product-content">

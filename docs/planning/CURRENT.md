@@ -2,6 +2,24 @@
 
 ## Phase
 
+## 2026-09-12 — P17 authentication, session, and ownership hardening
+
+- `/start`, `/sign-in`, and `/create-account` now probe `/auth/me` before rendering account-entry
+  actions. Valid sessions redirect to `/app` (or a validated `/app...` continuation); anonymous
+  sessions see the form; probe failures stay explicit and retryable.
+- Registration/sign-in preserve the HTTP-only session cookie, `apiFetch` uses `no-store`, and the API
+  marks responses non-cacheable. Sign-out redirects only after server revocation and surfaces a
+  failure instead of pretending the session ended.
+- The existing API store already derives ownership from the session and scopes resource queries by
+  account. Legacy release preparation/consumption now binds deployment context and durable nonces to
+  the authenticated owner, and regression tests cover session lifecycle plus cross-account
+  URL/body-ID/nonce isolation. The P5 browser handoff is explicitly account-scoped and rejects
+  mismatched or legacy payloads; mobile workspace sign-out remains visible at the narrow viewport.
+- Targeted tests and the final browser flow passed; `bun run verify` passed end to end. Detailed
+  scope and evidence are in [`P17`](exec-plans/P17-authentication-session-ownership.md).
+- Remaining environment limitation: the separate read-only reviewer fork was dispatched but did not
+  return a report during bounded waits. No auth defect is inferred from that absence.
+
 **P1–P8 software is implemented. P5.2 adds the narrow AI deployment-agent workflow, deterministic tool/capability boundary, public audit projection, local positive/adversarial evidence, and a live read-only Sepolia blocked-state trace. P6 adds the deterministic digital twin over a server-side public projection of the existing P2/P3 fixture. P7 adds an offline fixed-clock A/B/C rehearsal, demo-owned idempotent reset, stale-browser protection, and reliable Playwright flow coverage. P8 provides the account-backed product lifecycle: authenticated onboarding, persisted site/robot/build/evaluation/release records, encrypted private policy storage, server-side evaluation, and a truthful P5/P5.2 release boundary. P7 fixtures are development/test-only and are not normal account data. A real Gemini-backed account-agent run now consumes the live Studio `MATCHED` clearance and reaches `LEDGER_APPROVAL_REQUIRED`. P5.1 has official Speculos transport, actual Ethereum app/address UI smoke, ERC-7730 v2 validation, real pre-sign C, and invalid/unregistered D. Authenticated Clear Signing A/B/E/F and physical Ledger evidence remain externally blocked.**
 
 **P15 replaces the deployment-agent provider without changing its authority model:** the API now uses

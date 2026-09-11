@@ -1,20 +1,25 @@
 .page {
-  --ink: #eef0eb;
-  --muted: #9da7a4;
-  --subtle: #818c88;
-  --line: #2d3938;
-  --line-strong: #41504e;
-  --surface: #151b1c;
-  --surface-raised: #1a2222;
-  --accent: #d9864e;
-  --accent-light: #f0b184;
-  --verified: #91c4a4;
+  --canvas: #f5f7f5;
+  --ink: #182321;
+  --muted: #4c5c56;
+  --subtle: #5f6d68;
+  --line: #d8e1dc;
+  --line-strong: #aab8b0;
+  --surface: #ffffff;
+  --surface-raised: #eef2ef;
+  --accent: #9a552c;
+  --accent-light: #7b3f20;
+  --accent-soft: #f3e7dd;
+  --attention: #8a5110;
+  --attention-soft: #f6ecda;
+  --verified: #276b4c;
+  --verified-soft: #e3f1e9;
   position: relative;
   isolation: isolate;
   min-height: 100vh;
   overflow: hidden;
   color: var(--ink);
-  background: #0d1112;
+  background: var(--canvas);
 }
 
 .gridField {
@@ -22,11 +27,11 @@
   z-index: -1;
   inset: 0;
   background-image:
-    linear-gradient(rgb(144 158 153 / 7%) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(144 158 153 / 7%) 1px, transparent 1px);
+    linear-gradient(rgb(36 67 57 / 8%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(36 67 57 / 8%) 1px, transparent 1px);
   background-position: center top;
   background-size: 48px 48px;
-  opacity: 0.5;
+  opacity: 0.56;
   pointer-events: none;
 }
 
@@ -68,18 +73,26 @@
   text-decoration: none;
 }
 
-.mark {
+.brandIdentity {
   display: grid;
-  width: 31px;
-  height: 31px;
-  place-items: center;
-  border: 1px solid var(--accent);
-  border-radius: 2px;
-  color: #101313;
-  background: var(--accent);
-  font-size: 14px;
-  font-weight: 850;
-  letter-spacing: -0.05em;
+  gap: 3px;
+  min-width: 0;
+}
+
+.wordmark {
+  display: block;
+  width: 150px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.brandDescriptor {
+  color: var(--subtle);
+  font-size: 8px;
+  font-weight: 720;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .brandText {
@@ -147,8 +160,8 @@
 .button:focus-visible,
 .brand:focus-visible,
 .textLink:focus-visible {
-  border-color: var(--accent-light);
-  outline: 3px solid rgb(240 177 132 / 32%);
+  border-color: var(--accent);
+  outline: 3px solid rgb(154 85 44 / 26%);
   outline-offset: 3px;
 }
 
@@ -161,7 +174,7 @@
 
 .navAction:hover,
 .navAction:focus-visible {
-  color: #111515;
+  color: #ffffff;
   background: var(--accent);
   transform: translateY(-1px);
 }
@@ -195,7 +208,7 @@
 .eyebrowMark {
   width: 8px;
   height: 8px;
-  border: 1px solid var(--accent-light);
+  border: 1px solid var(--accent);
   background: var(--accent);
 }
 
@@ -216,7 +229,7 @@
 .lede {
   max-width: 540px;
   margin: 0;
-  color: #b4bcba;
+  color: var(--muted);
   font-size: 16px;
   line-height: 1.7;
 }
@@ -231,15 +244,15 @@
 .primaryAction {
   gap: 20px;
   border-color: var(--accent);
-  color: #111515;
+  color: #ffffff;
   background: var(--accent);
 }
 
 .primaryAction:hover,
 .primaryAction:focus-visible {
-  border-color: #f0a672;
-  color: #0d1112;
-  background: #f0a672;
+  border-color: #783d1e;
+  color: #ffffff;
+  background: #783d1e;
   transform: translateY(-1px);
 }
 
@@ -251,9 +264,9 @@
 
 .secondaryAction:hover,
 .secondaryAction:focus-visible {
-  border-color: var(--accent-light);
+  border-color: var(--accent);
   color: var(--accent-light);
-  background: rgb(217 134 78 / 8%);
+  background: var(--accent-soft);
 }
 
 .disclaimer {
@@ -276,7 +289,8 @@
   min-width: 0;
   border: 1px solid var(--line-strong);
   border-left: 2px solid var(--accent);
-  background: rgb(21 27 28 / 92%);
+  background: var(--surface);
+  box-shadow: 0 14px 34px rgb(24 35 33 / 5%);
 }
 
 .visualHeader,
@@ -318,7 +332,7 @@
   border: 1px solid var(--verified);
   border-radius: 50%;
   background: var(--verified);
-  box-shadow: 0 0 0 3px rgb(145 196 164 / 12%);
+  box-shadow: 0 0 0 3px var(--verified-soft);
 }
 
 .visualBody {
@@ -422,9 +436,9 @@
 }
 
 .routeMarkerCurrent {
-  border-color: var(--accent);
-  color: var(--accent-light);
-  background: rgb(217 134 78 / 12%);
+  border-color: var(--attention);
+  color: var(--attention);
+  background: var(--attention-soft);
 }
 
 .routeLine {
@@ -436,14 +450,14 @@
 }
 
 .routeLinePending {
-  background: var(--accent);
+  background: var(--attention);
   opacity: 0.55;
 }
 
 .gateFrame {
   gap: 12px;
   border: 1px solid var(--line-strong);
-  border-left: 2px solid var(--accent);
+  border-left: 2px solid var(--attention);
   padding: 14px;
   background: var(--surface-raised);
 }
@@ -454,13 +468,13 @@
   height: 22px;
   flex-shrink: 0;
   place-items: center;
-  border: 1px solid var(--accent);
+  border: 1px solid var(--attention);
 }
 
 .gateSignalDot {
   width: 7px;
   height: 7px;
-  background: var(--accent);
+  background: var(--attention);
 }
 
 .gateCopy {
@@ -484,9 +498,9 @@
 
 .gateTag {
   flex-shrink: 0;
-  border: 1px solid var(--accent);
+  border: 1px solid var(--attention);
   padding: 4px 6px;
-  color: var(--accent-light);
+  color: var(--attention);
   font-size: 8px;
   font-weight: 820;
   letter-spacing: 0.1em;
@@ -691,7 +705,7 @@
 
 .textLink:hover,
 .textLink:focus-visible {
-  color: #fff0e5;
+  color: #633116;
 }
 
 .footer {
@@ -706,10 +720,11 @@
   letter-spacing: 0.04em;
 }
 
-.footerBrand .mark {
-  width: 26px;
-  height: 26px;
-  font-size: 12px;
+.footerMark {
+  display: block;
+  width: 24px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .footerBrand .brandText strong {
@@ -868,7 +883,7 @@
 }
 
 @media (max-width: 500px) {
-  .brandText small {
+  .brandDescriptor {
     display: none;
   }
 

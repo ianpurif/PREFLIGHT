@@ -16,6 +16,8 @@ const row = {
   precheckBlockHash: `0x${"33".repeat(32)}`,
   precheckBlockTimestamp: "1788548000",
 };
+const ownerAccountId = "account:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const otherAccountId = "account:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
 describe("durable atomic nonce store", () => {
   test("consumption survives close/reopen and cannot be repeated", () => {
@@ -39,6 +41,17 @@ describe("durable atomic nonce store", () => {
   test("unknown nonces fail explicitly", () => {
     const store = new SqliteReleaseStore(":memory:");
     expect(() => store.load("missing_nonce_0001")).toThrow(ReleaseGateError);
+    store.close();
+  });
+
+  test("does not load or consume a release nonce from another account", () => {
+    const store = new SqliteReleaseStore(":memory:");
+    store.issue({ ...row, accountId: ownerAccountId });
+
+    expect(store.load(row.nonce, ownerAccountId).accountId).toBe(ownerAccountId);
+    expect(() => store.load(row.nonce, otherAccountId)).toThrow(ReleaseGateError);
+    expect(() => store.consume(row.nonce, "{}", otherAccountId)).toThrow(ReleaseGateError);
+    expect(store.load(row.nonce, ownerAccountId).state).toBe("ISSUED");
     store.close();
   });
 });

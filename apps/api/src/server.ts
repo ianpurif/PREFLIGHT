@@ -138,6 +138,7 @@ export function buildServer(
       reply.header("Access-Control-Allow-Credentials", "true");
       reply.header("Vary", "Origin");
     }
+    reply.header("Cache-Control", "no-store");
     return payload;
   });
   app.options("/*", async (request, reply) => {
@@ -205,6 +206,13 @@ export function buildServer(
     return applicationStore;
   }
 
+  function demoRoutesEnabled(): boolean {
+    return (
+      environment.NODE_ENV !== "production" &&
+      readEnvironment(environment, "ROVAULTA_ENABLE_DEMO_ROUTES") === "true"
+    );
+  }
+
   function requireAccount(
     request: { headers: { cookie?: string | undefined } },
     reply: FastifyReply,
@@ -223,12 +231,7 @@ export function buildServer(
     request: { readonly headers: { readonly cookie?: string | undefined } },
     reply: FastifyReply,
   ): boolean {
-    if (
-      environment.NODE_ENV !== "production" &&
-      readEnvironment(environment, "ROVAULTA_ENABLE_DEMO_ROUTES") === "true"
-    ) {
-      return true;
-    }
+    if (demoRoutesEnabled()) return true;
     if (applicationStore === undefined) {
       throw new ApplicationError(
         "PERSISTENCE_UNAVAILABLE",
@@ -561,9 +564,7 @@ export function buildServer(
     if (deploymentAgent === undefined) {
       throw new DeploymentAgentError("PROVIDER_UNAVAILABLE", "Deployment agent is not configured");
     }
-    const demoRoute =
-      environment.NODE_ENV !== "production" &&
-      readEnvironment(environment, "ROVAULTA_ENABLE_DEMO_ROUTES") === "true";
+    const demoRoute = demoRoutesEnabled();
     const body = expectBody(
       request.body,
       demoRoute
@@ -606,7 +607,9 @@ export function buildServer(
     return deploymentAgent.getAuthorizationStatus(body.attemptId, accountId);
   });
   app.post("/release/prepare", async (request, reply) => {
-    if (!requireLegacyAccess(request, reply)) return undefined;
+    const demoRoute = demoRoutesEnabled();
+    const accountId = demoRoute ? undefined : requireAccount(request, reply);
+    if (accountId === null) return undefined;
     if (releaseService === undefined) {
       throw new ReleaseGateError("PERSISTENCE_UNAVAILABLE", "Release gate is not configured");
     }
@@ -619,23 +622,41 @@ export function buildServer(
       "signerAddress",
     ]);
     if (body === null || typeof body.signerAddress !== "string") return rejectMalformed(reply);
+    let clearance = body.clearance;
+    if (accountId !== undefined) {
+      let parsedClearance: ReturnType<typeof parseClearanceRecord>;
+      try {
+        parsedClearance = parseClearanceRecord(body.clearance);
+      } catch {
+        return rejectMalformed(reply);
+      }
+      requireStore().getDeploymentContext(accountId, parsedClearance.evaluationId, parsedClearance);
+      clearance = parsedClearance;
+    }
     return releaseService.prepare({
       siteId: body.siteId,
       robotId: body.robotId,
       robotBuildId: body.robotBuildId,
       robotBuildDigest: body.robotBuildDigest,
-      clearance: body.clearance,
+      clearance,
       signerAddress: body.signerAddress,
+      ...(accountId === undefined ? {} : { accountId }),
     });
   });
   app.post("/release/consume", async (request, reply) => {
-    if (!requireLegacyAccess(request, reply)) return undefined;
+    const demoRoute = demoRoutesEnabled();
+    const accountId = demoRoute ? undefined : requireAccount(request, reply);
+    if (accountId === null) return undefined;
     if (releaseService === undefined) {
       throw new ReleaseGateError("PERSISTENCE_UNAVAILABLE", "Release gate is not configured");
     }
     const body = expectBody(request.body, ["intent", "signature"]);
     if (body === null) return rejectMalformed(reply);
-    return releaseService.consume({ intent: body.intent, signature: body.signature });
+    return releaseService.consume({
+      intent: body.intent,
+      signature: body.signature,
+      ...(accountId === undefined ? {} : { accountId }),
+    });
   });
   if (releaseService !== undefined) {
     app.addHook("onClose", async () => releaseService.close());

@@ -121,8 +121,10 @@ The API persists only an opaque session token hash. Passwords are scrypt-hashed,
 envelopes/blinds are encrypted at rest with AES-256-GCM. Every resource query includes the
 authenticated account id; a caller-supplied account id is not accepted as an authorization input.
 State-changing requests reject an untrusted `Origin` or `Referer`. The legacy P5/P5.2 HTTP routes
-also require the authenticated account session whenever the application store is enabled; only
-the explicit non-production fixture flag can bypass that session boundary for regression tooling.
+also require the authenticated account session whenever the application store is enabled, and
+account-backed release preparation/consumption binds the deployment context and durable nonce to
+that session owner; only the explicit non-production fixture flag can bypass that session boundary
+for regression tooling.
 The local SQLite store is a single-node implementation boundary and is not presented as production
 multi-instance persistence.
 

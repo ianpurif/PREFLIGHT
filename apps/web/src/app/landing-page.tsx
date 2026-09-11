@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import styles from "./landing-page.module.css";
 
@@ -50,12 +51,15 @@ export function LandingPage() {
 
       <header className={styles.nav}>
         <Link className={styles.brand} href="/" aria-label="Rovaulta home">
-          <span className={styles.mark} aria-hidden="true">
-            R
-          </span>
-          <span className={styles.brandText}>
-            <strong>Rovaulta</strong>
-            <small>Release control for robots</small>
+          <span className={styles.brandIdentity}>
+            <Image
+              className={styles.wordmark}
+              src="/brand/rovaulta-wordmark.png"
+              alt=""
+              width={150}
+              height={30}
+            />
+            <span className={styles.brandDescriptor}>Release control for robots</span>
           </span>
         </Link>
 
@@ -92,12 +96,6 @@ export function LandingPage() {
               See the workflow <span aria-hidden="true">↓</span>
             </a>
           </div>
-          <p className={styles.disclaimer}>
-            <span className={styles.disclaimerMark} aria-hidden="true">
-              ↳
-            </span>
-            Simulation is evidence for a defined envelope, not a guarantee of physical robot safety.
-          </p>
         </div>
 
         <section
@@ -238,9 +236,13 @@ export function LandingPage() {
 
       <footer className={styles.footer}>
         <div className={styles.footerBrand}>
-          <span className={styles.mark} aria-hidden="true">
-            R
-          </span>
+          <Image
+            className={styles.footerMark}
+            src="/brand/rovaulta-mark.png"
+            alt=""
+            width={24}
+            height={28}
+          />
           <span className={styles.brandText}>
             <strong>Rovaulta</strong>
             <small>Confidential deployment gate</small>
