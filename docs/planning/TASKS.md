@@ -135,6 +135,15 @@
 - [ ] AI attribution complete
 - [ ] 2–4 minute showcase video
 
+## P18 — Optional Build Integrity / reproducible source builds
+- [ ] versioned source-build integrity descriptor and exact-build digest binding
+- [ ] BuildKit/buildx-backed Bun/Node Build Runner with fail-closed limits
+- [ ] account-scoped source build job/status/artifact/provenance persistence
+- [ ] existing build-number route remains compatible
+- [ ] existing evaluation/clearance/Ledger path consumes only successful source builds
+- [ ] minimal source-build UX and evidence/details projection
+- [ ] real Bun BuildKit proof and targeted/full verification
+
 ## P12 — Account-backed Sepolia clearance issuance
 - [x] validated public clearance construction from an account-owned `CLEAR` evaluation
 - [x] canonical P4 registry write/event ABI and exact transport reuse

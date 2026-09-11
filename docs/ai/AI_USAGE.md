@@ -12,6 +12,22 @@
 
 Add future material AI-assisted changes as dated entries. Do not claim fully human-authored code where Codex generated or substantially rewrote it.
 
+## 2026-09-12 — P18 optional Build Integrity / reproducible source builds
+
+**Tool:** OpenAI Codex using the Rovaulta execution-plan, vertical-slice, and verification-loop
+skills plus read-only architecture/exploration specialists and official BuildKit, Earthly, Dagger,
+Nix, SLSA, and in-toto documentation.
+
+**Human direction:** Add an optional Build From Source path without replacing the existing build
+number/version flow. Use BuildKit/buildx as the execution foundation, preserve exact evaluation and
+Ledger binding, and prove the path with a real Bun build where the environment permits it.
+
+**AI-assisted output:** Research/decision record, versioned source-build integrity protocol,
+BuildKit-backed runner orchestration, account-scoped job/status persistence, additive API/UI flow,
+critical tests, and verification evidence. Earthly was not adopted because its official repository
+states it is no longer actively maintained. No private safety policy, CRE secret, Ledger key, raw
+build log, or credential is intentionally sent to the runner or persisted as public evidence.
+
 ## 2026-09-09 — P12 account-backed Sepolia clearance issuance
 
 **Tool:** OpenAI Codex using the Rovaulta execution-plan, verification-loop, and partner-compliance
