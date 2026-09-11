@@ -43,7 +43,15 @@ export function createApplicationStoreFromEnvironment(
     process.cwd(),
     readEnvironment(environment, "ROVAULTA_APP_DB_PATH") || ".data/rovaulta-app.sqlite",
   );
-  return new ApplicationStore({ dbPath, policyKey: keyFromEnvironment(environment) });
+  return new ApplicationStore({
+    dbPath,
+    policyKey: keyFromEnvironment(environment),
+    artifactDirectory: resolve(
+      process.cwd(),
+      readEnvironment(environment, "ROVAULTA_BUILD_ARTIFACT_DIR") ||
+        ".data/rovaulta-build-artifacts",
+    ),
+  });
 }
 
 export * from "./clearance.js";

@@ -415,10 +415,18 @@ export function buildServer(
           buildCommand: body.buildCommand as string,
           runtime: body.runtime as "bun" | "node",
         });
-        store.completeSourceBuild(accountId, build.id, result);
+        await store.completeSourceBuild(accountId, build.id, result);
       } catch (error) {
-        const code = error instanceof BuildRunnerError ? error.code : "SANDBOX_FAILED";
-        const message = error instanceof BuildRunnerError ? error.message : "Source build failed";
+        const code =
+          error instanceof BuildRunnerError
+            ? error.code
+            : error instanceof ApplicationError && error.code === "BUILD_FAILED"
+              ? error.code
+              : "SANDBOX_FAILED";
+        const message =
+          error instanceof BuildRunnerError || error instanceof ApplicationError
+            ? error.message
+            : "Source build failed";
         try {
           store.failSourceBuild(accountId, build.id, code, message);
         } catch {

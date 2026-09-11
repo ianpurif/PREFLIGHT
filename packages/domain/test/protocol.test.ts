@@ -545,7 +545,12 @@ describe("versioned domain-separated digests", () => {
   test("source-build integrity is validated and included in the exact build digest", () => {
     const provenance = {
       _type: "https://in-toto.io/Statement/v1",
-      subject: [{ name: "rovaulta-artifact.tar.gz", digest: { sha256: "22".repeat(32) } }],
+      subject: [
+        {
+          name: `rovaulta/${robotBuildId}/artifact.tar.gz`,
+          digest: { sha256: "22".repeat(32) },
+        },
+      ],
       predicateType: "https://slsa.dev/provenance/v1",
       predicate: {
         buildDefinition: {
@@ -558,15 +563,39 @@ describe("versioned domain-separated digests", () => {
           },
           resolvedDependencies: [
             {
-              uri: "git+https://github.com/example/robot@a",
+              uri: `git+https://github.com/example/robot@${"a".repeat(40)}`,
               digest: { gitCommit: "a".repeat(40) },
+            },
+            {
+              uri: `source-snapshot:sha256:${"33".repeat(32)}`,
+              digest: { sha256: "33".repeat(32) },
+            },
+            {
+              uri: "lockfile:bun.lock",
+              digest: { sha256: "44".repeat(32) },
+            },
+            {
+              uri: `docker-image:oven/bun:1.4.1@sha256:${"55".repeat(32)}`,
+              digest: { sha256: "55".repeat(32) },
+            },
+            {
+              uri: `dockerfile-frontend:docker/dockerfile:1.7@sha256:${"66".repeat(32)}`,
+              digest: { sha256: "66".repeat(32) },
+            },
+            {
+              uri: `buildkit-image:moby/buildkit:v0.24.0@sha256:${"77".repeat(32)}`,
+              digest: { sha256: "77".repeat(32) },
+            },
+            {
+              uri: "urn:rovaulta:buildkit-provenance",
+              digest: { sha256: "88".repeat(32) },
             },
           ],
         },
         runDetails: {
           builder: {
             id: "https://rovaulta.dev/builders/buildkit/v1",
-            version: { buildkit: "v0.24.0" },
+            version: { buildx: "buildx-test", platform: "linux/amd64" },
           },
           metadata: {
             invocationId: "robot-build:release-001",
@@ -585,8 +614,12 @@ describe("versioned domain-separated digests", () => {
       artifactDigest: `sha256:${"22".repeat(32)}`,
       buildCommand: "bun run build",
       lockfileDigest: `sha256:${"44".repeat(32)}`,
-      builder: { id: "https://rovaulta.dev/builders/buildkit/v1", version: "buildkit@v0.24.0" },
-      runtime: { name: "bun", version: "1.4.1", image: "oven/bun:1.4.1" },
+      builder: { id: "https://rovaulta.dev/builders/buildkit/v1", version: "buildx-test" },
+      runtime: {
+        name: "bun",
+        version: "1.4.1",
+        image: `oven/bun:1.4.1@sha256:${"55".repeat(32)}`,
+      },
       buildStatus: "BUILD_SUCCEEDED",
       provenance,
     });
@@ -612,6 +645,46 @@ describe("versioned domain-separated digests", () => {
           artifactDigest: `sha256:${"66".repeat(32)}`,
         }),
       "DIGEST_MISMATCH",
+    );
+    expectProtocolCode(
+      () =>
+        parseBuildIntegrityEvidence({
+          ...evidence,
+          provenance: {
+            ...evidence.provenance,
+            predicate: {
+              ...evidence.provenance.predicate,
+              buildDefinition: {
+                ...evidence.provenance.predicate.buildDefinition,
+                externalParameters: {
+                  ...evidence.provenance.predicate.buildDefinition.externalParameters,
+                  buildCommand: "bun test",
+                },
+              },
+            },
+          },
+        }),
+      "BINDING_MISMATCH",
+    );
+    expectProtocolCode(
+      () =>
+        parseBuildIntegrityEvidence({
+          ...evidence,
+          provenance: {
+            ...evidence.provenance,
+            predicate: {
+              ...evidence.provenance.predicate,
+              runDetails: {
+                ...evidence.provenance.predicate.runDetails,
+                metadata: {
+                  ...evidence.provenance.predicate.runDetails.metadata,
+                  invocationId: "robot-build:other-build",
+                },
+              },
+            },
+          },
+        }),
+      "BINDING_MISMATCH",
     );
   });
 

@@ -1,4 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { createHash } from "node:crypto";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   type BuildIntegrityEvidence,
   parseBuildIntegrityEvidence,
@@ -33,23 +37,34 @@ function sessionHeaders(value: string) {
   return { cookie: value, origin: "http://localhost:3000" };
 }
 
-function resultFor(input: {
+async function resultFor(input: {
   readonly buildId: string;
   readonly sourceRepository: string;
   readonly sourceRevision: string;
   readonly buildCommand: string;
-  readonly artifactHex: string;
-}): BuildRunnerResult {
-  const artifactDigest = parseSha256Digest(`sha256:${input.artifactHex}`);
+  readonly artifactDirectory: string;
+}): Promise<BuildRunnerResult> {
+  const artifactBytes = Buffer.from(`artifact:${input.buildId}`, "utf8");
+  const artifactHex = createHash("sha256").update(artifactBytes).digest("hex");
+  const artifactDigest = parseSha256Digest(`sha256:${artifactHex}`);
+  const artifactPath = join(
+    input.artifactDirectory,
+    `${input.buildId.slice("robot-build:".length)}.tar.gz`,
+  );
+  await mkdir(input.artifactDirectory, { recursive: true });
+  await writeFile(artifactPath, artifactBytes);
+  const sourceSnapshotDigest = `sha256:${"cd".repeat(32)}`;
+  const lockfileDigest = `sha256:${"ef".repeat(32)}`;
+  const runtimeImage = `oven/bun:1.4.1@sha256:${"aa".repeat(32)}`;
   const evidence: BuildIntegrityEvidence = parseBuildIntegrityEvidence({
     schemaVersion: "rovaulta.build-integrity/v1",
     buildId: input.buildId,
     sourceRepository: input.sourceRepository,
     sourceRevision: input.sourceRevision,
-    sourceSnapshotDigest: `sha256:${"cd".repeat(32)}`,
+    sourceSnapshotDigest,
     artifactDigest,
     buildCommand: input.buildCommand,
-    lockfileDigest: `sha256:${"ef".repeat(32)}`,
+    lockfileDigest,
     builder: {
       id: "https://rovaulta.dev/builders/rovaulta-buildkit/v1",
       version: "buildx-test",
@@ -57,12 +72,17 @@ function resultFor(input: {
     runtime: {
       name: "bun",
       version: "1.4.1",
-      image: `oven/bun:1.4.1@sha256:${"aa".repeat(32)}`,
+      image: runtimeImage,
     },
     buildStatus: "BUILD_SUCCEEDED",
     provenance: {
       _type: "https://in-toto.io/Statement/v1",
-      subject: [{ name: `artifact:${input.buildId}`, digest: { sha256: input.artifactHex } }],
+      subject: [
+        {
+          name: `rovaulta/${input.buildId}/artifact.tar.gz`,
+          digest: { sha256: artifactHex },
+        },
+      ],
       predicateType: "https://slsa.dev/provenance/v1",
       predicate: {
         buildDefinition: {
@@ -75,15 +95,33 @@ function resultFor(input: {
           },
           resolvedDependencies: [
             {
-              uri: input.sourceRepository,
-              digest: { sha256: input.sourceRevision },
+              uri: `git+${input.sourceRepository}@${input.sourceRevision}`,
+              digest: { gitCommit: input.sourceRevision },
+            },
+            {
+              uri: `source-snapshot:${sourceSnapshotDigest}`,
+              digest: { sha256: "cd".repeat(32) },
+            },
+            { uri: "lockfile:bun.lock", digest: { sha256: "ef".repeat(32) } },
+            { uri: `docker-image:${runtimeImage}`, digest: { sha256: "aa".repeat(32) } },
+            {
+              uri: `dockerfile-frontend:docker/dockerfile:1.7@sha256:${"bb".repeat(32)}`,
+              digest: { sha256: "bb".repeat(32) },
+            },
+            {
+              uri: `buildkit-image:moby/buildkit:v0.24.0@sha256:${"cc".repeat(32)}`,
+              digest: { sha256: "cc".repeat(32) },
+            },
+            {
+              uri: "urn:rovaulta:buildkit-provenance",
+              digest: { sha256: "dd".repeat(32) },
             },
           ],
         },
         runDetails: {
           builder: {
             id: "https://rovaulta.dev/builders/rovaulta-buildkit/v1",
-            version: { buildx: "test" },
+            version: { buildx: "buildx-test", platform: "linux/amd64" },
           },
           metadata: {
             invocationId: input.buildId,
@@ -94,7 +132,7 @@ function resultFor(input: {
       },
     },
   });
-  return { evidence, artifactPath: `.data/test-artifacts/${input.buildId}.tar.gz`, artifactDigest };
+  return { evidence, artifactPath, artifactDigest };
 }
 
 async function register(app: ReturnType<typeof buildServer>, email: string): Promise<string> {
@@ -155,12 +193,17 @@ async function waitForBuild(
 
 describe("optional source build lifecycle", () => {
   test("keeps existing build flow and promotes a real runner result into exact evaluation", async () => {
-    const store = new ApplicationStore({ dbPath: ":memory:", policyKey: KEY });
+    const artifactDirectory = await mkdtemp(join(tmpdir(), "rovaulta-lifecycle-artifacts-"));
+    const store = new ApplicationStore({
+      dbPath: ":memory:",
+      policyKey: KEY,
+      artifactDirectory,
+    });
     const runner: BuildRunner = {
       run: async (input) =>
         resultFor({
           ...input,
-          artifactHex: "12".repeat(32),
+          artifactDirectory,
         }),
     };
     const app = buildServer({
@@ -202,7 +245,9 @@ describe("optional source build lifecycle", () => {
     const completed = await waitForBuild(store, account.id, queued.id);
     expect(completed.buildStatus).toBe("BUILD_SUCCEEDED");
     expect(completed.buildMode).toBe("SOURCE");
-    expect(completed.artifactDigest).toBe(`sha256:${"12".repeat(32)}`);
+    expect(completed.artifactDigest).toBe(
+      `sha256:${createHash("sha256").update(`artifact:${queued.id}`, "utf8").digest("hex")}`,
+    );
     expect(completed.sourceRevision).toBe("ab".repeat(20));
     expect(completed.provenance?.predicateType).toBe("https://slsa.dev/provenance/v1");
 
@@ -217,6 +262,7 @@ describe("optional source build lifecycle", () => {
       completed.robotBuildDigest,
     );
     await app.close();
+    await rm(artifactDirectory, { recursive: true, force: true });
   });
 
   test("keeps a failed source build distinct from a safety REJECT and isolates accounts", async () => {

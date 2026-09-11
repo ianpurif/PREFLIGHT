@@ -429,6 +429,7 @@ function parseProvenanceStatement(input: unknown): BuildProvenanceStatement {
   });
   if (
     !Array.isArray(buildDefinition.resolvedDependencies) ||
+    buildDefinition.resolvedDependencies.length === 0 ||
     buildDefinition.resolvedDependencies.length > 16
   ) {
     return failProtocol("MALFORMED_OBJECT", "Provenance dependencies are invalid");
@@ -606,6 +607,78 @@ export function parseBuildIntegrityEvidence(input: unknown): BuildIntegrityEvide
       "BINDING_MISMATCH",
       "Provenance source repository does not match evidence",
       "provenance",
+    );
+  }
+  const externalParameters = parsed.provenance.predicate.buildDefinition.externalParameters;
+  const runDetails = parsed.provenance.predicate.runDetails;
+  const imageMatch = /@sha256:([0-9a-f]{64})$/.exec(parsed.runtime.image);
+  if (imageMatch === null) {
+    return failProtocol(
+      "MALFORMED_OBJECT",
+      "Runtime image must be pinned by digest",
+      "runtime.image",
+    );
+  }
+  if (
+    externalParameters.buildCommand !== parsed.buildCommand ||
+    externalParameters.runtime !== parsed.runtime.name ||
+    runDetails.builder.id !== parsed.builder.id ||
+    runDetails.builder.version.buildx !== parsed.builder.version ||
+    typeof runDetails.builder.version.platform !== "string" ||
+    runDetails.metadata.invocationId !== parsed.buildId ||
+    parsed.provenance.subject[0].name !== `rovaulta/${parsed.buildId}/artifact.tar.gz`
+  ) {
+    return failProtocol(
+      "BINDING_MISMATCH",
+      "Provenance does not match the source-build evidence",
+      "provenance",
+    );
+  }
+  const dependencies = parsed.provenance.predicate.buildDefinition.resolvedDependencies;
+  const hasDependency = (
+    predicate: (dependency: (typeof dependencies)[number]) => boolean,
+  ): boolean => dependencies.some(predicate);
+  if (
+    !hasDependency(
+      (dependency) =>
+        dependency.uri === `git+${parsed.sourceRepository}@${parsed.sourceRevision}` &&
+        dependency.digest.gitCommit === parsed.sourceRevision,
+    ) ||
+    !hasDependency(
+      (dependency) =>
+        dependency.uri === `source-snapshot:${parsed.sourceSnapshotDigest}` &&
+        dependency.digest.sha256 === parsed.sourceSnapshotDigest.slice("sha256:".length),
+    ) ||
+    !hasDependency(
+      (dependency) =>
+        dependency.uri.startsWith("lockfile:") &&
+        dependency.digest.sha256 === parsed.lockfileDigest.slice("sha256:".length),
+    ) ||
+    !hasDependency(
+      (dependency) =>
+        dependency.uri === `docker-image:${parsed.runtime.image}` &&
+        dependency.digest.sha256 === imageMatch[1],
+    ) ||
+    !hasDependency(
+      (dependency) =>
+        dependency.uri.startsWith("dockerfile-frontend:") &&
+        /^[0-9a-f]{64}$/.test(dependency.digest.sha256 ?? ""),
+    ) ||
+    !hasDependency(
+      (dependency) =>
+        dependency.uri.startsWith("buildkit-image:") &&
+        /^[0-9a-f]{64}$/.test(dependency.digest.sha256 ?? ""),
+    ) ||
+    !hasDependency(
+      (dependency) =>
+        dependency.uri === "urn:rovaulta:buildkit-provenance" &&
+        /^[0-9a-f]{64}$/.test(dependency.digest.sha256 ?? ""),
+    )
+  ) {
+    return failProtocol(
+      "BINDING_MISMATCH",
+      "Provenance dependencies do not cover the source build inputs",
+      "provenance.predicate.buildDefinition.resolvedDependencies",
     );
   }
   return parsed;

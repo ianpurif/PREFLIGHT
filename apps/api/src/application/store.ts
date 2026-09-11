@@ -7,8 +7,8 @@ import {
   scryptSync,
   timingSafeEqual,
 } from "node:crypto";
-import { mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { createReadStream, mkdirSync } from "node:fs";
+import { dirname, resolve, sep } from "node:path";
 import {
   CRE_CONFIDENTIAL_INPUT_VERSION,
   CRE_PUBLIC_REQUEST_VERSION,
@@ -71,6 +71,8 @@ const SESSION_COOKIE = "rovaulta_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
 const POLICY_CIPHERTEXT_VERSION = "rovaulta.policy-ciphertext/v1" as const;
 const ACCOUNT_ID_PATTERN = /^account:[a-f0-9]{32}$/;
+const MAX_STORED_ARTIFACT_BYTES = 512 * 1024 * 1024;
+const MAX_BUILDING_SOURCE_BUILDS_PER_ACCOUNT = 2;
 
 export interface PublicAccount {
   readonly id: string;
@@ -308,6 +310,23 @@ function bytesToHex(bytes: Uint8Array): string {
   let output = "";
   for (const byte of bytes) output += byte.toString(16).padStart(2, "0");
   return output;
+}
+
+async function hashStoredArtifact(path: string): Promise<ReturnType<typeof parseSha256Digest>> {
+  const hash = createHash("sha256");
+  let size = 0;
+  try {
+    for await (const chunk of createReadStream(path)) {
+      const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      size += bytes.length;
+      if (size > MAX_STORED_ARTIFACT_BYTES) throw new Error("artifact is too large");
+      hash.update(bytes);
+    }
+  } catch {
+    throw new ApplicationError("BUILD_FAILED", "The produced artifact could not be verified");
+  }
+  if (size === 0) throw new ApplicationError("BUILD_FAILED", "The produced artifact is empty");
+  return parseSha256Digest(`sha256:${hash.digest("hex")}`);
 }
 
 function id(prefix: string): string {
@@ -812,11 +831,13 @@ function assertAccountId(accountId: string): void {
 export class ApplicationStore {
   readonly #database: Database;
   readonly #policyKey: Uint8Array;
+  readonly #artifactDirectory: string;
   readonly #now: () => string;
 
   constructor(options: {
     readonly dbPath: string;
     readonly policyKey: Uint8Array;
+    readonly artifactDirectory?: string;
     readonly now?: () => string;
   }) {
     try {
@@ -928,6 +949,9 @@ export class ApplicationStore {
         ) STRICT;
       `);
       this.#policyKey = canonicalPolicyKey(options.policyKey);
+      this.#artifactDirectory = resolve(
+        options.artifactDirectory ?? resolve(process.cwd(), ".data/rovaulta-build-artifacts"),
+      );
       this.#now = options.now ?? nowSeconds;
     } catch (error) {
       if (error instanceof ApplicationError) throw error;
@@ -1268,7 +1292,18 @@ export class ApplicationStore {
       updated_at: createdAt,
     };
     try {
-      this.#database.run("BEGIN");
+      this.#database.run("BEGIN IMMEDIATE");
+      const active = this.#database
+        .query<{ readonly count: number }, [string, string]>(
+          "SELECT COUNT(*) AS count FROM build_integrity WHERE account_id = ? AND status = ?",
+        )
+        .get(accountId, "BUILDING");
+      if ((active?.count ?? 0) >= MAX_BUILDING_SOURCE_BUILDS_PER_ACCOUNT) {
+        throw new ApplicationError(
+          "CONFLICT",
+          "This account already has too many source builds running",
+        );
+      }
       this.#database
         .query(
           "INSERT INTO builds (id, account_id, site_id, robot_id, version, label, descriptor_json, trace_json, route_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -1319,7 +1354,11 @@ export class ApplicationStore {
     return publicBuild(row, integrity);
   }
 
-  completeSourceBuild(accountId: string, buildId: string, result: BuildRunnerResult): PublicBuild {
+  async completeSourceBuild(
+    accountId: string,
+    buildId: string,
+    result: BuildRunnerResult,
+  ): Promise<PublicBuild> {
     assertAccountId(accountId);
     const currentIntegrity = this.#buildIntegrityRow(accountId, buildId);
     if (currentIntegrity === null)
@@ -1356,6 +1395,22 @@ export class ApplicationStore {
       );
     }
 
+    const artifactPath = resolve(result.artifactPath);
+    const expectedArtifactPath = resolve(
+      this.#artifactDirectory,
+      `${build.id.slice("robot-build:".length)}.tar.gz`,
+    );
+    if (
+      !artifactPath.startsWith(`${this.#artifactDirectory}${sep}`) ||
+      artifactPath !== expectedArtifactPath
+    ) {
+      throw new ApplicationError("BUILD_FAILED", "Source build artifact path is invalid");
+    }
+    const storedArtifactDigest = await hashStoredArtifact(artifactPath);
+    if (storedArtifactDigest !== evidence.artifactDigest) {
+      throw new ApplicationError("BUILD_FAILED", "Stored artifact digest does not match evidence");
+    }
+
     const route = JSON.parse(build.route_json) as PublicBuild["route"];
     const descriptor = parseRobotBuildDescriptor({
       schemaVersion: SOURCE_ROBOT_BUILD_SCHEMA_VERSION,
@@ -1376,7 +1431,7 @@ export class ApplicationStore {
     const updatedIntegrity: BuildIntegrityRow = {
       ...currentIntegrity,
       status: "BUILD_SUCCEEDED",
-      artifact_path: result.artifactPath,
+      artifact_path: artifactPath,
       integrity_json: canonicalSerialize(evidence),
       error_code: null,
       error_message: null,
