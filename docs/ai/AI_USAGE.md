@@ -616,6 +616,24 @@ authenticated P13 simulation evidence remains separate and unchanged.
 
 **Evidence:** [`chainlink-cre-p16-live-deployment-2026-09-11.md`](../compliance/evidence/chainlink-cre-p16-live-deployment-2026-09-11.md).
 
+## 2026-09-12 — Independent CRE private-gateway probe
+
+**Tool:** OpenAI Codex using the official CRE v1.33.0 HTTP-trigger documentation and a standalone
+signed request harness.
+
+**Human direction:** Isolate the deployed private workflow gateway failure without changing
+Rovaulta code, redeploying, fabricating an execution, or invoking the callback.
+
+**AI-assisted output:** Sent one schema-valid public trigger directly to the documented private
+enterprise gateway using the deployed workflow ID and matching authorized signer. The gateway
+returned `HTTP 400 / JSON-RPC -32600 Workflow not found`; `cre execution list` remained empty.
+
+**Evidence boundary:** The direct reproduction rules out the Rovaulta request implementation as the
+cause. No JWT, private key, fixture contents, confidential payload, callback, or execution result
+was recorded.
+
+**Evidence:** [`chainlink-cre-p16-live-deployment-2026-09-11.md`](../compliance/evidence/chainlink-cre-p16-live-deployment-2026-09-11.md).
+
 ## 2026-09-11 — P16 deployment identity follow-up
 
 **Tool:** OpenAI Codex using the official CRE CLI v1.33.0 and Chainlink private-workflow trigger

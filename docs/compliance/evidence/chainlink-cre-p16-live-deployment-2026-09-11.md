@@ -126,6 +126,30 @@ same three successful official CLI executions, `confidentialFieldsAbsent: true`,
 runner's temporary secret material and generated fixtures remain local and are deleted after the
 run.
 
+## Independent official trigger probe — 2026-09-12
+
+This probe was run independently of the Rovaulta API with CRE CLI v1.33.0 credentials and the
+official TypeScript JWT rules. It used the private-registry gateway documented by Chainlink and a
+public, schema-valid corrected workflow fixture as `params.input`. The trigger key was read only in
+memory; the JWT, private key, fixture contents, and confidential values were not printed.
+
+| Field | Public value |
+| --- | --- |
+| Gateway | `https://01.enterprise-gateway.zone-a.cre.chain.link/` |
+| Workflow ID | `0034106c2d141e81f34ae5b3cf7f71e133137e2dc1ff1d042ffdda86f34d2144` |
+| Request ID | `7879f16e-117f-4b5a-89b5-f88dd18bb967` |
+| Derived signer matches authorized trigger | `true` |
+| HTTP response | `400` |
+| JSON-RPC code | `-32600` |
+| Response | `Workflow not found` |
+| `workflow_execution_id` | none |
+
+The follow-up `cre execution list 0034106c2d141e81f34ae5b3cf7f71e133137e2dc1ff1d042ffdda86f34d2144`
+returned `[]`. No callback was invoked and no execution was created. Because the independent
+request reproduces the Rovaulta gateway failure with the current official request format, this
+isolates the blocker to the Chainlink private execution plane/registry visibility rather than the
+Rovaulta application transport.
+
 The remaining external investigation is Chainlink-side private-registry/enterprise-gateway
 workflow visibility or Confidential Workflow access for this organization. This repository does
 not bypass that boundary or claim live DON execution.

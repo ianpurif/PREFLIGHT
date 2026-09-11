@@ -573,6 +573,11 @@ corrected, and tampered simulations successfully as `HOLD`, `CLEAR`, and `REJECT
 ignored artifact is `.data/cre-simulation/20260911154644464-6a5140c7/evidence.json`; it contains no
 raw CLI output or confidential fields.
 
+On 2026-09-12, a direct official v1.33.0 trigger outside the Rovaulta API used the matching signer,
+private gateway, exact workflow ID, and schema-valid public fixture. It reproduced HTTP 400 /
+JSON-RPC `-32600` (`Workflow not found`); execution history remained empty. This confirms the live
+blocker is outside the Rovaulta request path.
+
 The follow-up CRE CLI v1.33.0 check reproduced the active deployment's binary, config, and workflow
 hashes from the tracked staging config, matched the public authorized trigger signer, and repeated
 the independent gateway smoke test. The private gateway still returned HTTP 400 / JSON-RPC `-32600`

@@ -192,6 +192,11 @@ site-secret provisioning helper remain available and fail closed at that externa
   deployment has no HTTPS result-delivery callback configuration. These must be completed only
   after the gateway resolves the workflow; no Vault value, callback secret, or confidential payload
   was created, printed, or committed.
+- On 2026-09-12, an independent official v1.33.0 trigger using a schema-valid public workflow
+  fixture, the documented private gateway, and the matching authorized signer reproduced HTTP 400 /
+  JSON-RPC `-32600` (`Workflow not found`). `cre execution list` remained empty. This rules out the
+  Rovaulta application request path as the cause; the live blocker is the Chainlink private
+  execution plane/registry visibility.
 - `apps/api/src/evaluation/cre-client.ts` now returns bounded provider status/code/message details
   for this fail-closed rejection; it never includes signed request bytes, credentials, or private
   CRE inputs. The P13 simulation path remains unchanged.

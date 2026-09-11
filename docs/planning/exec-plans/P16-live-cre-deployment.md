@@ -122,6 +122,16 @@ be converted into a simulated success.
   failure occurs before execution. The current Vault selector and the HTTPS result callback remain
   separate post-acceptance prerequisites; no secret or callback value was exposed.
 
+### Independent official trigger probe — 2026-09-12
+
+- A direct v1.33.0 request, built outside the Rovaulta API with the official JSON-RPC/JWT format,
+  used the documented private enterprise gateway and a schema-valid public corrected fixture.
+- The derived signer matched the deployed `authorizedEvmAddress`, but the gateway returned HTTP 400 /
+  JSON-RPC `-32600` (`Workflow not found`) and no execution ID.
+- `cre execution list` remained empty. This is a reproduced Chainlink private execution-plane/
+  registry-visibility blocker, not a Rovaulta request-construction failure. No callback or manual
+  execution was attempted.
+
 ## Verification run — 2026-09-11
 
 - Targeted API gateway diagnostics: 7 tests passed.

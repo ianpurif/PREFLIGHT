@@ -89,6 +89,13 @@ but does not establish live CRE execution. The current site-bound Vault selector
 interactive private-registry authorization, and the deployed config has no HTTPS result callback;
 neither secret provisioning nor live callback completion is claimed.
 
+On 2026-09-12, an independent official v1.33.0 trigger used the same private gateway, exact
+workflow ID, schema-valid public fixture, and matching authorized signer without the Rovaulta API.
+It returned HTTP 400 / JSON-RPC `-32600` (`Workflow not found`), and `cre execution list` remained
+empty. This reproduces the application failure outside Rovaulta and isolates the remaining blocker
+to private-registry execution-plane visibility/access. No execution, callback, or live verdict is
+claimed.
+
 ### Account-owned official CLI simulation mode
 
 The normal API can also run with `ROVAULTA_CRE_EXECUTION_MODE=simulation` when an operator needs a
