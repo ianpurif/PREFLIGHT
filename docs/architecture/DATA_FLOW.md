@@ -3,8 +3,17 @@
 This is the implemented P1–P6 architectural contract. P6 renders public evidence but does not
 activate a robot or become an authority.
 
+The optional source-build path is a preflight to step 2: `Repository + exact commit` → account-owned
+`BUILDING` job → Git snapshot and lockfile digests → non-root Docker BuildKit/buildx execution with
+frozen Bun/Node dependencies → actual exported artifact → artifact SHA-256 and bounded SLSA/in-toto
+provenance. Only a successful result is promoted to the descriptor below. A source-build failure is
+not a safety verdict and cannot be evaluated; users may continue using the existing build-number
+path independently.
+
 1. **Facility configuration** → canonical private envelope + secret 32-byte blind → site/envelope-bound commitment.
-2. **Vendor build descriptor** binds robot/build IDs + artifact digest → canonical robot-build digest.
+2. **Build descriptor** either preserves the existing vendor build descriptor (v1) or binds the
+   source-built artifact plus a digest of its validated integrity evidence (v2) → canonical
+   robot-build digest.
 3. **Evaluation request** binds the exact public identifiers, build digest, envelope commitment, evaluator version, and request time. The commitment covers P2 bounds, zones, rules, scenario seed/config/templates, and a secret blind.
 4. **Public CRE request** carries the P1 request, exact build descriptor, supplied synthetic traces, explicit evaluation time, a synthetic-provenance marker, and a domain-separated SHA-256 behavior-input digest over those normalized public fields.
 5. **Confidential CRE input** is one versioned secret containing the full private envelope and 32-byte blind. It is fetched only by the Nitro `handlerInTee` callback using an injective, request-site-bound selector; deployed workflow configuration requires and verifies that selector, while the legacy fixed selector is accepted only by old simulation payloads that omit it. When configured, the handler may use the official HTTP capability to deliver the already-minimal public result to the API; it never sends confidential values.

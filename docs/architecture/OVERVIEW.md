@@ -6,6 +6,10 @@ flowchart LR
   AGENT[P5.2 AI Deployment Agent]
   UI[Next.js product UI / fixture dashboard]
   API[Fastify Orchestrator]
+  SOURCE[Repository + exact commit]
+  RUNNER[Rovaulta Build Runner]
+  BUILDKIT[Docker BuildKit / buildx]
+  ARTIFACT[Artifact digest + provenance]
   SIM[Deterministic Simulation Core]
   CRE[Chainlink CRE Confidential Workflow]
   REGISTRAR[Authorized P4 Registrar]
@@ -17,6 +21,11 @@ flowchart LR
   HUMAN --> AGENT
   AGENT --> API
   UI --> API
+  SOURCE --> API
+  API --> RUNNER
+  RUNNER --> BUILDKIT
+  BUILDKIT --> ARTIFACT
+  ARTIFACT --> API
   API --> CRE
   CRE --> SIM
   CRE -. inspected simulation evidence .-> REGISTRAR
@@ -97,14 +106,23 @@ state before and after signing, persists public request data and atomic one-time
 and emits a `ReleaseAuthorization` only after verification. This is an offchain single-node replay
 boundary, not an onchain authorization claim. The API and agent never sign or receive private keys.
 
+The API also owns the optional Build Integrity path. A small Build Runner validates the repository
+and exact commit, materializes a safe Git snapshot, and invokes Docker BuildKit/buildx with a
+non-root Bun or Node image, frozen dependency installation, bounded resources, no host mounts or
+secrets, and a timeout. The runner hashes the actual exported artifact and produces a bounded
+SLSA/in-toto-shaped provenance projection. A successful result is promoted into a versioned source
+build descriptor; an in-progress or failed source job cannot enter evaluation. The existing
+build-number route remains the default-compatible path.
+
 ### `apps/web`
 The root route is a product landing page. `/start` creates or signs into an account, and `/app`
 provides the authenticated workspace shell with setup, build, evaluation, release, and evidence
 views. These views load account-scoped API records and never use the P7 fixture as normal data.
 `/app/evaluate` submits a persisted build declaration to the configured CRE evaluation boundary and
-renders only its public result projection. The declared route is the supplied behavior input; the
-artifact digest is an identity supplied by the operator, not binary provenance. The browser never
-receives the confidential envelope, blind, private rule data, internal report, or raw CRE payload.
+renders only its public result projection. Existing builds retain the operator-supplied artifact
+identity; source-built records expose the runner-produced artifact digest and provenance details
+without exposing build logs or private policy data. The browser never receives the confidential
+envelope, blind, private rule data, internal report, or raw CRE payload.
 Release preparation delegates to the existing P5/P5.2 boundary and remains blocked when a public
 P4 clearance or live gate is unavailable. A public P4 clearance can be supplied for the exact
 evaluation to reach the existing Ledger handoff; the product never creates one.

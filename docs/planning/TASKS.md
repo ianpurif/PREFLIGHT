@@ -136,12 +136,12 @@
 - [ ] 2–4 minute showcase video
 
 ## P18 — Optional Build Integrity / reproducible source builds
-- [ ] versioned source-build integrity descriptor and exact-build digest binding
-- [ ] BuildKit/buildx-backed Bun/Node Build Runner with fail-closed limits
-- [ ] account-scoped source build job/status/artifact/provenance persistence
-- [ ] existing build-number route remains compatible
-- [ ] existing evaluation/clearance/Ledger path consumes only successful source builds
-- [ ] minimal source-build UX and evidence/details projection
+- [x] versioned source-build integrity descriptor and exact-build digest binding
+- [x] BuildKit/buildx-backed Bun/Node Build Runner with fail-closed limits
+- [x] account-scoped source build job/status/artifact/provenance persistence
+- [x] existing build-number route remains compatible
+- [x] existing evaluation/clearance/Ledger path consumes only successful source builds
+- [x] minimal source-build UX and evidence/details projection
 - [ ] real Bun BuildKit proof and targeted/full verification
 
 ## P12 — Account-backed Sepolia clearance issuance

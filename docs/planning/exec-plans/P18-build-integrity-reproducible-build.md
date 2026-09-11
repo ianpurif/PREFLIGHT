@@ -28,11 +28,11 @@ The current official material was checked before implementation:
 
 | Option | Finding | Decision |
 |---|---|---|
-| Docker BuildKit/buildx | Mature builder backend with container execution, local/tar outputs, resource controls, and BuildKit-generated SLSA/in-toto attestations. | Chosen foundation; Rovaulta owns orchestration, identity, storage, and evaluation binding. |
-| Earthly | The official `earthly/earthly` repository README now says Earthly is no longer actively maintained. | Rejected despite convenient repeatable-build syntax. |
-| Dagger | Programmable, cached container pipelines built on a container runtime; adds an SDK/module/runtime layer that this MVP does not need. | Rejected as unnecessary abstraction. |
-| Nix | Strong reproducibility model and diff tooling, but introduces a second package/build ecosystem and project-specific Nix expressions. | Rejected for Bun/Node-first MVP. |
-| SLSA/in-toto | SLSA provenance is the standard model for linking an artifact to source, build definition, builder, dependencies, and run metadata; BuildKit emits in-toto-wrapped provenance. | Adopt the standard statement/predicate concepts; do not invent a competing attestation format. |
+| [Docker BuildKit/buildx](https://docs.docker.com/build/buildkit/) | Mature builder backend with container execution, local/tar outputs, resource controls, and [BuildKit-generated SLSA/in-toto attestations](https://docs.docker.com/build/metadata/attestations/slsa-provenance/). | Chosen foundation; Rovaulta owns orchestration, identity, storage, and evaluation binding. |
+| [Earthly](https://github.com/earthly/earthly/blob/main/README.md) | The official `earthly/earthly` repository README now says Earthly is no longer actively maintained. | Rejected despite convenient repeatable-build syntax. |
+| [Dagger](https://docs.dagger.io/getting-started/introduction/) | Programmable, cached container pipelines built on a container runtime; adds an SDK/module/runtime layer that this MVP does not need. | Rejected as unnecessary abstraction. |
+| [Nix](https://nix.dev/manual/nix) | Strong reproducibility model and diff tooling, but introduces a second package/build ecosystem and project-specific Nix expressions. | Rejected for Bun/Node-first MVP. |
+| [SLSA/in-toto](https://slsa.dev/spec/v1.2/provenance) | SLSA provenance is the standard model for linking an artifact to source, build definition, builder, dependencies, and run metadata; [in-toto Statements](https://in-toto.io/docs/specs/) provide the envelope. | Adopt the standard statement/predicate concepts; do not invent a competing attestation format. |
 
 The selected foundation is Docker BuildKit/buildx plus a small Rovaulta Build Runner. BuildKit
 executes untrusted source in a containerized build boundary; the runner validates inputs, prepares a
@@ -101,12 +101,12 @@ the canonical public evidence projection.
 
 - [x] Required docs, scoped instructions, and current repository inventory
 - [x] Official BuildKit/Earthly/Dagger/Nix/SLSA/in-toto research
-- [ ] Domain protocol for optional source-build integrity evidence
-- [ ] Build Runner validation and BuildKit orchestration
-- [ ] Account store/status/evaluation integration
-- [ ] API route and default runner wiring
-- [ ] Minimal web selector/status/details view
-- [ ] Targeted tests and real Bun BuildKit proof
+- [x] Domain protocol for optional source-build integrity evidence
+- [x] Build Runner validation and BuildKit orchestration
+- [x] Account store/status/evaluation integration
+- [x] API route and default runner wiring
+- [x] Minimal web selector/status/details view
+- [x] Targeted tests; real Bun BuildKit proof remains environment-blocked
 - [ ] Full verification loop and independent review
 - [ ] Evidence/report/handoff
 
@@ -137,4 +137,15 @@ the canonical public evidence projection.
 
 ## Verification evidence
 
-To be completed live. Do not mark a command or external prerequisite as passed without its output.
+- `bun test packages/domain/test/protocol.test.ts` — passed (32 tests).
+- `bun test apps/api/test/build-integrity-runner.test.ts` — passed (8 tests, 1 explicit real-runner
+  skip); validation and unavailable-tool failure are covered.
+- `bun test apps/api/test/build-integrity-lifecycle.test.ts` — passed (2 tests); legacy compatibility,
+  source promotion, evaluation gating, failure distinction, and account isolation are covered.
+- `bun x tsc --noEmit -p packages/domain/tsconfig.json` — passed.
+- `bun x tsc --noEmit -p apps/api/tsconfig.test.json` — passed.
+- `bun x tsc --noEmit -p apps/web/tsconfig.json` — passed.
+- Live Docker BuildKit/Bun proof is blocked: `docker`, `buildx`, `buildctl`, `buildkitd`, and Podman
+  are not installed on the current Windows host. The explicit integration test must be run with
+  `ROVAULTA_RUN_REAL_BUILDKIT_TESTS=true`, `ROVAULTA_REAL_BUILD_REPOSITORY`, and
+  `ROVAULTA_REAL_BUILD_REVISION` after a configured Docker/BuildKit builder is available.

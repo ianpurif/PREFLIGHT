@@ -2,6 +2,23 @@
 
 ## Phase
 
+## 2026-09-12 — P18 optional Build Integrity / source-build path
+
+- The optional `Build From Source` path is implemented beside the unchanged existing build-number
+  route. It validates an HTTPS GitHub/GitLab repository and exact commit, requires the runtime
+  lockfile, runs Bun/Node through a BuildKit/buildx runner, hashes the runner-produced artifact, and
+  records a bounded SLSA/in-toto-shaped evidence statement.
+- Source jobs are account-scoped and separate from safety verdicts. Only a successful job promotes
+  the internal placeholder to a v2 robot-build descriptor whose `robotBuildDigest` includes the
+  complete build-integrity evidence digest; the existing evaluation, clearance, and Ledger paths
+  therefore retain their exact-build binding.
+- The web workspace exposes `Use Existing Build` and `Build From Source`, polls running jobs, and
+  keeps runner/provenance details behind an evidence view. Build failures never become safety
+  `REJECT` and cannot be evaluated.
+- Targeted domain, API, runner, and web type checks pass. The real BuildKit/Bun acceptance test is
+  explicit but currently skipped because this host has no Docker/BuildKit installation; no live
+  artifact or digest proof is claimed until the configured builder is available.
+
 ## 2026-09-12 — P17 authentication, session, and ownership hardening
 
 - `/start`, `/sign-in`, and `/create-account` now probe `/auth/me` before rendering account-entry

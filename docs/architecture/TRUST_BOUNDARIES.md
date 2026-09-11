@@ -21,6 +21,27 @@ P2 implements `warehouse-rules-v1` with bounded integer units, committed scenari
 
 Materialized trace metadata and the P3 behavior digest are declarations/integrity bindings, not proof that a real artifact or physical robot produced the traces. P3 authenticates a configured HTTP submitter, not robot execution. Remote hardware/model attestation remains outside scope.
 
+## Boundary B1 — Untrusted source → Rovaulta Build Runner / BuildKit
+
+`Build From Source` is optional; the existing build-number path does not cross this boundary. The
+API validates an HTTPS GitHub/GitLab repository, an exact commit, a Bun/Node runtime, and a shell-free
+build command before creating an account-owned job. The runner fetches only that commit, rejects
+symlinks, submodules, and tracked environment files, requires the runtime lockfile, and computes a
+source snapshot and lockfile digest before BuildKit sees the context.
+
+BuildKit executes installation and build steps as a non-root container user with a temporary build
+context, no host filesystem or `.env` mount, no Rovaulta credentials, no Ledger key, and no
+confidential CRE policy. Frozen Bun installation is `bun install --frozen-lockfile`; Node uses
+`npm ci`; a failed install or build has no unlocked fallback. The runner applies timeout, memory,
+CPU, platform, and controlled-network settings, exports the post-build artifact, re-hashes the
+stored bytes, and removes temporary context/builder state. Raw build logs are not persisted.
+
+The artifact digest and bounded SLSA/in-toto-shaped provenance are evidence of this exact runner
+execution, not a claim that the resulting software is physically safe or that its synthetic traces
+were produced by a robot. BuildKit isolation is a build-execution boundary, not an attestation of
+every external dependency or deployment environment. Only successful, internally bound evidence can
+promote a source job into the exact-build descriptor.
+
 ## Boundary C — Public chain
 Only minimum public artifacts belong onchain: identifier hashes, commitments/digests,
 evaluator/version metadata, `CLEAR`, timestamps/expiry, issuer, and revocation state. Never raw site
@@ -102,7 +123,10 @@ Simulation is evidence about a defined evaluation envelope, not a guarantee abou
 Any relevant robot build mutation changes its digest. Reusing clearance for a mismatched digest must fail closed.
 
 P1 establishes the canonical identifiers, versioned schemas, deterministic digests, and pure
-binding assertions for this boundary. P4 stores every public exact binding, prevents digest/ID
+binding assertions for this boundary. Legacy v1 build descriptors continue to use their original
+digest. A successful source build uses v2 and includes the digest of the complete validated
+build-integrity evidence, so source, revision, artifact, lockfile, builder, runtime, or provenance
+mutation changes the exact `robotBuildDigest`. P4 stores every public exact binding, prevents digest/ID
 overwrite, permits only `CLEAR`, and enforces expiry and monotonic revocation. P5 checks every P4
 binding, signs exact site/robot/build/clearance values under a chain/contract domain, enforces signer
 authorization, and consumes a one-time nonce. A P4 clearance or Ledger signature alone is not a
