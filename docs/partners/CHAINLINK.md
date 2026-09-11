@@ -44,7 +44,9 @@ The facility's private safety envelope is the sensitive input. The public result
 - `apps/api/scripts/cre-simulation-evidence.ts` reproduces those three cases, validates only the
   current selector-bound public result with Rovaulta's strict parser, and fails closed when the
   CLI/auth context is absent
-- live workflow deployment, DON/Vault/Nitro execution, and attestation: not claimed
+- a real private-registry deployment is now recorded, but the first enterprise-gateway trigger
+  returned a workflow-lookup error before execution; no live DON/Vault/Nitro verdict or callback is
+  claimed
 
 Evidence: [`chainlink-cre-p13-current-authenticated-simulation-2026-09-09.md`](../compliance/evidence/chainlink-cre-p13-current-authenticated-simulation-2026-09-09.md), plus the historical [`chainlink-cre-p3-authenticated-simulation-2026-09-06.md`](../compliance/evidence/chainlink-cre-p3-authenticated-simulation-2026-09-06.md).
 
@@ -60,6 +62,21 @@ The normal account gateway remains a separate optional upgrade. It requires each
 secret in CRE `main`, the callback HMAC secret, an HTTPS result-delivery URL, and API gateway/workflow
 signer configuration. Missing live configuration keeps that path explicitly unavailable; it does not
 weaken or block the simulation qualification path.
+
+### P16 live deployment boundary
+
+On 2026-09-11 the existing workflow was deployed to the Chainlink-hosted private registry with the
+official CRE CLI v1.32.0. The deployment is `ACTIVE` under workflow ID
+`0034106c2d141e81f34ae5b3cf7f71e133137e2dc1ff1d042ffdda86f34d2144`. A normal account evaluation was
+then sent to the documented private enterprise gateway. The gateway returned HTTP 400 / JSON-RPC
+`-32600` (`Workflow not found`) before creating an execution, and `cre execution list` remained
+empty. This is recorded as a deployment pass plus a live-execution blocker, not as live CRE evidence.
+The exact redacted command/result is in
+[`chainlink-cre-p16-live-deployment-2026-09-11.md`](../compliance/evidence/chainlink-cre-p16-live-deployment-2026-09-11.md).
+
+The API now includes bounded public gateway diagnostics (HTTP status, provider code, and a capped
+provider message) while continuing to fail closed; signed request material and confidential inputs
+are never returned. The simulation executor and P13 evidence remain unchanged.
 
 ### Account-owned official CLI simulation mode
 
