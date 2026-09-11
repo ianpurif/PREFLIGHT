@@ -45,10 +45,16 @@ the canonical public evidence projection.
 - A source build accepts no authoritative artifact digest from the caller.
 - Source revision is an exact commit, and the source snapshot digest is computed from that commit's
   tracked files before BuildKit receives the context.
-- Bun builds require the repository's `bun.lock` or `bun.lockb` and run `bun install --frozen-lockfile`
-  before the requested build command. Node builds require `package-lock.json` and run `npm ci`.
+- Bun builds require the repository's `bun.lock` or `bun.lockb` and run
+  `bun install --frozen-lockfile --ignore-scripts` before the requested build command. Node builds
+  require `package-lock.json` and run `npm ci --ignore-scripts`.
 - Install/build code never runs directly on the Rovaulta API host; no host filesystem, `.env`, CRE
   secret, Ledger key, or private safety policy is mounted into the build.
+- Dependency installation defaults to `--network=none`; enabling `default` is an explicit operator
+  choice that requires a dedicated BuildKit daemon with package-registry/proxy egress controls.
+- Runtime, Dockerfile frontend, and BuildKit images are resolved to immutable digests; each build
+  uses a fresh named builder, `--no-cache`, bounded source entry/byte limits, bounded in-process
+  concurrency, and a re-read/hash of the promoted artifact.
 - Build failure, timeout, missing lockfile, sandbox failure, or artifact/digest failure is a distinct
   build failure and cannot become `CLEAR`, `HOLD`, `REJECT`, or a release attempt.
 - Successful source builds use a versioned descriptor containing a digest of the complete validated
@@ -84,7 +90,7 @@ the canonical public evidence projection.
 - Source route creates an account-scoped `BUILDING` record and never accepts an artifact digest.
 - Invalid repository, non-commit revision, missing lockfile, unsupported runtime/command, or runner
   unavailability produces an explicit failed/unavailable state without evaluation.
-- A real Bun fixture runs `bun install --frozen-lockfile` and `bun run build` inside BuildKit when
+- A real Bun fixture runs `bun install --frozen-lockfile --ignore-scripts` and `bun run build` inside BuildKit when
   Docker is available; an intentionally failing build remains `BUILD_FAILED`.
 - Artifact digest is computed from the exported artifact bytes, not input or user data.
 - Source snapshot mutation changes the source/integrity/robot-build identity even if a build output
@@ -119,8 +125,9 @@ the canonical public evidence projection.
   a later operational change, not silently introduced here.
 - Local artifact storage is private `.data` storage for this MVP; no download endpoint is exposed.
   If it cannot write or re-read the artifact, the build fails closed.
-- BuildKit provenance can contain build-definition metadata. The API stores only the bounded standard
-  provenance projection and never persists raw build logs or secrets.
+- BuildKit provenance can contain build-definition metadata. The runner reads the bounded official
+  BuildKit metadata file, stores only its digest inside the standard provenance projection, and
+  never persists raw build logs or secrets.
 - Rollback is additive: remove the source route/runner wiring and leave v1 builds, descriptors,
   evaluations, clearances, and Ledger intents intact.
 
@@ -137,11 +144,11 @@ the canonical public evidence projection.
 
 ## Verification evidence
 
-- `bun test packages/domain/test/protocol.test.ts` — passed (32 tests).
-- `bun test apps/api/test/build-integrity-runner.test.ts` — passed (8 tests, 1 explicit real-runner
-  skip); validation and unavailable-tool failure are covered.
-- `bun test apps/api/test/build-integrity-lifecycle.test.ts` — passed (2 tests); legacy compatibility,
-  source promotion, evaluation gating, failure distinction, and account isolation are covered.
+- `bun test packages/domain/test/protocol.test.ts apps/api/test/build-integrity-runner.test.ts
+  apps/api/test/build-integrity-lifecycle.test.ts` — passed (43 tests, 1 explicit real-runner skip);
+  the suite covers legacy compatibility, source promotion, evaluation gating, failure distinction,
+  account isolation, actual artifact re-hashing, provenance binding mutations, and the real Bun
+  version-output format.
 - `bun x tsc --noEmit -p packages/domain/tsconfig.json` — passed.
 - `bun x tsc --noEmit -p apps/api/tsconfig.test.json` — passed.
 - `bun x tsc --noEmit -p apps/web/tsconfig.json` — passed.
@@ -149,3 +156,9 @@ the canonical public evidence projection.
   are not installed on the current Windows host. The explicit integration test must be run with
   `ROVAULTA_RUN_REAL_BUILDKIT_TESTS=true`, `ROVAULTA_REAL_BUILD_REPOSITORY`, and
   `ROVAULTA_REAL_BUILD_REVISION` after a configured Docker/BuildKit builder is available.
+- `bun run lint` reaches the existing CSS specificity warnings but exits successfully; direct
+  affected-workspace TypeScript checks pass.
+- `bun run verify` remains blocked by the pre-existing workspace-local `typescript` junction whose
+  `bin/tsc` target is missing, after frozen-install repair attempts; the root `bun x tsc` checks
+  above pass. The root test command also discovers Playwright specs through Bun and is not a valid
+  all-suite runner in this checkout.

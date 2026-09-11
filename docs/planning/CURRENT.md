@@ -18,6 +18,10 @@
 - Targeted domain, API, runner, and web type checks pass. The real BuildKit/Bun acceptance test is
   explicit but currently skipped because this host has no Docker/BuildKit installation; no live
   artifact or digest proof is claimed until the configured builder is available.
+- The runner now pins the runtime/frontend/BuildKit images, uses the official BuildKit metadata file,
+  defaults dependency installation to `--network=none`, disables lifecycle scripts, bounds source
+  size/concurrency, and re-hashes the exact artifact path before promotion. Provenance mutations and
+  the actual Bun version output format have regression coverage.
 
 ## 2026-09-12 — P17 authentication, session, and ownership hardening
 

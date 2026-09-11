@@ -165,9 +165,12 @@ sign in. The authenticated workspace then guides the operator through `/app/setu
 
 1. Create a site and enter its private safety policy. The policy is encrypted at rest and is opened
    only inside the API evaluation boundary.
-2. Register a robot and an exact build declaration: the artifact digest identifies the candidate,
-   while the declared route is the deterministic simulation input. The local workflow does not
-   inspect binary artifact bytes or claim external provenance.
+2. Register a robot and choose a build mode. `Use Existing Build` keeps the current build-number /
+   user-supplied artifact flow. `Build From Source` accepts an HTTPS repository, exact commit,
+   runtime, and build command; the optional BuildKit runner independently performs the frozen
+   Bun/Node build, records the actual artifact digest and bounded provenance, and only then exposes
+   that exact artifact-backed build to evaluation. The declared route remains the deterministic
+   simulation input; passing evaluation is not a physical-safety claim.
 3. Submit the build to the configured CRE evaluation boundary. Only its public result projection
    reaches the browser; a missing or asynchronous CRE result is shown as an unavailable/pending
    state.
@@ -177,6 +180,15 @@ sign in. The authenticated workspace then guides the operator through `/app/setu
    check. Only `MATCHED` context continues. `LEDGER_APPROVAL_REQUIRED`
    means the exact request is waiting for a human Ledger action; it is
    not authorization. Missing clearance or gate configuration remains `BLOCKED`.
+
+### Optional source-build integrity
+
+The source-build path is opt-in and requires Docker with BuildKit/buildx. It uses a temporary
+non-root builder, frozen lockfile installation, no lifecycle scripts, no host mounts or secrets,
+resource/time/source-size limits, and a fail-closed dependency network (`--network=none` by default).
+Set `ROVAULTA_BUILD_INSTALL_NETWORK=default` only when the dedicated BuildKit daemon is restricted
+to approved package registries or a controlled proxy. See the [P18 execution plan](docs/planning/exec-plans/P18-build-integrity-reproducible-build.md)
+for the provenance contract, research, and real-runner verification command.
 
 The normal workspace is account-backed. It does not load the P7 A/B/C fixture, create browser-only
 records, or treat a visual state as authoritative.

@@ -31,10 +31,13 @@ source snapshot and lockfile digest before BuildKit sees the context.
 
 BuildKit executes installation and build steps as a non-root container user with a temporary build
 context, no host filesystem or `.env` mount, no Rovaulta credentials, no Ledger key, and no
-confidential CRE policy. Frozen Bun installation is `bun install --frozen-lockfile`; Node uses
-`npm ci`; a failed install or build has no unlocked fallback. The runner applies timeout, memory,
-CPU, platform, and controlled-network settings, exports the post-build artifact, re-hashes the
-stored bytes, and removes temporary context/builder state. Raw build logs are not persisted.
+confidential CRE policy. Frozen Bun installation is `bun install --frozen-lockfile --ignore-scripts`;
+Node uses `npm ci --ignore-scripts`; a failed install or build has no unlocked fallback. Dependency
+installation defaults to `--network=none`; an operator may explicitly select the BuildKit `default`
+network only when the dedicated daemon has package-registry/proxy egress controls. The runner pins
+the runtime/frontend/BuildKit images, applies timeout, memory, CPU, platform, source-size, and
+concurrency limits, exports the post-build artifact, re-hashes the stored bytes, and removes
+temporary context/builder state. Raw build logs are not persisted.
 
 The artifact digest and bounded SLSA/in-toto-shaped provenance are evidence of this exact runner
 execution, not a claim that the resulting software is physically safe or that its synthetic traces
