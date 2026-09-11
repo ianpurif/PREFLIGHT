@@ -12,6 +12,7 @@ type ProtocolDigest<Kind extends string> = Sha256Digest & {
 };
 
 export type RobotBuildDigest = ProtocolDigest<"RobotBuildDigest">;
+export type BuildIntegrityDigest = ProtocolDigest<"BuildIntegrityDigest">;
 export type SafetyEnvelopeCommitment = ProtocolDigest<"SafetyEnvelopeCommitment">;
 export type EvaluationInputsDigest = ProtocolDigest<"EvaluationInputsDigest">;
 export type ClearanceDigest = ProtocolDigest<"ClearanceDigest">;
@@ -39,6 +40,9 @@ function parseProtocolDigest<Kind extends string>(
 
 export const parseRobotBuildDigest = (input: unknown, path = "robotBuildDigest") =>
   parseProtocolDigest<"RobotBuildDigest">(input, path);
+
+export const parseBuildIntegrityDigest = (input: unknown, path = "buildIntegrityDigest") =>
+  parseProtocolDigest<"BuildIntegrityDigest">(input, path);
 
 export const parseSafetyEnvelopeCommitment = (input: unknown, path = "safetyEnvelopeCommitment") =>
   parseProtocolDigest<"SafetyEnvelopeCommitment">(input, path);

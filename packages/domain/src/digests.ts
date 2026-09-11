@@ -7,6 +7,7 @@ import {
   LEGACY_SCHEMA_VERSIONS,
 } from "./compatibility";
 import {
+  type BuildIntegrityDigest,
   type ClearanceDigest,
   type DeploymentIntentDigest,
   type EvaluationInputsDigest,
@@ -18,7 +19,9 @@ import {
 import { failProtocol } from "./errors";
 import { parseSafetyEnvelopeId, parseSiteId } from "./identifiers";
 import {
+  type BuildIntegrityEvidence,
   PROTOCOL_VERSION,
+  parseBuildIntegrityEvidence,
   parseClearanceRecord,
   parseDeploymentIntent,
   parseEvaluationInputs,
@@ -28,6 +31,7 @@ import {
 
 export const DIGEST_DOMAINS = Object.freeze({
   robotBuild: "rovaulta.digest.robot-build/v1",
+  buildIntegrity: "rovaulta.digest.build-integrity/v1",
   safetyEnvelopeCommitment: "rovaulta.digest.safety-envelope-commitment/v1",
   evaluationInputs: "rovaulta.digest.evaluation-inputs/v1",
   clearance: "rovaulta.digest.clearance/v1",
@@ -36,6 +40,7 @@ export const DIGEST_DOMAINS = Object.freeze({
 
 type ProtocolDigest =
   | RobotBuildDigest
+  | BuildIntegrityDigest
   | SafetyEnvelopeCommitment
   | EvaluationInputsDigest
   | ClearanceDigest
@@ -78,6 +83,13 @@ export function digestRobotBuild(input: unknown): RobotBuildDigest {
   const dialect = digestDialect(descriptor);
   return brandProtocolDigest<RobotBuildDigest>(
     digestFrame(digestDomain("robotBuild", dialect), digestProtocolVersion(dialect), descriptor),
+  );
+}
+
+export function digestBuildIntegrity(input: unknown): BuildIntegrityDigest {
+  const evidence: BuildIntegrityEvidence = parseBuildIntegrityEvidence(input);
+  return brandProtocolDigest<BuildIntegrityDigest>(
+    digestFrame(DIGEST_DOMAINS.buildIntegrity, PROTOCOL_VERSION, evidence),
   );
 }
 

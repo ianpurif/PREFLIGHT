@@ -4,6 +4,7 @@ import {
   assertDeploymentIntentBindings,
   assertEvaluationInputBindings,
   assertEvaluationResultBindings,
+  BUILD_INTEGRITY_SCHEMA_VERSION,
   CLEARANCE_RECORD_SCHEMA_VERSION,
   canonicalBytes,
   canonicalSerialize,
@@ -11,6 +12,7 @@ import {
   DEPLOYMENT_ACTION,
   DEPLOYMENT_TARGETS,
   DIGEST_DOMAINS,
+  digestBuildIntegrity,
   digestClearance,
   digestDeploymentIntent,
   digestEvaluationInputs,
@@ -23,6 +25,7 @@ import {
   LEGACY_SCHEMA_VERSIONS,
   PROTOCOL_ERROR_CODES,
   type ProtocolError,
+  parseBuildIntegrityEvidence,
   parseClearanceId,
   parseClearanceRecord,
   parseDeploymentIntent,
@@ -44,6 +47,7 @@ import {
   type RobotBuildDigest,
   SAFETY_ENVELOPE_METADATA_SCHEMA_VERSION,
   type SiteId,
+  SOURCE_ROBOT_BUILD_SCHEMA_VERSION,
 } from "../src/index.js";
 
 function expectProtocolCode(action: () => unknown, code: ProtocolError["code"]): void {
@@ -323,7 +327,7 @@ describe("strict protocol schemas", () => {
 
   test("unsupported versions fail before hashing", () => {
     expectProtocolCode(
-      () => digestRobotBuild({ ...robotBuild, schemaVersion: "rovaulta.robot-build/v2" }),
+      () => digestRobotBuild({ ...robotBuild, schemaVersion: "rovaulta.robot-build/v3" }),
       "UNSUPPORTED_VERSION",
     );
     expectProtocolCode(
@@ -535,6 +539,79 @@ describe("versioned domain-separated digests", () => {
           new Uint8Array(16),
         ),
       "MALFORMED_OBJECT",
+    );
+  });
+
+  test("source-build integrity is validated and included in the exact build digest", () => {
+    const provenance = {
+      _type: "https://in-toto.io/Statement/v1",
+      subject: [{ name: "rovaulta-artifact.tar.gz", digest: { sha256: "22".repeat(32) } }],
+      predicateType: "https://slsa.dev/provenance/v1",
+      predicate: {
+        buildDefinition: {
+          buildType: "https://rovaulta.dev/build-types/buildkit-bun/v1",
+          externalParameters: {
+            repository: "https://github.com/example/robot",
+            revision: "a".repeat(40),
+            buildCommand: "bun run build",
+            runtime: "bun",
+          },
+          resolvedDependencies: [
+            {
+              uri: "git+https://github.com/example/robot@a",
+              digest: { gitCommit: "a".repeat(40) },
+            },
+          ],
+        },
+        runDetails: {
+          builder: {
+            id: "https://rovaulta.dev/builders/buildkit/v1",
+            version: { buildkit: "v0.24.0" },
+          },
+          metadata: {
+            invocationId: "robot-build:release-001",
+            startedOn: "2026-09-12T00:00:00Z",
+            finishedOn: "2026-09-12T00:01:00Z",
+          },
+        },
+      },
+    } as const;
+    const evidence = parseBuildIntegrityEvidence({
+      schemaVersion: BUILD_INTEGRITY_SCHEMA_VERSION,
+      buildId: robotBuildId,
+      sourceRepository: "https://github.com/example/robot",
+      sourceRevision: "a".repeat(40),
+      sourceSnapshotDigest: `sha256:${"33".repeat(32)}`,
+      artifactDigest: `sha256:${"22".repeat(32)}`,
+      buildCommand: "bun run build",
+      lockfileDigest: `sha256:${"44".repeat(32)}`,
+      builder: { id: "https://rovaulta.dev/builders/buildkit/v1", version: "buildkit@v0.24.0" },
+      runtime: { name: "bun", version: "1.4.1", image: "oven/bun:1.4.1" },
+      buildStatus: "BUILD_SUCCEEDED",
+      provenance,
+    });
+    const sourceDescriptor = parseRobotBuildDescriptor({
+      schemaVersion: SOURCE_ROBOT_BUILD_SCHEMA_VERSION,
+      robotId,
+      robotBuildId,
+      artifactDigest: evidence.artifactDigest,
+      buildIntegrityDigest: digestBuildIntegrity(evidence),
+    });
+    expect(sourceDescriptor.buildIntegrityDigest).toBe(digestBuildIntegrity(evidence));
+    expect(digestRobotBuild(sourceDescriptor)).not.toBe(digestRobotBuild(robotBuild));
+    expect(
+      digestRobotBuild({
+        ...sourceDescriptor,
+        buildIntegrityDigest: `sha256:${"55".repeat(32)}`,
+      }),
+    ).not.toBe(digestRobotBuild(sourceDescriptor));
+    expectProtocolCode(
+      () =>
+        parseBuildIntegrityEvidence({
+          ...evidence,
+          artifactDigest: `sha256:${"66".repeat(32)}`,
+        }),
+      "DIGEST_MISMATCH",
     );
   });
 

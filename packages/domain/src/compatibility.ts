@@ -45,6 +45,7 @@ export const LEGACY_SCHEMA_VERSIONS = Object.freeze({
 
 export const LEGACY_DIGEST_DOMAINS = Object.freeze({
   robotBuild: legacy("digest.robot-build/v1"),
+  buildIntegrity: legacy("digest.build-integrity/v1"),
   safetyEnvelopeCommitment: legacy("digest.safety-envelope-commitment/v1"),
   evaluationInputs: legacy("digest.evaluation-inputs/v1"),
   clearance: legacy("digest.clearance/v1"),
