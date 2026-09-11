@@ -1,4 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   assertLockfileName,
   assertSafeSourceEntries,
@@ -66,6 +69,34 @@ describe("BuildKit runner availability", () => {
 
 const runRealBuildKitTests = process.env.ROVAULTA_RUN_REAL_BUILDKIT_TESTS === "true";
 
-test.skipIf(!runRealBuildKitTests)("real BuildKit integration is enabled explicitly", () => {
-  expect(runRealBuildKitTests).toBe(true);
-});
+test.skipIf(!runRealBuildKitTests)(
+  "real BuildKit integration builds an exact Bun revision",
+  async () => {
+    const sourceRepository = process.env.ROVAULTA_REAL_BUILD_REPOSITORY;
+    const sourceRevision = process.env.ROVAULTA_REAL_BUILD_REVISION;
+    if (sourceRepository === undefined || sourceRevision === undefined) {
+      throw new Error(
+        "ROVAULTA_REAL_BUILD_REPOSITORY and ROVAULTA_REAL_BUILD_REVISION are required",
+      );
+    }
+    const artifactDirectory = await mkdtemp(join(tmpdir(), "rovaulta-real-artifacts-"));
+    try {
+      const result = await new DockerBuildRunner({ artifactDirectory }).run({
+        buildId: `robot-build:${"b".repeat(32)}`,
+        sourceRepository,
+        sourceRevision,
+        buildCommand: process.env.ROVAULTA_REAL_BUILD_COMMAND ?? "bun run build",
+        runtime: "bun",
+      });
+      expect(result.evidence.buildStatus).toBe("BUILD_SUCCEEDED");
+      expect(result.evidence.sourceRevision).toBe(sourceRevision);
+      expect(result.evidence.runtime.name).toBe("bun");
+      expect(result.evidence.artifactDigest).toBe(result.artifactDigest);
+      expect(result.evidence.provenance.subject[0].digest.sha256).toBe(
+        result.artifactDigest.slice("sha256:".length),
+      );
+    } finally {
+      await rm(artifactDirectory, { recursive: true, force: true });
+    }
+  },
+);
