@@ -100,6 +100,33 @@ function expectRecord(value: unknown, message: string): Record<string, unknown> 
   return value as Record<string, unknown>;
 }
 
+function safeGatewayError(value: unknown): string | undefined {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const error = (value as Record<string, unknown>).error;
+  if (error === null || typeof error !== "object" || Array.isArray(error)) return undefined;
+  const record = error as Record<string, unknown>;
+  const code =
+    typeof record.code === "string" || typeof record.code === "number"
+      ? String(record.code)
+          .replaceAll(/[^A-Za-z0-9._:-]/g, "")
+          .slice(0, 64)
+      : undefined;
+  const message =
+    typeof record.message === "string"
+      ? record.message
+          .replaceAll(/[\u0000-\u001f\u007f]/g, " ")
+          .trim()
+          .slice(0, 240)
+      : undefined;
+  if (code === undefined && message === undefined) return undefined;
+  return [
+    code === undefined ? undefined : `code=${code}`,
+    message === undefined ? undefined : `message=${message}`,
+  ]
+    .filter((part): part is string => part !== undefined)
+    .join(" ");
+}
+
 function assertExactKeys(
   record: Record<string, unknown>,
   keys: readonly string[],
@@ -126,7 +153,13 @@ function responseJson(value: unknown, requestId: string): CrePublicEvaluationRes
     throw new CreEvaluationError("CRE_RESPONSE_INVALID", "CRE response envelope is invalid");
   }
   if (record.error !== undefined) {
-    throw new CreEvaluationError("CRE_REQUEST_REJECTED", "CRE gateway returned a workflow error");
+    const detail = safeGatewayError(record);
+    throw new CreEvaluationError(
+      "CRE_REQUEST_REJECTED",
+      detail === undefined
+        ? "CRE gateway returned a workflow error"
+        : `CRE gateway returned a workflow error (${detail})`,
+    );
   }
   const response = expectRecord(record.result, "CRE response result is malformed");
   if (response.status === "REJECT") {
@@ -334,7 +367,13 @@ export class CreHttpEvaluationClient implements ConfidentialEvaluationExecutor {
       throw new CreEvaluationError("CRE_RESPONSE_INVALID", "CRE response was not JSON");
     }
     if (!response.ok) {
-      throw new CreEvaluationError("CRE_REQUEST_REJECTED", "CRE gateway rejected the request");
+      const detail = safeGatewayError(parsed);
+      throw new CreEvaluationError(
+        "CRE_REQUEST_REJECTED",
+        detail === undefined
+          ? `CRE gateway rejected the request (HTTP ${response.status})`
+          : `CRE gateway rejected the request (HTTP ${response.status}; ${detail})`,
+      );
     }
     const result = responseJson(parsed, id);
     if (result.status === "REJECT") {

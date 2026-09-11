@@ -165,4 +165,27 @@ describe("CRE application transport", () => {
     });
     await expect(client.evaluate(input)).rejects.toMatchObject({ code: "CRE_UNAVAILABLE" });
   });
+
+  test("returns bounded public gateway diagnostics without exposing the signed request", async () => {
+    const client = new CreHttpEvaluationClient({
+      gatewayUrl: "https://cre.example.test",
+      workflowId: "ab".repeat(32),
+      privateKey: `0x${"01".repeat(32)}`,
+      fetch: async () =>
+        new Response(
+          JSON.stringify({
+            error: {
+              code: "CONFIDENTIAL_WORKFLOW_ACCESS_DENIED",
+              message: "Confidential Workflow access is not enabled for this organization",
+            },
+          }),
+          { status: 503 },
+        ),
+    });
+    await expect(client.evaluate(input)).rejects.toMatchObject({
+      code: "CRE_REQUEST_REJECTED",
+      message:
+        "CRE gateway rejected the request (HTTP 503; code=CONFIDENTIAL_WORKFLOW_ACCESS_DENIED message=Confidential Workflow access is not enabled for this organization)",
+    });
+  });
 });
