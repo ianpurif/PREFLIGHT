@@ -562,3 +562,18 @@ because the Ledger-issued origin/accepted-descriptor path is unavailable. No sig
 `ReleaseAuthorization`, physical-device, or Secure Element claim was added.
 
 **Evidence:** [`p5-ledger-speculos-browser-boundary-2026-09-11.md`](../compliance/evidence/p5-ledger-speculos-browser-boundary-2026-09-11.md).
+
+## 2026-09-11 — Final three-bounty qualification audit
+
+**Tool:** OpenAI Codex using the Rovaulta partner-compliance and verification-loop guidance.
+
+**Human direction:** Audit only the selected Chainlink, The Graph, and Ledger prizes; preserve the
+existing authority boundaries; do not fabricate live CRE, Graph, or Ledger evidence.
+
+**AI-assisted output:** Reconciled the judge-facing README and evidence matrix with the captured
+P13/P14/P15 and Speculos evidence, and aligned `.env.example` with the repository's documented
+Gemini default. No runtime, contract, workflow, evaluator, Graph, or Ledger behavior changed.
+
+**Evidence boundary:** The audit keeps Subgraph Studio distinct from Gateway, CRE simulation distinct
+from live DON execution, and Speculos distinct from physical Ledger evidence. The remaining
+submission blockers are documented rather than hidden.

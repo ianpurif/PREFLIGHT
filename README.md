@@ -11,16 +11,14 @@ publish its private safety envelope, and the deployment agent cannot approve a r
 
 **Built for ETHGlobal with Chainlink CRE, The Graph, and Ledger as load-bearing integrations.**
 
-  > **Current status:** P1–P8 software is implemented and P9–P13 now wire the normal account-backed
-  > lifecycle through the partner boundaries: an official CRE gateway adapter for evaluation, a live
-  > The Graph registry context check for account-backed agent preparation, the existing P5/Ledger
-  > human handoff, and a reproducible authenticated CRE CLI simulation runner. The Sepolia registry,
-  > deterministic evaluator, authenticated unsafe/corrected/tampered CRE simulation evidence,
-  > pinned/buildable public registry subgraph, bounded deployment agent, and offline fixture rehearsal
-  > remain in place. This checkout has no live CRE gateway result transport, hosted Graph API key/live
-  > account trace, external model run, physical Ledger/Clear Signing evidence, or final submission
-  > assets, so those optional/live states fail closed and are not presented as completed proof. Start
-  > Fresh pool eligibility is not claimed.
+  > **Current status:** P1–P8 software is implemented and P9–P15 now wire the account-backed lifecycle
+  > through the partner boundaries: the official CRE CLI simulation path, a real Sepolia registry
+  > clearance, a live The Graph Subgraph Studio `MATCHED` check, and a real Gemini tool-calling run
+  > that reaches the existing Ledger-required handoff. The committed artifacts distinguish simulation
+  > from live CRE/DON execution and distinguish Speculos from physical Ledger evidence. Live CRE
+  > gateway/DON delivery, physical Clear Signing, the final showcase assets, and Start Fresh eligibility
+  > remain open and are not presented as completed proof. The public GitHub branch must be synchronized
+  > with this checkout before submission.
 
 [Product path](#use-the-product) · [How it works](#how-it-works) · [Partner proof](#partner-integrations) · [Testing](#testing) · [Known limits](#current-status-and-known-limits)
 
@@ -218,7 +216,7 @@ These partners answer different questions:
 | Partner       | Question                                                                    | Actual use in Rovaulta                                                                                                                                            | Current proof                                                                                                                                               |
 | ------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Chainlink CRE | Can the site evaluate an exact build without exposing its private envelope? | The confidential workflow fetches a site-bound secret inside `handlerInTee`, invokes the deterministic evaluator, and releases only the minimal result. The account API uses the official gateway boundary or the explicit authenticated CLI simulation mode. | Current-source authenticated CLI simulation records unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`; one account-owned simulated `CLEAR` is persisted with explicit simulation provenance. Live gateway completion remains unconfigured. |
-| The Graph    | Can the agent use current public registry context before preparing a release? | A pinned, buildable Sepolia subgraph indexes public `RovaultaRegistry` events. The account-backed agent requires an exact live `MATCHED` Graph context before P5. | Real clearance is indexed and the Studio provider returns `MATCHED`; live model-to-agent handoff, Gateway publication, public demo, and Start Fresh eligibility remain open. |
+| The Graph    | Can the agent use current public registry context before preparing a release? | A pinned, buildable Sepolia subgraph indexes public `RovaultaRegistry` events. The account-backed agent requires an exact live `MATCHED` Graph context before P5. | Real clearance is indexed, the Studio provider returns `MATCHED`, and the live Gemini run consumes that context before `prepareDeploymentIntent`; Gateway publication, public demo, and Start Fresh eligibility remain open. |
 | Ledger        | Who can authorize the exact release after it passes?                        | The browser uses Ledger DMK, WebHID or test-only Speculos, the Ethereum signer kit, and full EIP-712 intent checks. The agent stops at `LEDGER_APPROVAL_REQUIRED`. | Software and partial Speculos evidence are recorded. Physical Clear Signing and official Tester cases remain blocked by missing external access.            |
 
 Without Chainlink's confidential execution, the site would need to hand its private rules to the
