@@ -113,8 +113,9 @@ the canonical public evidence projection.
 - [x] API route and default runner wiring
 - [x] Minimal web selector/status/details view
 - [x] Targeted tests; real Bun BuildKit proof remains environment-blocked
-- [ ] Full verification loop and independent review
-- [ ] Evidence/report/handoff
+- [x] Independent read-only review and remediation of runner/provenance findings
+- [ ] Full repository verification loop (blocked by workspace dependency wiring)
+- [ ] Live BuildKit/Bun evidence report and handoff
 
 ## Risks and rollback
 
