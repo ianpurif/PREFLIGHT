@@ -550,3 +550,20 @@ Ledger suite passes (18 tests), `bun run typecheck`, `bun run build`, `bun run c
 `p13-setup-template.test.ts` spawns a child Bun process (70 API tests pass); `verify:scaffold` has
 the same child-process `EPERM`, and Speculos smoke is blocked because no emulator is listening on
 `127.0.0.1:5000`. These are environment limitations, not claimed partner evidence.
+
+## 2026-09-11 — P16 live CRE deployment boundary
+
+The existing `handlerInTee` workflow was deployed through CRE CLI v1.32.0 to the Chainlink-hosted
+private registry and is recorded as `ACTIVE` under workflow ID
+`0034106c2d141e81f34ae5b3cf7f71e133137e2dc1ff1d042ffdda86f34d2144`. The normal account path then
+sent one signed public request to the documented enterprise gateway. The gateway returned HTTP 400 /
+JSON-RPC `-32600` (`Workflow not found`) before creating an execution; no callback, live verdict, or
+live account evaluation was persisted. This deployment record is not live DON execution evidence.
+
+The exact redacted command and result are in
+`docs/compliance/evidence/chainlink-cre-p16-live-deployment-2026-09-11.md`. A fresh official
+simulation rerun also failed closed before workflow execution because the WSL CRE CLI session is
+currently logged out and no `CRE_API_KEY` is present; the committed P13 authenticated simulation
+artifact remains the qualification evidence. After the bounded gateway-diagnostic fix, all 72 API,
+32 CRE, domain/simulation, full repository, typecheck, build, contract, scaffold, and verification
+checks passed. The only lint output is the repository's existing CSS specificity warning set.
