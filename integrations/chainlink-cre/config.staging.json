@@ -1,3 +1,4 @@
 {
-  "authorizedEvmAddress": "0x0000000000000000000000000000000000000001"
+  "authorizedEvmAddress": "0x89368Eb7efc94e7a946318d3eb6A72bED235bc34",
+  "requireSiteSecretSelector": true
 }
