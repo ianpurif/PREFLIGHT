@@ -26,8 +26,24 @@ export interface Build {
   readonly robotId: string;
   readonly version: string;
   readonly label: string;
-  readonly artifactDigest: string;
-  readonly robotBuildDigest: string;
+  readonly buildMode: "EXISTING" | "SOURCE";
+  readonly buildStatus: "BUILDING" | "BUILD_SUCCEEDED" | "BUILD_FAILED";
+  readonly artifactDigest: string | null;
+  readonly robotBuildDigest: string | null;
+  readonly sourceRepository: string | null;
+  readonly sourceRevision: string | null;
+  readonly sourceSnapshotDigest: string | null;
+  readonly buildCommand: string | null;
+  readonly lockfileDigest: string | null;
+  readonly builder: Readonly<{ readonly id: string; readonly version: string }> | null;
+  readonly runtime: Readonly<{
+    readonly name: "bun" | "node";
+    readonly version: string;
+    readonly image: string;
+  }> | null;
+  readonly provenance: Readonly<Record<string, unknown>> | null;
+  readonly buildErrorCode: string | null;
+  readonly buildErrorMessage: string | null;
   readonly route: Readonly<{
     readonly start: Readonly<{ readonly xMm: number; readonly yMm: number }>;
     readonly end: Readonly<{ readonly xMm: number; readonly yMm: number }>;

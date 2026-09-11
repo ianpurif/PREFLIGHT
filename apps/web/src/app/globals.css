@@ -4577,6 +4577,7 @@ pre {
 }
 
 .real-form-grid input,
+.real-form-grid select,
 .real-account-form input,
 .real-release-form input,
 .real-evaluation-toolbar select {
@@ -4591,6 +4592,7 @@ pre {
 }
 
 .real-form-grid input:focus,
+.real-form-grid select:focus,
 .real-account-form input:focus,
 .real-release-form input:focus,
 .real-evaluation-toolbar select:focus {
@@ -4633,6 +4635,50 @@ pre {
   min-width: 0;
   padding: 9px 8px;
   font-size: 11px;
+}
+
+.real-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.real-choice-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid #d8e4e1;
+  border-radius: 10px;
+  padding: 13px;
+  color: #536a66;
+  background: #fbfefd;
+  cursor: pointer;
+}
+
+.real-choice-card:has(input:checked) {
+  border-color: #82c9b3;
+  background: #eefaf5;
+}
+
+.real-choice-card input {
+  width: auto;
+  margin-top: 2px;
+}
+
+.real-choice-card span {
+  display: grid;
+  gap: 4px;
+}
+
+.real-choice-card strong {
+  color: #1f3733;
+  font-size: 12px;
+}
+
+.real-choice-card small {
+  color: #71827f;
+  font-size: 10px;
+  line-height: 1.45;
 }
 
 .field-help {
@@ -4705,6 +4751,42 @@ pre {
   color: #71827f;
   font-size: 10px;
   text-align: right;
+}
+
+.real-inline-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.build-evidence-details {
+  width: min(100%, 640px);
+  margin-top: 4px;
+  border-top: 1px solid #e3ece9;
+  padding-top: 8px;
+  text-align: left;
+}
+
+.build-evidence-details summary {
+  color: #176b58;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.build-provenance-json {
+  max-height: 240px;
+  overflow: auto;
+  margin: 12px 0 0;
+  border-radius: 8px;
+  padding: 12px;
+  color: #48645f;
+  background: #f5faf8;
+  font-size: 10px;
+  text-align: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .real-evaluation-card,
@@ -5010,7 +5092,8 @@ pre {
 @media (max-width: 640px) {
   .real-facts,
   .real-stepper,
-  .real-result-facts {
+  .real-result-facts,
+  .real-choice-grid {
     grid-template-columns: 1fr;
   }
 

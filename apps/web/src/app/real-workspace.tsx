@@ -381,7 +381,12 @@ interface SetupFormState {
   readonly robotName: string;
   readonly version: string;
   readonly label: string;
+  readonly buildMode: "existing" | "source";
   readonly artifactDigest: string;
+  readonly sourceRepository: string;
+  readonly sourceRevision: string;
+  readonly buildCommand: string;
+  readonly runtime: "bun" | "node";
   readonly startX: string;
   readonly startY: string;
   readonly endX: string;
@@ -404,7 +409,12 @@ const INITIAL_SETUP: SetupFormState = {
   robotName: "",
   version: "",
   label: "",
+  buildMode: "existing",
   artifactDigest: "",
+  sourceRepository: "",
+  sourceRevision: "",
+  buildCommand: "bun run build",
+  runtime: "bun",
   startX: "100",
   startY: "100",
   endX: "900",
@@ -463,22 +473,37 @@ function SetupView({
         method: "POST",
         body: jsonBody({ name: form.robotName }),
       });
-      await apiFetch<{ build: Build }>(`/sites/${site.site.id}/builds`, {
-        method: "POST",
-        body: jsonBody({
-          robotId: robot.robot.id,
-          version: form.version,
-          label: form.label,
-          artifactDigest: form.artifactDigest,
-          route: {
-            start: { xMm: Number(form.startX), yMm: Number(form.startY) },
-            end: { xMm: Number(form.endX), yMm: Number(form.endY) },
-            speedMmPerSecond: Number(form.speed),
-          },
-        }),
-      });
+      const buildPayload = {
+        robotId: robot.robot.id,
+        version: form.version,
+        label: form.label,
+        route: {
+          start: { xMm: Number(form.startX), yMm: Number(form.startY) },
+          end: { xMm: Number(form.endX), yMm: Number(form.endY) },
+          speedMmPerSecond: Number(form.speed),
+        },
+      };
+      await apiFetch<{ build: Build }>(
+        form.buildMode === "source"
+          ? `/sites/${site.site.id}/source-builds`
+          : `/sites/${site.site.id}/builds`,
+        {
+          method: "POST",
+          body: jsonBody(
+            form.buildMode === "source"
+              ? {
+                  ...buildPayload,
+                  sourceRepository: form.sourceRepository,
+                  sourceRevision: form.sourceRevision,
+                  buildCommand: form.buildCommand,
+                  runtime: form.runtime,
+                }
+              : { ...buildPayload, artifactDigest: form.artifactDigest },
+          ),
+        },
+      );
       await refresh();
-      router.push("/app");
+      router.push(form.buildMode === "source" ? "/app/builds" : "/app");
     } catch (reason) {
       setError(
         reason instanceof ApiError ? reason.message : "The setup could not be saved. Try again.",
@@ -487,6 +512,18 @@ function SetupView({
       setBusy(false);
     }
   };
+  const sourceBuildReady =
+    /^https:\/\/(?:github\.com|gitlab\.com)\/[^?#\s]+$/.test(form.sourceRepository.trim()) &&
+    /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/.test(form.sourceRevision.trim()) &&
+    /^(?:bun|node|npm)(?:\s+[A-Za-z0-9_./:@=+-]+)*$/.test(form.buildCommand.trim()) &&
+    ((form.runtime === "bun" && form.buildCommand.trim().startsWith("bun")) ||
+      (form.runtime === "node" &&
+        (form.buildCommand.trim().startsWith("node") ||
+          form.buildCommand.trim().startsWith("npm"))));
+  const buildReady =
+    form.buildMode === "existing"
+      ? /^sha256:[0-9a-f]{64}$/.test(form.artifactDigest.trim().toLowerCase())
+      : sourceBuildReady;
   const existingSite = data.sites[0];
   if (existingSite !== undefined) {
     const site = existingSite;
@@ -727,19 +764,102 @@ function SetupView({
                 required
               />
             </label>
-            <label>
-              Artifact digest
-              <input
-                value={form.artifactDigest}
-                onChange={(event) => update("artifactDigest", event.target.value)}
-                placeholder="sha256:…"
-                required
-              />
-              <span className="field-help">
-                Use the digest produced by your build pipeline. Rovaulta records this identity; it
-                does not inspect the artifact bytes.
-              </span>
-            </label>
+            <fieldset>
+              <legend>Build</legend>
+              <div className="real-choice-grid">
+                <label className="real-choice-card">
+                  <input
+                    type="radio"
+                    name="build-mode"
+                    value="existing"
+                    checked={form.buildMode === "existing"}
+                    onChange={() => update("buildMode", "existing")}
+                  />
+                  <span>
+                    <strong>Use Existing Build</strong>
+                    <small>Keep the current build-number and declared artifact flow.</small>
+                  </span>
+                </label>
+                <label className="real-choice-card">
+                  <input
+                    type="radio"
+                    name="build-mode"
+                    value="source"
+                    checked={form.buildMode === "source"}
+                    onChange={() => update("buildMode", "source")}
+                  />
+                  <span>
+                    <strong>Build From Source</strong>
+                    <small>Build an exact commit in Rovaulta's isolated runner first.</small>
+                  </span>
+                </label>
+              </div>
+            </fieldset>
+            {form.buildMode === "existing" ? (
+              <label>
+                Artifact digest
+                <input
+                  value={form.artifactDigest}
+                  onChange={(event) => update("artifactDigest", event.target.value)}
+                  placeholder="sha256:…"
+                  required
+                />
+                <span className="field-help">
+                  Use the digest produced by your build pipeline. Rovaulta records this identity; it
+                  does not inspect the artifact bytes.
+                </span>
+              </label>
+            ) : (
+              <fieldset>
+                <legend>Source build</legend>
+                <label>
+                  Repository
+                  <input
+                    value={form.sourceRepository}
+                    onChange={(event) => update("sourceRepository", event.target.value)}
+                    placeholder="https://github.com/org/repository"
+                    type="url"
+                    required
+                  />
+                </label>
+                <label>
+                  Revision / commit
+                  <input
+                    value={form.sourceRevision}
+                    onChange={(event) => update("sourceRevision", event.target.value)}
+                    placeholder="40 or 64 character commit SHA"
+                    spellCheck={false}
+                    required
+                  />
+                </label>
+                <div className="real-inline-fields">
+                  <label>
+                    Runtime
+                    <select
+                      value={form.runtime}
+                      onChange={(event) => update("runtime", event.target.value)}
+                    >
+                      <option value="bun">Bun</option>
+                      <option value="node">Node</option>
+                    </select>
+                  </label>
+                  <label>
+                    Build command
+                    <input
+                      value={form.buildCommand}
+                      onChange={(event) => update("buildCommand", event.target.value)}
+                      placeholder="bun run build"
+                      spellCheck={false}
+                      required
+                    />
+                  </label>
+                </div>
+                <span className="field-help">
+                  Bun builds require the repository&apos;s bun.lock or bun.lockb. Dependency
+                  installation is frozen; there is no unlocked fallback.
+                </span>
+              </fieldset>
+            )}
             <fieldset>
               <legend>Declared route for evaluation</legend>
               <div className="real-inline-fields">
@@ -798,14 +918,15 @@ function SetupView({
                 type="button"
                 className="view-primary-action"
                 onClick={() => void submit()}
-                disabled={
-                  busy ||
-                  !form.version.trim() ||
-                  !form.label.trim() ||
-                  !/^sha256:[0-9a-f]{64}$/.test(form.artifactDigest.trim().toLowerCase())
-                }
+                disabled={busy || !form.version.trim() || !form.label.trim() || !buildReady}
               >
-                {busy ? "Saving target…" : "Create target and build"}{" "}
+                {busy
+                  ? form.buildMode === "source"
+                    ? "Starting isolated build…"
+                    : "Saving target…"
+                  : form.buildMode === "source"
+                    ? "Build from source"
+                    : "Create target and build"}{" "}
                 <span aria-hidden="true">→</span>
               </button>
             </div>
@@ -816,7 +937,19 @@ function SetupView({
   );
 }
 
-function BuildsView({ data }: { readonly data: WorkspaceData }) {
+function BuildsView({
+  data,
+  refresh,
+}: {
+  readonly data: WorkspaceData;
+  readonly refresh: () => Promise<void>;
+}) {
+  const hasRunningBuild = data.builds.some((build) => build.buildStatus === "BUILDING");
+  useEffect(() => {
+    if (!hasRunningBuild) return;
+    const timer = window.setInterval(() => void refresh(), 2_000);
+    return () => window.clearInterval(timer);
+  }, [hasRunningBuild, refresh]);
   if (data.sites.length === 0)
     return (
       <div className="product-view">
@@ -839,8 +972,8 @@ function BuildsView({ data }: { readonly data: WorkspaceData }) {
             <p className="view-eyebrow">Builds</p>
             <h1>Register the exact artifact.</h1>
             <p className="view-lede">
-              Build registration records the declared artifact digest and route used by the
-              deterministic evaluation. The API does not claim binary provenance.
+              Choose the existing build-number flow or ask Rovaulta to independently build an exact
+              source revision before evaluation.
             </p>
           </div>
         </div>
@@ -862,9 +995,8 @@ function BuildsView({ data }: { readonly data: WorkspaceData }) {
           <p className="view-eyebrow">Builds</p>
           <h1>Exact robot build identities.</h1>
           <p className="view-lede">
-            These records are account-owned. A build digest is not a display label and cannot be
-            changed by selecting a different result. Evaluation uses the registered route
-            declaration; it does not inspect a binary artifact.
+            Existing build numbers remain valid. Source-built records expose the artifact digest and
+            provenance that the exact evaluation binds to.
           </p>
         </div>
       </div>
@@ -877,20 +1009,96 @@ function BuildsView({ data }: { readonly data: WorkspaceData }) {
               <p>
                 {build.robotId} · {build.id}
               </p>
+              <div className="real-inline-statuses">
+                <StatusPill status={build.buildMode === "SOURCE" ? "SOURCE" : "EXISTING"} />
+                <StatusPill status={build.buildStatus} />
+                <StatusPill
+                  status={
+                    data.evaluations.find((evaluation) => evaluation.buildId === build.id)
+                      ?.verdict ?? (build.buildStatus === "BUILD_SUCCEEDED" ? "NOT_RUN" : "BLOCKED")
+                  }
+                />
+              </div>
             </div>
             <div className="real-list-meta">
-              <span>
-                Artifact <code>{build.artifactDigest}</code>
-              </span>
-              <span>
-                Build digest <code>{build.robotBuildDigest}</code>
-              </span>
-              <Link
-                className="path-action"
-                href={`/app/evaluate?build=${encodeURIComponent(build.id)}`}
-              >
-                Evaluate <span aria-hidden="true">→</span>
-              </Link>
+              {build.artifactDigest !== null ? (
+                <span>
+                  Artifact <code>{build.artifactDigest}</code>
+                </span>
+              ) : null}
+              {build.robotBuildDigest !== null ? (
+                <span>
+                  Build digest <code>{build.robotBuildDigest}</code>
+                </span>
+              ) : null}
+              {build.buildMode === "SOURCE" ? (
+                <>
+                  <span>
+                    Source <code>{build.sourceRepository}</code>
+                  </span>
+                  <span>
+                    Revision <code>{build.sourceRevision}</code>
+                  </span>
+                  <span>
+                    Command <code>{build.buildCommand}</code>
+                  </span>
+                  {build.buildErrorMessage !== null ? (
+                    <span className="real-error">{build.buildErrorMessage}</span>
+                  ) : null}
+                  <details className="build-evidence-details">
+                    <summary>Evidence details</summary>
+                    <dl className="real-facts">
+                      <div>
+                        <dt>Source snapshot</dt>
+                        <dd>
+                          <code>{build.sourceSnapshotDigest ?? "Pending"}</code>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Lockfile</dt>
+                        <dd>
+                          <code>{build.lockfileDigest ?? "Pending"}</code>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Runtime</dt>
+                        <dd>
+                          {build.runtime === null
+                            ? "Pending"
+                            : `${build.runtime.name} ${build.runtime.version}`}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Builder</dt>
+                        <dd>
+                          {build.builder === null
+                            ? "Pending"
+                            : `${build.builder.id} ${build.builder.version}`}
+                        </dd>
+                      </div>
+                    </dl>
+                    {build.provenance !== null ? (
+                      <pre className="build-provenance-json">
+                        {JSON.stringify(build.provenance, null, 2)}
+                      </pre>
+                    ) : null}
+                  </details>
+                </>
+              ) : null}
+              {build.buildStatus === "BUILD_SUCCEEDED" ? (
+                <Link
+                  className="path-action"
+                  href={`/app/evaluate?build=${encodeURIComponent(build.id)}`}
+                >
+                  Evaluate <span aria-hidden="true">→</span>
+                </Link>
+              ) : (
+                <span className="field-help">
+                  {build.buildStatus === "BUILDING"
+                    ? "Evaluation unlocks after the build succeeds."
+                    : "Evaluation is blocked because the build failed."}
+                </span>
+              )}
             </div>
           </li>
         ))}
@@ -1439,7 +1647,7 @@ export function RealProductApp({ initialView }: { readonly initialView: ProductV
           ) : initialView === "setup" ? (
             <SetupView data={data} refresh={refresh} />
           ) : initialView === "builds" ? (
-            <BuildsView data={data} />
+            <BuildsView data={data} refresh={refresh} />
           ) : initialView === "evaluate" ? (
             <EvaluateView data={data} refresh={refresh} />
           ) : initialView === "releases" ? (
