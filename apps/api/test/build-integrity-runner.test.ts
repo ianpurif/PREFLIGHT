@@ -7,6 +7,7 @@ import {
   assertSafeSourceEntries,
   BuildRunnerError,
   DockerBuildRunner,
+  isRuntimeVersion,
   validateSourceBuildRequest,
 } from "../src/build-integrity/index.js";
 
@@ -19,6 +20,12 @@ const validRequest = {
 };
 
 describe("source-build boundary validation", () => {
+  test("accepts the actual Bun and Node version output formats", () => {
+    expect(isRuntimeVersion("bun", "1.4.1")).toBe(true);
+    expect(isRuntimeVersion("node", "v22.20.0")).toBe(true);
+    expect(isRuntimeVersion("bun", "bun1.4.1")).toBe(false);
+  });
+
   test("accepts an exact Bun source build request", () => {
     const result = validateSourceBuildRequest(validRequest);
     expect(result.sourceUrl.protocol).toBe("https:");

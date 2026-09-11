@@ -2,7 +2,7 @@ import { execFile as execFileCallback } from "node:child_process";
 import { createHash } from "node:crypto";
 import type { Dirent } from "node:fs";
 import { createReadStream } from "node:fs";
-import { copyFile, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -38,6 +38,12 @@ const DEFAULT_CPU_PERIOD = "100000";
 const DEFAULT_PLATFORM = "linux/amd64";
 const DEFAULT_BUN_IMAGE = "oven/bun:1.4.1";
 const DEFAULT_NODE_IMAGE = "node:22-bookworm-slim";
+const DEFAULT_DOCKERFILE_FRONTEND = "docker/dockerfile:1.7";
+const DEFAULT_BUILDKIT_IMAGE = "moby/buildkit:v0.24.0";
+const DEFAULT_INSTALL_NETWORK = "none" as const;
+const DEFAULT_MAX_CONCURRENT_BUILDS = 2;
+const DEFAULT_MAX_SOURCE_ENTRIES = 50_000;
+const DEFAULT_MAX_SOURCE_BYTES = 512 * 1024 * 1024;
 const BUILDER_ID = "https://rovaulta.dev/builders/rovaulta-buildkit/v1";
 
 interface SnapshotContext {
@@ -61,6 +67,12 @@ interface RunnerOptions {
   readonly sourceHosts: readonly string[];
   readonly bunImage: string;
   readonly nodeImage: string;
+  readonly dockerfileFrontend: string;
+  readonly buildkitImage: string;
+  readonly installNetwork: "default" | "none";
+  readonly maxConcurrentBuilds: number;
+  readonly maxSourceEntries: number;
+  readonly maxSourceBytes: number;
 }
 
 interface ToolFailure extends Error {
@@ -77,6 +89,7 @@ function runnerEnvironment(): NodeJS.ProcessEnv {
     TMP: process.env.TMP,
     TEMP: process.env.TEMP,
     LANG: "C",
+    BUILDX_METADATA_PROVENANCE: "max",
     GIT_TERMINAL_PROMPT: "0",
     GIT_CONFIG_NOSYSTEM: "1",
     GIT_CONFIG_GLOBAL: process.platform === "win32" ? "NUL" : "/dev/null",
@@ -231,6 +244,40 @@ async function readOutputFile(root: string, expectedName: string): Promise<strin
   );
 }
 
+async function assertContextSize(root: string, maximumBytes: number): Promise<void> {
+  const pending = [root];
+  let size = 0;
+  while (pending.length > 0) {
+    const current = pending.pop();
+    if (current === undefined) continue;
+    const children = await readdir(current, { withFileTypes: true, encoding: "utf8" });
+    for (const child of children) {
+      const path = join(current, child.name);
+      if (child.isSymbolicLink()) {
+        throw new BuildRunnerError(
+          "SOURCE_CONTAINS_UNSAFE_FILE",
+          "Source snapshots containing symlinks are not supported",
+        );
+      }
+      if (child.isDirectory()) {
+        pending.push(path);
+        continue;
+      }
+      if (!child.isFile()) {
+        throw new BuildRunnerError(
+          "INVALID_SOURCE",
+          "Source snapshot contains an unsupported file",
+        );
+      }
+      const fileStats = await stat(path);
+      size += fileStats.size;
+      if (size > maximumBytes) {
+        throw new BuildRunnerError("INVALID_SOURCE", "The unpacked source snapshot is too large");
+      }
+    }
+  }
+}
+
 function parseImageDigest(image: string, output: string): string {
   const existing = image.match(/@sha256:[0-9a-f]{64}$/i);
   if (existing !== null) return image;
@@ -248,11 +295,25 @@ function imageDigest(image: string): string {
   return digest.toLowerCase();
 }
 
-function shellDockerfile(runtime: "bun" | "node", image: string): string {
+export function isRuntimeVersion(runtime: "bun" | "node", version: string): boolean {
+  return runtime === "bun"
+    ? /^\d+\.\d+\.\d+(?:[-+][A-Za-z0-9._-]+)?$/.test(version)
+    : /^v\d+\.\d+\.\d+(?:[-+][A-Za-z0-9._-]+)?$/.test(version);
+}
+
+function shellDockerfile(
+  runtime: "bun" | "node",
+  image: string,
+  dockerfileFrontend: string,
+  installNetwork: "default" | "none",
+): string {
   const user = runtime === "bun" ? "bun" : "node";
-  const install = runtime === "bun" ? "bun install --frozen-lockfile" : "npm ci";
+  const install =
+    runtime === "bun"
+      ? "bun install --frozen-lockfile --ignore-scripts"
+      : "npm ci --ignore-scripts";
   const executable = runtime === "bun" ? "bun" : "node";
-  return `# syntax=docker/dockerfile:1.7\nFROM ${image} AS build\nUSER ${user}\nWORKDIR /workspace\nCOPY --chown=${user}:${user} . .\nRUN --network=default ${install}\nARG ROVAULTA_BUILD_COMMAND\nRUN --network=none /bin/sh -c "$ROVAULTA_BUILD_COMMAND"\nRUN --network=none ${executable} --version > /tmp/rovaulta-runtime-version\nRUN --network=none mkdir -p /tmp/rovaulta-artifact && tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner -czf /tmp/rovaulta-artifact.tar.gz --exclude=./node_modules --exclude=./.git --exclude=./.next/cache --exclude=./.turbo/cache --exclude=./test-results .\nFROM scratch\nCOPY --from=build /tmp/rovaulta-artifact.tar.gz /rovaulta-artifact.tar.gz\nCOPY --from=build /tmp/rovaulta-runtime-version /rovaulta-runtime-version\n`;
+  return `# syntax=${dockerfileFrontend}\nFROM ${image} AS build\nUSER ${user}\nWORKDIR /workspace\nCOPY --chown=${user}:${user} . .\nRUN --network=${installNetwork} ${install}\nARG ROVAULTA_BUILD_COMMAND\nRUN --network=none /bin/sh -c "$ROVAULTA_BUILD_COMMAND"\nRUN --network=none ${executable} --version > /tmp/rovaulta-runtime-version\nRUN --network=none mkdir -p /tmp/rovaulta-artifact && tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner -czf /tmp/rovaulta-artifact.tar.gz --exclude=./node_modules --exclude=./.git --exclude=./.next/cache --exclude=./.turbo/cache --exclude=./test-results .\nFROM scratch\nCOPY --from=build /tmp/rovaulta-artifact.tar.gz /rovaulta-artifact.tar.gz\nCOPY --from=build /tmp/rovaulta-runtime-version /rovaulta-runtime-version\n`;
 }
 
 function provenanceStatement(input: {
@@ -262,6 +323,9 @@ function provenanceStatement(input: {
   readonly lockfileDigest: Sha256Digest;
   readonly lockfileName: string;
   readonly resolvedImage: string;
+  readonly resolvedDockerfileFrontend: string;
+  readonly resolvedBuildkitImage: string;
+  readonly platform: string;
   readonly buildxVersion: string;
   readonly runtimeVersion: string;
   readonly buildkitProvenanceDigest: Sha256Digest;
@@ -305,6 +369,14 @@ function provenanceStatement(input: {
             digest: { sha256: imageDigest(input.resolvedImage) },
           },
           {
+            uri: `dockerfile-frontend:${input.resolvedDockerfileFrontend}`,
+            digest: { sha256: imageDigest(input.resolvedDockerfileFrontend) },
+          },
+          {
+            uri: `buildkit-image:${input.resolvedBuildkitImage}`,
+            digest: { sha256: imageDigest(input.resolvedBuildkitImage) },
+          },
+          {
             uri: "urn:rovaulta:buildkit-provenance",
             digest: { sha256: input.buildkitProvenanceDigest.slice("sha256:".length) },
           },
@@ -315,7 +387,7 @@ function provenanceStatement(input: {
           id: BUILDER_ID,
           version: {
             buildx: input.buildxVersion,
-            platform: DEFAULT_PLATFORM,
+            platform: input.platform,
           },
         },
         metadata: {
@@ -330,6 +402,7 @@ function provenanceStatement(input: {
 
 export class DockerBuildRunner implements BuildRunner {
   readonly #options: RunnerOptions;
+  #activeJobs = 0;
 
   constructor(options: Partial<RunnerOptions> = {}) {
     this.#options = {
@@ -346,15 +419,30 @@ export class DockerBuildRunner implements BuildRunner {
       sourceHosts: options.sourceHosts ?? parseAllowedSourceHosts(undefined),
       bunImage: options.bunImage ?? DEFAULT_BUN_IMAGE,
       nodeImage: options.nodeImage ?? DEFAULT_NODE_IMAGE,
+      dockerfileFrontend: options.dockerfileFrontend ?? DEFAULT_DOCKERFILE_FRONTEND,
+      buildkitImage: options.buildkitImage ?? DEFAULT_BUILDKIT_IMAGE,
+      installNetwork: options.installNetwork ?? DEFAULT_INSTALL_NETWORK,
+      maxConcurrentBuilds: options.maxConcurrentBuilds ?? DEFAULT_MAX_CONCURRENT_BUILDS,
+      maxSourceEntries: options.maxSourceEntries ?? DEFAULT_MAX_SOURCE_ENTRIES,
+      maxSourceBytes: options.maxSourceBytes ?? DEFAULT_MAX_SOURCE_BYTES,
     };
   }
 
   async run(input: SourceBuildRequest): Promise<BuildRunnerResult> {
     const request = validateSourceBuildRequest(input, this.#options.sourceHosts);
+    if (this.#activeJobs >= this.#options.maxConcurrentBuilds) {
+      throw new BuildRunnerError(
+        "BUILD_RUNNER_UNAVAILABLE",
+        "The source build runner is at capacity",
+      );
+    }
+    this.#activeJobs += 1;
     const startedOn = new Date().toISOString();
     let snapshot: SnapshotContext | undefined;
     let temporaryRoot: string | undefined;
     let builderName: string | undefined;
+    let persistentArtifactPath: string | undefined;
+    let succeeded = false;
     try {
       snapshot = await this.#materializeSnapshot(request);
       temporaryRoot = snapshot.root;
@@ -362,31 +450,45 @@ export class DockerBuildRunner implements BuildRunner {
       const resolvedImage = await this.#resolveRuntimeImage(
         request.runtime === "bun" ? this.#options.bunImage : this.#options.nodeImage,
       );
+      const resolvedDockerfileFrontend = await this.#resolveRuntimeImage(
+        this.#options.dockerfileFrontend,
+      );
+      const resolvedBuildkitImage = await this.#resolveRuntimeImage(this.#options.buildkitImage);
       const buildxVersion = await this.#buildxVersion();
       builderName = `rovaulta-${request.buildId.slice(-20)}`;
       const outputDirectory = join(temporaryRoot, "output");
       const dockerfilePath = join(temporaryRoot, "Dockerfile");
+      const buildMetadataPath = join(temporaryRoot, "build-metadata.json");
       await mkdir(outputDirectory, { recursive: true });
-      await writeFile(dockerfilePath, shellDockerfile(request.runtime, resolvedImage), "utf8");
-      await this.#createBuilder(builderName);
+      await writeFile(
+        dockerfilePath,
+        shellDockerfile(
+          request.runtime,
+          resolvedImage,
+          resolvedDockerfileFrontend,
+          this.#options.installNetwork,
+        ),
+        "utf8",
+      );
+      await this.#createBuilder(builderName, resolvedBuildkitImage);
       await this.#runBuild({
         builderName,
         dockerfilePath,
         contextPath: snapshot.contextPath,
         outputDirectory,
+        buildMetadataPath,
         request,
       });
       const artifactOutputPath = await readOutputFile(outputDirectory, "rovaulta-artifact.tar.gz");
       const runtimeVersionPath = await readOutputFile(outputDirectory, "rovaulta-runtime-version");
-      const buildkitProvenancePath = await readOutputFile(outputDirectory, "provenance.json");
       const runtimeVersion = (await readFile(runtimeVersionPath, "utf8")).trim();
-      if (!/^(?:bun|node|v)[0-9][A-Za-z0-9._+-]*$/.test(runtimeVersion)) {
+      if (!isRuntimeVersion(request.runtime, runtimeVersion)) {
         throw new BuildRunnerError(
           "ARTIFACT_COLLECTION_FAILED",
           "The runtime version was not recorded",
         );
       }
-      const buildkitProvenance = await readFile(buildkitProvenancePath);
+      const buildkitProvenance = await readFile(buildMetadataPath);
       if (buildkitProvenance.length === 0 || buildkitProvenance.length > MAX_PROVENANCE_BYTES) {
         throw new BuildRunnerError("ARTIFACT_COLLECTION_FAILED", "BuildKit provenance is invalid");
       }
@@ -401,7 +503,7 @@ export class DockerBuildRunner implements BuildRunner {
         );
       }
       const artifactDigest = await hashFile(artifactOutputPath, 512 * 1024 * 1024);
-      const persistentArtifactPath = join(
+      persistentArtifactPath = join(
         this.#options.artifactDirectory,
         `${request.buildId.slice("robot-build:".length)}.tar.gz`,
       );
@@ -418,6 +520,9 @@ export class DockerBuildRunner implements BuildRunner {
         lockfileDigest: snapshot.lockfileDigest,
         lockfileName: snapshot.lockfileName,
         resolvedImage,
+        resolvedDockerfileFrontend,
+        resolvedBuildkitImage,
+        platform: this.#options.platform,
         buildxVersion,
         runtimeVersion,
         buildkitProvenanceDigest: sha256Buffer(buildkitProvenance),
@@ -439,15 +544,20 @@ export class DockerBuildRunner implements BuildRunner {
         provenance,
       });
       digestBuildIntegrity(evidence);
+      succeeded = true;
       return Object.freeze({ evidence, artifactPath: persistentArtifactPath, artifactDigest });
     } catch (error) {
       if (error instanceof BuildRunnerError) throw error;
       throw toolError(error, "SANDBOX_FAILED", "The isolated source build failed");
     } finally {
       if (builderName !== undefined) await this.#removeBuilder(builderName);
+      if (!succeeded && persistentArtifactPath !== undefined) {
+        await rm(persistentArtifactPath, { force: true }).catch(() => undefined);
+      }
       if (temporaryRoot !== undefined) {
         await rm(temporaryRoot, { recursive: true, force: true }).catch(() => undefined);
       }
+      this.#activeJobs -= 1;
     }
   }
 
@@ -506,6 +616,12 @@ export class DockerBuildRunner implements BuildRunner {
         );
         const treeBuffer = Buffer.isBuffer(tree.stdout) ? tree.stdout : Buffer.from(tree.stdout);
         const entries = treeEntries(treeBuffer);
+        if (entries.length > this.#options.maxSourceEntries) {
+          throw new BuildRunnerError(
+            "INVALID_SOURCE",
+            "The source snapshot contains too many files",
+          );
+        }
         assertSafeSourceEntries(entries);
         const files = entries
           .filter((entry) => entry.mode === "100644" || entry.mode === "100755")
@@ -536,11 +652,16 @@ export class DockerBuildRunner implements BuildRunner {
           ],
           { timeoutMs: this.#options.timeoutMs, failureCode: "INVALID_SOURCE" },
         );
+        const archiveStats = await stat(archivePath);
+        if (archiveStats.size > this.#options.maxSourceBytes) {
+          throw new BuildRunnerError("INVALID_SOURCE", "The source snapshot is too large");
+        }
         try {
           await runTool(this.#options.tarBinary, ["-xf", archivePath, "-C", contextPath], {
             timeoutMs: this.#options.timeoutMs,
             failureCode: "INVALID_SOURCE",
           });
+          await assertContextSize(contextPath, this.#options.maxSourceBytes);
         } catch (error) {
           if (error instanceof BuildRunnerError) throw error;
           throw toolError(error, "INVALID_SOURCE", "The source snapshot could not be unpacked");
@@ -593,11 +714,21 @@ export class DockerBuildRunner implements BuildRunner {
     }
   }
 
-  async #createBuilder(builderName: string): Promise<void> {
+  async #createBuilder(builderName: string, buildkitImage: string): Promise<void> {
     try {
       await runTool(
         this.#options.dockerBinary,
-        ["buildx", "create", "--name", builderName, "--driver", "docker-container", "--bootstrap"],
+        [
+          "buildx",
+          "create",
+          "--name",
+          builderName,
+          "--driver",
+          "docker-container",
+          "--driver-opt",
+          `image=${buildkitImage}`,
+          "--bootstrap",
+        ],
         { timeoutMs: this.#options.timeoutMs, failureCode: "SANDBOX_FAILED" },
       );
     } catch (error) {
@@ -611,6 +742,7 @@ export class DockerBuildRunner implements BuildRunner {
     readonly dockerfilePath: string;
     readonly contextPath: string;
     readonly outputDirectory: string;
+    readonly buildMetadataPath: string;
     readonly request: ValidatedSourceBuildRequest;
   }): Promise<void> {
     try {
@@ -627,9 +759,12 @@ export class DockerBuildRunner implements BuildRunner {
           this.#options.platform,
           "--progress",
           "plain",
+          "--no-cache",
           "--provenance=mode=max,version=v1",
           "--output",
           `type=local,dest=${input.outputDirectory}`,
+          "--metadata-file",
+          input.buildMetadataPath,
           "--build-arg",
           `ROVAULTA_BUILD_COMMAND=${input.request.buildCommand}`,
           "--resource",
@@ -705,6 +840,35 @@ export function createBuildRunnerFromEnvironment(
   if (!/^[1-9][0-9]*$/.test(cpuPeriod)) throw new Error("ROVAULTA_BUILD_CPU_PERIOD is invalid");
   const platform = environmentValue(environment, "ROVAULTA_BUILD_PLATFORM", DEFAULT_PLATFORM);
   if (!/^[a-z0-9._/-]+$/.test(platform)) throw new Error("ROVAULTA_BUILD_PLATFORM is invalid");
+  const installNetwork = environmentValue(
+    environment,
+    "ROVAULTA_BUILD_INSTALL_NETWORK",
+    DEFAULT_INSTALL_NETWORK,
+  );
+  if (installNetwork !== "default" && installNetwork !== "none") {
+    throw new Error("ROVAULTA_BUILD_INSTALL_NETWORK must be default or none");
+  }
+  const maxConcurrentBuilds = positiveIntegerEnvironment(
+    environment,
+    "ROVAULTA_BUILD_MAX_CONCURRENT",
+    DEFAULT_MAX_CONCURRENT_BUILDS,
+    1,
+    8,
+  );
+  const maxSourceEntries = positiveIntegerEnvironment(
+    environment,
+    "ROVAULTA_BUILD_MAX_SOURCE_ENTRIES",
+    DEFAULT_MAX_SOURCE_ENTRIES,
+    100,
+    200_000,
+  );
+  const maxSourceBytes = positiveIntegerEnvironment(
+    environment,
+    "ROVAULTA_BUILD_MAX_SOURCE_BYTES",
+    DEFAULT_MAX_SOURCE_BYTES,
+    1 * 1024 * 1024,
+    4 * 1024 * 1024 * 1024,
+  );
   return new DockerBuildRunner({
     timeoutMs: timeoutSeconds * 1_000,
     memory,
@@ -722,6 +886,20 @@ export function createBuildRunnerFromEnvironment(
     ),
     bunImage: environmentValue(environment, "ROVAULTA_BUILD_BUN_IMAGE", DEFAULT_BUN_IMAGE),
     nodeImage: environmentValue(environment, "ROVAULTA_BUILD_NODE_IMAGE", DEFAULT_NODE_IMAGE),
+    dockerfileFrontend: environmentValue(
+      environment,
+      "ROVAULTA_BUILD_DOCKERFILE_FRONTEND",
+      DEFAULT_DOCKERFILE_FRONTEND,
+    ),
+    buildkitImage: environmentValue(
+      environment,
+      "ROVAULTA_BUILD_BUILDKIT_IMAGE",
+      DEFAULT_BUILDKIT_IMAGE,
+    ),
+    installNetwork,
+    maxConcurrentBuilds,
+    maxSourceEntries,
+    maxSourceBytes,
   });
 }
 
