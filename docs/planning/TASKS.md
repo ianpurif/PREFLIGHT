@@ -181,3 +181,12 @@
 - [x] add adapter regression tests for tool shape, malformed output, failure redaction, and missing credentials
 - [x] run a real Gemini-backed account-agent execution against the live account/Graph configuration;
   this key required the explicit `gemini-3.5-flash` override because `gemini-2.5-flash` was unavailable
+
+## P16 — Live CRE deployment boundary
+- [x] make the existing workflow's private-registry target explicit without changing handler logic
+- [x] deploy the existing `handlerInTee` workflow through the official CRE CLI with Deploy Access
+- [x] record the public workflow ID, registry, status, and deployment artifact identity
+- [x] send one real signed account gateway request through the documented private enterprise gateway
+- [x] preserve fail-closed behavior and capture the bounded provider error without leaking request data
+- [ ] provision deployed site/callback secrets and complete a live account execution
+- [ ] capture live `CLEAR`, `HOLD`, and `REJECT` callback evidence after Chainlink resolves the workflow

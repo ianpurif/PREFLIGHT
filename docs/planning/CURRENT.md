@@ -65,10 +65,11 @@ entity and the API reader returned `MATCHED`.**
 runs the existing `handlerInTee` workflow for unsafe/corrected/tampered cases, extracts only the
 minimal public result, validates it with Rovaulta's strict callback/binding parsers, and writes a
 redacted evidence artifact. The current-source artifact records official CLI execution of unsafe
-`HOLD`, corrected `CLEAR`, and tampered `REJECT` with the mandatory site-selector boundary; live DON
-deployment, Vault, callback, and Early Access are not claimed or required. The normal account runner
-and encrypted site-secret provisioning helper remain available as an optional live gateway path and
-still fail closed when its external configuration is absent.**
+`HOLD`, corrected `CLEAR`, and tampered `REJECT` with the mandatory site-selector boundary. P16 also
+deployed the same workflow to the Chainlink-hosted private registry (`ACTIVE`), but the first
+enterprise-gateway request returned a workflow-lookup error before execution; no live DON verdict,
+Vault completion, callback, or Early Access claim is made. The normal account runner and encrypted
+site-secret provisioning helper remain available and fail closed at that external boundary.**
 
 ## P13 CRE simulation qualification and account boundary
 
@@ -95,8 +96,9 @@ still fail closed when its external configuration is absent.**
 - Local account-runner preflight: `bun run --cwd apps/api p13:account-evaluation` fails closed with
   missing email or a password outside the API's 12–256 character bound before creating any
   records. The authenticated official CLI simulation runner now completes all three current-source
-  cases and writes only its redacted public artifact; the account-backed gateway remains
-  independently blocked without its external deployment configuration.
+  cases and writes only its redacted public artifact. The P16 private-registry deployment is active,
+  but the enterprise gateway rejected the first workflow lookup before execution; no live result or
+  callback is claimed.
 
 ## P13.1 account-owned official CRE CLI simulation mode
 
@@ -166,6 +168,23 @@ still fail closed when its external configuration is absent.**
 - The repository keeps `gemini-2.5-flash` as its default, but this API key rejects that model as
   unavailable to new users. The run used the explicit server-side `GEMINI_MODEL=gemini-3.5-flash`
   override. This is a model-availability limitation, not a fallback or authority change.
+
+## P16 live CRE deployment boundary
+
+- The existing workflow was deployed with official CRE CLI v1.32.0 to the Chainlink-hosted private
+  registry. Workflow `rovaulta-confidential-evaluation-staging` is `ACTIVE` under ID
+  `0034106c2d141e81f34ae5b3cf7f71e133137e2dc1ff1d042ffdda86f34d2144`; no second workflow was added.
+- The first normal account gateway request used the documented private enterprise gateway and the
+  existing signed public request. The gateway returned HTTP 400 / JSON-RPC `-32600` (`Workflow not
+  found`) before creating an execution; `cre execution list` was empty. No callback, live verdict,
+  or live account evaluation was persisted.
+- This is recorded as deployment `PASS` and live execution `BLOCKED`, not as live DON evidence. The
+  exact public command/result and remaining external Chainlink registry/Confidential Workflow
+  visibility dependency are in
+  `docs/compliance/evidence/chainlink-cre-p16-live-deployment-2026-09-11.md`.
+- `apps/api/src/evaluation/cre-client.ts` now returns bounded provider status/code/message details
+  for this fail-closed rejection; it never includes signed request bytes, credentials, or private
+  CRE inputs. The P13 simulation path remains unchanged.
 
 ## P11 The Graph qualification implementation
 

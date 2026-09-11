@@ -71,12 +71,12 @@ working qualification path.
 
 ## Steps
 
-- [ ] Verify current deployment prerequisites and target registry.
-- [ ] Add explicit private-registry deployment configuration without changing workflow logic.
-- [ ] Build/deploy/activate the existing workflow and capture public identity.
+- [x] Verify current deployment prerequisites and target registry.
+- [x] Add explicit private-registry deployment configuration without changing workflow logic.
+- [x] Build/deploy/activate the existing workflow and capture public identity.
 - [ ] Provision declared Vault secrets through the official CLI.
-- [ ] Exercise and validate the live account gateway/callback path.
-- [ ] Capture redacted evidence and update docs/status.
+- [x] Exercise the live account gateway boundary and capture its external blocker.
+- [x] Capture redacted evidence and update docs/status.
 - [ ] Run simulation, targeted tests, full verification, and `git diff --check`.
 - [ ] Complete an independent read-only partner/security review.
 
@@ -85,3 +85,18 @@ working qualification path.
 Evidence will be added only after the official deployment/trigger commands complete. Any external
 permission, network, callback, or credential limitation will remain explicitly `BLOCKED`; it will not
 be converted into a simulated success.
+
+## Current findings — 2026-09-11
+
+- CRE CLI v1.32.0 reported Deploy Access enabled and the private registry available.
+- The existing workflow deployed successfully as `ACTIVE` with workflow ID
+  `0034106c2d141e81f34ae5b3cf7f71e133137e2dc1ff1d042ffdda86f34d2144`.
+- The normal signed request reached `https://01.enterprise-gateway.zone-a.cre.chain.link/` but
+  returned HTTP 400 / JSON-RPC `-32600` (`Workflow not found`) before an execution was created.
+- `cre execution list` returned no execution. Vault secret provisioning could not be completed
+  because the official private-registry browser authorization requires an interactive Chainlink
+  sign-in; no secret was uploaded and no confidential value was printed or committed.
+- Deployment evidence is recorded in
+  `docs/compliance/evidence/chainlink-cre-p16-live-deployment-2026-09-11.md`. The remaining
+  dependency is Chainlink-side workflow visibility/Confidential Workflow access plus interactive
+  Vault authorization; no local bypass is appropriate.
