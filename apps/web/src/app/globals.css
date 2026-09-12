@@ -5120,3 +5120,1111 @@ pre {
     width: 100%;
   }
 }
+
+/* Authenticated workspace alignment.
+   Keep the product shell operational, but give it the same light control-plane language as the
+   public entry surfaces: square edges, measured dividers, charcoal type, and one oxide action. */
+.product-shell {
+  --product-canvas: #f5f7f5;
+  --product-ink: #182321;
+  --product-muted: #4c5c56;
+  --product-subtle: #5f6d68;
+  --product-line: #d8e1dc;
+  --product-line-strong: #aab8b0;
+  --product-surface: #ffffff;
+  --product-raised: #eef2ef;
+  --product-accent: #9a552c;
+  --product-accent-dark: #7b3f20;
+  --product-accent-soft: #f3e7dd;
+  --product-attention: #8a5110;
+  --product-attention-soft: #f6ecda;
+  --product-verified: #276b4c;
+  --product-verified-soft: #e3f1e9;
+  position: relative;
+  isolation: isolate;
+  grid-template-columns: 250px minmax(0, 1fr);
+  color: var(--product-ink);
+  background: var(--product-canvas);
+}
+
+.product-shell::before {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(36 67 57 / 5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(36 67 57 / 5%) 1px, transparent 1px);
+  background-position: center top;
+  background-size: 48px 48px;
+  content: "";
+  opacity: 0.52;
+  pointer-events: none;
+}
+
+.product-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
+.product-shell a:focus-visible,
+.product-shell button:focus-visible,
+.product-shell summary:focus-visible,
+.product-shell select:focus-visible,
+.product-shell input:focus-visible,
+.product-shell textarea:focus-visible {
+  border-color: var(--product-accent);
+  outline: 3px solid rgb(154 85 44 / 26%);
+  outline-offset: 3px;
+}
+
+.product-shell .product-sidebar {
+  border-right-color: var(--product-line);
+  padding: 28px 18px 22px;
+  background: rgb(255 255 255 / 86%);
+  box-shadow: none;
+}
+
+.product-shell .product-sidebar-top {
+  gap: 29px;
+}
+
+.product-shell .product-brand {
+  gap: 10px;
+  padding-left: 5px;
+}
+
+.product-shell .brand-mark-image {
+  width: 27px;
+  height: 31px;
+  object-fit: contain;
+}
+
+.product-shell .product-brand > span {
+  display: grid;
+  gap: 3px;
+}
+
+.product-shell .product-brand strong {
+  color: var(--product-ink);
+  font-size: 15px;
+  font-weight: 780;
+  letter-spacing: -0.045em;
+}
+
+.product-shell .product-brand small {
+  color: var(--product-subtle);
+  font-size: 8px;
+  font-weight: 740;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.product-shell .sidebar-workspace-card {
+  gap: 6px;
+  border: 1px solid var(--product-line-strong);
+  border-left: 2px solid var(--product-accent);
+  border-radius: 0;
+  padding: 13px 12px 14px;
+  background: var(--product-raised);
+  box-shadow: none;
+}
+
+.product-shell .sidebar-label {
+  color: var(--product-subtle);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+}
+
+.product-shell .sidebar-workspace-card strong {
+  color: var(--product-ink);
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.product-shell .sidebar-workspace-card > span:last-child {
+  color: var(--product-muted);
+  font-size: 10px;
+}
+
+.product-shell .product-nav {
+  gap: 3px;
+}
+
+.product-shell .product-nav > .sidebar-label {
+  margin-bottom: 7px;
+}
+
+.product-shell .product-nav-link {
+  min-height: 39px;
+  border: 1px solid transparent;
+  border-left: 2px solid transparent;
+  border-radius: 0;
+  padding: 0 10px;
+  color: var(--product-muted);
+  font-size: 11px;
+  font-weight: 700;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background 150ms ease;
+}
+
+.product-shell .product-nav-link:hover,
+.product-shell .product-nav-link:focus-visible {
+  border-color: var(--product-line);
+  color: var(--product-accent-dark);
+  background: var(--product-surface);
+}
+
+.product-shell .product-nav-link.is-active {
+  border-color: var(--product-accent-soft);
+  border-left-color: var(--product-accent);
+  color: var(--product-accent-dark);
+  background: var(--product-accent-soft);
+  box-shadow: none;
+}
+
+.product-shell .nav-icon {
+  color: currentColor;
+  opacity: 0.8;
+}
+
+.product-shell .nav-count {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #d3b49f;
+  border-radius: 0;
+  color: var(--product-accent-dark);
+  background: #fffaf6;
+}
+
+.product-shell .product-sidebar-bottom {
+  gap: 13px;
+}
+
+.product-shell .sidebar-boundary-card {
+  gap: 9px;
+  border-top-color: var(--product-line);
+  padding: 16px 5px 0;
+}
+
+.product-shell .sidebar-boundary-icon {
+  width: 20px;
+  height: 20px;
+  border-color: #c5b09f;
+  border-radius: 0;
+  color: var(--product-accent);
+  background: var(--product-accent-soft);
+}
+
+.product-shell .sidebar-boundary-card strong {
+  color: var(--product-ink);
+  font-size: 10px;
+  font-weight: 760;
+}
+
+.product-shell .sidebar-boundary-card small {
+  color: var(--product-subtle);
+}
+
+.product-shell .real-signout {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 37px;
+  border: 1px solid var(--product-line-strong);
+  border-radius: 2px;
+  padding: 0 10px;
+  color: var(--product-accent-dark);
+  background: var(--product-surface);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 760;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background 150ms ease;
+}
+
+.product-shell .real-signout:hover:not(:disabled),
+.product-shell .real-signout:focus-visible {
+  border-color: var(--product-accent);
+  color: var(--product-accent-dark);
+  background: var(--product-accent-soft);
+}
+
+.product-shell .real-signout:disabled {
+  color: var(--product-subtle);
+  background: var(--product-raised);
+}
+
+.product-shell .product-header {
+  min-height: 88px;
+  border-bottom-color: var(--product-line);
+  padding: 0 clamp(28px, 4.5vw, 60px);
+  background: rgb(255 255 255 / 80%);
+  box-shadow: none;
+}
+
+.product-shell .product-breadcrumb {
+  color: var(--product-accent-dark);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+}
+
+.product-shell .product-main .product-breadcrumb span {
+  color: var(--product-line-strong);
+}
+
+.product-shell .product-header-context {
+  margin-top: 6px;
+  color: var(--product-ink);
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.product-shell .workspace-status {
+  gap: 8px;
+  color: var(--product-verified);
+  font-size: 9px;
+  font-weight: 760;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.product-shell .product-main .workspace-status i {
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--product-verified);
+  border-radius: 0;
+  background: var(--product-verified);
+  box-shadow: none;
+}
+
+.product-shell .product-content {
+  width: min(1160px, calc(100% - 72px));
+  padding: clamp(48px, 6vw, 82px) 0 100px;
+}
+
+.product-shell .view-heading-row {
+  align-items: flex-end;
+  gap: 40px;
+}
+
+.product-shell .view-heading-row .view-eyebrow,
+.product-shell .product-section-heading .view-eyebrow,
+.product-shell .real-result-heading .view-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.product-shell .view-heading-row .view-eyebrow::before,
+.product-shell .product-section-heading .view-eyebrow::before,
+.product-shell .real-result-heading .view-eyebrow::before {
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--product-accent);
+  background: var(--product-accent);
+  content: "";
+}
+
+.product-shell .view-eyebrow {
+  color: var(--product-accent-dark);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+}
+
+.product-shell .view-heading-row h1,
+.product-shell .product-empty-state h1 {
+  max-width: 680px;
+  margin: 17px 0 13px;
+  color: var(--product-ink);
+  font-size: clamp(35px, 4.6vw, 58px);
+  font-weight: 680;
+  letter-spacing: -0.075em;
+  line-height: 0.98;
+}
+
+.product-shell .view-lede {
+  max-width: 600px;
+  color: var(--product-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.product-shell .view-primary-action {
+  min-height: 43px;
+  border: 1px solid var(--product-accent);
+  border-radius: 2px;
+  padding: 0 15px;
+  color: #ffffff;
+  background: var(--product-accent);
+  box-shadow: none;
+  font-size: 11px;
+  font-weight: 780;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
+.product-shell .view-primary-action:hover,
+.product-shell .view-primary-action:focus-visible {
+  border-color: #783d1e;
+  color: #ffffff;
+  background: #783d1e;
+  transform: translateY(-1px);
+}
+
+.product-shell .button-secondary,
+.product-shell .secondary-view-action {
+  min-height: 40px;
+  border: 1px solid var(--product-line-strong);
+  border-radius: 2px;
+  padding: 0 14px;
+  color: var(--product-ink);
+  background: var(--product-surface);
+  font-size: 11px;
+  font-weight: 720;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background 150ms ease;
+}
+
+.product-shell .button-secondary:hover,
+.product-shell .button-secondary:focus-visible,
+.product-shell .secondary-view-action:hover,
+.product-shell .secondary-view-action:focus-visible {
+  border-color: var(--product-accent);
+  color: var(--product-accent-dark);
+  background: var(--product-accent-soft);
+}
+
+.product-shell .local-only-badge {
+  min-height: 32px;
+  border: 1px solid var(--product-line-strong);
+  border-radius: 2px;
+  color: var(--product-muted);
+  background: var(--product-raised);
+}
+
+.product-shell .workspace-summary-card,
+.product-shell .real-record-card,
+.product-shell .real-onboarding-card,
+.product-shell .real-evaluation-card,
+.product-shell .real-release-card,
+.product-shell .overview-detail-card,
+.product-shell .real-list-card,
+.product-shell .real-empty-state {
+  border-color: var(--product-line-strong);
+  border-radius: 2px;
+  box-shadow: 0 14px 34px rgb(24 35 33 / 5%);
+}
+
+.product-shell .workspace-summary-card {
+  margin-top: 46px;
+  border-top: 2px solid var(--product-accent);
+  padding: 23px 23px 0;
+  background: var(--product-surface);
+}
+
+.product-shell .summary-card-heading h2,
+.product-shell .product-section-heading h2,
+.product-shell .overview-detail-card h3,
+.product-shell .real-record-card h2,
+.product-shell .real-release-target h2,
+.product-shell .real-result-heading h2 {
+  color: var(--product-ink);
+}
+
+.product-shell .summary-card-heading h2 {
+  margin-top: 8px;
+  font-size: 21px;
+}
+
+.product-shell .summary-ready-pill,
+.product-shell .real-status-pill {
+  border-radius: 0;
+}
+
+.product-shell .summary-ready-pill {
+  border-color: #a9cdbd;
+  padding: 6px 9px;
+  color: var(--product-verified);
+  background: var(--product-verified-soft);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.product-shell .product-main .summary-ready-pill i {
+  width: 6px;
+  height: 6px;
+  border-radius: 0;
+  background: var(--product-verified);
+}
+
+.product-shell .summary-facts {
+  margin-top: 23px;
+  border-top-color: var(--product-line);
+}
+
+.product-shell .product-main div.summary-facts > div {
+  min-height: 108px;
+  padding: 17px 18px 20px 0;
+}
+
+.product-shell .product-main .summary-facts > div + div {
+  border-left-color: var(--product-line);
+}
+
+.product-shell .product-main .summary-facts span,
+.product-shell .product-main .summary-facts small {
+  color: var(--product-subtle);
+}
+
+.product-shell .summary-facts strong {
+  color: var(--product-ink);
+  font-size: 19px;
+}
+
+.product-shell .product-section-heading {
+  margin-top: 70px;
+}
+
+.product-shell .product-section-heading h2 {
+  margin-top: 9px;
+  font-size: 23px;
+}
+
+.product-shell .section-helper {
+  color: var(--product-subtle);
+  font-size: 10px;
+}
+
+.product-shell .release-path-list {
+  gap: 7px;
+  margin-top: 22px;
+}
+
+.product-shell .release-path-item {
+  min-height: 80px;
+  border-color: var(--product-line);
+  border-radius: 0;
+  padding: 12px 16px;
+  background: rgb(255 255 255 / 70%);
+}
+
+.product-shell .release-path-item.is-current {
+  border-color: #d4c0b2;
+  border-left: 2px solid var(--product-accent);
+  padding-left: 15px;
+  background: #fffaf6;
+}
+
+.product-shell .path-step {
+  width: 28px;
+  height: 28px;
+  border-color: var(--product-line-strong);
+  border-radius: 0;
+  color: var(--product-subtle);
+}
+
+.product-shell .is-complete .path-step {
+  border-color: #a9cdbd;
+  color: var(--product-verified);
+  background: var(--product-verified-soft);
+}
+
+.product-shell .is-current .path-step {
+  border-color: #d3b49f;
+  color: var(--product-accent-dark);
+  background: var(--product-accent-soft);
+}
+
+.product-shell .release-path-item strong {
+  color: var(--product-ink);
+}
+
+.product-shell .release-path-item p,
+.product-shell .overview-detail-card > p,
+.product-shell .real-boundary-copy {
+  color: var(--product-muted);
+}
+
+.product-shell .path-state,
+.product-shell .path-action,
+.product-shell .detail-card-topline a,
+.product-shell .inline-action-link {
+  color: var(--product-accent-dark);
+}
+
+.product-shell .path-action,
+.product-shell .inline-action-link {
+  border-bottom-color: var(--product-accent);
+}
+
+.product-shell .overview-cards {
+  gap: 14px;
+  margin-top: 46px;
+}
+
+.product-shell .overview-detail-card {
+  min-height: 233px;
+  padding: 19px 19px 16px;
+  background: rgb(255 255 255 / 76%);
+}
+
+.product-shell .overview-detail-card h3 {
+  margin-top: 23px;
+}
+
+.product-shell .mini-build-row,
+.product-shell .proof-line {
+  border-top-color: var(--product-line);
+  color: var(--product-muted);
+}
+
+.product-shell .product-empty-state,
+.product-shell .real-empty-state {
+  border-left: 2px solid var(--product-accent);
+  background: var(--product-surface);
+}
+
+.product-shell .real-empty-state {
+  gap: 11px;
+  margin-top: 28px;
+  padding: 32px;
+}
+
+.product-shell .real-empty-icon {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--product-accent);
+  border-radius: 0;
+  color: var(--product-accent-dark);
+  background: var(--product-accent-soft);
+}
+
+.product-shell .real-empty-state p {
+  color: var(--product-muted);
+}
+
+.product-shell .real-error {
+  margin-top: 14px;
+  border-color: #c78378;
+  border-left: 2px solid #a9473f;
+  border-radius: 0;
+  color: #812f29;
+  background: #fff2f0;
+}
+
+.product-shell .real-record-card,
+.product-shell .real-onboarding-card,
+.product-shell .real-evaluation-card,
+.product-shell .real-release-card {
+  border-top: 2px solid var(--product-accent);
+  background: var(--product-surface);
+  box-shadow: 0 14px 34px rgb(24 35 33 / 5%);
+}
+
+.product-shell .real-record-card,
+.product-shell .real-onboarding-card,
+.product-shell .real-evaluation-card,
+.product-shell .real-release-card {
+  margin-top: 28px;
+  padding: 28px;
+}
+
+.product-shell .real-facts {
+  gap: 0;
+  border-top: 1px solid var(--product-line);
+  border-bottom: 1px solid var(--product-line);
+}
+
+.product-shell .real-facts div {
+  min-height: 68px;
+  border-bottom: 1px solid var(--product-line);
+  padding: 14px 12px 14px 0;
+}
+
+.product-shell .real-facts div:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.product-shell .real-facts dt,
+.product-shell .real-inline-fields label,
+.product-shell .real-form-grid > label,
+.product-shell .real-account-form > label,
+.product-shell .real-release-form > label,
+.product-shell .real-evaluation-toolbar label {
+  color: var(--product-muted);
+}
+
+.product-shell .real-facts dd {
+  color: var(--product-ink);
+}
+
+.product-shell .real-facts code,
+.product-shell .real-result-card code,
+.product-shell .real-list-card code,
+.product-shell .real-release-card code {
+  color: var(--product-accent-dark);
+}
+
+.product-shell .real-form-grid input,
+.product-shell .real-form-grid select,
+.product-shell .real-account-form input,
+.product-shell .real-release-form input,
+.product-shell .real-evaluation-toolbar select,
+.product-shell .real-release-clearance textarea {
+  min-height: 44px;
+  border-color: var(--product-line-strong);
+  border-radius: 2px;
+  color: var(--product-ink);
+  background: #fbfcfb;
+}
+
+.product-shell .real-form-grid input:focus,
+.product-shell .real-form-grid select:focus,
+.product-shell .real-account-form input:focus,
+.product-shell .real-release-form input:focus,
+.product-shell .real-evaluation-toolbar select:focus,
+.product-shell .real-release-clearance textarea:focus {
+  outline: 3px solid rgb(154 85 44 / 18%);
+  border-color: var(--product-accent);
+}
+
+.product-shell .real-form-grid fieldset,
+.product-shell .real-release-clearance {
+  border-color: var(--product-line-strong);
+  border-radius: 0;
+  background: var(--product-raised);
+}
+
+.product-shell .real-form-grid legend,
+.product-shell .real-release-clearance legend {
+  color: var(--product-ink);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.product-shell .field-help {
+  color: var(--product-subtle);
+}
+
+.product-shell .real-stepper {
+  gap: 0;
+  border-bottom: 1px solid var(--product-line);
+  padding-bottom: 18px;
+}
+
+.product-shell .real-stepper span {
+  border-top: 2px solid var(--product-line);
+  padding-top: 10px;
+  color: var(--product-subtle);
+}
+
+.product-shell .real-stepper span.active,
+.product-shell .real-stepper span.complete {
+  border-top-color: var(--product-accent);
+  color: var(--product-accent-dark);
+}
+
+.product-shell .real-stepper i {
+  width: 24px;
+  height: 24px;
+  border-color: var(--product-line-strong);
+  border-radius: 0;
+}
+
+.product-shell .real-stepper span.active i,
+.product-shell .real-stepper span.complete i {
+  border-color: var(--product-accent);
+  color: var(--product-accent-dark);
+  background: var(--product-accent-soft);
+}
+
+.product-shell .real-choice-card {
+  border-color: var(--product-line-strong);
+  border-radius: 2px;
+  background: var(--product-surface);
+}
+
+.product-shell .real-choice-card:has(input:checked) {
+  border-color: var(--product-accent);
+  background: var(--product-accent-soft);
+}
+
+.product-shell .real-choice-card strong,
+.product-shell .real-record-card h2,
+.product-shell .real-release-target h2 {
+  color: var(--product-ink);
+}
+
+.product-shell .real-form-actions {
+  border-top-color: var(--product-line);
+  padding-top: 18px;
+}
+
+.product-shell .real-list {
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.product-shell .real-list-card {
+  border-left: 2px solid var(--product-line-strong);
+  padding: 20px;
+  background: var(--product-surface);
+}
+
+.product-shell .real-list-card:hover {
+  border-left-color: var(--product-accent);
+}
+
+.product-shell .real-list-card h2 {
+  color: var(--product-ink);
+}
+
+.product-shell .real-list-card p,
+.product-shell .real-list-meta,
+.product-shell .real-result-date,
+.product-shell .real-release-target p,
+.product-shell .real-history-row span {
+  color: var(--product-muted);
+}
+
+.product-shell .real-status-pill {
+  border-color: var(--product-line-strong);
+  padding: 5px 8px;
+  color: var(--product-muted);
+  background: var(--product-raised);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.product-shell .real-status-pill.clear,
+.product-shell .real-status-pill.ready,
+.product-shell .real-status-pill.build-succeeded {
+  border-color: #a9cdbd;
+  color: var(--product-verified);
+  background: var(--product-verified-soft);
+}
+
+.product-shell .real-status-pill.hold,
+.product-shell .real-status-pill.ledger-approval-required,
+.product-shell .real-status-pill.building {
+  border-color: #d3b49f;
+  color: var(--product-attention);
+  background: var(--product-attention-soft);
+}
+
+.product-shell .real-status-pill.blocked,
+.product-shell .real-status-pill.escalate,
+.product-shell .real-status-pill.build-failed {
+  border-color: #c78378;
+  color: #812f29;
+  background: #fff2f0;
+}
+
+.product-shell .real-result-card {
+  border-radius: 0;
+  background: var(--product-raised);
+}
+
+.product-shell .real-result-card.hold,
+.product-shell .real-result-card.escalate {
+  border-color: #d3b49f;
+  border-left: 2px solid var(--product-attention);
+  background: var(--product-attention-soft);
+}
+
+.product-shell .real-result-summary {
+  color: var(--product-muted);
+}
+
+.product-shell .real-result-facts div,
+.product-shell .real-history-row {
+  border-top-color: var(--product-line);
+}
+
+.product-shell .real-result-facts span,
+.product-shell .real-history-row span {
+  color: var(--product-subtle);
+}
+
+.product-shell .real-result-facts strong {
+  color: var(--product-ink);
+}
+
+.product-shell .real-reason-list {
+  color: var(--product-attention);
+}
+
+.product-shell .build-evidence-details {
+  border-top-color: var(--product-line);
+}
+
+.product-shell .build-evidence-details summary,
+.product-shell .builds-footnote a,
+.product-shell .build-review-link,
+.product-shell .inline-action-link {
+  color: var(--product-accent-dark);
+}
+
+.product-shell .build-provenance-json {
+  border: 1px solid var(--product-line);
+  border-radius: 0;
+  color: var(--product-muted);
+  background: var(--product-raised);
+}
+
+.product-shell .real-release-clearance {
+  background: var(--product-raised);
+}
+
+.product-shell .real-release-clearance textarea {
+  min-height: 150px;
+  background: var(--product-surface);
+}
+
+.product-shell .real-history {
+  margin-top: 36px;
+}
+
+.product-shell .real-history-row {
+  padding: 15px 0;
+}
+
+.product-loading,
+.fixture-disabled {
+  color: #182321;
+  background:
+    linear-gradient(rgb(36 67 57 / 5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(36 67 57 / 5%) 1px, transparent 1px), #f5f7f5;
+  background-size: 48px 48px;
+}
+
+.product-loading .real-loading-card {
+  border-color: #aab8b0;
+  border-top: 2px solid #9a552c;
+  border-radius: 2px;
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgb(24 35 33 / 5%);
+}
+
+.product-loading .workspace-loading-wordmark {
+  display: block;
+  width: 150px;
+  height: auto;
+  object-fit: contain;
+}
+
+.product-loading .real-loading-card h1 {
+  color: #182321;
+}
+
+.product-loading .real-loading-card p {
+  color: #4c5c56;
+}
+
+.product-loading .loading-spinner {
+  width: 25px;
+  height: 25px;
+  border-color: #d8e1dc;
+  border-top-color: #9a552c;
+  border-radius: 0;
+}
+
+@media (max-width: 860px) {
+  .product-shell {
+    grid-template-columns: 214px minmax(0, 1fr);
+  }
+
+  .product-shell .product-sidebar {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .product-shell .product-content {
+    width: min(100% - 48px, 780px);
+  }
+}
+
+@media (max-width: 680px) {
+  .product-shell {
+    display: block;
+  }
+
+  .product-shell .product-sidebar {
+    position: static;
+    height: auto;
+    border-right: 0;
+    border-bottom-color: var(--product-line);
+    padding: 15px 16px 12px;
+  }
+
+  .product-shell .product-sidebar-top {
+    gap: 14px;
+  }
+
+  .product-shell .product-nav {
+    gap: 3px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .product-shell .product-nav-link {
+    flex: 0 0 auto;
+    min-height: 35px;
+    padding: 0 9px;
+  }
+
+  .product-shell .product-nav-link.is-active {
+    border-bottom-color: var(--product-accent);
+    border-left-color: transparent;
+  }
+
+  .product-shell .product-header {
+    min-height: 74px;
+    padding: 0 16px;
+  }
+
+  .product-shell .product-content {
+    width: min(100% - 36px, 620px);
+    padding: 45px 0 76px;
+  }
+
+  .product-shell .view-heading-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .product-shell .view-heading-row h1,
+  .product-shell .product-empty-state h1 {
+    font-size: clamp(39px, 11vw, 62px);
+  }
+
+  .product-shell .view-primary-action,
+  .product-shell .button-secondary,
+  .product-shell .secondary-view-action {
+    width: fit-content;
+  }
+
+  .product-shell .workspace-summary-card {
+    margin-top: 38px;
+  }
+
+  .product-shell .summary-card-heading,
+  .product-shell .product-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .product-shell .summary-facts,
+  .product-shell .overview-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .product-shell .product-main div.summary-facts > div {
+    min-height: auto;
+    padding: 14px 0;
+  }
+
+  .product-shell .product-main .summary-facts > div + div {
+    border-top-color: var(--product-line);
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  .product-shell .release-path-item {
+    grid-template-columns: 29px minmax(0, 1fr);
+    gap: 10px;
+    padding: 13px;
+  }
+
+  .product-shell .path-state,
+  .product-shell .path-action {
+    grid-column: 2;
+  }
+
+  .product-shell .real-record-card,
+  .product-shell .real-onboarding-card,
+  .product-shell .real-evaluation-card,
+  .product-shell .real-release-card {
+    padding: 21px 18px;
+  }
+
+  .product-shell .real-list-card,
+  .product-shell .real-evaluation-toolbar,
+  .product-shell .real-result-heading,
+  .product-shell .real-release-form,
+  .product-shell .real-history-row {
+    align-items: stretch;
+    flex-direction: column;
+    grid-template-columns: 1fr;
+  }
+
+  .product-shell .real-list-meta {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .product-shell .real-release-form .view-primary-action {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .product-shell .product-brand small,
+  .product-shell .workspace-status {
+    display: none;
+  }
+
+  .product-shell .product-content {
+    width: min(100% - 32px, 560px);
+  }
+
+  .product-shell .view-primary-action,
+  .product-shell .button-secondary,
+  .product-shell .secondary-view-action {
+    width: 100%;
+  }
+
+  .product-shell .real-facts,
+  .product-shell .real-stepper,
+  .product-shell .real-result-facts,
+  .product-shell .real-choice-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-shell .real-facts div,
+  .product-shell .real-facts div:nth-last-child(-n + 2) {
+    border-bottom: 1px solid var(--product-line);
+  }
+
+  .product-shell .real-facts div:last-child {
+    border-bottom: 0;
+  }
+
+  .product-shell .real-inline-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .product-shell .real-result-facts div:first-child {
+    grid-column: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-shell .product-nav-link,
+  .product-shell .view-primary-action,
+  .product-shell .button-secondary,
+  .product-shell .secondary-view-action,
+  .product-shell .real-signout {
+    transition: none;
+  }
+}

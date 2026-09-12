@@ -701,6 +701,26 @@ explicit development fixture remains separately gated; no production auth bypass
 behavior in this checkout. They do not prove external deployment identity, physical Ledger approval,
 or real-world robot safety.
 
+## 2026-09-13 — Authenticated workspace visual alignment
+
+**Tool:** OpenAI Codex using the Rovaulta verification-loop and handoff guidance.
+
+**Human direction:** Extend the established `/` and `/start` visual language to `/app` and every
+normal authenticated workspace subpage without changing authentication, authorization, data access,
+business logic, routes, or Ledger authority.
+
+**AI-assisted output:** Reworked the authenticated workspace projection with the existing light
+control-plane tokens, grid canvas, charcoal typography, oxide actions, squared controls, measured
+dividers, quiet surfaces, responsive navigation, explicit state styling, and the supplied mark/
+wordmark assets in their appropriate contexts. No server, API, session, ownership, or release logic
+changed.
+
+**Evidence boundary:** Local visual inspection covered `/`, `/start`, `/app`, `/app/setup`,
+`/app/builds`, `/app/evaluate`, `/app/releases`, and `/app/evidence`. The serial P6/P7/P8 browser
+suite passed 11 tests, `bun run verify` passed, and the diff passed whitespace validation. The
+separate read-only UI review was dispatched but returned no report during bounded waits; no
+independent clean-review or external deployment claim is made.
+
 ## 2026-09-12 — Independent CRE private-gateway probe
 
 **Tool:** OpenAI Codex using the official CRE v1.33.0 HTTP-trigger documentation and a standalone

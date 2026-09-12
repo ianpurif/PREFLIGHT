@@ -1907,6 +1907,13 @@ export function RealProductApp({ initialView }: { readonly initialView: ProductV
     return (
       <main className="product-loading" id="main-content">
         <div className="real-loading-card">
+          <Image
+            className="workspace-loading-wordmark"
+            src="/brand/rovaulta-wordmark.png"
+            alt="Rovaulta"
+            width={150}
+            height={30}
+          />
           <span className="loading-spinner" aria-hidden="true" />
           <h1>Loading your workspace</h1>
           <p>Checking the account session and private target records.</p>
@@ -1917,6 +1924,13 @@ export function RealProductApp({ initialView }: { readonly initialView: ProductV
     return (
       <main className="product-loading" id="main-content">
         <div className="real-loading-card">
+          <Image
+            className="workspace-loading-wordmark"
+            src="/brand/rovaulta-wordmark.png"
+            alt="Rovaulta"
+            width={150}
+            height={30}
+          />
           <h1>Workspace unavailable</h1>
           <p>{error ?? "Sign in is required."}</p>
           <Link className="view-primary-action" href="/start">

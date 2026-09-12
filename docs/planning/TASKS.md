@@ -144,7 +144,13 @@
 - [x] minimal source-build UX and evidence/details projection
 - [x] real Bun BuildKit proof and targeted verification
 - [x] diagnose and fix Windows Docker Desktop `buildx` plugin resolution
-- [ ] full repository verification
+- [x] full repository verification
+
+## Authenticated workspace visual alignment
+- [x] align the `/app` shell with the public `/` and `/start` design-system language
+- [x] apply consistent navigation, surfaces, controls, statuses, forms, empty states, and evidence views
+- [x] preserve authenticated data/API behavior and the account boundary while adding responsive treatment
+- [x] visually inspect every normal `/app` route and run the serial P6/P7/P8 browser coverage
 
 ## P12 — Account-backed Sepolia clearance issuance
 - [x] validated public clearance construction from an account-owned `CLEAR` evaluation

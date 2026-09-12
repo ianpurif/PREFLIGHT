@@ -6,8 +6,10 @@ Rovaulta answers one practical question before a robot is released:
 
 > Did this exact robot software build pass this site's private evaluation rules, and has an authorized human approved this exact release?
 
-It combines confidential evaluation with hardware-backed approval. The factory does not need to
-publish its private safety envelope, and the deployment agent cannot approve a release by itself.
+It combines confidential evaluation with a hardware-gated release path. The factory does not need
+to publish its private safety envelope, and the deployment agent cannot approve a release by itself.
+The current checkout reaches the Ledger pre-signing boundary; final signing remains subject to the
+external Ledger Clear Signing prerequisite documented below.
 
 **Built for ETHGlobal with Chainlink CRE, The Graph, and Ledger as load-bearing integrations.**
 
@@ -51,8 +53,9 @@ Rovaulta creates a versioned clearance for an exact combination of:
 `site + robot + build + safety-envelope commitment + evaluator version + expiry`
 
 The safety result is deterministic. A deployment agent can explain the result and prepare a release,
-but a human must approve the exact deployment intent with Ledger hardware before the release gate can
-report authorization.
+but the release gate requires a human to approve the exact deployment intent with Ledger hardware
+before it can report authorization. The current evidence stops before that signature when the
+external Clear Signing prerequisite is unavailable.
 
 ### Why it matters
 
@@ -146,7 +149,8 @@ flowchart LR
    The Graph and then performs the direct P5 registry check before calling the existing
    `ReleaseService.prepare()` authority. It cannot sign, consume, write the registry, or invent a
    clearance.
-6. Ledger displays and signs the exact deployment intent on the human operator's device.
+6. Ledger is intended to display and sign the exact deployment intent on the human operator's device;
+   the current checkout reaches this boundary but does not claim a completed signature.
 7. The API recovers the signer, checks the exact registry state again, and consumes the nonce once.
 
 ## What stays private and what becomes public
@@ -156,7 +160,7 @@ flowchart LR
 | Confidential evaluation  | Site envelope, blind, private rules, geometry, thresholds, and intermediate evidence | Used inside the CRE confidential callback; never logged or sent to the browser |
 | Public evaluation result | Version, verdict, evaluation ID, build/site bindings, and a behavior-input digest    | Minimal result only; it does not reveal the private envelope                   |
 | Sepolia registry         | Public hashes, exact bindings, `CLEAR`, issuer, timestamps, and revocation state     | No private rules or confidential payloads                                      |
-| Ledger release           | Full deployment intent, including exact build, clearance, signer, nonce, and expiry  | Human confirms on hardware; backend never holds the key                        |
+| Ledger release           | Full deployment intent, including exact build, clearance, signer, nonce, and expiry  | Human hardware confirmation is required; the current evidence stops before signing and the backend never holds the key |
 
 ## Use the product
 
@@ -217,7 +221,7 @@ It is not account data, a live partner execution, a clearance, or proof of physi
 | Public attestation               | `RovaultaRegistry` stores public hashes and validity/revocation state on Sepolia     | Separate organizations have a shared verification surface          |
 | Bounded deployment agent         | Host-owned tools enforce a fixed order and finite public request grammar              | AI can orchestrate and explain without receiving release authority |
 | Live registry context            | The Graph indexes public RovaultaRegistry events; account preparation requires an exact match | AI decisions use current public chain context without indexing private site data |
-| Hardware approval                | Ledger DMK, WebHID, EIP-712, signer recovery, and one-time nonce checks               | A human approves the exact high-impact action on a device          |
+| Hardware approval                | Ledger DMK, WebHID, EIP-712, signer recovery, and one-time nonce checks               | A human approval is required for the exact high-impact action; this checkout has pre-signing evidence, not a completed signature |
 | Reliable rehearsal               | `demo:setup`, `demo:reset`, `demo:run`, and browser race tests                        | A judge can repeat the demo without stale state                    |
 
 ## Partner integrations
@@ -231,6 +235,14 @@ These partners answer different questions:
 | Chainlink CRE | Can the site evaluate an exact build without exposing its private envelope? | The confidential workflow fetches a site-bound secret inside `handlerInTee`, invokes the deterministic evaluator, and releases only the minimal result. The account API uses the official gateway boundary or the explicit authenticated CLI simulation mode. | Current-source authenticated CLI simulation records unsafe `HOLD`, corrected `CLEAR`, and tampered commitment `REJECT`; one account-owned simulated `CLEAR` is persisted with explicit simulation provenance. Live gateway completion remains unconfigured. |
 | The Graph    | Can the agent use current public registry context before preparing a release? | A pinned, buildable Sepolia subgraph indexes public `RovaultaRegistry` events. The account-backed agent requires an exact live `MATCHED` Graph context before P5. | Real clearance is indexed, the Studio provider returns `MATCHED`, and the live Gemini run consumes that context before `prepareDeploymentIntent`; Gateway publication is not claimed. Start Fresh eligibility is documented separately. |
 | Ledger        | Who can authorize the exact release after it passes?                        | The browser uses Ledger DMK, WebHID or test-only Speculos, the Ethereum signer kit, and full EIP-712 intent checks. The agent stops at `LEDGER_APPROVAL_REQUIRED`. | Software and partial Speculos evidence are recorded. Physical Clear Signing and official Tester cases remain blocked by missing external access.            |
+
+### Current bounty status
+
+| Target | Status | Honest qualification boundary |
+| ------ | ------ | ------------------------------ |
+| Chainlink — Best Confidential Workflow | **PASS** for the accepted authenticated CRE simulation path | Official CRE CLI evidence proves confidential `HOLD`, `CLEAR`, and pre-evaluation tampered-commitment `REJECT`; live CRE/DON execution is not claimed. |
+| The Graph — Best AI Tooling or AI Use Case with The Graph | **PASS** for implementation; **PARTIAL** for final submission until the required video is attached | A real Sepolia clearance is indexed by the hosted Subgraph Studio deployment, the strict reader returns `MATCHED`, and the real Gemini agent consumes that context. Start Fresh eligibility is supported by the maintainer declaration and repository chronology; Gateway publication is not claimed, and the required two-to-four-minute demo video remains an external submission artifact. |
+| Ledger — AI Agents x Ledger | **PARTIAL** | The human-in-the-loop boundary, exact intent checks, DMK/WebHID/Speculos integration, and AI refusal to sign are implemented. A completed Ledger signature and authorization readback remain unavailable because the partner-issued origin/accepted-descriptor prerequisite is not configured. |
 
 Without Chainlink's confidential execution, the site would need to hand its private rules to the
 party running the evaluator. Without The Graph, the agent would have no indexed public registry
@@ -268,7 +280,7 @@ secret custody or a remote robot attestation.
 | Confidential compute | Chainlink CRE TypeScript SDK                                              | Provides the confidential workflow boundary for private envelope inputs                     |
 | Attestation          | Solidity, Foundry, viem, Ethereum Sepolia                                 | Stores public exact bindings without storing private facility data                          |
 | Human approval       | Ledger DMK, WebHID, Speculos test transport, Ethereum Signer Kit, EIP-712 | Keeps the release key on the device and makes the signed intent explicit                    |
-| Public registry context | The Graph Gateway + Sepolia RovaultaRegistry subgraph                     | Gives the bounded agent current public clearance context before the final P5 check           |
+| Public registry context | The Graph Subgraph Studio deployment + Sepolia RovaultaRegistry subgraph (Gateway-compatible adapter) | Gives the bounded agent current public clearance context before the final P5 check; current live proof is Studio, not Gateway |
 | Persistence          | Bun SQLite with WAL and atomic nonce consumption                          | Provides a single-node replay boundary for the release service                              |
 | Quality              | Biome, Bun test, Playwright, Foundry, GitHub Actions                      | Covers formatting, unit tests, browser flow, contracts, and scaffold checks                 |
 
@@ -406,8 +418,9 @@ password; this flow does not reset credentials. Before setup-only, clear any sta
 
 ### Record one real account clearance on Sepolia
 
-After the normal account flow has completed a real `CLEAR` evaluation through the configured CRE
-result boundary, an operator can attest that exact public result in the already deployed registry.
+After an account-owned `CLEAR` evaluation has completed through either the explicit authenticated CRE
+CLI simulation mode or a configured CRE result boundary, an operator can attest that exact public
+result in the already deployed registry.
 The command reads the account-scoped evaluation from the existing API database, derives the P1
 clearance and P4 bytes32 transport, checks the pinned Sepolia contract and registrar authorization,
 simulates `recordClearance`, waits for one confirmation, validates both registry events, and performs
@@ -458,7 +471,7 @@ bun run verify
 ```
 
 The current verification report records TypeScript tests across the domain, evaluator, Chainlink,
-API, chain-client, Ledger, and web packages, plus contract fuzz/invariant coverage and ten browser
+API, chain-client, Ledger, and web packages, plus contract fuzz/invariant coverage and eleven browser
 tests covering the normal account lifecycle and the isolated P6/P7 fixture. See
 [`VERIFICATION_REPORT.md`](VERIFICATION_REPORT.md) for the exact boundary and current evidence.
 
@@ -513,6 +526,15 @@ physical Ledger-device evidence.
 | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | ![Speculos address review](docs/compliance/evidence/p5-speculos-2026-09-07/address-review.png) | ![Speculos address confirmation](docs/compliance/evidence/p5-speculos-2026-09-07/address-confirm.png) |
 
+The current Ledger blocker is explicit:
+
+> Signing pending Ledger partner origin token — external prerequisite, not a code gap. Ledger support confirmed Speculos acceptable as hardware substitute.
+
+Speculos transport, the official Ethereum app, address review, and the exact pre-signing checks are
+real and testable. They do not by themselves prove a Clear Signing signature or `AUTHORIZED`
+readback. This repository uses the human-in-the-loop Ledger direction; `wallet-cli ring`, Key Ring,
+Ledger-secured payments, and VPS secret brokerage are not present or claimed.
+
 ## Project structure
 
 ```text
@@ -559,6 +581,11 @@ Not yet proven or intentionally not implemented:
   `gemini-3.5-flash` override because 2.5 is unavailable to new users);
 - official Ledger Clear Signing Tester A/B/E/F access and complete Speculos signing captures;
 - physical Ledger approval evidence;
+- a completed Ledger signature/`ReleaseAuthorization` readback. The current `/p5-ledger` flow stops
+  at `CLEAR_SIGNING_UNAVAILABLE` when the partner-issued origin token or accepted descriptor is absent;
+  the local ERC-7730 file is a candidate descriptor, not proof of Ledger registry acceptance;
+- `wallet-cli ring`, Key Ring, a scoped-secret broker, or a Ledger-secured payment flow (these are
+  separate bounty directions and are intentionally outside Rovaulta's human approval gate);
 - proof that a remote black-box model endpoint is the exact artifact whose digest was evaluated;
 - physical robot commissioning, robot control loops, or automatic robot activation;
 - the required two-to-four-minute public demo video for The Graph/ETHOnline, plus any other final
@@ -588,7 +615,7 @@ rules onchain as part of these improvements.
 
 ## Team, credits, and license
 
-Rovaulta is an independent ETHGlobal From Scratch project, supported by the maintainer-origin
+Rovaulta is submitted as an ETHGlobal From Scratch project, supported by the maintainer-origin
 declaration and repository chronology in [`graph-start-fresh-eligibility-2026-09-11.md`](docs/compliance/evidence/graph-start-fresh-eligibility-2026-09-11.md).
 The repository records its AI-assisted development and evidence process in [`docs/ai/AI_USAGE.md`](docs/ai/AI_USAGE.md). Chainlink CRE and
 Ledger are used through their documented SDKs and hardware/application boundaries; their names and

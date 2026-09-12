@@ -2,6 +2,24 @@
 
 ## Phase
 
+## 2026-09-13 — Authenticated workspace visual alignment
+
+- The authenticated `/app` shell and its setup, builds, evaluate, releases, and evidence views now
+  use the same light control-plane language as `/` and `/start`: the design-system canvas/grid,
+  charcoal type, oxide actions, measured dividers, squared controls, and quiet surfaces.
+- The compact mark remains the authenticated navigation identity; the wordmark is used for workspace
+  loading/error states. Responsive navigation keeps the account boundary and visible sign-out action
+  intact on narrow screens.
+- This slice changes only `apps/web/src/app/globals.css` and the loading/error projection in
+  `apps/web/src/app/real-workspace.tsx`; authentication, account ownership, API behavior, data
+  fetching, routes, forms, and Ledger authority are unchanged.
+- Local visual inspection covered `/`, `/start`, `/app`, and every `/app` subpage. The combined P6/P7/P8
+  browser suite passed 11 tests serially, `bun run verify` passed end to end, and `git diff --check`
+  passed. A separate read-only UI review was dispatched but did not return during bounded waits, so
+  no independent clean-review claim is made.
+- Next exact task: keep external partner/submission evidence separate from local UI verification; no
+  implementation blocker remains for this visual-alignment slice.
+
 ## 2026-09-12 — P18 optional Build Integrity / source-build path
 
 - The optional `Build From Source` path is implemented beside the unchanged existing build-number
