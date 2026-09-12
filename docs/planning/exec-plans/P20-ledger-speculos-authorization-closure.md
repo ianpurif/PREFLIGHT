@@ -52,7 +52,7 @@ existing API can verify and persist the corresponding one-time authorization.
   prerequisites permit.
 - [x] Confirm no local code defect is present; the adapter correctly fails closed
   before signing when the origin token is absent.
-- [ ] Run targeted Ledger/API tests and the verification loop.
+- [x] Run targeted Ledger/API tests and the verification loop.
 - [x] Record evidence and the exact external blocker.
 
 ## Parallel work / worktrees
@@ -81,3 +81,8 @@ local test configuration if it is not needed.
   smoke passed in this environment.
 - Exact signing attempt with an empty origin token failed closed with
   `CLEAR_SIGNING_UNAVAILABLE`; no signature or authorization was produced.
+- Targeted Ledger/API tests: 38 passed, 0 failed.
+- `bun run verify`: passed (31 pre-existing Biome CSS specificity warnings;
+  no errors), including typecheck, full tests, builds, Foundry tests, and
+  scaffold verification.
+- `git diff --check`: passed.
