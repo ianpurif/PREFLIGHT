@@ -136,6 +136,10 @@ legacy/blind path fails closed.
 
 Detailed partial evidence is in
 [`p5-ledger-speculos-partial-2026-09-07.md`](../compliance/evidence/p5-ledger-speculos-partial-2026-09-07.md).
+The 2026-09-12 reproduction also confirms the official Speculos session and
+the fail-closed `CLEAR_SIGNING_UNAVAILABLE` result when the required Ledger
+origin token is absent; see
+[`p20-ledger-speculos-authorization-blocked-2026-09-12.md`](../compliance/evidence/p20-ledger-speculos-authorization-blocked-2026-09-12.md).
 Specific tooling feedback is in [`LEDGER_DX_FEEDBACK.md`](LEDGER_DX_FEEDBACK.md).
 
 ## Official resources used
