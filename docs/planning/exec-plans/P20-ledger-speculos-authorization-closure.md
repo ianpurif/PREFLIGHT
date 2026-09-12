@@ -47,11 +47,13 @@ existing API can verify and persist the corresponding one-time authorization.
 
 ## Steps
 - [x] Explore current adapter, context guard, API readback, and environment.
-- [ ] Configure local Speculos-only prerequisites without committing secrets.
-- [ ] Run the real signing/readback flow if Ledger prerequisites are available.
-- [ ] Add only a minimal fix if a local defect is found.
+- [x] Configure local Speculos-only prerequisites without committing secrets.
+- [x] Run the real signing/readback flow as far as the available Ledger
+  prerequisites permit.
+- [x] Confirm no local code defect is present; the adapter correctly fails closed
+  before signing when the origin token is absent.
 - [ ] Run targeted Ledger/API tests and the verification loop.
-- [ ] Record evidence or the exact external blocker.
+- [x] Record evidence and the exact external blocker.
 
 ## Parallel work / worktrees
 
@@ -70,6 +72,8 @@ local test configuration if it is not needed.
 - Ledger’s current wallet integration documentation states that the token comes
   from the Ledger partner program; the candidate ERC-7730 descriptor is not
   evidence of registry serving by itself.
+- The ignored local `.env` is configured for the official Speculos loopback and
+  its public deterministic test signer. No token or private material was added.
 
 ## Verification evidence
 
