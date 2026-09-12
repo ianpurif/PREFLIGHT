@@ -38,7 +38,8 @@ Produce an evidence-backed qualification matrix for Rovaulta's Chainlink Best Co
 
 - [x] Explore repository instructions and current planning/evidence docs.
 - [x] Research current official bounty and partner requirements.
-- [x] Reproduce the normal product, CRE, Graph, Gemini, and Ledger/Speculos paths.
+- [x] Reproduce the available normal product, CRE, Graph, Gemini, and Ledger/Speculos paths;
+  classify unavailable replay states without fabricating data.
 - [x] Audit environment/configuration without exposing secrets.
 - [x] Implement only a justified minimal fix, if one is required for qualification.
 - [x] Run targeted and full verification.
