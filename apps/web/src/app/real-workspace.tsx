@@ -1478,7 +1478,7 @@ function EvaluateView({
       if (reason instanceof ApiError && reason.code === "CRE_EVALUATION_PENDING") {
         setError("CRE accepted the evaluation, but no completed result is available yet.");
       } else if (reason instanceof ApiError && reason.code === "CRE_UNAVAILABLE") {
-        setError("Confidential evaluation is unavailable until the CRE gateway is configured.");
+        setError(`Confidential evaluation unavailable: ${reason.message}`);
       } else {
         setError(reason instanceof ApiError ? reason.message : "Evaluation failed");
       }
