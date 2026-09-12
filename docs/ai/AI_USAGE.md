@@ -35,6 +35,26 @@ regression investigation found missing Windows Docker plugin/configuration varia
 child environment, corrected autodetection/configuration handling, and separately identified the old
 Rovaulta revision's own TypeScript `URL` configuration failure after image resolution was fixed.
 
+## 2026-09-12 — P18 source-build incident recovery
+
+**Tool:** OpenAI Codex using the Rovaulta verification-loop guidance and a separate read-only
+review task.
+
+**Human direction:** Reproduce the reported Rovaulta revision failure across Docker Desktop,
+BuildKit, Bun, dependencies, lockfile, and CRE configuration; fix the real cause without faking a
+successful build or weakening exact-build binding.
+
+**AI-assisted output:** Confirmed the runtime-image error was a Windows Docker plugin-environment
+failure, confirmed the frozen-install error was a cold-cache consequence of the fail-closed
+`--network=none` policy, repaired stale generated workspace dependency links, and replayed the
+current published Rovaulta revision through a real Bun/BuildKit build and the existing evaluation
+and clearance binding. The web error now surfaces only the bounded CRE availability reason.
+
+**Evidence boundary:** The corrected source path is proven locally with a real artifact, digest,
+provenance, and exact `CLEAR` binding. Live CRE evaluation remains blocked by missing authorized
+gateway credentials and external private-workflow/Vault/callback configuration; no local evaluator
+fallback was enabled and no secret values were recorded.
+
 ## 2026-09-09 — P12 account-backed Sepolia clearance issuance
 
 **Tool:** OpenAI Codex using the Rovaulta execution-plan, verification-loop, and partner-compliance
