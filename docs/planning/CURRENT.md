@@ -60,7 +60,8 @@
 - The audit plan and verification record are in
   [`P19`](exec-plans/P19-partner-qualification-audit.md). The ignored local `.env` has the public
   Studio query URL configured; gateway remains the default and simulation remains an explicit
-  operator mode. The current CRE v1.33.0 session fails organization validation before simulation.
+  operator mode. A fresh authenticated CRE v1.33.0 simulation now records `HOLD`, `CLEAR`, and
+  tampered-commitment `REJECT`; live gateway/DON delivery remains separately blocked.
 
 ## 2026-09-12 — P17 authentication, session, and ownership hardening
 

@@ -676,9 +676,10 @@ printed or committed.
 
 **Evidence boundary:** Chainlink simulation and Graph Studio results remain explicitly distinct from
 live CRE/DON execution and decentralized Graph publication. Ledger remains partial: no Clear Signing
-signature, authorization, physical device, origin token, or accepted descriptor was claimed. The
-current CRE v1.33.0 session fails organization validation before simulation, so no new CRE result was
-recorded.
+signature, authorization, physical device, origin token, or accepted descriptor was claimed. The WSL
+dependency tree was reinstalled from the lockfile after a Windows-generated compiler shim was found;
+the fresh authenticated CRE v1.33.0 simulation then recorded `HOLD`, `CLEAR`, and tampered
+`REJECT` without storing confidential values.
 
 **Evidence:** [`P19 partner qualification audit plan`](../planning/exec-plans/P19-partner-qualification-audit.md).
 

@@ -496,6 +496,9 @@ These artifacts are intentionally separated by trust boundary:
 - [P14 live Sepolia and Graph evidence](docs/compliance/evidence/p14-live-bounty-evidence-2026-09-09.md)
   — the account-owned simulated `CLEAR`, confirmed Sepolia registry events, and live Subgraph
   Studio `MATCHED` response.
+- [P19 current CRE simulation evidence](docs/compliance/evidence/chainlink-cre-p19-authenticated-simulation-2026-09-12.md)
+  — fresh authenticated CRE CLI v1.33.0 `HOLD`/`CLEAR`/tampered `REJECT` results with public-only
+  output and no live-DON claim.
 - [P15 live Gemini agent evidence](docs/compliance/evidence/p15-live-gemini-graph-ledger-boundary-2026-09-10.md)
   — real Gemini tool calls over the live Graph context, `prepareDeploymentIntent`, and the
   `LEDGER_APPROVAL_REQUIRED` pre-signing boundary; no physical-device claim.

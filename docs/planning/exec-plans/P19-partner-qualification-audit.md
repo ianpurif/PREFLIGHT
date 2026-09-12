@@ -63,8 +63,9 @@ Record any qualification classification that differs from existing docs, with th
   claim a video that has not been recorded.
 - The selected Graph Studio provider is valid live evidence for the base prize path. Gateway
   publication and Substreams are separate options/challenges and were not treated as mandatory.
-- The accepted Chainlink evidence remains the committed authenticated CLI simulation. The current
-  v1.33.0 local authentication failure is an external reproducibility blocker, not a new result.
+- The accepted Chainlink evidence now includes a fresh authenticated v1.33.0 CLI simulation. The
+  initial WSL compiler-shim failure was repaired by reinstalling the committed lockfile; no workflow
+  or confidential-boundary change was needed.
 - Ledger qualification remains partial/blocked at the approval/signature evidence boundary. No
   physical device, Clear Signing signature, origin token, or accepted descriptor is claimed.
 
@@ -81,9 +82,10 @@ Record any qualification classification that differs from existing docs, with th
 - `bun run --cwd integrations/the-graph evidence:live` against the public Studio endpoint and the
    committed clearance digest: `FOUND`; the API `TheGraphClearanceReader` independently returned
    `MATCHED` with exact public bindings.
-- The official CRE v1.33.0 CLI is installed in WSL, but `cre whoami` and the current simulation
-   fail closed with `authentication failed: unable to retrieve organization info`; no new CRE
-   result is claimed. Committed P13 evidence remains the accepted authenticated simulation proof.
+- The official CRE v1.33.0 CLI is authenticated in WSL. A Windows-generated compiler shim initially
+   caused `cre-compile: command not found`; reinstalling the committed lockfile in WSL restored the
+   official compiler. The fresh simulation then passed unsafe `HOLD`, corrected `CLEAR`, and
+   tampered-commitment `REJECT`, with redacted evidence committed separately.
 - Current Speculos executable/origin token/accepted descriptor are unavailable; committed smoke and
    pre-sign evidence remains partial and no signature or physical-device proof is claimed.
 - Runtime `.env` inspection never printed values. The public `THE_GRAPH_STUDIO_QUERY_URL` is
