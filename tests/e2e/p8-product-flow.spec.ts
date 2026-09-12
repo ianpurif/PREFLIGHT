@@ -53,7 +53,7 @@ test.describe("P8 product flow", () => {
     await page.getByRole("button", { name: "Run evaluation" }).first().click();
     await expect(
       page.getByText(
-        "Confidential evaluation is unavailable until the CRE gateway is configured.",
+        "Confidential evaluation unavailable: A deployed CRE gateway, workflow ID, and authorized signing key are required",
         {
           exact: true,
         },
