@@ -17,6 +17,13 @@ repository corroboration are recorded in
 Git history cannot independently prove the event calendar or work held in another private location,
 so the maintainer's event submission record remains the authoritative external eligibility artifact.
 
+### Submission evidence boundary
+
+The official ETHOnline prize also requires a public repository and a two-to-four-minute demo video.
+The repository contains the implementation and redacted live evidence, but this audit does not claim
+that the required external video has been recorded. A hosted Subgraph Studio provider is the selected
+live evidence path; Gateway publication is optional for this path and is not claimed.
+
 Rovaulta uses The Graph as a load-bearing public-context source for its account-backed deployment
 agent. The agent does not treat a local catalog or a browser assertion as proof that a release is
 eligible. Before it asks the existing P5 release service to prepare a deployment intent, it queries

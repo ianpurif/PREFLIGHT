@@ -40,6 +40,28 @@
   network-disabled. The submitted historical revision must be replaced with the corrected commit;
   an invalid/truncated revision cannot be made authoritative by the runner.
 
+## 2026-09-12 — P19 final partner qualification audit
+
+- The current qualification matrix is **PASS** for Chainlink's selected authenticated CRE CLI
+  simulation path: the source registers `handlerInTee`, reads a request-scoped secret inside the
+  confidential callback, calls the deterministic evaluator, and the committed evidence records
+  `HOLD`, `CLEAR`, and tampered-commitment `REJECT` without private output. Live CRE/DON execution
+  remains a separate blocked deployment path and is not required by the prize.
+- The Graph implementation is **PASS** for the Start Fresh / From Scratch technical pool: the real
+  Sepolia registry clearance is indexed by the hosted Studio subgraph, the strict reader returns
+  `MATCHED`, and the real Gemini agent consumes that context before `LEDGER_APPROVAL_REQUIRED`.
+  The required two-to-four-minute demo video remains an external submission artifact and is not
+  claimed.
+- Ledger is **PARTIAL**: DMK/WebHID/Speculos, exact intent binding, pre-sign checks, and the
+  AI-to-human boundary are real and fail closed, but no Clear Signing signature, `AUTHORIZED`
+  result, physical-device proof, origin token, or accepted descriptor is available. The official
+  track does not make physical hardware a blanket requirement, but the missing approval evidence
+  prevents a full qualification claim.
+- The audit plan and verification record are in
+  [`P19`](exec-plans/P19-partner-qualification-audit.md). The ignored local `.env` has the public
+  Studio query URL configured; gateway remains the default and simulation remains an explicit
+  operator mode. The current CRE v1.33.0 session fails organization validation before simulation.
+
 ## 2026-09-12 — P17 authentication, session, and ownership hardening
 
 - `/start`, `/sign-in`, and `/create-account` now probe `/auth/me` before rendering account-entry
@@ -103,8 +125,9 @@ one real clearance is indexed, and both the direct Studio query and strict API r
 `MATCHED` for the exact digest. This is labelled Studio evidence, not Gateway/decentralized evidence.
 The model-backed agent handoff is captured in the P15 evidence artifact. Start Fresh / From Scratch
 eligibility is documented by the maintainer-origin declaration and repository chronology in the
-Graph eligibility artifact. The 2–4 minute demo and Gateway subgraph ID remain external/non-required
-items and are not claimed.**
+Graph eligibility artifact. The required 2–4 minute demo remains an external submission artifact and
+is not yet recorded; a Gateway subgraph ID remains optional for the selected hosted Studio evidence
+path and is not claimed.**
 
 **P12 adds the missing operator path from account data to the deployed registry:** a validated
 account-owned public `CLEAR` evaluation can now be converted through the canonical P1 clearance

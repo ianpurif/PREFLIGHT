@@ -659,6 +659,29 @@ authenticated P13 simulation evidence remains separate and unchanged.
 
 **Evidence:** [`chainlink-cre-p16-live-deployment-2026-09-11.md`](../compliance/evidence/chainlink-cre-p16-live-deployment-2026-09-11.md).
 
+## 2026-09-12 — P19 final partner qualification audit
+
+**Tool:** OpenAI Codex using the Rovaulta execution-plan, partner-compliance, and verification-loop
+guidance plus the official ETHGlobal, Chainlink CRE, The Graph, and Ledger references.
+
+**Human direction:** Audit only the Chainlink Confidential Workflow, The Graph From Scratch AI use
+case, and Ledger human-in-the-loop bounty requirements. Reproduce partner-critical paths, fix only
+concrete baseline gaps, and never fabricate executions, signatures, hardware, or private evidence.
+
+**AI-assisted output:** Rechecked the current handlerInTee/simulation evidence, live Sepolia-to-Graph
+query and account-agent architecture, and DMK/Speculos authorization boundary. Updated the stale P8
+gateway-unavailable browser assertion to the current bounded error message and configured only the
+public local Studio query URL in the ignored `.env`; no credentials or confidential values were
+printed or committed.
+
+**Evidence boundary:** Chainlink simulation and Graph Studio results remain explicitly distinct from
+live CRE/DON execution and decentralized Graph publication. Ledger remains partial: no Clear Signing
+signature, authorization, physical device, origin token, or accepted descriptor was claimed. The
+current CRE v1.33.0 session fails organization validation before simulation, so no new CRE result was
+recorded.
+
+**Evidence:** [`P19 partner qualification audit plan`](../planning/exec-plans/P19-partner-qualification-audit.md).
+
 ## 2026-09-12 — Authentication and ownership hardening
 
 **Tool:** OpenAI Codex using the Rovaulta execution-plan and verification-loop guidance plus a

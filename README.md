@@ -16,7 +16,8 @@ publish its private safety envelope, and the deployment agent cannot approve a r
   > clearance, a live The Graph Subgraph Studio `MATCHED` check, and a real Gemini tool-calling run
   > that reaches the existing Ledger-required handoff. The committed artifacts distinguish simulation
   > from live CRE/DON execution and distinguish Speculos from physical Ledger evidence. Live CRE
-  > gateway/DON delivery, physical Clear Signing, and the final showcase assets remain open and are not
+  > gateway/DON delivery, physical Clear Signing, the required two-to-four-minute Graph/ETHOnline
+  > demo video, and other final showcase assets remain open and are not
   > presented as completed proof. Start Fresh / From Scratch eligibility is documented as a maintainer
   > declaration with repository-history corroboration in the [eligibility artifact](docs/compliance/evidence/graph-start-fresh-eligibility-2026-09-11.md).
 
@@ -557,7 +558,8 @@ Not yet proven or intentionally not implemented:
 - physical Ledger approval evidence;
 - proof that a remote black-box model endpoint is the exact artifact whose digest was evaluated;
 - physical robot commissioning, robot control loops, or automatic robot activation;
-- P8 submission assets such as the final showcase video.
+- the required two-to-four-minute public demo video for The Graph/ETHOnline, plus any other final
+  showcase assets.
 
 These are limitations, not hidden fallback behavior. The software fails closed when a required
 authority, provider, descriptor, or binding is missing.
