@@ -31,6 +31,14 @@
   defaults dependency installation to `--network=none`, disables lifecycle scripts, bounds source
   size/concurrency, and re-hashes the exact artifact path before promotion. Provenance mutations and
   the actual Bun version output format have regression coverage.
+- A corrected published Rovaulta revision, `94227cfb2817bdc57dd49ed04f5005d4a19ce3c4`, was then
+  replayed through a fresh Docker Desktop BuildKit builder with a real frozen Bun install and
+  `bun run build`; the lifecycle test completed with `3 pass`, including existing-build
+  compatibility, source-build failure isolation, `CLEAR`, and exact clearance digest binding. A
+  cold cache correctly fails under `ROVAULTA_BUILD_INSTALL_NETWORK=none`, so the local ignored
+  `.env` opts Docker Desktop into dependency-install egress while keeping the build command
+  network-disabled. The submitted historical revision must be replaced with the corrected commit;
+  an invalid/truncated revision cannot be made authoritative by the runner.
 
 ## 2026-09-12 — P17 authentication, session, and ownership hardening
 

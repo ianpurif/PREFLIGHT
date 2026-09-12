@@ -101,3 +101,40 @@ uses `URL` without the required TypeScript DOM lib). It must remain a failed imm
 not valid to reuse a newer local result under that old revision. The local fixes are present in later
 local commits; they require publishing a new source revision before a user can submit the corrected
 Rovaulta repository state.
+
+## Follow-up: corrected Rovaulta revision — 2026-09-12
+
+The corrected checkout was replayed from the published commit
+`94227cfb2817bdc57dd49ed04f5005d4a19ce3c4` using the exact repository and command requested by the
+product flow. The fresh BuildKit runner used the local Docker Desktop daemon with dependency-install
+network explicitly set to `default`; the build command itself remained `--network=none`.
+
+```json
+{
+  "sourceRevision": "94227cfb2817bdc57dd49ed04f5005d4a19ce3c4",
+  "sourceSnapshotDigest": "sha256:80a5d03eeaf43cd84cf1329e808964d4e63afd08c86260e0cf6458cd91f201ff",
+  "lockfileDigest": "sha256:1f82fbc9f91af6cf6b6b9808422bbac10d019a0e022df7e852359b181075c1fc",
+  "artifactDigest": "sha256:4d830c55bfa3f17a8155f586b160e34a76cf9b67e9f5241ec400cacfd7575fc2",
+  "runtime": "Bun 1.4.1",
+  "runtimeImage": "oven/bun:1.4.1@sha256:9e123d5fc069e29d519fd4c981afb61b8542ac80274771961136db1e4538d53e",
+  "builder": "github.com/docker/buildx v0.36.1-desktop.1"
+}
+```
+
+The runner's real lifecycle test completed in `476.81s` with `3 pass`, `0 fail`: the existing
+build-number route passed, a failed source build stayed distinct from safety `REJECT`, and the
+corrected source revision reached the existing evaluation path with `CLEAR`. The provenance
+in-toto subject matched the artifact digest, and the resulting clearance bound the exact
+artifact-backed robot-build digest.
+
+The same current revision with the production-safe default `ROVAULTA_BUILD_INSTALL_NETWORK=none`
+failed closed as `DEPENDENCY_INSTALL_FAILED` on a cold local cache. This is expected when Bun has no
+pre-populated package cache and is not a lockfile mismatch: frozen installation must fetch the
+repository's declared dependencies. The ignored local `.env` now opts this Docker Desktop checkout
+into `ROVAULTA_BUILD_INSTALL_NETWORK=default` for that install layer only. Production should keep
+`none` or provide a dedicated BuildKit package-registry/proxy egress policy; the untrusted build
+command remains network-disabled in either case.
+
+The local checkout also had stale generated workspace `node_modules` junctions, including broken
+TypeScript links. Removing only those generated directories and rerunning `bun install --frozen-lockfile`
+restored the dependency graph without changing `package.json` or `bun.lock`.
